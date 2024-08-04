@@ -4,6 +4,9 @@
 
 #include <QString>
 #include <QObject>
+#include <QMap>
+
+class Project;
 
 class MapConnection : public QObject
 {
@@ -23,19 +26,32 @@ public:
     int offset() const { return m_offset; }
     void setOffset(int offset);
 
-    MapConnection * createMirror();
     bool isMirror(const MapConnection*);
+    MapConnection* findMirror();
+    MapConnection* createMirror();
 
+    QPixmap getPixmap();
+
+    static QPointer<Project> project;
+    static const QMap<QString, QString> oppositeDirections;
     static const QStringList cardinalDirections;
     static bool isCardinal(const QString &direction);
     static bool isHorizontal(const QString &direction);
     static bool isVertical(const QString &direction);
+    static QString oppositeDirection(const QString &direction) { return oppositeDirections.value(direction, direction); }
 
 private:
     QString m_direction;
     QString m_hostMapName;
     QString m_targetMapName;
     int m_offset;
+    bool m_ignoreMirror;
+
+    void mirrorDirection(const QString &direction);
+    void mirrorHostMapName(const QString &hostMapName);
+    void mirrorTargetMapName(const QString &targetMapName);
+    void mirrorOffset(int offset);
+    void markMapEdited();
 
 signals:
     void directionChanged(const QString &before, const QString &after);

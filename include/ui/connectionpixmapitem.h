@@ -4,6 +4,7 @@
 #include "mapconnection.h"
 #include <QGraphicsPixmapItem>
 #include <QPainter>
+#include <QPointer>
 
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
@@ -18,11 +19,10 @@ public:
         this->initialX = x;
         this->initialY = y;
         this->initialOffset = connection->offset();
-        this->setX(x);
-        this->setY(y);
+        this->setPos(x, y);
     }
     QPixmap basePixmap;
-    MapConnection* connection;
+    QPointer<MapConnection> connection;
     int initialX;
     int initialY;
     int initialOffset;
@@ -41,8 +41,7 @@ protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
 
 signals:
-    void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
-    void connectionMoved(MapConnection *, int newOffset);
+    void connectionItemDoubleClicked(MapConnection*);
     void selectionChanged(bool selected);
 };
 

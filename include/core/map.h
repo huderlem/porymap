@@ -98,6 +98,8 @@ public:
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
     void removeEvent(Event *);
     void addEvent(Event *);
+    bool removeConnection(MapConnection *);
+    void addConnection(MapConnection *);
     QPixmap renderConnection(const QString &, MapLayout *);
     QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
@@ -132,6 +134,7 @@ signals:
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
     void openScriptRequested(QString label);
+    void connectionAdded(MapConnection*);
 };
 
 #endif // MAP_H

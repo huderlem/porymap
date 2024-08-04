@@ -306,12 +306,11 @@ void MainWindow::checkForUpdates(bool) {}
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
     connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
-    connect(this->editor, &Editor::connectionItemDoubleClicked, this, &MainWindow::onConnectionItemDoubleClicked);
+    connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
     connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonDataChanged, this, &MainWindow::onWildMonDataChanged);
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
-    connect(this->editor, &Editor::editedMapData, [this](Map* map) { this->markMapEdited(map); });
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
@@ -569,15 +568,17 @@ bool MainWindow::openProject(QString dir, bool initial) {
     Scripting::init(this);
 
     // Create the project
-    this->editor->project = new Project(this);
-    QObject::connect(this->editor->project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
-    QObject::connect(this->editor->project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
-    QObject::connect(this->editor->project, &Project::uncheckMonitorFilesAction, [this]() {
+    auto project = new Project(this);
+    project->set_root(dir);
+    QObject::connect(project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
+    QObject::connect(project, &Project::mapCacheCleared, this, &MainWindow::onMapCacheCleared);
+    QObject::connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
+    QObject::connect(project, &Project::uncheckMonitorFilesAction, [this]() {
         porymapConfig.monitorFiles = false;
         if (this->preferenceEditor)
             this->preferenceEditor->updateFields();
     });
-    this->editor->project->set_root(dir);
+    this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
     if (!checkProjectSanity()) {
@@ -805,7 +806,6 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     showWindowTitle();
 
     connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
-    connect(editor->map, &Map::modified, [this](){ this->markMapEdited(); });
 
     userConfig.recentMap = map_name;
     updateMapList();
@@ -2526,7 +2526,7 @@ void MainWindow::clickToolButtonFromEditMode(QString editMode) {
     }
 }
 
-void MainWindow::onConnectionItemDoubleClicked(QString mapName, QString fromMapName) {
+void MainWindow::onOpenConnectedMap(QString mapName, QString fromMapName) {
     if (mapName != fromMapName && userSetMap(mapName, true))
         editor->setSelectedConnectionFromMap(fromMapName);
 }
@@ -2537,6 +2537,10 @@ void MainWindow::onMapNeedsRedrawing() {
 
 void MainWindow::onMapCacheCleared() {
     editor->map = nullptr;
+}
+
+void MainWindow::onMapLoaded(Map *map) {
+    connect(map, &Map::modified, [this, map] { this->markMapEdited(map); });
 }
 
 void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {

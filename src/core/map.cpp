@@ -218,6 +218,9 @@ QPixmap Map::renderBorder(bool ignoreCache) {
 }
 
 QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) {
+    if (direction == "dive" || direction == "emerge")
+        return render();
+
     if (!MapConnection::isCardinal(direction))
         return QPixmap();
 
@@ -508,6 +511,22 @@ void Map::addEvent(Event *event) {
     event->setMap(this);
     events[event->getEventGroup()].append(event);
     if (!ownedEvents.contains(event)) ownedEvents.append(event);
+}
+
+bool Map::removeConnection(MapConnection *connection) {
+    if (connections.removeOne(connection)) {
+        modify();
+        return true;
+    }
+    return false;
+}
+
+void Map::addConnection(MapConnection *connection) {
+    if (!connection || connections.contains(connection))
+        return;
+    connections.append(connection);
+    modify();
+    emit connectionAdded(connection);
 }
 
 void Map::modify() {

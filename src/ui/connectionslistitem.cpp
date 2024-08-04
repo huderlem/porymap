@@ -56,27 +56,25 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
 }
 
 void ConnectionsListItem::mouseDoubleClickEvent(QMouseEvent *) {
-    emit doubleClicked(this->connection->targetMapName());
+    emit doubleClicked(this->connection);
 }
 
 void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction) {
     this->setSelected(true);
-    if (this->connection->direction() != direction)
-        emit this->editedDirection(this->connection, direction);
+    this->connection->setDirection(direction);
 }
 
 void ConnectionsListItem::on_comboBox_Map_currentTextChanged(const QString &mapName) {
     this->setSelected(true);
-    if (ui->comboBox_Map->findText(mapName) >= 0 && this->connection->targetMapName() != mapName)
-        emit this->editedMapName(this->connection, mapName);
+    if (ui->comboBox_Map->findText(mapName) >= 0)
+        this->connection->setTargetMapName(mapName);
 }
 
 void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset) {
     this->setSelected(true);
-    if (this->connection->offset() != offset)
-        emit editedOffset(this->connection, offset);
+    this->connection->setOffset(offset);
 }
 
 void ConnectionsListItem::on_button_Delete_clicked() {
-    emit this->removed();
+    emit this->removed(this->connection);
 }

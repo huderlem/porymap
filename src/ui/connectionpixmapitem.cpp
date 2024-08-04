@@ -51,8 +51,7 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             y = this->initialY;
         }
 
-        if (this->connection->offset() != newOffset)
-            emit connectionMoved(this->connection, newOffset);
+        this->connection->setOffset(newOffset);
         return QPointF(x, y);
     }
     else {
@@ -84,5 +83,5 @@ void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
 }
 
 void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
-    emit connectionItemDoubleClicked(this);
+    emit connectionItemDoubleClicked(this->connection);
 }

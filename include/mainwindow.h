@@ -178,13 +178,14 @@ private slots:
     void copy();
     void paste();
 
-    void onConnectionItemDoubleClicked(QString, QString);
+    void onOpenConnectedMap(QString, QString);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
     void openNewMapPopupWindow();
     void onNewMapCreated();
     void onMapCacheCleared();
+    void onMapLoaded(Map *map);
     void importMapFromAdvanceMap1_92();
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();

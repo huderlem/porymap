@@ -5,6 +5,7 @@
 
 #include <QFrame>
 #include <QMouseEvent>
+#include <QPointer>
 
 namespace Ui {
 class ConnectionsListItem;
@@ -25,7 +26,7 @@ public:
     void updateUI();
     void setSelected(bool selected);
 
-    MapConnection * connection;
+    QPointer<MapConnection> connection;
 
 private:
     Ui::ConnectionsListItem *ui;
@@ -36,12 +37,9 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *);
 
 signals:
-    void editedOffset(MapConnection *connection, int newOffset);
-    void editedDirection(MapConnection *connection, const QString &direction);
-    void editedMapName(MapConnection *connection, const QString &mapName);
-    void removed();
+    void removed(MapConnection*);
     void selected();
-    void doubleClicked(const QString &mapName);
+    void doubleClicked(MapConnection*);
 
 private slots:
     void on_comboBox_Direction_currentTextChanged(const QString &direction);

@@ -186,10 +186,13 @@ Map* Project::loadMap(QString map_name) {
         map->setName(map_name);
     }
 
-    if (!(loadMapData(map) && loadMapLayout(map)))
+    if (!(loadMapData(map) && loadMapLayout(map))){
+        delete map;
         return nullptr;
+    }
 
     mapCache.insert(map_name, map);
+    emit mapLoaded(map);
     return map;
 }
 
