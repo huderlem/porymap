@@ -77,8 +77,8 @@ public:
     void setConnectionsVisibility(bool visible);
     void updateDiveEmergeVisibility();
     void addNewConnection();
-    void addConnection(Map* map, MapConnection* connection, bool addMirror = true);
-    void removeConnection(Map* map, MapConnection* connection, bool removeMirror = true);
+    void addConnection(MapConnection* connection, bool addMirror = true);
+    void removeConnection(MapConnection* connection, bool removeMirror = true);
     void removeConnectionItem(ConnectionPixmapItem* connectionItem);
     void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
@@ -185,14 +185,14 @@ private:
     void clearMapGrid();
     void clearWildMonTables();
     void updateBorderVisibility();
-    QPoint calculateConnectionPosition(const MapConnection &connection, const QPixmap &pixmap);
-    QPixmap getConnectionPixmap(const MapConnection &connection);
+    QPoint calculateConnectionPosition(MapConnection *connection, const QPixmap &pixmap);
+    QPixmap getConnectionPixmap(MapConnection *connection);
     void updateConnectionItem(ConnectionPixmapItem* connectionItem);
     void updateConnectionItemPos(ConnectionPixmapItem* connectionItem);
     void createConnectionItem(MapConnection* connection);
     void createDiveEmergeConnection(MapConnection* connection);
     void setDiveEmergeMapName(QString mapName, QString direction);
-    MapConnectionMirror getMirroredConnection(MapConnection*);
+    MapConnection* getMirroredConnection(MapConnection*);
     void addMirroredConnection(MapConnection*);
     void removeMirroredConnection(MapConnection*);
     void updateEncounterFields(EncounterFields newFields);

@@ -33,7 +33,7 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
 
         qreal x, y;
         int newOffset = this->initialOffset;
-        if (MapConnection::isVertical(this->connection->direction)) {
+        if (MapConnection::isVertical(this->connection->direction())) {
             x = round(newPos.x() / 16) * 16;
             newOffset += (x - initialX) / 16;
             x = newOffset * 16;
@@ -42,7 +42,7 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             x = this->initialX;
         }
 
-        if (MapConnection::isHorizontal(this->connection->direction)) {
+        if (MapConnection::isHorizontal(this->connection->direction())) {
             y = round(newPos.y() / 16) * 16;
             newOffset += (y - this->initialY) / 16;
             y = newOffset * 16;
@@ -51,7 +51,7 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
             y = this->initialY;
         }
 
-        if (this->connection->offset != newOffset)
+        if (this->connection->offset() != newOffset)
             emit connectionMoved(this->connection, newOffset);
         return QPointF(x, y);
     }

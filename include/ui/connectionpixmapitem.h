@@ -17,7 +17,7 @@ public:
         setFlag(ItemSendsGeometryChanges);
         this->initialX = x;
         this->initialY = y;
-        this->initialOffset = connection->offset;
+        this->initialOffset = connection->offset();
         this->setX(x);
         this->setY(y);
     }

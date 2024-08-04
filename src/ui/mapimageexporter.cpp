@@ -239,24 +239,26 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
         stitchedMaps.append(cur);
 
         for (MapConnection *connection : cur.map->connections) {
-            if (connection->direction == "dive" || connection->direction == "emerge")
-                continue;
+            const QString direction = connection->direction();
             int x = cur.x;
             int y = cur.y;
-            int offset = connection->offset;
-            Map *connectionMap = this->editor->project->loadMap(connection->map_name);
-            if (connection->direction == "up") {
+            int offset = connection->offset();
+            Map *connectionMap = this->editor->project->loadMap(connection->targetMapName());
+            if (direction == "up") {
                 x += offset;
                 y -= connectionMap->getHeight();
-            } else if (connection->direction == "down") {
+            } else if (direction == "down") {
                 x += offset;
                 y += cur.map->getHeight();
-            } else if (connection->direction == "left") {
+            } else if (direction == "left") {
                 x -= connectionMap->getWidth();
                 y += offset;
-            } else if (connection->direction == "right") {
+            } else if (direction == "right") {
                 x += cur.map->getWidth();
                 y += offset;
+            } else {
+                // Ignore Dive/Emerge connections and unrecognized directions
+                continue;
             }
             unvisited.append(StitchedMap{x, y, connectionMap});
         }
@@ -397,7 +399,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
         // if showing connections, draw on outside of image
         QPainter connectionPainter(&pixmap);
         for (auto connectionItem : editor->connection_items) {
-            QString direction = connectionItem->connection->direction;
+            const QString direction = connectionItem->connection->direction();
             if ((showUpConnections && direction == "up")
              || (showDownConnections && direction == "down")
              || (showLeftConnections && direction == "left")

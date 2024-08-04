@@ -35,9 +35,9 @@ void ConnectionsListItem::updateUI() {
     const QSignalBlocker blocker2(ui->comboBox_Map);
     const QSignalBlocker blocker3(ui->spinBox_Offset);
 
-    ui->comboBox_Direction->setTextItem(this->connection->direction);
-    ui->comboBox_Map->setTextItem(this->connection->map_name);
-    ui->spinBox_Offset->setValue(this->connection->offset);
+    ui->comboBox_Direction->setTextItem(this->connection->direction());
+    ui->comboBox_Map->setTextItem(this->connection->targetMapName());
+    ui->spinBox_Offset->setValue(this->connection->offset());
 }
 
 // TODO: Frame shifts slightly when style changes
@@ -56,31 +56,27 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
 }
 
 void ConnectionsListItem::mouseDoubleClickEvent(QMouseEvent *) {
-    emit doubleClicked(this->connection->map_name);
+    emit doubleClicked(this->connection->targetMapName());
 }
 
-void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction)
-{
+void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction) {
     this->setSelected(true);
-    if (this->connection->direction != direction)
+    if (this->connection->direction() != direction)
         emit this->editedDirection(this->connection, direction);
 }
 
-void ConnectionsListItem::on_comboBox_Map_currentTextChanged(const QString &mapName)
-{
+void ConnectionsListItem::on_comboBox_Map_currentTextChanged(const QString &mapName) {
     this->setSelected(true);
-    if (ui->comboBox_Map->findText(mapName) >= 0 && this->connection->map_name != mapName)
+    if (ui->comboBox_Map->findText(mapName) >= 0 && this->connection->targetMapName() != mapName)
         emit this->editedMapName(this->connection, mapName);
 }
 
-void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset)
-{
+void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset) {
     this->setSelected(true);
-    if (this->connection->offset != offset)
+    if (this->connection->offset() != offset)
         emit editedOffset(this->connection, offset);
 }
 
-void ConnectionsListItem::on_button_Delete_clicked()
-{
+void ConnectionsListItem::on_button_Delete_clicked() {
     emit this->removed();
 }

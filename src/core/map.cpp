@@ -217,20 +217,20 @@ QPixmap Map::renderBorder(bool ignoreCache) {
     return layout->border_pixmap;
 }
 
-QPixmap Map::renderConnection(const MapConnection &connection, MapLayout * fromLayout) {
-    if (!MapConnection::isCardinal(connection.direction))
+QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) {
+    if (!MapConnection::isCardinal(direction))
         return QPixmap();
 
     int x = 0, y = 0, w = getWidth(), h = getHeight();
-    if (connection.direction == "up") {
+    if (direction == "up") {
         y = getHeight() - BORDER_DISTANCE;
         h = BORDER_DISTANCE;
-    } else if (connection.direction == "down") {
+    } else if (direction == "down") {
         h = BORDER_DISTANCE;
-    } else if (connection.direction == "left") {
+    } else if (direction == "left") {
         x = getWidth() - BORDER_DISTANCE;
         w = BORDER_DISTANCE;
-    } else if (connection.direction == "right") {
+    } else if (direction == "right") {
         w = BORDER_DISTANCE;
     }
 
