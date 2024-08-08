@@ -340,7 +340,6 @@ private:
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
-    bool projectHasUnsavedChanges;
     bool newMapDefaultsSet = false;
 
     MapSortOrder mapSortOrder;
@@ -366,7 +365,7 @@ private:
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
     void refreshRecentProjectsMenu();
 
-    void drawMapListIcons(QAbstractItemModel *model);
+    void updateMapListIcon(const QString &mapName);
     void updateMapList();
 
     void displayMapProperties();

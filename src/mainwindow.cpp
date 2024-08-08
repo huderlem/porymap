@@ -421,9 +421,7 @@ void MainWindow::markMapEdited(Map* map) {
         return;
     map->hasUnsavedDataChanges = true;
 
-    // TODO: Only update the necessary list icon
-    updateMapList();
-
+    updateMapListIcon(map->name);
     if (editor && editor->map == map)
         showWindowTitle();
 }
@@ -807,8 +805,10 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
 
     connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
 
+    // Swap the "currently-open" icon from the old map to the new map
+    updateMapListIcon(userConfig.recentMap);
     userConfig.recentMap = map_name;
-    updateMapList();
+    updateMapListIcon(userConfig.recentMap);
 
     Scripting::cb_MapOpened(map_name);
     prefab.updatePrefabUi(editor->map);
@@ -1535,43 +1535,51 @@ void MainWindow::on_mapList_activated(const QModelIndex &index)
         userSetMap(data.toString());
 }
 
-void MainWindow::drawMapListIcons(QAbstractItemModel *model) {
-    projectHasUnsavedChanges = false;
+void MainWindow::updateMapListIcon(const QString &mapName) {
+    if (!editor->project || !editor->project->mapCache.contains(mapName))
+        return;
+
+    QStandardItem *item = mapListModel->itemFromIndex(mapListIndexes.value(mapName));
+    if (!item)
+        return;
+
+    if (editor->map && editor->map->name == mapName) {
+        item->setIcon(*mapOpenedIcon);
+    } else if (editor->project->mapCache.value(mapName)->hasUnsavedChanges()) {
+        item->setIcon(*mapEditedIcon);
+    } else {
+        item->setIcon(*mapIcon);
+    }
+}
+
+void MainWindow::updateMapList() {
     QList<QModelIndex> list;
     list.append(QModelIndex());
     while (list.length()) {
         QModelIndex parent = list.takeFirst();
-        for (int i = 0; i < model->rowCount(parent); i++) {
-            QModelIndex index = model->index(i, 0, parent);
-            if (model->hasChildren(index)) {
+        for (int i = 0; i < mapListModel->rowCount(parent); i++) {
+            QModelIndex index = mapListModel->index(i, 0, parent);
+            if (mapListModel->hasChildren(index)) {
                 list.append(index);
             }
             QVariant data = index.data(Qt::UserRole);
             if (!data.isNull()) {
-                QString map_name = data.toString();
-                if (editor->project && editor->project->mapCache.contains(map_name)) {
-                    QStandardItem *map = mapListModel->itemFromIndex(mapListIndexes.value(map_name));
-                    map->setIcon(*mapIcon);
-                    if (editor->project->mapCache.value(map_name)->hasUnsavedChanges()) {
-                        map->setIcon(*mapEditedIcon);
-                        projectHasUnsavedChanges = true;
-                    }
-                    if (editor->map->name == map_name) {
-                        map->setIcon(*mapOpenedIcon);
-                    }
-                }
+                updateMapListIcon(data.toString());
             }
         }
     }
 }
 
-void MainWindow::updateMapList() {
-    drawMapListIcons(mapListModel);
-}
-
 void MainWindow::on_action_Save_Project_triggered() {
     editor->saveProject();
     updateMapList();
+    showWindowTitle();
+}
+
+void MainWindow::on_action_Save_triggered() {
+    editor->save();
+    if (editor->map)
+        updateMapListIcon(editor->map->name);
     showWindowTitle();
 }
 
@@ -1825,12 +1833,6 @@ void MainWindow::paste() {
             }
         }
     }
-}
-
-void MainWindow::on_action_Save_triggered() {
-    editor->save();
-    updateMapList();
-    showWindowTitle();
 }
 
 void MainWindow::on_mapViewTab_tabBarClicked(int index)
@@ -3128,7 +3130,16 @@ bool MainWindow::closeProject() {
     if (!isProjectOpen())
         return true;
 
-    if (projectHasUnsavedChanges || (editor->map && editor->map->hasUnsavedChanges())) {
+    // Check loaded maps for unsaved changes
+    bool unsavedChanges = false;
+    for (auto map : editor->project->mapCache.values()) {
+        if (map && map->hasUnsavedChanges()) {
+            unsavedChanges = true;
+            break;
+        }
+    }
+
+    if (unsavedChanges) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this, "porymap", "The project has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);

@@ -981,7 +981,6 @@ void Editor::updateDiveEmergeVisibility() {
     }
 }
 
-// TODO: Fold into PixmapItem
 QPoint Editor::calculateConnectionPosition(MapConnection *connection, const QPixmap &pixmap) {
     const QString direction = connection->direction();
     int offset = connection->offset();
