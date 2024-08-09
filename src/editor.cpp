@@ -752,6 +752,7 @@ void Editor::displayConnection(MapConnection* connection) {
     ConnectionPixmapItem *pixmapItem = new ConnectionPixmapItem(pixmap, connection, pos.x(), pos.y());
     pixmapItem->render();
     scene->addItem(pixmapItem);
+    maskNonVisibleConnectionTiles();
 
     // Create item for the list panel
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, pixmapItem->connection, project->mapNames);
@@ -810,32 +811,6 @@ void Editor::displayConnection(MapConnection* connection) {
     connect(pixmapItem, &ConnectionPixmapItem::destroyed, listItem, &ConnectionsListItem::deleteLater);
 
     connection_items.append(pixmapItem);
-}
-
-
-void Editor::addNewConnection() {
-    // Find direction with least number of connections.
-    QMap<QString, int> directionCounts;
-    for (MapConnection* connection : map->connections) {
-        directionCounts[connection->direction()]++;
-    }
-    QString minDirection = "up";
-    int minCount = INT_MAX;
-    for (QString direction : MapConnection::cardinalDirections) {
-        if (directionCounts[direction] < minCount) {
-            minDirection = direction;
-            minCount = directionCounts[direction];
-        }
-    }
-
-    // Prefer not to connect the map to itself (we have to if it's the only map).
-    QString defaultMapName = project->mapNames.first();
-    if (defaultMapName == map->name && project->mapNames.length() > 1) {
-        defaultMapName = project->mapNames.at(1);
-    }
-
-    addConnection(new MapConnection(minDirection, map->name, defaultMapName));
-    setSelectedConnection(connection_items.last());
 }
 
 void Editor::addConnection(MapConnection * connection, bool addMirror) {
@@ -1054,6 +1029,10 @@ void Editor::setSelectedConnectionFromMap(QString mapName) {
             break;
         }
     }
+}
+
+void Editor::selectLastConnection() {
+    setSelectedConnection(connection_items.last());
 }
 
 void Editor::onMapConnectionDoubleClicked(MapConnection* connection) {

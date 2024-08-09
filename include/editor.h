@@ -77,7 +77,6 @@ public:
     void setMapEditingButtonsEnabled(bool enabled);
     void setConnectionsVisibility(bool visible);
     void updateDiveEmergeVisibility();
-    void addNewConnection();
     void addConnection(MapConnection* connection, bool addMirror = true);
     void removeConnection(MapConnection* connection, bool addMirror = true);
     void removeConnectionPixmap(ConnectionPixmapItem* connectionItem);
@@ -86,6 +85,7 @@ public:
     void deleteWildMonGroup();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
+    void selectLastConnection();
     void setSelectedConnectionFromMap(QString mapName);
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);

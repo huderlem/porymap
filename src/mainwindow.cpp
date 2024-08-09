@@ -19,6 +19,7 @@
 #include "prefab.h"
 #include "montabwidget.h"
 #include "imageexport.h"
+#include "newmapconnectiondialog.h"
 
 #include <QFileDialog>
 #include <QClipboard>
@@ -2649,8 +2650,11 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
 
 void MainWindow::on_pushButton_AddConnection_clicked()
 {
-    // TODO: Bring up a prompt for information?
-    editor->addNewConnection();
+    auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames);
+    if(dialog->exec() == QDialog::Accepted) {
+        this->editor->addConnection(dialog->result);
+        this->editor->selectLastConnection();
+    }
 }
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
