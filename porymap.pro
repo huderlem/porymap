@@ -145,6 +145,7 @@ HEADERS  += include/core/block.h \
     include/ui/connectionslistitem.h \
     include/ui/customscriptseditor.h \
     include/ui/customscriptslistitem.h \
+    include/ui/divingmappixmapitem.h \
     include/ui/draggablepixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \

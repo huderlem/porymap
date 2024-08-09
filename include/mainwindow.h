@@ -178,7 +178,7 @@ private slots:
     void copy();
     void paste();
 
-    void onOpenConnectedMap(QString, QString);
+    void onOpenConnectedMap(MapConnection*);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
@@ -321,9 +321,7 @@ private:
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;
-    QIcon* mapIcon;
-    QIcon* mapEditedIcon;
-    QIcon* mapOpenedIcon;
+    QIcon mapIcon;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;
@@ -411,7 +409,7 @@ private:
     int insertTilesetLabel(QStringList * list, QString label);
 
     void checkForUpdates(bool requestedByUser);
-    void setDiveEmergeMapVisible(bool visible);
+    void setDivingMapsVisible(bool visible);
 };
 
 enum MapListUserRoles {

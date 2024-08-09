@@ -7,24 +7,27 @@
 #include <QMap>
 
 class Project;
+class Map;
 
 class MapConnection : public QObject
 {
     Q_OBJECT
 public:
-    MapConnection(const QString &direction, const QString &hostMapName, const QString &targetMapName, int offset = 0);
+    MapConnection(const QString &targetMapName, const QString &direction, int offset = 0);
+
+    Map* parentMap() const { return m_parentMap; }
+    QString parentMapName() const;
+    void setParentMap(Map* map, bool mirror = true);
+
+    Map* targetMap() const;
+    QString targetMapName() const { return m_targetMapName; }
+    void setTargetMapName(const QString &targetMapName, bool mirror = true);
 
     QString direction() const { return m_direction; }
-    void setDirection(const QString &direction);
-
-    QString hostMapName() const { return m_hostMapName; }
-    void setHostMapName(const QString &hostMapName);
-
-    QString targetMapName() const { return m_targetMapName; }
-    void setTargetMapName(const QString &targetMapName);
+    void setDirection(const QString &direction, bool mirror = true);
 
     int offset() const { return m_offset; }
-    void setOffset(int offset);
+    void setOffset(int offset, bool mirror = true);
 
     bool isMirror(const MapConnection*);
     MapConnection* findMirror();
@@ -38,25 +41,22 @@ public:
     static bool isCardinal(const QString &direction);
     static bool isHorizontal(const QString &direction);
     static bool isVertical(const QString &direction);
+    static bool isDiving(const QString &direction);
     static QString oppositeDirection(const QString &direction) { return oppositeDirections.value(direction, direction); }
 
 private:
-    QString m_direction;
-    QString m_hostMapName;
+    Map* m_parentMap;
     QString m_targetMapName;
+    QString m_direction;
     int m_offset;
-    bool m_ignoreMirror;
 
-    void mirrorDirection(const QString &direction);
-    void mirrorHostMapName(const QString &hostMapName);
-    void mirrorTargetMapName(const QString &targetMapName);
-    void mirrorOffset(int offset);
     void markMapEdited();
+    Map* getMap(const QString& mapName) const;
 
 signals:
-    void directionChanged(const QString &before, const QString &after);
+    void parentMapChanged(Map* before, Map* after);
     void targetMapNameChanged(const QString &before, const QString &after);
-    void hostMapNameChanged(const QString &before, const QString &after);
+    void directionChanged(const QString &before, const QString &after);
     void offsetChanged(int before, int after);
 };
 

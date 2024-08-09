@@ -69,7 +69,6 @@ public:
     QMap<Event::Group, QList<Event *>> events;
     QList<Event *> ownedEvents; // for memory management
 
-    QList<MapConnection*> connections;
     QList<int> metatileLayerOrder;
     QList<float> metatileLayerOpacity;
 
@@ -98,8 +97,11 @@ public:
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
     void removeEvent(Event *);
     void addEvent(Event *);
-    bool removeConnection(MapConnection *);
+    void deleteConnections();
+    QList<MapConnection*> getConnections() const;
+    void removeConnection(MapConnection *);
     void addConnection(MapConnection *);
+    void loadConnection(MapConnection *);
     QPixmap renderConnection(const QString &, MapLayout *);
     QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
@@ -129,12 +131,15 @@ private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
 
+    QList<MapConnection*> connections;
+
 signals:
     void modified();
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
     void openScriptRequested(QString label);
     void connectionAdded(MapConnection*);
+    void connectionRemoved(MapConnection*);
 };
 
 #endif // MAP_H

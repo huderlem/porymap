@@ -23,7 +23,6 @@ public:
 
 private:
     Ui::NewMapConnectionDialog *ui;
-    Map *map;
 };
 
 #endif // NEWMAPCONNECTIONDIALOG_H

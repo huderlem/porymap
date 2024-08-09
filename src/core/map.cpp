@@ -17,11 +17,9 @@ Map::Map(QObject *parent) : QObject(parent)
 }
 
 Map::~Map() {
-    // delete all associated events
-    while (!ownedEvents.isEmpty()) {
-        Event *last = ownedEvents.takeLast();
-        if (last) delete last;
-    }
+    qDeleteAll(ownedEvents);
+    ownedEvents.clear();
+    deleteConnections();
 }
 
 void Map::setName(QString mapName) {
@@ -219,7 +217,7 @@ QPixmap Map::renderBorder(bool ignoreCache) {
 
 QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) {
     if (direction == "dive" || direction == "emerge")
-        return render();
+        return render(true);
 
     if (!MapConnection::isCardinal(direction))
         return QPixmap();
@@ -513,20 +511,55 @@ void Map::addEvent(Event *event) {
     if (!ownedEvents.contains(event)) ownedEvents.append(event);
 }
 
-bool Map::removeConnection(MapConnection *connection) {
-    if (connections.removeOne(connection)) {
-        modify();
-        return true;
-    }
-    return false;
+void Map::deleteConnections() {
+    qDeleteAll(connections);
+    connections.clear();
+}
+
+QList<MapConnection*> Map::getConnections() const {
+    return connections;
 }
 
 void Map::addConnection(MapConnection *connection) {
     if (!connection || connections.contains(connection))
         return;
-    connections.append(connection);
+
+    // Adding new Dive/Emerge maps replaces an existing one.
+    if (MapConnection::isDiving(connection->direction())) {
+        for (auto connectionToReplace : connections) {
+            if (connectionToReplace->direction() != connection->direction())
+                continue;
+            if (porymapConfig.mirrorConnectingMaps) {
+                auto mirror = connectionToReplace->findMirror();
+                if (mirror && mirror->parentMap())
+                    mirror->parentMap()->removeConnection(mirror);
+                delete mirror;
+            }
+            removeConnection(connectionToReplace);
+            delete connectionToReplace;
+            break;
+        }
+    }
+
+    loadConnection(connection);
     modify();
     emit connectionAdded(connection);
+}
+
+void Map::loadConnection(MapConnection *connection) {
+    if (!connection)
+        return;
+    connections.append(connection);
+    connection->setParentMap(this, false);
+}
+
+// Caller takes ownership of connection
+void Map::removeConnection(MapConnection *connection) {
+    if (!connections.removeOne(connection))
+        return;
+    connection->setParentMap(nullptr, false);
+    modify();
+    emit connectionRemoved(connection);
 }
 
 void Map::modify() {

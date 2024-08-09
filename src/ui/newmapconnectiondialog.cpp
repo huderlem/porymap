@@ -8,7 +8,6 @@ NewMapConnectionDialog::NewMapConnectionDialog(QWidget *parent, Map* map, const 
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    this->map = map;
     this->result = nullptr;
 
     ui->comboBox_Direction->setEditable(false);
@@ -20,7 +19,7 @@ NewMapConnectionDialog::NewMapConnectionDialog(QWidget *parent, Map* map, const 
 
     // Choose default direction
     QMap<QString, int> directionCounts;
-    for (auto connection : map->connections) {
+    for (auto connection : map->getConnections()) {
         directionCounts[connection->direction()]++;
     }
     QString defaultDirection;
@@ -52,11 +51,6 @@ NewMapConnectionDialog::~NewMapConnectionDialog()
 }
 
 void NewMapConnectionDialog::accept() {
-    QString direction = ui->comboBox_Direction->currentText();
-    QString hostMapName = this->map ? this->map->name : QString();
-    QString targetMapName = ui->comboBox_Map->currentText();
-
-    this->result = new MapConnection(direction, this->map->name, targetMapName);
-
+    this->result = new MapConnection(ui->comboBox_Map->currentText(), ui->comboBox_Direction->currentText());
     QDialog::accept();
 }

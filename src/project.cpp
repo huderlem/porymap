@@ -196,10 +196,6 @@ Map* Project::loadMap(QString map_name) {
     return map;
 }
 
-void Project::setNewMapConnections(Map *map) {
-    map->connections.clear();
-}
-
 const QSet<QString> defaultTopLevelMapFields = {
     "id",
     "name",
@@ -368,7 +364,7 @@ bool Project::loadMapData(Map* map) {
         }
     }
 
-    map->connections.clear();
+    map->deleteConnections();
     QJsonArray connectionsArr = mapObj["connections"].toArray();
     if (!connectionsArr.isEmpty()) {
         for (int i = 0; i < connectionsArr.size(); i++) {
@@ -378,8 +374,7 @@ bool Project::loadMapData(Map* map) {
             const QString mapConstant = ParseUtil::jsonToQString(connectionObj["map"]);
             if (mapConstantsToMapNames.contains(mapConstant)) {
                 // Successully read map connection
-                MapConnection *connection = new MapConnection(direction, map->name, mapConstantsToMapNames.value(mapConstant), offset);
-                map->connections.append(connection);
+                map->loadConnection(new MapConnection(mapConstantsToMapNames.value(mapConstant), direction, offset));
             } else {
                 logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
             }
@@ -1280,9 +1275,10 @@ void Project::saveMap(Map *map) {
     mapObj["battle_scene"] = map->battle_scene;
 
     // Connections
-    if (map->connections.length() > 0) {
+    auto connections = map->getConnections();
+    if (connections.length() > 0) {
         OrderedJson::array connectionsArr;
-        for (MapConnection* connection : map->connections) {
+        for (auto connection : connections) {
             if (mapNamesToMapConstants.contains(connection->targetMapName())) {
                 OrderedJson::object connectionObj;
                 connectionObj["map"] = this->mapNamesToMapConstants.value(connection->targetMapName());
@@ -1848,7 +1844,6 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
 
     loadLayoutTilesets(newMap->layout);
     setNewMapEvents(newMap);
-    setNewMapConnections(newMap);
 
     return newMap;
 }

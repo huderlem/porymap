@@ -40,13 +40,13 @@ void ConnectionsListItem::updateUI() {
     ui->spinBox_Offset->setValue(this->connection->offset());
 }
 
-// TODO: Frame shifts slightly when style changes
 void ConnectionsListItem::setSelected(bool selected) {
     if (selected == this->isSelected)
         return;
     this->isSelected = selected;
 
-    this->setStyleSheet(selected ? ".ConnectionsListItem { border: 1px solid rgb(255, 0, 255); }" : "");
+    this->setStyleSheet(selected ? ".ConnectionsListItem { border: 1px solid rgb(255, 0, 255); }"
+                                 : ".ConnectionsListItem { border-width: 1px; }");
     if (selected)
         emit this->selected();
 }

@@ -238,7 +238,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
         visited.insert(cur.map->name);
         stitchedMaps.append(cur);
 
-        for (MapConnection *connection : cur.map->connections) {
+        for (MapConnection *connection : cur.map->getConnections()) {
             const QString direction = connection->direction();
             int x = cur.x;
             int y = cur.y;

@@ -363,9 +363,7 @@ void MainWindow::initEditor() {
 }
 
 void MainWindow::initMiscHeapObjects() {
-    mapIcon = new QIcon(QStringLiteral(":/icons/map.ico"));
-    mapEditedIcon = new QIcon(QStringLiteral(":/icons/map_edited.ico"));
-    mapOpenedIcon = new QIcon(QStringLiteral(":/icons/map_opened.ico"));
+    mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
 
     mapListModel = new QStandardItemModel;
     mapGroupItemsList = new QList<QStandardItem*>;
@@ -496,7 +494,7 @@ void MainWindow::loadUserSettings() {
     ui->horizontalSlider_CollisionZoom->setValue(porymapConfig.collisionZoom);
 
     setTheme(porymapConfig.theme);
-    setDiveEmergeMapVisible(porymapConfig.showDiveEmergeMaps);
+    setDivingMapsVisible(porymapConfig.showDiveEmergeMaps);
 }
 
 void MainWindow::restoreWindowState() {
@@ -755,6 +753,9 @@ void MainWindow::on_action_Close_Project_triggered() {
 // setMap, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a map to open.
 bool MainWindow::userSetMap(QString map_name, bool scrollTreeView) {
+    if (editor->map && editor->map->name == map_name)
+        return true; // Already set
+
     if (map_name == DYNAMIC_MAP_NAME) {
         QMessageBox msgBox(this);
         QString errorMsg = QString("The map '%1' can't be opened, it's a placeholder to indicate the specified map will be set programmatically.").arg(map_name);
@@ -807,7 +808,8 @@ bool MainWindow::setMap(QString map_name, bool scrollTreeView) {
     connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing);
 
     // Swap the "currently-open" icon from the old map to the new map
-    updateMapListIcon(userConfig.recentMap);
+    if (!userConfig.recentMap.isEmpty() && userConfig.recentMap != map_name)
+        updateMapListIcon(userConfig.recentMap);
     userConfig.recentMap = map_name;
     updateMapListIcon(userConfig.recentMap);
 
@@ -1230,7 +1232,7 @@ void MainWindow::sortMapList() {
 QStandardItem* MainWindow::createMapItem(QString mapName, int groupNum, int inGroupNum) {
     QStandardItem *map = new QStandardItem;
     map->setText(QString("[%1.%2] ").arg(groupNum).arg(inGroupNum, 2, 10, QLatin1Char('0')) + mapName);
-    map->setIcon(*mapIcon);
+    map->setIcon(mapIcon);
     map->setEditable(false);
     map->setData(mapName, Qt::UserRole);
     map->setData("map_name", MapListUserRoles::TypeRole);
@@ -1319,7 +1321,7 @@ void MainWindow::onNewMapCreated() {
     setMap(newMapName, true);
 
     // Refresh any combo box that displays map names and persists between maps
-    // (others combo boxes like for warp destinations are repopulated when the map changes).
+    // (other combo boxes like for warp destinations are repopulated when the map changes).
     int index = this->editor->project->mapNames.indexOf(newMapName);
     if (index >= 0) {
         const QSignalBlocker blocker1(ui->comboBox_DiveMap);
@@ -1544,12 +1546,15 @@ void MainWindow::updateMapListIcon(const QString &mapName) {
     if (!item)
         return;
 
+    static const QIcon mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
+    static const QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
+
     if (editor->map && editor->map->name == mapName) {
-        item->setIcon(*mapOpenedIcon);
+        item->setIcon(mapOpenedIcon);
     } else if (editor->project->mapCache.value(mapName)->hasUnsavedChanges()) {
-        item->setIcon(*mapEditedIcon);
+        item->setIcon(mapEditedIcon);
     } else {
-        item->setIcon(*mapIcon);
+        item->setIcon(mapIcon);
     }
 }
 
@@ -2273,14 +2278,14 @@ void MainWindow::eventTabChanged(int index) {
 }
 
 void MainWindow::on_actionDive_Emerge_Map_triggered() {
-    setDiveEmergeMapVisible(ui->actionDive_Emerge_Map->isChecked());
+    setDivingMapsVisible(ui->actionDive_Emerge_Map->isChecked());
 }
 
 void MainWindow::on_groupBox_DiveMapOpacity_toggled(bool on) {
-    setDiveEmergeMapVisible(on);
+    setDivingMapsVisible(on);
 }
 
-void MainWindow::setDiveEmergeMapVisible(bool visible) {
+void MainWindow::setDivingMapsVisible(bool visible) {
     // Qt doesn't change the style of disabled sliders, so we do it ourselves
     QString stylesheet = visible ? "" : "QSlider::groove:horizontal {border: 1px solid #999999; border-radius: 3px; height: 2px; background: #B1B1B1;}"
                                         "QSlider::handle:horizontal {border: 1px solid #444444; border-radius: 3px; width: 10px; height: 9px; margin: -5px -1px; background: #5C5C5C; }";
@@ -2295,7 +2300,7 @@ void MainWindow::setDiveEmergeMapVisible(bool visible) {
     ui->actionDive_Emerge_Map->setChecked(visible);
 
     porymapConfig.showDiveEmergeMaps = visible;
-    this->editor->updateDiveEmergeVisibility();
+    this->editor->updateDivingMapsVisibility();
 }
 
 // Normally a map only has either a Dive map connection or an Emerge map connection,
@@ -2304,17 +2309,17 @@ void MainWindow::setDiveEmergeMapVisible(bool visible) {
 // modify them independently.
 void MainWindow::on_slider_DiveEmergeMapOpacity_valueChanged(int value) {
     porymapConfig.diveEmergeMapOpacity = value;
-    this->editor->updateDiveEmergeVisibility();
+    this->editor->updateDivingMapsVisibility();
 }
 
 void MainWindow::on_slider_DiveMapOpacity_valueChanged(int value) {
     porymapConfig.diveMapOpacity = value;
-    this->editor->updateDiveEmergeVisibility();
+    this->editor->updateDivingMapsVisibility();
 }
 
 void MainWindow::on_slider_EmergeMapOpacity_valueChanged(int value) {
     porymapConfig.emergeMapOpacity = value;
-    this->editor->updateDiveEmergeVisibility();
+    this->editor->updateDivingMapsVisibility();
 }
 
 void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int value) {
@@ -2529,9 +2534,9 @@ void MainWindow::clickToolButtonFromEditMode(QString editMode) {
     }
 }
 
-void MainWindow::onOpenConnectedMap(QString mapName, QString fromMapName) {
-    if (mapName != fromMapName && userSetMap(mapName, true))
-        editor->setSelectedConnectionFromMap(fromMapName);
+void MainWindow::onOpenConnectedMap(MapConnection *connection) {
+    if (userSetMap(connection->targetMapName(), true))
+        editor->setSelectedConnection(connection->findMirror());
 }
 
 void MainWindow::onMapNeedsRedrawing() {
@@ -2648,12 +2653,14 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     openSubWindow(this->mapImageExporter);
 }
 
-void MainWindow::on_pushButton_AddConnection_clicked()
-{
+void MainWindow::on_pushButton_AddConnection_clicked() {
+    if (!this->editor || !this->editor->map)
+        return;
+
     auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames);
-    if(dialog->exec() == QDialog::Accepted) {
+    if (dialog->exec() == QDialog::Accepted) {
         this->editor->addConnection(dialog->result);
-        this->editor->selectLastConnection();
+        this->editor->setSelectedConnection(dialog->result);
     }
 }
 
