@@ -13,6 +13,7 @@ public:
     void setTextItem(const QString &text);
     void setNumberItem(int value);
     void setHexItem(uint32_t value);
+    void setClearButtonEnabled(bool enabled);
 
 private:
     void setItem(int index, const QString &text);

@@ -217,34 +217,24 @@ QPixmap Map::renderBorder(bool ignoreCache) {
     return layout->border_pixmap;
 }
 
-QPixmap Map::renderConnection(MapConnection connection, MapLayout * fromLayout) {
-    int x, y, w, h;
-    if (connection.direction == "up") {
-        x = 0;
+QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) {
+    if (direction == "dive" || direction == "emerge")
+        return render();
+
+    if (!MapConnection::isCardinal(direction))
+        return QPixmap();
+
+    int x = 0, y = 0, w = getWidth(), h = getHeight();
+    if (direction == "up") {
         y = getHeight() - BORDER_DISTANCE;
-        w = getWidth();
         h = BORDER_DISTANCE;
-    } else if (connection.direction == "down") {
-        x = 0;
-        y = 0;
-        w = getWidth();
+    } else if (direction == "down") {
         h = BORDER_DISTANCE;
-    } else if (connection.direction == "left") {
+    } else if (direction == "left") {
         x = getWidth() - BORDER_DISTANCE;
-        y = 0;
         w = BORDER_DISTANCE;
-        h = getHeight();
-    } else if (connection.direction == "right") {
-        x = 0;
-        y = 0;
+    } else if (direction == "right") {
         w = BORDER_DISTANCE;
-        h = getHeight();
-    } else {
-        // this should not happen
-        x = 0;
-        y = 0;
-        w = getWidth();
-        h = getHeight();
     }
 
     render(true, fromLayout, QRect(x, y, w, h));
@@ -304,8 +294,8 @@ void Map::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool 
         Scripting::cb_MapResized(oldWidth, oldHeight, newWidth, newHeight);
     }
 
-    emit mapChanged(this);
     emit mapDimensionsChanged(QSize(getWidth(), getHeight()));
+    modify();
 }
 
 void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {
@@ -322,7 +312,7 @@ void Map::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata,
         Scripting::cb_BorderResized(oldWidth, oldHeight, newWidth, newHeight);
     }
 
-    emit mapChanged(this);
+    modify();
 }
 
 void Map::openScript(QString label) {
@@ -521,6 +511,22 @@ void Map::addEvent(Event *event) {
     event->setMap(this);
     events[event->getEventGroup()].append(event);
     if (!ownedEvents.contains(event)) ownedEvents.append(event);
+}
+
+bool Map::removeConnection(MapConnection *connection) {
+    if (connections.removeOne(connection)) {
+        modify();
+        return true;
+    }
+    return false;
+}
+
+void Map::addConnection(MapConnection *connection) {
+    if (!connection || connections.contains(connection))
+        return;
+    connections.append(connection);
+    modify();
+    emit connectionAdded(connection);
 }
 
 void Map::modify() {

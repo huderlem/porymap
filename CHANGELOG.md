@@ -22,6 +22,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix config files being written before the project is opened successfully.
 - Fix the map and other project info still displaying if a new project fails to open.
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
+- New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

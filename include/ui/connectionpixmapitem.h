@@ -4,34 +4,36 @@
 #include "mapconnection.h"
 #include <QGraphicsPixmapItem>
 #include <QPainter>
+#include <QPointer>
 
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
+    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y)
+    : QGraphicsPixmapItem(pixmap)
+    {
         this->basePixmap = pixmap;
         this->connection = connection;
         setFlag(ItemIsMovable);
         setFlag(ItemSendsGeometryChanges);
         this->initialX = x;
         this->initialY = y;
-        this->initialOffset = connection->offset;
-        this->baseMapWidth = baseMapWidth;
-        this->baseMapHeight = baseMapHeight;
+        this->initialOffset = connection->offset();
+        this->setPos(x, y);
     }
     QPixmap basePixmap;
-    MapConnection* connection;
+    QPointer<MapConnection> connection;
     int initialX;
     int initialY;
     int initialOffset;
-    int baseMapWidth;
-    int baseMapHeight;
-    void render(qreal opacity = 1);
-    int getMinOffset();
-    int getMaxOffset();
+
     void setEditable(bool editable);
     bool getEditable();
-    void updateHighlight(bool selected);
+    void setSelected(bool selected);
+    void render();
+
+private:
+    bool selected = false;
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
@@ -39,9 +41,8 @@ protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
 
 signals:
-    void connectionItemSelected(ConnectionPixmapItem* connectionItem);
-    void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
-    void connectionMoved(MapConnection*);
+    void connectionItemDoubleClicked(MapConnection*);
+    void selectionChanged(bool selected);
 };
 
 #endif // CONNECTIONPIXMAPITEM_H

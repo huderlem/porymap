@@ -178,14 +178,14 @@ private slots:
     void copy();
     void paste();
 
-    void onLoadMapRequested(QString, QString);
-    void onMapChanged(Map *map);
+    void onOpenConnectedMap(QString, QString);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
     void openNewMapPopupWindow();
     void onNewMapCreated();
     void onMapCacheCleared();
+    void onMapLoaded(Map *map);
     void importMapFromAdvanceMap1_92();
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
@@ -218,6 +218,7 @@ private slots:
     void on_actionMove_triggered();
     void on_actionMap_Shift_triggered();
 
+    void onDeleteKeyPressed();
     void on_toolButton_deleteObject_clicked();
 
     void addNewEvent(Event::Type type);
@@ -244,11 +245,9 @@ private slots:
     void on_actionExport_Map_Timelapse_Image_triggered();
     void on_actionImport_Map_from_Advance_Map_1_92_triggered();
 
-    void on_comboBox_ConnectionDirection_currentTextChanged(const QString &arg1);
-    void on_spinBox_ConnectionOffset_valueChanged(int offset);
-    void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
     void on_pushButton_AddConnection_clicked();
-    void on_pushButton_RemoveConnection_clicked();
+    void on_button_OpenDiveMap_clicked();
+    void on_button_OpenEmergeMap_clicked();
     void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
     void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
     void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
@@ -271,6 +270,12 @@ private slots:
 
     void eventTabChanged(int index);
 
+    void on_checkBox_MirrorConnections_stateChanged(int selected);
+    void on_actionDive_Emerge_Map_triggered();
+    void on_groupBox_DiveMapOpacity_toggled(bool on);
+    void on_slider_DiveEmergeMapOpacity_valueChanged(int value);
+    void on_slider_DiveMapOpacity_valueChanged(int value);
+    void on_slider_EmergeMapOpacity_valueChanged(int value);
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
     void on_toolButton_ExpandAll_clicked();
     void on_toolButton_CollapseAll_clicked();
@@ -335,13 +340,13 @@ private:
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
-    bool projectHasUnsavedChanges;
     bool newMapDefaultsSet = false;
 
     MapSortOrder mapSortOrder;
 
     bool tilesetNeedsRedraw = false;
 
+    bool userSetMap(QString, bool scrollTreeView = false);
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void refreshMapScene();
@@ -360,7 +365,7 @@ private:
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
     void refreshRecentProjectsMenu();
 
-    void drawMapListIcons(QAbstractItemModel *model);
+    void updateMapListIcon(const QString &mapName);
     void updateMapList();
 
     void displayMapProperties();
@@ -368,6 +373,7 @@ private:
     void clickToolButtonFromEditMode(QString editMode);
 
     void markMapEdited();
+    void markMapEdited(Map*);
     void showWindowTitle();
 
     void initWindow();
@@ -405,12 +411,32 @@ private:
     int insertTilesetLabel(QStringList * list, QString label);
 
     void checkForUpdates(bool requestedByUser);
+    void setDiveEmergeMapVisible(bool visible);
 };
 
 enum MapListUserRoles {
     GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
     TypeRole,  // Used to differentiate between the different layers of the map list tree view.
     TypeRole2, // Used for various extra data needed.
+};
+
+// These are namespaced in a struct to avoid colliding with e.g. class Map.
+struct MainTab {
+    enum {
+        Map,
+        Events,
+        Header,
+        Connections,
+        WildPokemon,
+    };
+};
+
+struct MapViewTab {
+    enum {
+        Metatiles,
+        Collision,
+        Prefabs,
+    };
 };
 
 #endif // MAINWINDOW_H

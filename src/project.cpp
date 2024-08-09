@@ -171,6 +171,9 @@ void Project::clearTilesetCache() {
 }
 
 Map* Project::loadMap(QString map_name) {
+    if (map_name == DYNAMIC_MAP_NAME)
+        return nullptr;
+
     Map *map;
     if (mapCache.contains(map_name)) {
         map = mapCache.value(map_name);
@@ -183,10 +186,13 @@ Map* Project::loadMap(QString map_name) {
         map->setName(map_name);
     }
 
-    if (!(loadMapData(map) && loadMapLayout(map)))
+    if (!(loadMapData(map) && loadMapLayout(map))){
+        delete map;
         return nullptr;
+    }
 
     mapCache.insert(map_name, map);
+    emit mapLoaded(map);
     return map;
 }
 
@@ -367,12 +373,12 @@ bool Project::loadMapData(Map* map) {
     if (!connectionsArr.isEmpty()) {
         for (int i = 0; i < connectionsArr.size(); i++) {
             QJsonObject connectionObj = connectionsArr[i].toObject();
-            MapConnection *connection = new MapConnection;
-            connection->direction = ParseUtil::jsonToQString(connectionObj["direction"]);
-            connection->offset    = ParseUtil::jsonToInt(connectionObj["offset"]);
-            QString mapConstant   = ParseUtil::jsonToQString(connectionObj["map"]);
+            const QString direction = ParseUtil::jsonToQString(connectionObj["direction"]);
+            int offset = ParseUtil::jsonToInt(connectionObj["offset"]);
+            const QString mapConstant = ParseUtil::jsonToQString(connectionObj["map"]);
             if (mapConstantsToMapNames.contains(mapConstant)) {
-                connection->map_name = mapConstantsToMapNames.value(mapConstant);
+                // Successully read map connection
+                MapConnection *connection = new MapConnection(direction, map->name, mapConstantsToMapNames.value(mapConstant), offset);
                 map->connections.append(connection);
             } else {
                 logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
@@ -1277,14 +1283,14 @@ void Project::saveMap(Map *map) {
     if (map->connections.length() > 0) {
         OrderedJson::array connectionsArr;
         for (MapConnection* connection : map->connections) {
-            if (mapNamesToMapConstants.contains(connection->map_name)) {
+            if (mapNamesToMapConstants.contains(connection->targetMapName())) {
                 OrderedJson::object connectionObj;
-                connectionObj["map"] = this->mapNamesToMapConstants.value(connection->map_name);
-                connectionObj["offset"] = connection->offset;
-                connectionObj["direction"] = connection->direction;
+                connectionObj["map"] = this->mapNamesToMapConstants.value(connection->targetMapName());
+                connectionObj["offset"] = connection->offset();
+                connectionObj["direction"] = connection->direction();
                 connectionsArr.append(connectionObj);
             } else {
-                logError(QString("Failed to write map connection. '%1' is not a valid map name").arg(connection->map_name));
+                logError(QString("Failed to write map connection. '%1' is not a valid map name").arg(connection->targetMapName()));
             }
         }
         mapObj["connections"] = connectionsArr;
@@ -1816,18 +1822,22 @@ bool Project::readMapGroups() {
 }
 
 Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout, bool importedMap) {
-    mapNames.append(mapName);
-    mapGroups.insert(mapName, groupNum);
-    groupedMapNames[groupNum].append(mapName);
+    int mapNamePos = 0;
+    for (int i = 0; i <= groupNum; i++)
+        mapNamePos += this->groupedMapNames.value(i).length();
+
+    this->mapNames.insert(mapNamePos, mapName);
+    this->mapGroups.insert(mapName, groupNum);
+    this->groupedMapNames[groupNum].append(mapName);
 
     newMap->isPersistedToFile = false;
     newMap->setName(mapName);
 
-    mapConstantsToMapNames.insert(newMap->constantName, newMap->name);
-    mapNamesToMapConstants.insert(newMap->name, newMap->constantName);
+    this->mapConstantsToMapNames.insert(newMap->constantName, newMap->name);
+    this->mapNamesToMapConstants.insert(newMap->name, newMap->constantName);
     if (!existingLayout) {
-        mapLayouts.insert(newMap->layoutId, newMap->layout);
-        mapLayoutsTable.append(newMap->layoutId);
+        this->mapLayouts.insert(newMap->layoutId, newMap->layout);
+        this->mapLayoutsTable.append(newMap->layoutId);
         if (!importedMap) {
             setNewMapBlockdata(newMap);
         }

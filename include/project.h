@@ -257,6 +257,7 @@ signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
     void mapCacheCleared();
+    void mapLoaded(Map *map);
 };
 
 #endif // PROJECT_H
