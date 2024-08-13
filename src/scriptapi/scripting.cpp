@@ -24,11 +24,6 @@ const QMap<CallbackType, QString> callbackFunctions = {
 Scripting *instance = nullptr;
 
 void Scripting::stop() {
-    if (!instance) return;
-    instance->engine->setInterrupted(true);
-    qDeleteAll(instance->imageCache);
-    delete instance->engine;
-    delete instance->scriptUtility;
     delete instance;
     instance = nullptr;
 }
@@ -52,6 +47,13 @@ Scripting::Scripting(MainWindow *mainWindow) {
     }
     this->loadModules(this->filepaths);
     this->scriptUtility = new ScriptUtility(mainWindow);
+}
+
+Scripting::~Scripting() {
+    this->engine->setInterrupted(true);
+    qDeleteAll(this->imageCache);
+    delete this->engine;
+    delete this->scriptUtility;
 }
 
 void Scripting::loadModules(QStringList moduleFiles) {
