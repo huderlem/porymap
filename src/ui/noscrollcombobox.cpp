@@ -22,6 +22,18 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     this->setValidator(validator);
 }
 
+// On macOS QComboBox::setEditable and QComboBox::setLineEdit will override our changes to the focus policy, so we enforce it here.
+void NoScrollComboBox::setEditable(bool editable) {
+    auto policy = focusPolicy();
+    QComboBox::setEditable(editable);
+    setFocusPolicy(policy);
+}
+void NoScrollComboBox::setLineEdit(QLineEdit *edit) {
+    auto policy = focusPolicy();
+    QComboBox::setLineEdit(edit);
+    setFocusPolicy(policy);
+}
+
 void NoScrollComboBox::wheelEvent(QWheelEvent *event)
 {
     // Only allow scrolling to modify contents when it explicitly has focus.

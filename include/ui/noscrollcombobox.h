@@ -13,6 +13,8 @@ public:
     void setTextItem(const QString &text);
     void setNumberItem(int value);
     void setHexItem(uint32_t value);
+    void setEditable(bool editable);
+    void setLineEdit(QLineEdit *edit);
 
 private:
     void setItem(int index, const QString &text);
