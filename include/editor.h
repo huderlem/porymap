@@ -78,6 +78,7 @@ public:
     void setMapEditingButtonsEnabled(bool enabled);
     void setConnectionsVisibility(bool visible);
     void updateDivingMapsVisibility();
+    void displayDivingConnections();
     void addConnection(MapConnection* connection);
     void removeConnection(MapConnection* connection);
     void removeSelectedConnection();

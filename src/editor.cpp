@@ -737,10 +737,6 @@ void Editor::displayConnection(MapConnection* connection) {
     if (!connection)
         return;
 
-    // It's possible for a map connection to be displayed repeatedly if it's being
-    // updated by mirroring and the target map is changing to/from the current map.
-    connection->disconnect();
-
     if (MapConnection::isDiving(connection->direction())) {
         displayDivingConnection(connection);
         return;
@@ -757,6 +753,10 @@ void Editor::displayConnection(MapConnection* connection) {
     // Create item for the list panel
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, pixmapItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
+
+    // It's possible for a map connection to be displayed repeatedly if it's being
+    // updated by mirroring and the target map is changing to/from the current map.
+    connection->disconnect();
 
     // Double clicking the list item or pixmap opens the connected map
     connect(listItem, &ConnectionsListItem::doubleClicked, this, &Editor::onMapConnectionDoubleClicked);
@@ -871,12 +871,24 @@ void Editor::removeConnectionPixmap(MapConnection* connection) {
     delete pixmapItem;
 }
 
+void Editor::displayDivingConnections() {
+    if (!this->map)
+        return;
+
+    for (auto connection : this->map->getConnections())
+        displayDivingConnection(connection);
+}
+
 void Editor::displayDivingConnection(MapConnection* connection) {
     if (!connection)
         return;
 
     const QString direction = connection->direction();
     if (!MapConnection::isDiving(direction))
+        return;
+
+    // Save some rendering time if it won't be displayed
+    if (!porymapConfig.showDiveEmergeMaps)
         return;
 
     // Note: We only support editing 1 Dive and Emerge connection per map.
@@ -890,7 +902,6 @@ void Editor::displayDivingConnection(MapConnection* connection) {
     auto item = new DivingMapPixmapItem(connection);
     scene->addItem(item);
     diving_map_items.insert(direction, item);
-    maskNonVisibleConnectionTiles();
 
     // Display map name in combo box
     auto comboBox = (direction == "dive") ? ui->comboBox_DiveMap : ui->comboBox_EmergeMap;
@@ -963,7 +974,6 @@ void Editor::setDivingMapName(QString mapName, QString direction) {
         addConnection(new MapConnection(mapName, direction));
     }
     updateDivingMapsVisibility();
-    maskNonVisibleConnectionTiles();
 }
 
 void Editor::updateDivingMapsVisibility() {
@@ -1810,7 +1820,6 @@ void Editor::maskNonVisibleConnectionTiles() {
     QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
 
     connection_mask = scene->addPath(mask, pen, brush);
-    connection_mask->setZValue(3); // Above diving maps
 }
 
 void Editor::clearMapBorder() {

@@ -216,23 +216,29 @@ QPixmap Map::renderBorder(bool ignoreCache) {
 }
 
 QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) {
-    if (direction == "dive" || direction == "emerge")
-        return render(true);
-
-    if (!MapConnection::isCardinal(direction))
-        return QPixmap();
-
+    // Cardinal connections are rendered within the bounds of the border draw distance,
+    // and we need to render the nearest segment of the map.
+    // Dive/Emerge maps are rendered normally, but within the bounds of their parent map.
     int x = 0, y = 0, w = getWidth(), h = getHeight();
     if (direction == "up") {
-        y = getHeight() - BORDER_DISTANCE;
-        h = BORDER_DISTANCE;
+        h = qMin(h, BORDER_DISTANCE);
+        y = getHeight() - h;
     } else if (direction == "down") {
-        h = BORDER_DISTANCE;
+        h = qMin(h, BORDER_DISTANCE);
     } else if (direction == "left") {
-        x = getWidth() - BORDER_DISTANCE;
-        w = BORDER_DISTANCE;
+        w = qMin(w, BORDER_DISTANCE);
+        x = getWidth() - w;
     } else if (direction == "right") {
-        w = BORDER_DISTANCE;
+        w = qMin(w, BORDER_DISTANCE);
+    } else if (MapConnection::isDiving(direction)) {
+        if (fromLayout) {
+            w = qMin(w, fromLayout->getWidth());
+            h = qMin(h, fromLayout->getHeight());
+            fromLayout = nullptr; // This would be used for palettes later, but we want our own palettes, not the parent's.
+        }
+    } else {
+        // Unknown direction
+        return QPixmap();
     }
 
     render(true, fromLayout, QRect(x, y, w, h));

@@ -13,7 +13,6 @@ public:
     : QGraphicsPixmapItem(getBasePixmap(connection))
     {
         m_connection = connection;
-        setZValue(2);
 
         // Update pixmap if the connected map is swapped.
         connect(m_connection, &MapConnection::targetMapNameChanged, this, &DivingMapPixmapItem::updatePixmap);

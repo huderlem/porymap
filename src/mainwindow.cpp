@@ -2302,6 +2302,12 @@ void MainWindow::setDivingMapsVisible(bool visible) {
     ui->actionDive_Emerge_Map->setChecked(visible);
 
     porymapConfig.showDiveEmergeMaps = visible;
+
+    if (visible) {
+        // We skip rendering diving maps if this setting is not enabled,
+        // so when we enable it we need to make sure they've rendered.
+        this->editor->displayDivingConnections();
+    }
     this->editor->updateDivingMapsVisibility();
 }
 
