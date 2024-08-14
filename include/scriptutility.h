@@ -10,7 +10,8 @@ class ScriptUtility : public QObject
 
 public:
     ScriptUtility(MainWindow *mainWindow);
-    void clearActions();
+    ~ScriptUtility();
+
     QString getActionFunctionName(int actionIndex);
     Q_INVOKABLE bool registerAction(QString functionName, QString actionName, QString shortcut = "");
     Q_INVOKABLE bool registerToggleAction(QString functionName, QString actionName, QString shortcut = "", bool checked = false);
@@ -59,6 +60,7 @@ private:
 
     MainWindow *window;
     QList<QAction *> registeredActions;
+    QSet<QTimer *> activeTimers;
     QHash<int, QString> actionMap;
 };
 

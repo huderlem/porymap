@@ -1,8 +1,10 @@
+#include <QQmlEngine>
+
 #include "scripting.h"
 #include "log.h"
 #include "config.h"
 
-QMap<CallbackType, QString> callbackFunctions = {
+const QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
     {OnProjectClosed, "onProjectClosed"},
     {OnBlockChanged, "onBlockChanged"},
@@ -22,10 +24,6 @@ QMap<CallbackType, QString> callbackFunctions = {
 Scripting *instance = nullptr;
 
 void Scripting::stop() {
-    if (!instance) return;
-    instance->engine->setInterrupted(true);
-    instance->scriptUtility->clearActions();
-    qDeleteAll(instance->imageCache);
     delete instance;
     instance = nullptr;
 }
@@ -39,7 +37,7 @@ void Scripting::init(MainWindow *mainWindow) {
 
 Scripting::Scripting(MainWindow *mainWindow) {
     this->mainWindow = mainWindow;
-    this->engine = new QJSEngine(mainWindow);
+    this->engine = new QJSEngine();
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     const QStringList paths = userConfig.getCustomScriptPaths();
     const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
@@ -49,6 +47,13 @@ Scripting::Scripting(MainWindow *mainWindow) {
     }
     this->loadModules(this->filepaths);
     this->scriptUtility = new ScriptUtility(mainWindow);
+}
+
+Scripting::~Scripting() {
+    this->engine->setInterrupted(true);
+    qDeleteAll(this->imageCache);
+    delete this->engine;
+    delete this->scriptUtility;
 }
 
 void Scripting::loadModules(QStringList moduleFiles) {
@@ -78,6 +83,11 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     instance->engine->globalObject().setProperty("map", instance->engine->newQObject(mainWindow));
     instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(mainWindow->ui->graphicsView_Map));
     instance->engine->globalObject().setProperty("utility", instance->engine->newQObject(instance->scriptUtility));
+
+    // Note: QJSEngine also has these functions, but not in Qt 5.15.
+    QQmlEngine::setObjectOwnership(mainWindow, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(mainWindow->ui->graphicsView_Map, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(instance->scriptUtility, QQmlEngine::CppOwnership);
 
     QJSValue constants = instance->engine->newObject();
 

@@ -14,6 +14,8 @@ public:
     void setNumberItem(int value);
     void setHexItem(uint32_t value);
     void setClearButtonEnabled(bool enabled);
+    void setEditable(bool editable);
+    void setLineEdit(QLineEdit *edit);
 
 private:
     void setItem(int index, const QString &text);
