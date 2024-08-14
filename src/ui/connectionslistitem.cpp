@@ -17,6 +17,7 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
 
     ui->comboBox_Map->setMinimumContentsLength(6);
     ui->comboBox_Map->addItems(mapNames);
+    ui->comboBox_Map->setFocusedScrollingEnabled(false); // Scrolling could cause rapid changes to many different maps
 
     ui->spinBox_Offset->setMinimum(INT_MIN);
     ui->spinBox_Offset->setMaximum(INT_MAX);

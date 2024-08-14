@@ -37,9 +37,15 @@ void NoScrollComboBox::setLineEdit(QLineEdit *edit) {
 
 void NoScrollComboBox::wheelEvent(QWheelEvent *event)
 {
-    // Only allow scrolling to modify contents when it explicitly has focus.
-    if (hasFocus())
+    // By default NoScrollComboBoxes will allow scrolling to modify its contents only when it explicitly has focus.
+    // If focusedScrollingEnabled is false it won't allow scrolling even with focus.
+    if (this->focusedScrollingEnabled && hasFocus())
         QComboBox::wheelEvent(event);
+}
+
+void NoScrollComboBox::setFocusedScrollingEnabled(bool enabled)
+{
+    this->focusedScrollingEnabled = enabled;
 }
 
 void NoScrollComboBox::setItem(int index, const QString &text)

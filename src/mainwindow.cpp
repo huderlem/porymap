@@ -1059,9 +1059,11 @@ bool MainWindow::setProjectUI() {
     ui->comboBox_DiveMap->clear();
     ui->comboBox_DiveMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->setClearButtonEnabled(true);
+    ui->comboBox_DiveMap->setFocusedScrollingEnabled(false);
     ui->comboBox_EmergeMap->clear();
     ui->comboBox_EmergeMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->setClearButtonEnabled(true);
+    ui->comboBox_EmergeMap->setFocusedScrollingEnabled(false);
 
     sortMapList();
 
