@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "aboutporymap.h"
 #include "project.h"
 #include "log.h"
 #include "editor.h"
@@ -330,7 +329,7 @@ void MainWindow::initEditor() {
     QAction *showHistory = new QAction("Show Edit History...", this);
     showHistory->setObjectName("action_ShowEditHistory");
     showHistory->setShortcut(QKeySequence("Ctrl+E"));
-    connect(showHistory, &QAction::triggered, [undoView](){ undoView->show(); });
+    connect(showHistory, &QAction::triggered, [this, undoView](){ openSubWindow(undoView); });
 
     ui->menuEdit->addAction(showHistory);
 
@@ -2774,9 +2773,9 @@ void MainWindow::on_toolButton_CollapseAll_clicked()
 
 void MainWindow::on_actionAbout_Porymap_triggered()
 {
-    AboutPorymap *window = new AboutPorymap(this);
-    window->setAttribute(Qt::WA_DeleteOnClose);
-    window->show();
+    if (!this->aboutWindow)
+        this->aboutWindow = new AboutPorymap(this);
+    openSubWindow(this->aboutWindow);
 }
 
 void MainWindow::on_actionOpen_Log_File_triggered() {
