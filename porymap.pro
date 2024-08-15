@@ -50,6 +50,7 @@ SOURCES += src/core/block.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
+    src/ui/divingmappixmapitem.cpp \
     src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \

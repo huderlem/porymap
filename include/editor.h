@@ -79,6 +79,7 @@ public:
     void setConnectionsVisibility(bool visible);
     void updateDivingMapsVisibility();
     void displayDivingConnections();
+    void renderDivingConnections();
     void addConnection(MapConnection* connection);
     void removeConnection(MapConnection* connection);
     void removeSelectedConnection();
@@ -111,7 +112,6 @@ public:
     QPointer<QGraphicsScene> scene = nullptr;
     QGraphicsPixmapItem *current_view = nullptr;
     QPointer<MapPixmapItem> map_item = nullptr;
-    QPointer<ConnectionPixmapItem> selected_connection_item = nullptr;
     QList<QPointer<ConnectionPixmapItem>> connection_items;
     QMap<QString, QPointer<DivingMapPixmapItem>> diving_map_items;
     QGraphicsPathItem *connection_mask = nullptr;
@@ -134,6 +134,8 @@ public:
     QPointer<MovementPermissionsSelector> movement_permissions_selector_item = nullptr;
 
     QList<DraggablePixmapItem *> *selected_events = nullptr;
+    QPointer<ConnectionPixmapItem> selected_connection_item = nullptr;
+    QPointer<MapConnection> connection_to_select = nullptr;
 
     QString map_edit_mode = "paint";
     QString obj_edit_mode = "select";
@@ -183,10 +185,9 @@ private:
     void clearMapGrid();
     void clearWildMonTables();
     void updateBorderVisibility();
-    QPoint calculateConnectionPosition(MapConnection *connection, const QPixmap &pixmap);
+    QPoint getConnectionOrigin(MapConnection *connection);
     void removeConnectionPixmap(MapConnection* connection);
     void updateConnectionPixmap(ConnectionPixmapItem* connectionItem);
-    void updateConnectionPixmapPos(ConnectionPixmapItem* connectionItem);
     void displayConnection(MapConnection* connection);
     void displayDivingConnection(MapConnection* connection);
     void setDivingMapName(QString mapName, QString direction);

@@ -5,30 +5,26 @@
 
 #include <QGraphicsPixmapItem>
 #include <QPointer>
+#include <QComboBox>
 
 class DivingMapPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    DivingMapPixmapItem(MapConnection* connection)
-    : QGraphicsPixmapItem(getBasePixmap(connection))
-    {
-        m_connection = connection;
+    DivingMapPixmapItem(MapConnection *connection, QComboBox *combo);
+    ~DivingMapPixmapItem();
 
-        // Update pixmap if the connected map is swapped.
-        connect(m_connection, &MapConnection::targetMapNameChanged, this, &DivingMapPixmapItem::updatePixmap);
-    }
     MapConnection* connection() const { return m_connection; }
+    void updatePixmap();
 
 private:
     QPointer<MapConnection> m_connection;
+    QPointer<QComboBox> m_combo;
 
-    static QPixmap getBasePixmap(MapConnection* connection) {
-        // If the map is connected to itself then rendering is pointless.
-        if (!connection || connection->targetMapName() == connection->parentMapName())
-            return QPixmap();
-        return connection->getPixmap();
-    }
-    void updatePixmap() { setPixmap(getBasePixmap(m_connection)); }
+    void setComboText(const QString &text);
+    static QPixmap getBasePixmap(MapConnection* connection);
+
+private slots:
+    void onTargetMapChanged();
 };
 
 #endif // DIVINGMAPPIXMAPITEM_H

@@ -16,14 +16,14 @@ MapConnection::MapConnection(const QString &targetMapName, const QString &direct
     m_offset = offset;
 }
 
-bool MapConnection::isMirror(const MapConnection* other) {
-    if (!other || !other->m_parentMap)
+bool MapConnection::areMirrored(const MapConnection* a, const MapConnection* b) {
+    if (!a || !b || !a->m_parentMap || !b->m_parentMap)
         return false;
 
-    return parentMapName() == other->m_targetMapName
-        && m_targetMapName == other->parentMapName()
-        && m_offset == -other->m_offset
-        && m_direction == oppositeDirection(other->m_direction);
+    return a->parentMapName() == b->m_targetMapName
+        && a->m_targetMapName == b->parentMapName()
+        && a->m_offset == -b->m_offset
+        && a->m_direction == oppositeDirection(b->m_direction);
 }
 
 MapConnection* MapConnection::findMirror() {
@@ -35,7 +35,7 @@ MapConnection* MapConnection::findMirror() {
     // Note: There is no strict source -> mirror pairing, i.e. we are not guaranteed
     // to always get the same MapConnection if there are multiple identical copies.
     for (auto connection : map->getConnections()) {
-        if (this != connection && this->isMirror(connection))
+        if (this != connection && areMirrored(this, connection))
             return connection;
     }
     return nullptr;
@@ -72,14 +72,14 @@ void MapConnection::setParentMap(Map* map, bool mirror) {
     if (map == m_parentMap)
         return;
 
-    if (mirror && porymapConfig.mirrorConnectingMaps) {
+    if (mirror) {
         auto connection = findMirror();
         if (connection)
             connection->setTargetMapName(map ? map->name : QString(), false);
     }
 
     if (m_parentMap)
-        m_parentMap->removeConnection(this);
+        m_parentMap->takeConnection(this);
 
     auto before = m_parentMap;
     m_parentMap = map;
@@ -98,7 +98,7 @@ void MapConnection::setTargetMapName(const QString &targetMapName, bool mirror) 
     if (targetMapName == m_targetMapName)
         return;
 
-    if (mirror && porymapConfig.mirrorConnectingMaps) {
+    if (mirror) {
         auto connection = findMirror();
         if (connection)
             connection->setParentMap(getMap(targetMapName), false);
@@ -114,7 +114,7 @@ void MapConnection::setDirection(const QString &direction, bool mirror) {
     if (direction == m_direction)
         return;
 
-    if (mirror && porymapConfig.mirrorConnectingMaps) {
+    if (mirror) {
         auto connection = findMirror();
         if (connection)
             connection->setDirection(oppositeDirection(direction), false);
@@ -130,7 +130,7 @@ void MapConnection::setOffset(int offset, bool mirror) {
     if (offset == m_offset)
         return;
 
-    if (mirror && porymapConfig.mirrorConnectingMaps) {
+    if (mirror) {
         auto connection = findMirror();
         if (connection)
             connection->setOffset(-offset, false);

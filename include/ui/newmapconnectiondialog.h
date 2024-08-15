@@ -17,9 +17,10 @@ public:
     explicit NewMapConnectionDialog(QWidget *parent, Map* map, const QStringList &mapNames);
     ~NewMapConnectionDialog();
 
-    MapConnection *result;
-
     virtual void accept() override;
+
+signals:
+    void accepted(MapConnection *result);
 
 private:
     Ui::NewMapConnectionDialog *ui;

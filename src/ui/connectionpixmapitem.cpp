@@ -1,8 +1,27 @@
 #include "connectionpixmapitem.h"
+#include "editcommands.h"
+#include "map.h"
 
 #include <math.h>
 
-void ConnectionPixmapItem::render() {
+ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, int x, int y)
+    : QGraphicsPixmapItem(connection->getPixmap()),
+      connection(connection)
+{
+    this->setEditable(true);
+    this->basePixmap = pixmap();
+    this->setOrigin(x, y);
+}
+
+ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, QPoint pos)
+    : ConnectionPixmapItem(connection, pos.x(), pos.y())
+{}
+
+// Render additional visual effects on top of the base map image.
+void ConnectionPixmapItem::render(bool ignoreCache) {
+    if (ignoreCache)
+        this->basePixmap = this->connection->getPixmap();
+
     QPixmap pixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
     this->setZValue(-1);
 
@@ -31,32 +50,54 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
     if (change == ItemPositionChange) {
         QPointF newPos = value.toPointF();
 
-        qreal x, y;
-        int newOffset = this->initialOffset;
+        qreal x = this->originX;
+        qreal y = this->originY;
+        int newOffset = this->connection->offset();
+
+        // Restrict movement to the metatile grid and perpendicular to the connection direction.
         if (MapConnection::isVertical(this->connection->direction())) {
-            x = round(newPos.x() / 16) * 16;
-            newOffset += (x - initialX) / 16;
-            x = newOffset * 16;
-        }
-        else {
-            x = this->initialX;
-        }
-
-        if (MapConnection::isHorizontal(this->connection->direction())) {
-            y = round(newPos.y() / 16) * 16;
-            newOffset += (y - this->initialY) / 16;
-            y = newOffset * 16;
-        }
-        else {
-            y = this->initialY;
+            x = (round(newPos.x() / this->mWidth) * this->mWidth) - this->originX;
+            newOffset = x / this->mWidth;
+        } else if (MapConnection::isHorizontal(this->connection->direction())) {
+            y = (round(newPos.y() / this->mHeight) * this->mHeight) - this->originY;
+            newOffset = y / this->mHeight;
         }
 
-        this->connection->setOffset(newOffset);
+        // This is convoluted because of how our edit history works; this would otherwise just be 'this->connection->setOffset(newOffset);'
+        if (this->connection->parentMap() && newOffset != this->connection->offset())
+            this->connection->parentMap()->editHistory.push(new MapConnectionMove(this->connection, newOffset, this->actionId));
+
         return QPointF(x, y);
     }
     else {
         return QGraphicsItem::itemChange(change, value);
     }
+}
+
+// If connection->offset changed externally we call this to correct our position.
+void ConnectionPixmapItem::updatePos() {
+    const QSignalBlocker blocker(this);
+
+    qreal x = this->originX;
+    qreal y = this->originY;
+
+    if (MapConnection::isVertical(this->connection->direction())) {
+        x += this->connection->offset() * this->mWidth;
+    } else if (MapConnection::isHorizontal(this->connection->direction())) {
+        y += this->connection->offset() * this->mHeight;
+    }
+
+    this->setPos(x, y);
+}
+
+// Set the pixmap's external origin point, i.e. the pixmap's position when connection->offset == 0
+void ConnectionPixmapItem::setOrigin(int x, int y) {
+    this->originX = x;
+    this->originY = y;
+    updatePos();
+}
+void ConnectionPixmapItem::setOrigin(QPoint pos) {
+    this->setOrigin(pos.x(), pos.y());
 }
 
 void ConnectionPixmapItem::setEditable(bool editable) {
@@ -80,6 +121,11 @@ void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
     if (!this->getEditable())
         return;
     this->setSelected(true);
+}
+
+void ConnectionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    this->actionId++; // Distinguish between move actions for the edit history
+    QGraphicsPixmapItem::mouseReleaseEvent(event);
 }
 
 void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {

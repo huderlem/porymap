@@ -215,11 +215,13 @@ QPixmap Map::renderBorder(bool ignoreCache) {
     return layout->border_pixmap;
 }
 
-QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) {
-    // Cardinal connections are rendered within the bounds of the border draw distance,
-    // and we need to render the nearest segment of the map.
-    // Dive/Emerge maps are rendered normally, but within the bounds of their parent map.
-    int x = 0, y = 0, w = getWidth(), h = getHeight();
+// Get the portion of the map that can be rendered when rendered as a map connection.
+// Cardinal connections render the nearest segment of their map and within the bounds of the border draw distance,
+// Dive/Emerge connections are rendered normally within the bounds of their parent map.
+QRect Map::getConnectionRect(const QString &direction, MapLayout * fromLayout) {
+    int x = 0, y = 0;
+    int w = getWidth(), h = getHeight();
+
     if (direction == "up") {
         h = qMin(h, BORDER_DISTANCE);
         y = getHeight() - h;
@@ -234,15 +236,26 @@ QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) 
         if (fromLayout) {
             w = qMin(w, fromLayout->getWidth());
             h = qMin(h, fromLayout->getHeight());
-            fromLayout = nullptr; // This would be used for palettes later, but we want our own palettes, not the parent's.
         }
     } else {
         // Unknown direction
-        return QPixmap();
+        return QRect();
     }
+    return QRect(x, y, w, h);
+}
 
-    render(true, fromLayout, QRect(x, y, w, h));
-    QImage connection_image = image.copy(x * 16, y * 16, w * 16, h * 16);
+QPixmap Map::renderConnection(const QString &direction, MapLayout * fromLayout) {
+    QRect bounds = getConnectionRect(direction, fromLayout);
+    if (!bounds.isValid())
+        return QPixmap();
+
+    // 'fromLayout' will be used in 'render' to get the palettes from the parent map.
+    // Dive/Emerge connections render normally with their own palettes, so we ignore this.
+    if (MapConnection::isDiving(direction))
+        fromLayout = nullptr;
+
+    render(true, fromLayout, bounds);
+    QImage connection_image = image.copy(bounds.x() * 16, bounds.y() * 16, bounds.width() * 16, bounds.height() * 16);
     return QPixmap::fromImage(connection_image);
 }
 
@@ -518,54 +531,62 @@ void Map::addEvent(Event *event) {
 }
 
 void Map::deleteConnections() {
-    qDeleteAll(connections);
-    connections.clear();
+    qDeleteAll(this->ownedConnections);
+    this->ownedConnections.clear();
+    this->connections.clear();
 }
 
 QList<MapConnection*> Map::getConnections() const {
     return connections;
 }
 
-void Map::addConnection(MapConnection *connection) {
-    if (!connection || connections.contains(connection))
-        return;
+bool Map::addConnection(MapConnection *connection) {
+    if (!connection || this->connections.contains(connection))
+        return false;
 
-    // Adding new Dive/Emerge maps replaces an existing one.
+    // Maps should only have one Dive/Emerge connection at a time.
+    // (Users can technically have more by editing their data manually, but we will only display one at a time)
+    // Any additional connections being added (this can happen via mirroring) are tracked for deleting but otherwise ignored.
     if (MapConnection::isDiving(connection->direction())) {
-        for (auto connectionToReplace : connections) {
-            if (connectionToReplace->direction() != connection->direction())
-                continue;
-            if (porymapConfig.mirrorConnectingMaps) {
-                auto mirror = connectionToReplace->findMirror();
-                if (mirror && mirror->parentMap())
-                    mirror->parentMap()->removeConnection(mirror);
-                delete mirror;
+        for (auto i : this->connections) {
+            if (i->direction() == connection->direction()) {
+                this->ownedConnections.insert(connection);
+                connection->setParentMap(this, false);
+                return true;
             }
-            removeConnection(connectionToReplace);
-            delete connectionToReplace;
-            break;
         }
     }
 
     loadConnection(connection);
     modify();
     emit connectionAdded(connection);
+    return true;
 }
 
 void Map::loadConnection(MapConnection *connection) {
     if (!connection)
         return;
-    connections.append(connection);
+    this->connections.append(connection);
+    this->ownedConnections.insert(connection);
     connection->setParentMap(this, false);
 }
 
-// Caller takes ownership of connection
-void Map::removeConnection(MapConnection *connection) {
-    if (!connections.removeOne(connection))
-        return;
-    connection->setParentMap(nullptr, false);
+// connection should not be deleted here, a pointer to it is allowed to persist in the edit history
+bool Map::removeConnection(MapConnection *connection) {
+    if (!this->connections.removeOne(connection))
+        return false;
     modify();
     emit connectionRemoved(connection);
+    return true;
+}
+
+// Same as Map::removeConnection but caller takes ownership of connection.
+bool Map::takeConnection(MapConnection *connection) {
+    if (!this->removeConnection(connection))
+        return false;
+    connection->setParentMap(nullptr, false);
+    this->ownedConnections.remove(connection);
+    return true;
 }
 
 void Map::modify() {
@@ -578,6 +599,27 @@ void Map::clean() {
 
 bool Map::hasUnsavedChanges() {
     return !editHistory.isClean() || hasUnsavedDataChanges || !isPersistedToFile;
+}
+
+void Map::pruneEditHistory() {
+    // Edit history for map connections gets messy because edits on other maps can affect the current map.
+    // To avoid complications we clear MapConnection edit history when the user opens a different map.
+    // No other edits within a single map depend on MapConnections so they can be pruned safely.
+    static const QSet<int> mapConnectionIds = {
+        ID_MapConnectionMove,
+        ID_MapConnectionChangeDirection,
+        ID_MapConnectionChangeMap,
+        ID_MapConnectionAdd,
+        ID_MapConnectionRemove
+    };
+    for (int i = 0; i < this->editHistory.count(); i++) {
+        // Qt really doesn't expect editing commands in the stack to be valid (fair).
+        // A better future design might be to have separate edit histories per map tab,
+        // and dumping the entire Connections tab history with QUndoStack::clear.
+        auto command = const_cast<QUndoCommand*>(this->editHistory.command(i));
+        if (mapConnectionIds.contains(command->id()))
+            command->setObsolete(true);
+    }
 }
 
 bool Map::isWithinBounds(int x, int y) {

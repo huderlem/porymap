@@ -29,7 +29,6 @@ public:
     int offset() const { return m_offset; }
     void setOffset(int offset, bool mirror = true);
 
-    bool isMirror(const MapConnection*);
     MapConnection* findMirror();
     MapConnection* createMirror();
 
@@ -43,6 +42,7 @@ public:
     static bool isVertical(const QString &direction);
     static bool isDiving(const QString &direction);
     static QString oppositeDirection(const QString &direction) { return oppositeDirections.value(direction, direction); }
+    static bool areMirrored(const MapConnection*, const MapConnection*);
 
 private:
     Map* m_parentMap;

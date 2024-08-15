@@ -99,10 +99,12 @@ public:
     void addEvent(Event *);
     void deleteConnections();
     QList<MapConnection*> getConnections() const;
-    void removeConnection(MapConnection *);
-    void addConnection(MapConnection *);
+    bool takeConnection(MapConnection *);
+    bool removeConnection(MapConnection *);
+    bool addConnection(MapConnection *);
     void loadConnection(MapConnection *);
-    QPixmap renderConnection(const QString &, MapLayout *);
+    QRect getConnectionRect(const QString &direction, MapLayout *fromLayout = nullptr);
+    QPixmap renderConnection(const QString &direction, MapLayout *fromLayout = nullptr);
     QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
@@ -126,12 +128,15 @@ public:
     QUndoStack editHistory;
     void modify();
     void clean();
+    void pruneEditHistory();
 
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
 
+    // MapConnections in 'ownedConnections' but not 'connections' persist in the edit history.
     QList<MapConnection*> connections;
+    QSet<MapConnection*> ownedConnections;
 
 signals:
     void modified();

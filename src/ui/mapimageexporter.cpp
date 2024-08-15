@@ -192,6 +192,12 @@ bool MapImageExporter::historyItemAppliesToFrame(const QUndoCommand *command) {
             return this->showCollision;
         case CommandId::ID_PaintBorder:
             return this->showBorder;
+        case CommandId::ID_MapConnectionMove:
+        case CommandId::ID_MapConnectionChangeDirection:
+        case CommandId::ID_MapConnectionChangeMap:
+        case CommandId::ID_MapConnectionAdd:
+        case CommandId::ID_MapConnectionRemove:
+            return this->showUpConnections || this->showDownConnections || this->showLeftConnections || this->showRightConnections;
         case CommandId::ID_EventMove:
         case CommandId::ID_EventShift:
         case CommandId::ID_EventCreate:
@@ -398,14 +404,15 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     if (!this->mode) {
         // if showing connections, draw on outside of image
         QPainter connectionPainter(&pixmap);
+        // TODO: Is this still the most sensible way to do this (esp. rendering pixmap)
         for (auto connectionItem : editor->connection_items) {
             const QString direction = connectionItem->connection->direction();
             if ((showUpConnections && direction == "up")
              || (showDownConnections && direction == "down")
              || (showLeftConnections && direction == "left")
              || (showRightConnections && direction == "right"))
-                connectionPainter.drawImage(connectionItem->initialX + borderWidth, connectionItem->initialY + borderHeight,
-                                            connectionItem->basePixmap.toImage());
+                connectionPainter.drawImage(connectionItem->x() + borderWidth, connectionItem->y() + borderHeight,
+                                            connectionItem->connection->getPixmap().toImage());
         }
         connectionPainter.end();
     }

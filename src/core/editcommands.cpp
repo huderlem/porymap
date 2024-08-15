@@ -569,3 +569,205 @@ void ScriptEditMap::undo() {
 
     QUndoCommand::undo();
 }
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+MapConnectionMove::MapConnectionMove(MapConnection *connection, int newOffset, unsigned actionId,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    setText("Move Map Connection");
+
+    this->connection = connection;
+    this->oldOffset = connection->offset();
+    this->newOffset = newOffset;
+
+    this->mirrored = porymapConfig.mirrorConnectingMaps;
+
+    this->actionId = actionId;
+}
+
+void MapConnectionMove::redo() {
+    QUndoCommand::redo();
+    if (this->connection)
+        this->connection->setOffset(this->newOffset, this->mirrored);
+}
+
+void MapConnectionMove::undo() {
+    if (this->connection)
+        this->connection->setOffset(this->oldOffset, this->mirrored);
+    QUndoCommand::undo();
+}
+
+bool MapConnectionMove::mergeWith(const QUndoCommand *command) {
+    if (this->id() != command->id())
+        return false;
+
+    const MapConnectionMove *other = static_cast<const MapConnectionMove *>(command);
+    if (this->connection != other->connection)
+        return false;
+    if (this->actionId != other->actionId)
+        return false;
+
+    this->newOffset = other->newOffset;
+    return true;
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+MapConnectionChangeDirection::MapConnectionChangeDirection(MapConnection *connection, QString newDirection,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    setText("Change Map Connection Direction");
+
+    this->connection = connection;
+
+    this->oldDirection = connection->direction();
+    this->newDirection = newDirection;
+
+    this->oldOffset = connection->offset();
+
+    // If the direction changes between vertical/horizontal then the old offset may not make sense, so we reset it.
+    if (MapConnection::isHorizontal(this->oldDirection) != MapConnection::isHorizontal(this->newDirection)
+     || MapConnection::isVertical(this->oldDirection) != MapConnection::isVertical(this->newDirection)) {
+        this->newOffset = 0;
+    } else {
+        this->newOffset = oldOffset;
+    }
+
+    this->mirrored = porymapConfig.mirrorConnectingMaps;
+}
+
+void MapConnectionChangeDirection::redo() {
+    QUndoCommand::redo();
+    if (this->connection) {
+        this->connection->setDirection(this->newDirection, this->mirrored);
+        this->connection->setOffset(this->newOffset, this->mirrored);
+    }
+}
+
+void MapConnectionChangeDirection::undo() {
+    if (this->connection) {
+        this->connection->setDirection(this->oldDirection, this->mirrored);
+        this->connection->setOffset(this->oldOffset, this->mirrored);
+    }
+    QUndoCommand::undo();
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+MapConnectionChangeMap::MapConnectionChangeMap(MapConnection *connection, QString newMapName,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    setText("Change Map Connection Map");
+
+    this->connection = connection;
+
+    this->oldMapName = connection->targetMapName();
+    this->newMapName = newMapName;
+
+    this->oldOffset = connection->offset();
+    this->newOffset = 0; // The old offset may not make sense, so we reset it
+
+    this->mirrored = porymapConfig.mirrorConnectingMaps;
+}
+
+void MapConnectionChangeMap::redo() {
+    QUndoCommand::redo();
+    if (this->connection) {
+        this->connection->setTargetMapName(this->newMapName, this->mirrored);
+        this->connection->setOffset(this->newOffset, this->mirrored);
+    }
+}
+
+void MapConnectionChangeMap::undo() {
+    if (this->connection) {
+        this->connection->setTargetMapName(this->oldMapName, this->mirrored);
+        this->connection->setOffset(this->oldOffset, this->mirrored);
+    }
+    QUndoCommand::undo();
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+MapConnectionAdd::MapConnectionAdd(Map *map, MapConnection *connection,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    setText("Add Map Connection");
+
+    this->map = map;
+    this->connection = connection;
+
+    // Set this now because it's needed to create a mirror below.
+    // It would otherwise be set by Map::addConnection.
+    this->connection->setParentMap(this->map, false);
+
+    if (porymapConfig.mirrorConnectingMaps) {
+        this->mirror = this->connection->createMirror();
+        this->mirrorMap = this->connection->targetMap();
+    }
+}
+
+void MapConnectionAdd::redo() {
+    QUndoCommand::redo();
+
+    this->map->addConnection(this->connection);
+    if (this->mirrorMap)
+        this->mirrorMap->addConnection(this->mirror);
+}
+
+void MapConnectionAdd::undo() {
+    if (this->mirrorMap) {
+        // We can't guarantee that the mirror we created earlier is still our connection's
+        // mirror because there is no strict source->mirror pairing for map connections
+        // (a different identical map connection can take its place during any mirrored change).
+        if (!MapConnection::areMirrored(this->connection, this->mirror))
+            this->mirror = this->connection->findMirror();
+
+        this->mirrorMap->removeConnection(this->mirror);
+    }
+    this->map->removeConnection(this->connection);
+
+    QUndoCommand::undo();
+}
+
+/******************************************************************************
+    ************************************************************************
+ ******************************************************************************/
+
+MapConnectionRemove::MapConnectionRemove(Map *map, MapConnection *connection,
+    QUndoCommand *parent) : QUndoCommand(parent) {
+    setText("Remove Map Connection");
+
+    this->map = map;
+    this->connection = connection;
+
+    if (porymapConfig.mirrorConnectingMaps) {
+        this->mirror = this->connection->findMirror();
+        this->mirrorMap = this->connection->targetMap();
+    }
+}
+
+void MapConnectionRemove::redo() {
+    QUndoCommand::redo();
+
+    if (this->mirrorMap) {
+        // See comment in MapConnectionAdd::undo
+        if (!MapConnection::areMirrored(this->connection, this->mirror))
+            this->mirror = this->connection->findMirror();
+
+        this->mirrorMap->removeConnection(this->mirror);
+    }
+    this->map->removeConnection(this->connection);
+}
+
+void MapConnectionRemove::undo() {
+    this->map->addConnection(this->connection);
+    if (this->mirrorMap)
+        this->mirrorMap->addConnection(this->mirror);
+
+    QUndoCommand::undo();
+}

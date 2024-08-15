@@ -8,14 +8,13 @@ NewMapConnectionDialog::NewMapConnectionDialog(QWidget *parent, Map* map, const 
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    this->result = nullptr;
-
     ui->comboBox_Direction->setEditable(false);
     ui->comboBox_Direction->setMinimumContentsLength(0);
     ui->comboBox_Direction->addItems(MapConnection::cardinalDirections);
 
     ui->comboBox_Map->setMinimumContentsLength(6);
     ui->comboBox_Map->addItems(mapNames);
+    ui->comboBox_Map->setInsertPolicy(QComboBox::NoInsert);
 
     // Choose default direction
     QMap<QString, int> directionCounts;
@@ -51,6 +50,11 @@ NewMapConnectionDialog::~NewMapConnectionDialog()
 }
 
 void NewMapConnectionDialog::accept() {
-    this->result = new MapConnection(ui->comboBox_Map->currentText(), ui->comboBox_Direction->currentText());
+    // Invalid map names are not allowed
+    if (ui->comboBox_Map->findText(ui->comboBox_Map->currentText()) < 0) {
+        // TODO: Display error message
+        return;
+    }
+    emit accepted(new MapConnection(ui->comboBox_Map->currentText(), ui->comboBox_Direction->currentText()));
     QDialog::accept();
 }

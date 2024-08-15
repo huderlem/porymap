@@ -1,5 +1,9 @@
 #include "connectionslistitem.h"
 #include "ui_connectionslistitem.h"
+#include "editcommands.h"
+#include "map.h"
+
+#include <QLineEdit>
 
 ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connection, const QStringList &mapNames) :
     QFrame(parent),
@@ -18,11 +22,23 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
     ui->comboBox_Map->setMinimumContentsLength(6);
     ui->comboBox_Map->addItems(mapNames);
     ui->comboBox_Map->setFocusedScrollingEnabled(false); // Scrolling could cause rapid changes to many different maps
+    ui->comboBox_Map->setInsertPolicy(QComboBox::NoInsert);
 
     ui->spinBox_Offset->setMinimum(INT_MIN);
     ui->spinBox_Offset->setMaximum(INT_MAX);
 
+    // Invalid map names are not considered a change. If editing finishes with an invalid name, restore the previous name.
+    connect(ui->comboBox_Map->lineEdit(), &QLineEdit::editingFinished, [this] {
+        const QSignalBlocker blocker(ui->comboBox_Map);
+        if (ui->comboBox_Map->findText(ui->comboBox_Map->currentText()) < 0)
+            ui->comboBox_Map->setTextItem(this->connection->targetMapName());
+    });
+
+    // Distinguish between move actions for the edit history
+    connect(ui->spinBox_Offset, &QSpinBox::editingFinished, [this] { this->actionId++; });
+
     this->connection = connection;
+    this->map = connection->parentMap();
     this->updateUI();
 }
 
@@ -32,6 +48,9 @@ ConnectionsListItem::~ConnectionsListItem()
 }
 
 void ConnectionsListItem::updateUI() {
+    if (!this->connection)
+        return;
+
     const QSignalBlocker blocker1(ui->comboBox_Direction);
     const QSignalBlocker blocker2(ui->comboBox_Map);
     const QSignalBlocker blocker3(ui->spinBox_Offset);
@@ -56,26 +75,30 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
     this->setSelected(true);
 }
 
+// TODO: This happens by accident a lot. Convert to button?
 void ConnectionsListItem::mouseDoubleClickEvent(QMouseEvent *) {
     emit doubleClicked(this->connection);
 }
 
 void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction) {
     this->setSelected(true);
-    this->connection->setDirection(direction);
+    if (this->map)
+        this->map->editHistory.push(new MapConnectionChangeDirection(this->connection, direction));
 }
 
 void ConnectionsListItem::on_comboBox_Map_currentTextChanged(const QString &mapName) {
     this->setSelected(true);
-    if (ui->comboBox_Map->findText(mapName) >= 0)
-        this->connection->setTargetMapName(mapName);
+    if (this->map && ui->comboBox_Map->findText(mapName) >= 0)
+        this->map->editHistory.push(new MapConnectionChangeMap(this->connection, mapName));
 }
 
 void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset) {
     this->setSelected(true);
-    this->connection->setOffset(offset);
+    if (this->map)
+        this->map->editHistory.push(new MapConnectionMove(this->connection, offset, this->actionId));
 }
 
 void ConnectionsListItem::on_button_Delete_clicked() {
-    emit this->removed(this->connection);
+    if (this->map)
+        this->map->editHistory.push(new MapConnectionRemove(this->map, this->connection));
 }

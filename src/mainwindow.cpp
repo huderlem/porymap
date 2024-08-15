@@ -2306,7 +2306,7 @@ void MainWindow::setDivingMapsVisible(bool visible) {
     if (visible) {
         // We skip rendering diving maps if this setting is not enabled,
         // so when we enable it we need to make sure they've rendered.
-        this->editor->displayDivingConnections();
+        this->editor->renderDivingConnections();
     }
     this->editor->updateDivingMapsVisibility();
 }
@@ -2662,14 +2662,12 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
 }
 
 void MainWindow::on_pushButton_AddConnection_clicked() {
-    if (!this->editor || !this->editor->map)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
 
     auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames);
-    if (dialog->exec() == QDialog::Accepted) {
-        this->editor->addConnection(dialog->result);
-        this->editor->setSelectedConnection(dialog->result);
-    }
+    connect(dialog, &NewMapConnectionDialog::accepted, this->editor, &Editor::addConnection);
+    dialog->exec();
 }
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {

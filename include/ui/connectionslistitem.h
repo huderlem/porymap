@@ -2,6 +2,7 @@
 #define CONNECTIONSLISTITEM_H
 
 #include "mapconnection.h"
+#include "map.h"
 
 #include <QFrame>
 #include <QMouseEvent>
@@ -30,11 +31,13 @@ public:
 
 private:
     Ui::ConnectionsListItem *ui;
+    Map *map;
     bool isSelected = false;
+    unsigned actionId = 0;
 
 protected:
-    void mousePressEvent(QMouseEvent *);
-    void mouseDoubleClickEvent(QMouseEvent *);
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseDoubleClickEvent(QMouseEvent*) override;
 
 signals:
     void removed(MapConnection*);
