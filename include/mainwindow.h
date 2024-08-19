@@ -28,6 +28,7 @@
 #include "projectsettingseditor.h"
 #include "customscriptseditor.h"
 #include "updatepromoter.h"
+#include "aboutporymap.h"
 
 
 
@@ -317,6 +318,7 @@ private:
     QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
     QPointer<UpdatePromoter> updatePromoter = nullptr;
     QPointer<NetworkAccessManager> networkAccessManager = nullptr;
+    QPointer<AboutPorymap> aboutWindow = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
