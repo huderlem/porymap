@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>234</width>
-    <height>120</height>
+    <height>162</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="NoScrollComboBox" name="comboBox_Map"/>
+       <widget class="NoScrollComboBox" name="comboBox_Map">
+        <property name="toolTip">
+         <string>The name of the map to connect to the current map.</string>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_Direction">
@@ -53,7 +57,24 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="NoScrollComboBox" name="comboBox_Direction"/>
+       <widget class="NoScrollComboBox" name="comboBox_Direction">
+        <property name="toolTip">
+         <string>Where the connected map should be positioned relative to the current map.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QLabel" name="label_Warning">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 0, 0)</string>
+        </property>
+        <property name="text">
+         <string>'Map' must be the name of an existing map.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -84,12 +105,32 @@
    <signal>accepted()</signal>
    <receiver>NewMapConnectionDialog</receiver>
    <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
    <receiver>NewMapConnectionDialog</receiver>
    <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
   </connection>
  </connections>
 </ui>

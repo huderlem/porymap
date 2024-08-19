@@ -24,6 +24,9 @@ signals:
 
 private:
     Ui::NewMapConnectionDialog *ui;
+
+    bool mapNameIsValid();
+    void setWarningVisible(bool visible);
 };
 
 #endif // NEWMAPCONNECTIONDIALOG_H

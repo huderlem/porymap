@@ -758,8 +758,8 @@ void Editor::displayConnection(MapConnection* connection) {
     QObject::disconnect(connection, &MapConnection::directionChanged, nullptr, nullptr);
     QObject::disconnect(connection, &MapConnection::offsetChanged, nullptr, nullptr);
 
-    // Double clicking the list item or pixmap opens the connected map
-    connect(listItem, &ConnectionsListItem::doubleClicked, this, &Editor::onMapConnectionDoubleClicked);
+    // Double clicking the pixmap or clicking the list item's map button opens the connected map
+    connect(listItem, &ConnectionsListItem::openMapClicked, this, &Editor::onMapConnectionDoubleClicked);
     connect(pixmapItem, &ConnectionPixmapItem::connectionItemDoubleClicked, this, &Editor::onMapConnectionDoubleClicked);
 
     // Sync the selection highlight between the list UI and the pixmap
@@ -937,7 +937,6 @@ void Editor::setDivingMapName(QString mapName, QString direction) {
     auto pixmapItem = diving_map_items.value(direction);
     MapConnection *connection = pixmapItem ? pixmapItem->connection() : nullptr;
 
-    // TODO: Test edit history
     if (connection) {
         if (mapName == connection->targetMapName())
             return; // No change
@@ -1823,11 +1822,8 @@ void Editor::updateMapBorder() {
 void Editor::updateMapConnections() {
     for (auto item : connection_items)
         item->render(true);
-
-    maskNonVisibleConnectionTiles();
 }
 
-// TODO: Check first condition, move to Map
 int Editor::getBorderDrawDistance(int dimension) {
     // Draw sufficient border blocks to fill the player's view (BORDER_DISTANCE)
     if (dimension >= BORDER_DISTANCE) {
@@ -1920,7 +1916,12 @@ void Editor::updateBorderVisibility() {
         item->setVisible(visible);
         item->setEditable(editingConnections);
         item->setEnabled(visible);
-        item->render();
+
+        // When connecting a map to itself we don't bother to re-render the map connections in real-time,
+        // i.e. if the user paints a new metatile on the map this isn't immediately reflected in the connection.
+        // We're rendering them now, so we take the opportunity to do a full re-render for self-connections.
+        bool fullRender = (this->map && item->connection && this->map->name == item->connection->targetMapName());
+        item->render(fullRender);
     }
 }
 

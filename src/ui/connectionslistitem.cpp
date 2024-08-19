@@ -75,11 +75,6 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
     this->setSelected(true);
 }
 
-// TODO: This happens by accident a lot. Convert to button?
-void ConnectionsListItem::mouseDoubleClickEvent(QMouseEvent *) {
-    emit doubleClicked(this->connection);
-}
-
 void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction) {
     this->setSelected(true);
     if (this->map)
@@ -101,4 +96,8 @@ void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset) {
 void ConnectionsListItem::on_button_Delete_clicked() {
     if (this->map)
         this->map->editHistory.push(new MapConnectionRemove(this->map, this->connection));
+}
+
+void ConnectionsListItem::on_button_OpenMap_clicked() {
+    emit openMapClicked(this->connection);
 }

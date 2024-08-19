@@ -9,10 +9,8 @@ NewMapConnectionDialog::NewMapConnectionDialog(QWidget *parent, Map* map, const 
     setAttribute(Qt::WA_DeleteOnClose);
 
     ui->comboBox_Direction->setEditable(false);
-    ui->comboBox_Direction->setMinimumContentsLength(0);
     ui->comboBox_Direction->addItems(MapConnection::cardinalDirections);
 
-    ui->comboBox_Map->setMinimumContentsLength(6);
     ui->comboBox_Map->addItems(mapNames);
     ui->comboBox_Map->setInsertPolicy(QComboBox::NoInsert);
 
@@ -42,6 +40,12 @@ NewMapConnectionDialog::NewMapConnectionDialog(QWidget *parent, Map* map, const 
         defaultMapName = mapNames.first();
     }
     ui->comboBox_Map->setTextItem(defaultMapName);
+
+    connect(ui->comboBox_Map, &QComboBox::currentTextChanged, [this] {
+        if (ui->label_Warning->isVisible() && mapNameIsValid())
+            setWarningVisible(false);
+    });
+    setWarningVisible(false);
 }
 
 NewMapConnectionDialog::~NewMapConnectionDialog()
@@ -49,10 +53,18 @@ NewMapConnectionDialog::~NewMapConnectionDialog()
     delete ui;
 }
 
+bool NewMapConnectionDialog::mapNameIsValid() {
+    return ui->comboBox_Map->findText(ui->comboBox_Map->currentText()) >= 0;
+}
+
+void NewMapConnectionDialog::setWarningVisible(bool visible) {
+    ui->label_Warning->setVisible(visible);
+    adjustSize();
+}
+
 void NewMapConnectionDialog::accept() {
-    // Invalid map names are not allowed
-    if (ui->comboBox_Map->findText(ui->comboBox_Map->currentText()) < 0) {
-        // TODO: Display error message
+    if (!mapNameIsValid()) {
+        setWarningVisible(true);
         return;
     }
     emit accepted(new MapConnection(ui->comboBox_Map->currentText(), ui->comboBox_Direction->currentText()));

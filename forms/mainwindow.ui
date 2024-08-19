@@ -2664,6 +2664,9 @@
                   </item>
                   <item row="0" column="4" rowspan="2">
                    <widget class="QGroupBox" name="groupBox_DiveMapOpacity">
+                    <property name="toolTip">
+                     <string>If enabled, the connected Emerge and/or Dive maps will be displayed with an opacity set using the slider.</string>
+                    </property>
                     <property name="title">
                      <string>Show Emerge/Dive Maps</string>
                     </property>
@@ -2874,8 +2877,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>100</width>
-                        <height>30</height>
+                        <width>365</width>
+                        <height>651</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="layout_ConnectionsList">
