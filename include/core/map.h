@@ -99,9 +99,8 @@ public:
     void addEvent(Event *);
     void deleteConnections();
     QList<MapConnection*> getConnections() const;
-    bool takeConnection(MapConnection *);
-    bool removeConnection(MapConnection *);
-    bool addConnection(MapConnection *);
+    void removeConnection(MapConnection *);
+    void addConnection(MapConnection *);
     void loadConnection(MapConnection *);
     QRect getConnectionRect(const QString &direction, MapLayout *fromLayout = nullptr);
     QPixmap renderConnection(const QString &direction, MapLayout *fromLayout = nullptr);
@@ -133,6 +132,7 @@ public:
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
+    void trackConnection(MapConnection*);
 
     // MapConnections in 'ownedConnections' but not 'connections' persist in the edit history.
     QList<MapConnection*> connections;

@@ -55,8 +55,8 @@ private:
 
 signals:
     void parentMapChanged(Map* before, Map* after);
-    void targetMapNameChanged(const QString &before, const QString &after);
-    void directionChanged(const QString &before, const QString &after);
+    void targetMapNameChanged(QString before, QString after);
+    void directionChanged(QString before, QString after);
     void offsetChanged(int before, int after);
 };
 

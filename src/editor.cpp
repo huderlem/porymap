@@ -733,7 +733,15 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
     project->wildMonFields = newFields;
 }
 
-void Editor::displayConnection(MapConnection* connection) {
+void Editor::disconnectMapConnection(MapConnection *connection) {
+    // Disconnect MapConnection's signals used by the display.
+    // It'd be nice if we could just 'connection->disconnect(this)' but that doesn't account for lambda functions.
+    QObject::disconnect(connection, &MapConnection::targetMapNameChanged, nullptr, nullptr);
+    QObject::disconnect(connection, &MapConnection::directionChanged, nullptr, nullptr);
+    QObject::disconnect(connection, &MapConnection::offsetChanged, nullptr, nullptr);
+}
+
+void Editor::displayConnection(MapConnection *connection) {
     if (!connection)
         return;
 
@@ -752,15 +760,9 @@ void Editor::displayConnection(MapConnection* connection) {
     ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, pixmapItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
 
-    // It's possible for a map connection to be displayed repeatedly if it's being
-    // updated by mirroring and the target map is changing to/from the current map.
-    QObject::disconnect(connection, &MapConnection::targetMapNameChanged, nullptr, nullptr);
-    QObject::disconnect(connection, &MapConnection::directionChanged, nullptr, nullptr);
-    QObject::disconnect(connection, &MapConnection::offsetChanged, nullptr, nullptr);
-
     // Double clicking the pixmap or clicking the list item's map button opens the connected map
-    connect(listItem, &ConnectionsListItem::openMapClicked, this, &Editor::onMapConnectionDoubleClicked);
-    connect(pixmapItem, &ConnectionPixmapItem::connectionItemDoubleClicked, this, &Editor::onMapConnectionDoubleClicked);
+    connect(listItem, &ConnectionsListItem::openMapClicked, this, &Editor::openConnectedMap);
+    connect(pixmapItem, &ConnectionPixmapItem::connectionItemDoubleClicked, this, &Editor::openConnectedMap);
 
     // Sync the selection highlight between the list UI and the pixmap
     connect(pixmapItem, &ConnectionPixmapItem::selectionChanged, [=](bool selected) {
@@ -803,7 +805,7 @@ void Editor::displayConnection(MapConnection* connection) {
     }
 }
 
-void Editor::addConnection(MapConnection* connection) {
+void Editor::addConnection(MapConnection *connection) {
     if (!connection)
         return;
 
@@ -814,7 +816,7 @@ void Editor::addConnection(MapConnection* connection) {
     this->map->editHistory.push(new MapConnectionAdd(this->map, connection));
 }
 
-void Editor::removeConnection(MapConnection* connection) {
+void Editor::removeConnection(MapConnection *connection) {
     if (!connection)
         return;
     this->map->editHistory.push(new MapConnectionRemove(this->map, connection));
@@ -825,9 +827,11 @@ void Editor::removeSelectedConnection() {
         removeConnection(selected_connection_item->connection);
 }
 
-void Editor::removeConnectionPixmap(MapConnection* connection) {
+void Editor::removeConnectionPixmap(MapConnection *connection) {
     if (!connection)
         return;
+
+    disconnectMapConnection(connection);
 
     if (MapConnection::isDiving(connection->direction())) {
         removeDivingMapPixmap(connection);
@@ -857,15 +861,7 @@ void Editor::removeConnectionPixmap(MapConnection* connection) {
     delete pixmapItem;
 }
 
-void Editor::displayDivingConnections() {
-    if (!this->map)
-        return;
-
-    for (auto connection : this->map->getConnections())
-        displayDivingConnection(connection);
-}
-
-void Editor::displayDivingConnection(MapConnection* connection) {
+void Editor::displayDivingConnection(MapConnection *connection) {
     if (!connection)
         return;
 
@@ -994,7 +990,7 @@ QPoint Editor::getConnectionOrigin(MapConnection *connection) {
     return QPoint(x * 16, y * 16);
 }
 
-void Editor::updateConnectionPixmap(ConnectionPixmapItem* pixmapItem) {
+void Editor::updateConnectionPixmap(ConnectionPixmapItem *pixmapItem) {
     if (!pixmapItem)
         return;
 
@@ -1004,7 +1000,7 @@ void Editor::updateConnectionPixmap(ConnectionPixmapItem* pixmapItem) {
     maskNonVisibleConnectionTiles();
 }
 
-void Editor::setSelectedConnectionItem(ConnectionPixmapItem* pixmapItem) {
+void Editor::setSelectedConnectionItem(ConnectionPixmapItem *pixmapItem) {
     if (!pixmapItem || pixmapItem == selected_connection_item)
         return;
 
@@ -1025,14 +1021,9 @@ void Editor::setSelectedConnection(MapConnection *connection) {
     }
 }
 
-void Editor::onMapConnectionDoubleClicked(MapConnection* connection) {
-    if (connection)
-        emit openConnectedMap(connection);
-}
-
 void Editor::onBorderMetatilesChanged() {
     displayMapBorder();
-    updateBorderVisibility(); // TODO: Why do we need to call this here
+    updateBorderVisibility();
 }
 
 void Editor::onHoveredMovementPermissionChanged(uint16_t collision, uint16_t elevation) {
@@ -1214,12 +1205,8 @@ bool Editor::setMap(QString map_name) {
     if (map) {
         map->pruneEditHistory();
         map->disconnect(this);
-        for (auto connection : map->getConnections()) {
-            // Disconnect signals used by the display
-            QObject::disconnect(connection, &MapConnection::targetMapNameChanged, nullptr, nullptr);
-            QObject::disconnect(connection, &MapConnection::directionChanged, nullptr, nullptr);
-            QObject::disconnect(connection, &MapConnection::offsetChanged, nullptr, nullptr);
-        }
+        for (auto connection : map->getConnections())
+            disconnectMapConnection(connection);
     }
 
     if (project) {

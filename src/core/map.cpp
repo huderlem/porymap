@@ -537,12 +537,12 @@ void Map::deleteConnections() {
 }
 
 QList<MapConnection*> Map::getConnections() const {
-    return connections;
+    return this->connections;
 }
 
-bool Map::addConnection(MapConnection *connection) {
+void Map::addConnection(MapConnection *connection) {
     if (!connection || this->connections.contains(connection))
-        return false;
+        return;
 
     // Maps should only have one Dive/Emerge connection at a time.
     // (Users can technically have more by editing their data manually, but we will only display one at a time)
@@ -550,9 +550,8 @@ bool Map::addConnection(MapConnection *connection) {
     if (MapConnection::isDiving(connection->direction())) {
         for (auto i : this->connections) {
             if (i->direction() == connection->direction()) {
-                this->ownedConnections.insert(connection);
-                connection->setParentMap(this, false);
-                return true;
+                trackConnection(connection);
+                return;
             }
         }
     }
@@ -560,33 +559,41 @@ bool Map::addConnection(MapConnection *connection) {
     loadConnection(connection);
     modify();
     emit connectionAdded(connection);
-    return true;
+    return;
 }
 
 void Map::loadConnection(MapConnection *connection) {
     if (!connection)
         return;
-    this->connections.append(connection);
-    this->ownedConnections.insert(connection);
-    connection->setParentMap(this, false);
+
+    if (!this->connections.contains(connection))
+        this->connections.append(connection);
+
+    trackConnection(connection);
 }
 
-// connection should not be deleted here, a pointer to it is allowed to persist in the edit history
-bool Map::removeConnection(MapConnection *connection) {
+void Map::trackConnection(MapConnection *connection) {
+    connection->setParentMap(this, false);
+
+    if (!this->ownedConnections.contains(connection)) {
+        this->ownedConnections.insert(connection);
+        connect(connection, &MapConnection::parentMapChanged, [=](Map *, Map *after) {
+            if (after != this && after != nullptr) {
+                // MapConnection's parent has been reassigned, it's no longer our responsibility
+                this->ownedConnections.remove(connection);
+                QObject::disconnect(connection, &MapConnection::parentMapChanged, this, nullptr);
+            }
+        });
+    }
+}
+
+// We retain ownership of this MapConnection until it's assigned to a new parent map.
+void Map::removeConnection(MapConnection *connection) {
     if (!this->connections.removeOne(connection))
-        return false;
+        return;
+    connection->setParentMap(nullptr, false);
     modify();
     emit connectionRemoved(connection);
-    return true;
-}
-
-// Same as Map::removeConnection but caller takes ownership of connection.
-bool Map::takeConnection(MapConnection *connection) {
-    if (!this->removeConnection(connection))
-        return false;
-    connection->setParentMap(nullptr, false);
-    this->ownedConnections.remove(connection);
-    return true;
 }
 
 void Map::modify() {

@@ -75,13 +75,13 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
     this->setSelected(true);
 }
 
-void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(const QString &direction) {
+void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(QString direction) {
     this->setSelected(true);
     if (this->map)
         this->map->editHistory.push(new MapConnectionChangeDirection(this->connection, direction));
 }
 
-void ConnectionsListItem::on_comboBox_Map_currentTextChanged(const QString &mapName) {
+void ConnectionsListItem::on_comboBox_Map_currentTextChanged(QString mapName) {
     this->setSelected(true);
     if (this->map && ui->comboBox_Map->findText(mapName) >= 0)
         this->map->editHistory.push(new MapConnectionChangeMap(this->connection, mapName));

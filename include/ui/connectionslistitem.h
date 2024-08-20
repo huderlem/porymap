@@ -42,8 +42,8 @@ signals:
     void openMapClicked(MapConnection*);
 
 private slots:
-    void on_comboBox_Direction_currentTextChanged(const QString &direction);
-    void on_comboBox_Map_currentTextChanged(const QString &mapName);
+    void on_comboBox_Direction_currentTextChanged(QString direction);
+    void on_comboBox_Map_currentTextChanged(QString mapName);
     void on_spinBox_Offset_valueChanged(int offset);
     void on_button_Delete_clicked();
     void on_button_OpenMap_clicked();

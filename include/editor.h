@@ -78,7 +78,6 @@ public:
     void setMapEditingButtonsEnabled(bool enabled);
     void setConnectionsVisibility(bool visible);
     void updateDivingMapsVisibility();
-    void displayDivingConnections();
     void renderDivingConnections();
     void addConnection(MapConnection* connection);
     void removeConnection(MapConnection* connection);
@@ -185,13 +184,14 @@ private:
     void clearMapGrid();
     void clearWildMonTables();
     void updateBorderVisibility();
+    void disconnectMapConnection(MapConnection *connection);
     QPoint getConnectionOrigin(MapConnection *connection);
-    void removeConnectionPixmap(MapConnection* connection);
-    void updateConnectionPixmap(ConnectionPixmapItem* connectionItem);
-    void displayConnection(MapConnection* connection);
-    void displayDivingConnection(MapConnection* connection);
+    void removeConnectionPixmap(MapConnection *connection);
+    void updateConnectionPixmap(ConnectionPixmapItem *connectionItem);
+    void displayConnection(MapConnection *connection);
+    void displayDivingConnection(MapConnection *connection);
     void setDivingMapName(QString mapName, QString direction);
-    void removeDivingMapPixmap(MapConnection* connection);
+    void removeDivingMapPixmap(MapConnection *connection);
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
@@ -207,7 +207,7 @@ private slots:
     void setStraightPathCursorMode(QGraphicsSceneMouseEvent *event);
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
-    void setSelectedConnectionItem(ConnectionPixmapItem* connectionItem);
+    void setSelectedConnectionItem(ConnectionPixmapItem *connectionItem);
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
@@ -219,7 +219,6 @@ private slots:
     void onSelectedMetatilesChanged();
     void onWheelZoom(int);
     void onToggleGridClicked(bool);
-    void onMapConnectionDoubleClicked(MapConnection*);
 
 signals:
     void objectsChanged();

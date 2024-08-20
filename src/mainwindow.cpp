@@ -1892,7 +1892,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     } else if (index == MainTab::Connections) {
         editor->setEditingConnections();
         // Stop the Dive/Emerge combo boxes from getting the initial focus
-        ui->graphicsView_Map->setFocus();
+        ui->graphicsView_Connections->setFocus();
     }
     if (index != MainTab::WildPokemon) {
         if (editor->project && editor->project->wildEncountersLoaded)
@@ -2542,6 +2542,8 @@ void MainWindow::clickToolButtonFromEditMode(QString editMode) {
 }
 
 void MainWindow::onOpenConnectedMap(MapConnection *connection) {
+    if (!connection)
+        return;
     if (userSetMap(connection->targetMapName(), true))
         editor->setSelectedConnection(connection->findMirror());
 }

@@ -79,7 +79,7 @@ void MapConnection::setParentMap(Map* map, bool mirror) {
     }
 
     if (m_parentMap)
-        m_parentMap->takeConnection(this);
+        m_parentMap->removeConnection(this);
 
     auto before = m_parentMap;
     m_parentMap = map;
