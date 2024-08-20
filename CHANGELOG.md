@@ -15,7 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Changed
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
-- A notice will be displayed when attempting to open the "Dyamic" map, rather than nothing happening.
+- A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
 - The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
 
