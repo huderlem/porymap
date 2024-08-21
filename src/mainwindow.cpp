@@ -371,12 +371,6 @@ void MainWindow::initMiscHeapObjects() {
     mapListProxyModel->setSourceModel(mapListModel);
     ui->mapList->setModel(mapListProxyModel);
 
-    eventTabObjectWidget = ui->tab_Objects;
-    eventTabWarpWidget = ui->tab_Warps;
-    eventTabTriggerWidget = ui->tab_Triggers;
-    eventTabBGWidget = ui->tab_BGs;
-    eventTabHealspotWidget = ui->tab_Healspots;
-    eventTabMultipleWidget = ui->tab_Multiple;
     ui->tabWidget_EventType->clear();
 }
 
@@ -395,7 +389,7 @@ void MainWindow::initMapSortOrder() {
 
     connect(mapSortOrderActionGroup, &QActionGroup::triggered, this, &MainWindow::mapSortOrder_changed);
 
-    QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[mapSortOrder];
+    QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[porymapConfig.mapSortOrder];
     ui->toolButton_MapSortOrder->setIcon(sortOrder->icon());
     sortOrder->setChecked(true);
 }
@@ -436,7 +430,7 @@ void MainWindow::mapSortOrder_changed(QAction *action)
         }
     }
 
-    if (i != mapSortOrder)
+    if (i != porymapConfig.mapSortOrder)
     {
         ui->toolButton_MapSortOrder->setIcon(action->icon());
         porymapConfig.mapSortOrder = static_cast<MapSortOrder>(i);
@@ -482,8 +476,6 @@ void MainWindow::loadUserSettings() {
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.showGrid);
     ui->checkBox_MirrorConnections->setChecked(porymapConfig.mirrorConnectingMaps);
-    mapSortOrder = porymapConfig.mapSortOrder;
-
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.collisionOpacity) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.collisionOpacity);
     ui->slider_DiveEmergeMapOpacity->setValue(porymapConfig.diveEmergeMapOpacity);
@@ -1138,7 +1130,7 @@ void MainWindow::sortMapList() {
     mapGroupItemsList->clear();
     QStandardItem *root = mapListModel->invisibleRootItem();
 
-    switch (mapSortOrder)
+    switch (porymapConfig.mapSortOrder)
     {
         case MapSortOrder::Group:
             for (int i = 0; i < project->groupNames.length(); i++) {
@@ -2038,7 +2030,8 @@ void MainWindow::addNewEvent(Event::Type type) {
     }
 }
 
-void MainWindow::tryAddEventTab(QWidget * tab, Event::Group group) {
+void MainWindow::tryAddEventTab(QWidget * tab) {
+    auto group = getEventGroupFromTabWidget(tab);
     if (editor->map->events.value(group).length())
         ui->tabWidget_EventType->addTab(tab, QString("%1s").arg(Event::eventGroupToString(group)));
 }
@@ -2047,11 +2040,11 @@ void MainWindow::displayEventTabs() {
     const QSignalBlocker blocker(ui->tabWidget_EventType);
 
     ui->tabWidget_EventType->clear();
-    tryAddEventTab(eventTabObjectWidget,   Event::Group::Object);
-    tryAddEventTab(eventTabWarpWidget,     Event::Group::Warp);
-    tryAddEventTab(eventTabTriggerWidget,  Event::Group::Coord);
-    tryAddEventTab(eventTabBGWidget,       Event::Group::Bg);
-    tryAddEventTab(eventTabHealspotWidget, Event::Group::Heal);
+    tryAddEventTab(ui->tab_Objects);
+    tryAddEventTab(ui->tab_Warps);
+    tryAddEventTab(ui->tab_Triggers);
+    tryAddEventTab(ui->tab_BGs);
+    tryAddEventTab(ui->tab_Healspots);
 }
 
 void MainWindow::updateObjects() {
@@ -2211,30 +2204,15 @@ void MainWindow::updateSelectedObjects() {
     }
 }
 
-Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab)
-{
-    Event::Group ret = Event::Group::None;
-    if (tab == eventTabObjectWidget)
-    {
-        ret = Event::Group::Object;
-    }
-    else if (tab == eventTabWarpWidget)
-    {
-        ret = Event::Group::Warp;
-    }
-    else if (tab == eventTabTriggerWidget)
-    {
-        ret = Event::Group::Coord;
-    }
-    else if (tab == eventTabBGWidget)
-    {
-        ret = Event::Group::Bg;
-    }
-    else if (tab == eventTabHealspotWidget)
-    {
-        ret = Event::Group::Heal;
-    }
-    return ret;
+Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab) {
+    static const QMap<QWidget*,Event::Group> tabToGroup = {
+        {ui->tab_Objects,   Event::Group::Object},
+        {ui->tab_Warps,     Event::Group::Warp},
+        {ui->tab_Triggers,  Event::Group::Coord},
+        {ui->tab_BGs,       Event::Group::Bg},
+        {ui->tab_Healspots, Event::Group::Heal},
+    };
+    return tabToGroup.value(tab, Event::Group::None);
 }
 
 void MainWindow::eventTabChanged(int index) {

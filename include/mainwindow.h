@@ -223,7 +223,7 @@ private slots:
     void on_toolButton_deleteObject_clicked();
 
     void addNewEvent(Event::Type type);
-    void tryAddEventTab(QWidget * tab, Event::Group group);
+    void tryAddEventTab(QWidget * tab);
     void displayEventTabs();
     void updateSelectedObjects();
     void updateObjects();
@@ -331,19 +331,10 @@ private:
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
 
-    QWidget *eventTabObjectWidget;
-    QWidget *eventTabWarpWidget;
-    QWidget *eventTabTriggerWidget;
-    QWidget *eventTabBGWidget;
-    QWidget *eventTabHealspotWidget;
-    QWidget *eventTabMultipleWidget;
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
     bool newMapDefaultsSet = false;
-
-    MapSortOrder mapSortOrder;
-
     bool tilesetNeedsRedraw = false;
 
     bool userSetMap(QString, bool scrollTreeView = false);

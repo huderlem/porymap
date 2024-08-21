@@ -1999,19 +1999,25 @@ void Editor::selectMapEvent(DraggablePixmapItem *object) {
 }
 
 void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
-    if (selected_events && object) {
-        if (selected_events->contains(object)) {
-            if (toggle) {
-                selected_events->removeOne(object);
-            }
-        } else {
-            if (!toggle) {
-                selected_events->clear();
-            }
-            selected_events->append(object);
-        }
-        updateSelectedEvents();
+    if (!selected_events || !object)
+        return;
+
+    if (!toggle) {
+        // Selecting just this event
+        selected_events->clear();
+        selected_events->append(object);
+    } else if (!selected_events->contains(object)) {
+        // Adding event to selection
+        selected_events->append(object);
+    } else if (selected_events->length() > 1) {
+        // Removing from group selection
+        selected_events->removeOne(object);
+    } else {
+        // Attempting to toggle the only currently-selected event.
+        // Unselecting an event this way would be unexpected, so we ignore it.
+        return;
     }
+    updateSelectedEvents();
 }
 
 void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
