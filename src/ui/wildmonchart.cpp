@@ -1,9 +1,24 @@
 #include "wildmonchart.h"
 #include "ui_wildmonchart.h"
 
+#include "log.h"
+
 #include <QtCharts>
 
-WildMonChart::WildMonChart(QWidget *parent, EncounterTableModel *data) :
+// TODO: Conditional QtCharts -> QtGraphs
+// TODO: Handle if num pokemon < values
+// TODO: Smarter value precision for %s
+// TODO: Move level range onto graph?
+// TODO: Draw species icons below legend icons?
+// TODO: Match group order in chart visually to group order in table
+
+struct ChartData {
+    int minLevel;
+    int maxLevel;
+    QMap<int, double> values; // One value for each wild encounter group
+};
+
+WildMonChart::WildMonChart(QWidget *parent, EncounterTableModel *table) :
     QWidget(parent),
     ui(new Ui::WildMonChart)
 {
@@ -13,82 +28,118 @@ WildMonChart::WildMonChart(QWidget *parent, EncounterTableModel *data) :
 
     ui->chartView->setRenderHint(QPainter::Antialiasing);
 
-    setChartData(data);
+    setTable(table);
 };
 
 WildMonChart::~WildMonChart() {
     delete ui;
 };
 
-void WildMonChart::setChartData(EncounterTableModel *data) {
-    this->data = data;
+void WildMonChart::setTable(EncounterTableModel *table) {
+    this->table = table;
     updateChart();
 }
 
 void WildMonChart::updateChart() {
-    // TODO: Handle empty chart
-    if (!this->data)
+    if (!this->table)
         return;
 
-    const QList<double> inputValues = data->percentages();
-    const QVector<WildPokemon> inputPokemon = data->encounterData().wildPokemon;
-
-    QList<double> chartValues;
-    QList<WildPokemon> chartPokemon;
+    // Read data about encounter groups, e.g. for "fishing_mons" we want to know indexes 2-4 belong to good_rod (group index 1).
+    // Each group will be represented as a separate bar on the graph.
+    QList<QString> groupNames;
+    QMap<int, int> tableIndexToGroupIndex;
+    int groupIndex = 0;
+    for (auto groupPair : table->encounterField().groups) {
+        groupNames.append(groupPair.first);
+        for (auto i : groupPair.second) {
+            tableIndexToGroupIndex.insert(i, groupIndex);
+        }
+        groupIndex++;
+    }
+    const int numGroups = qMax(1, groupNames.length()); // Implicitly 1 group when none are listed
     
-    // Combine data for duplicate species entries
-    QList<QString> seenSpecies;
-    for (int i = 0; i < qMin(inputValues.length(), inputPokemon.length()); i++) {
-        const double percent = inputValues.at(i);
-        const WildPokemon pokemon = inputPokemon.at(i);
+    // Read data from the table, combining data for duplicate species entries
+    const QList<double> tableValues = table->percentages();
+    const QVector<WildPokemon> tablePokemon = table->encounterData().wildPokemon;
+    QMap<QString, ChartData> speciesToChartData;
+    for (int i = 0; i < qMin(tableValues.length(), tablePokemon.length()); i++) {
+        const double value = tableValues.at(i);
+        const WildPokemon pokemon = tablePokemon.at(i);
+        groupIndex = tableIndexToGroupIndex.value(i, 0);
 
-        int existingIndex = seenSpecies.indexOf(pokemon.species);
-        if (existingIndex >= 0) {
+        if (speciesToChartData.contains(pokemon.species)) {
             // Duplicate species entry
-            chartValues[existingIndex] += percent;
-            if (pokemon.minLevel < chartPokemon.at(existingIndex).minLevel)
-                chartPokemon[existingIndex].minLevel = pokemon.minLevel;
-            if (pokemon.maxLevel > chartPokemon.at(existingIndex).maxLevel)
-                chartPokemon[existingIndex].maxLevel = pokemon.maxLevel;
+            ChartData *entry = &speciesToChartData[pokemon.species];
+            entry->values[groupIndex] += value;
+            if (entry->minLevel > pokemon.minLevel)
+                entry->minLevel = pokemon.minLevel;
+            if (entry->maxLevel < pokemon.maxLevel)
+                entry->maxLevel = pokemon.maxLevel;
         } else {
             // New species entry
-            chartValues.append(percent);
-            chartPokemon.append(pokemon);
-            seenSpecies.append(pokemon.species);
+            ChartData entry;
+            entry.minLevel = pokemon.minLevel;
+            entry.maxLevel = pokemon.maxLevel;
+            entry.values.insert(groupIndex, value);
+            speciesToChartData.insert(pokemon.species, entry);
         }
     }
 
-    // TODO: If pokemon < values, fill remainder with an "empty" slice
-
     // Populate chart
     //const QString speciesPrefix = projectConfig.getIdentifier(ProjectIdentifier::regex_species); // TODO: Change regex to prefix
+    QList<QBarSet*> barSets;
     const QString speciesPrefix = "SPECIES_";
-    QPieSeries *series = new QPieSeries();
-    for (int i = 0; i < qMin(chartValues.length(), chartPokemon.length()); i++) {
-        const double percent = chartValues.at(i);
-        const WildPokemon pokemon = chartPokemon.at(i);
-        
+    for (auto mapPair = speciesToChartData.cbegin(), end = speciesToChartData.cend(); mapPair != end; mapPair++) {
+        const ChartData entry = mapPair.value();
+
         // Strip 'SPECIES_' prefix
-        QString name = pokemon.species;
-        if (name.startsWith(speciesPrefix))
-            name.remove(0, speciesPrefix.length());
+        QString species = mapPair.key();
+        if (species.startsWith(speciesPrefix))
+            species.remove(0, speciesPrefix.length());
 
-        QString label = QString("%1\nLv %2").arg(name).arg(pokemon.minLevel);
-        if (pokemon.minLevel != pokemon.maxLevel)
-            label.append(QString("-%1").arg(pokemon.maxLevel));
-        label.append(QString(" (%1%)").arg(percent * 100));
+        // Create label for legend
+        QString label = QString("%1\nLv %2").arg(species).arg(entry.minLevel);
+        if (entry.minLevel != entry.maxLevel)
+            label.append(QString("-%1").arg(entry.maxLevel));
 
-        QPieSlice *slice = new QPieSlice(label, percent);
-        //slice->setLabelPosition(QPieSlice::LabelInsideNormal);
-        slice->setLabelVisible();
-        series->append(slice);
+        // Add encounter chance data
+        auto set = new QBarSet(label);
+        for (int i = 0; i < numGroups; i++)
+            set->append(entry.values.value(i, 0));
+
+        // Insert bar set in order of total value
+        int i = 0;
+        for (; i < barSets.length(); i++){
+            if (barSets.at(i)->sum() > set->sum())
+                break;
+        }
+        barSets.insert(i, set);
     }
 
-    QChart *chart = new QChart();
+    auto series = new QHorizontalPercentBarSeries();
+    series->setLabelsVisible();
+    series->append(barSets);
+
+    auto chart = new QChart();
     chart->addSeries(series);
-    chart->legend()->hide();
+    chart->setAnimationOptions(QChart::SeriesAnimations);
+    chart->legend()->setVisible(true);
+    chart->legend()->setShowToolTips(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
 
-    ui->chartView->setChart(chart); // TODO: Leaking old chart
+    // X-axis is the values (percentages)
+    auto axisX = new QValueAxis();
+    chart->addAxis(axisX, Qt::AlignBottom);
+    series->attachAxis(axisX);
 
-    // TODO: Draw icons onto slices
+    // Y-axis is the names of encounter groups (e.g. Old Rod, Good Rod...)
+    if (numGroups > 1) {
+        auto axisY = new QBarCategoryAxis();
+        axisY->setCategories(groupNames);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisY);
+    }
+
+    delete ui->chartView->chart();
+    ui->chartView->setChart(chart);
 }

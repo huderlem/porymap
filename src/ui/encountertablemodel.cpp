@@ -199,7 +199,3 @@ Qt::ItemFlags EncounterTableModel::flags(const QModelIndex &index) const {
     }
     return flags | QAbstractTableModel::flags(index);
 }
-
-WildMonInfo EncounterTableModel::encounterData() {
-    return this->monInfo;
-}
