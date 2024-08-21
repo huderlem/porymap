@@ -698,6 +698,12 @@ void Editor::saveEncounterTabData() {
     }
 }
 
+QTableView* Editor::getCurrentWildMonTable() {
+    QStackedWidget *stack = ui->stackedWidget_WildMons;
+    auto tabWidget = static_cast<MonTabWidget *>(stack->widget(stack->currentIndex()));
+    return tabWidget->tableAt(tabWidget->currentIndex());
+}
+
 void Editor::updateEncounterFields(EncounterFields newFields) {
     EncounterFields oldFields = project->wildMonFields;
     // Go through fields and determine whether we need to update a field.

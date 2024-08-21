@@ -2572,6 +2572,16 @@ void MainWindow::on_pushButton_DeleteWildMonGroup_clicked() {
     editor->deleteWildMonGroup();
 }
 
+void MainWindow::on_pushButton_SummaryChart_clicked() {
+    if (!this->wildMonChart) {
+        // TODO: Move to editor, connect to signals for when the table data changes
+        QTableView *table = this->editor->getCurrentWildMonTable();
+        EncounterTableModel *data = table ? static_cast<EncounterTableModel *>(table->model()) : nullptr;
+        this->wildMonChart = new WildMonChart(this, data);
+    }
+    openSubWindow(this->wildMonChart);
+}
+
 void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
     editor->configureEncounterJSON(this);
 }

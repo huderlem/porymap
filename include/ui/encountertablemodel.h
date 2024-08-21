@@ -29,6 +29,7 @@ public:
     };
 
     WildMonInfo encounterData();
+    QList<double> percentages() const { return slotPercentages; }
     void resize(int rows, int cols);
 
 private:
