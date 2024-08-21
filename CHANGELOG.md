@@ -22,6 +22,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix config files being written before the project is opened successfully.
 - Fix the map and other project info still displaying if a new project fails to open.
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
+- Fix selections with multiple Events not always clearing when making a new selection.
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 
