@@ -390,7 +390,7 @@ void MainWindow::initMapSortOrder() {
 
     connect(mapSortOrderActionGroup, &QActionGroup::triggered, this, &MainWindow::mapSortOrder_changed);
 
-    QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[mapSortOrder];
+    QAction* sortOrder = ui->toolButton_MapSortOrder->menu()->actions()[porymapConfig.mapSortOrder];
     ui->toolButton_MapSortOrder->setIcon(sortOrder->icon());
     sortOrder->setChecked(true);
 }
@@ -424,7 +424,7 @@ void MainWindow::mapSortOrder_changed(QAction *action)
         }
     }
 
-    if (i != mapSortOrder)
+    if (i != porymapConfig.mapSortOrder)
     {
         ui->toolButton_MapSortOrder->setIcon(action->icon());
         porymapConfig.mapSortOrder = static_cast<MapSortOrder>(i);
@@ -462,7 +462,6 @@ void MainWindow::loadUserSettings() {
     this->editor->settings->cursorTileRectEnabled = porymapConfig.showCursorTile;
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.showGrid);
-    mapSortOrder = porymapConfig.mapSortOrder;
     ui->horizontalSlider_CollisionTransparency->blockSignals(true);
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.collisionOpacity) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.collisionOpacity);
@@ -1092,7 +1091,7 @@ void MainWindow::sortMapList() {
     mapGroupItemsList->clear();
     QStandardItem *root = mapListModel->invisibleRootItem();
 
-    switch (mapSortOrder)
+    switch (porymapConfig.mapSortOrder)
     {
         case MapSortOrder::Group:
             for (int i = 0; i < project->groupNames.length(); i++) {

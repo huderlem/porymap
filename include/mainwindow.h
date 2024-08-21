@@ -339,9 +339,6 @@ private:
     bool isProgrammaticEventTabChange;
     bool projectHasUnsavedChanges;
     bool newMapDefaultsSet = false;
-
-    MapSortOrder mapSortOrder;
-
     bool tilesetNeedsRedraw = false;
 
     bool setMap(QString, bool scrollTreeView = false);
