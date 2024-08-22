@@ -13,16 +13,16 @@ class WildMonChart : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WildMonChart(QWidget *parent, EncounterTableModel *table);
+    explicit WildMonChart(QWidget *parent, const EncounterTableModel *table);
     ~WildMonChart();
 
 public slots:
-    void setTable(EncounterTableModel *table);
+    void setTable(const EncounterTableModel *table);
     void updateChart();
 
 private:
     Ui::WildMonChart *ui;
-    EncounterTableModel *table;
+    const EncounterTableModel *table;
 };
 
 #endif // WILDMONCHART_H

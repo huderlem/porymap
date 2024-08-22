@@ -109,6 +109,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
     {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
     {ProjectIdentifier::define_map_section_count,      {"define_map_section_count",      "COUNT"}},
+    {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
     // Regex
     {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
     {ProjectIdentifier::regex_obj_event_gfx,           {"regex_obj_event_gfx",           "\\bOBJ_EVENT_GFX_"}},
@@ -124,7 +125,6 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
     {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
     {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
-    {ProjectIdentifier::regex_species,                 {"regex_species",                 "\\bSPECIES_"}},
 };
 
 const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths = {

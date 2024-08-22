@@ -120,6 +120,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_map_section_prefix``, ``MAPSEC_``, expected prefix for location macro names
    ``define_map_section_empty``, ``NONE``, macro name after prefix for empty region map sections
    ``define_map_section_count``, ``COUNT``, macro name after prefix for total number of region map sections
+   ``define_species_prefix``, ``SPECIES_``, expected prefix for species macro names
    ``regex_behaviors``, ``\bMB_``, regex to find metatile behavior macro names
    ``regex_obj_event_gfx``, ``\bOBJ_EVENT_GFX_``, regex to find Object Event graphics ID macro names
    ``regex_items``, ``\bITEM_(?!(B_)?USE_)``, regex to find item macro names
@@ -134,4 +135,3 @@ In addition to these files, there are some specific symbol and macro names that 
    ``regex_sign_facing_directions``, ``\bBG_EVENT_PLAYER_FACING_``, regex to find sign facing direction macro names
    ``regex_trainer_types``, ``\bTRAINER_TYPE_``, regex to find trainer type macro names
    ``regex_music``, ``\b(SE|MUS)_``, regex to find music macro names
-   ``regex_species``, ``\bSPECIES_``, regex to find species macro names

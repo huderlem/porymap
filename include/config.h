@@ -205,6 +205,7 @@ enum ProjectIdentifier {
     define_map_section_prefix,
     define_map_section_empty,
     define_map_section_count,
+    define_species_prefix,
     regex_behaviors,
     regex_obj_event_gfx,
     regex_items,
@@ -219,7 +220,6 @@ enum ProjectIdentifier {
     regex_sign_facing_directions,
     regex_trainer_types,
     regex_music,
-    regex_species,
 };
 
 enum ProjectFilePath {
