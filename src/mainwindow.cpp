@@ -2578,6 +2578,8 @@ void MainWindow::on_pushButton_SummaryChart_clicked() {
         QTableView *table = this->editor->getCurrentWildMonTable();
         EncounterTableModel *data = table ? static_cast<EncounterTableModel *>(table->model()) : nullptr;
         this->wildMonChart = new WildMonChart(this, data);
+    } else {
+        this->wildMonChart->createCharts();
     }
     openSubWindow(this->wildMonChart);
 }
@@ -3026,6 +3028,10 @@ bool MainWindow::closeSupplementaryWindows() {
     if (this->customScriptsEditor && !this->customScriptsEditor->close())
         return false;
     this->customScriptsEditor = nullptr;
+
+    if (this->wildMonChart && !this->wildMonChart->close())
+        return false;
+    this->wildMonChart = nullptr;
 
     if (this->projectSettingsEditor) this->projectSettingsEditor->closeQuietly();
     this->projectSettingsEditor = nullptr;

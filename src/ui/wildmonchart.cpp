@@ -4,16 +4,16 @@
 
 #include "log.h"
 
-#include <QtCharts>
-
 // TODO: Make level range its own chart(s)?
 // TODO: Draw species icons below legend icons?
-// TODO: Add hover behavior to display species name (and click prompt?)
+// TODO: NoScrollComboBoxes
+
+static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
 
 struct ChartData {
     int minLevel;
     int maxLevel;
-    QMap<int, double> values; // One value for each wild encounter group
+    QMap<QString, double> valueMap; // One value for each wild encounter group
 };
 
 WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
@@ -24,7 +24,8 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowFlags(Qt::Window);
 
-    ui->chartView->setRenderHint(QPainter::Antialiasing);
+    connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
+    connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
 
     setTable(table);
 };
@@ -35,95 +36,132 @@ WildMonChart::~WildMonChart() {
 
 void WildMonChart::setTable(const EncounterTableModel *table) {
     this->table = table;
-    updateChart();
+    readTable();
+    createCharts();
 }
 
-static const bool showLevelRange = false;
+void WildMonChart::clearTableData() {
+    this->groupNames.clear();
+    this->tableIndexToGroupName.clear();
+    this->speciesToGroupedData.clear();
+    this->tableMinLevel = INT_MAX;
+    this->tableMaxLevel = INT_MIN;
+    setWindowTitle(baseWindowTitle);
+}
 
-void WildMonChart::updateChart() {
+// Extract all the data from the table that we need for the charts
+void WildMonChart::readTable() {
+    clearTableData();
     if (!this->table)
         return;
 
-    setWindowTitle(QString("Wild Pokémon Summary -- %1").arg(this->table->encounterField().name));
+    setWindowTitle(QString("%1 - %2").arg(baseWindowTitle).arg(this->table->encounterField().name));
 
-    // Read data about encounter groups, e.g. for "fishing_mons" we want to know indexes 2-4 belong to good_rod (group index 1).
-    // Each group will be represented as a separate bar on the graph.
-    QList<QString> groupNames;
-    QMap<int, int> tableIndexToGroupIndex;
-    int groupIndex = 0;
+    // Read data about encounter groups, e.g. for "fishing_mons" we want to know table indexes 2-4 belong to "good_rod"
     for (auto groupPair : this->table->encounterField().groups) {
-        groupNames.prepend(groupPair.first);
-        for (auto i : groupPair.second) {
-            tableIndexToGroupIndex.insert(i, groupIndex);
-        }
-        groupIndex++;
+        // Prepending names here instead of appending so that charts can match the order in the table visually.
+        this->groupNames.prepend(groupPair.first);
+        for (auto i : groupPair.second)
+            this->tableIndexToGroupName.insert(i, groupPair.first);
     }
-    const int numGroups = qMax(1, groupNames.length()); // Implicitly 1 group when none are listed
+    if (this->groupNames.isEmpty())
+        this->groupNames.append(QString()); // Implicitly 1 unnamed group when none are listed
     
-    // Read data from the table, combining data for duplicate species entries
-    const QList<double> tableValues = this->table->percentages();
+    // Read data from the table, combining data for duplicate entries
+    const QList<double> tableFrequencies = this->table->percentages();
     const QVector<WildPokemon> tablePokemon = this->table->encounterData().wildPokemon;
-    QMap<QString, ChartData> speciesToChartData;
-    for (int i = 0; i < qMin(tableValues.length(), tablePokemon.length()); i++) {
-        const double value = tableValues.at(i);
-        const WildPokemon pokemon = tablePokemon.at(i);
-        groupIndex = tableIndexToGroupIndex.value(i, 0);
-
-        if (speciesToChartData.contains(pokemon.species)) {
-            // Duplicate species entry
-            ChartData *entry = &speciesToChartData[pokemon.species];
-            entry->values[groupIndex] += value;
-            if (entry->minLevel > pokemon.minLevel)
-                entry->minLevel = pokemon.minLevel;
-            if (entry->maxLevel < pokemon.maxLevel)
-                entry->maxLevel = pokemon.maxLevel;
-        } else {
-            // New species entry
-            ChartData entry;
-            entry.minLevel = pokemon.minLevel;
-            entry.maxLevel = pokemon.maxLevel;
-            entry.values.insert(groupIndex, value);
-            speciesToChartData.insert(pokemon.species, entry);
-        }
-    }
-
-    // Populate chart
-    QList<QBarSet*> barSets;
+    const int numRows = qMin(tableFrequencies.length(), tablePokemon.length());
     const QString speciesPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix);
-    for (auto mapPair = speciesToChartData.cbegin(), end = speciesToChartData.cend(); mapPair != end; mapPair++) {
-        const ChartData entry = mapPair.value();
+    for (int i = 0; i < numRows; i++) {
+        const double frequency = tableFrequencies.at(i);
+        const WildPokemon pokemon = tablePokemon.at(i);
+        const QString groupName = this->tableIndexToGroupName.value(i);
 
-        // Strip 'SPECIES_' prefix
-        QString label = mapPair.key();
+        // Create species label (strip 'SPECIES_' prefix).
+        QString label = pokemon.species;
         if (label.startsWith(speciesPrefix))
             label.remove(0, speciesPrefix.length());
 
-        // Add level range to label
-        if (showLevelRange) {
-            if (entry.minLevel == entry.maxLevel)
-                label.append(QString(" (Lv %1)").arg(entry.minLevel));
-            else
-                label.append(QString(" (Lv %1-%2)").arg(entry.minLevel).arg(entry.maxLevel));
-        }
+        // Add species/level frequency data
+        Summary *summary = &this->speciesToGroupedData[label][groupName];
+        summary->speciesFrequency += frequency;
+        if (pokemon.minLevel > pokemon.maxLevel)
+            continue; // Invalid
+        int numLevels = pokemon.maxLevel - pokemon.minLevel + 1;
+        for (int level = pokemon.minLevel; level <= pokemon.maxLevel; level++)
+            summary->levelFrequencies[level] += frequency / numLevels;
 
-        auto set = new QBarSet(label);
+        if (this->tableMinLevel > pokemon.minLevel)
+            this->tableMinLevel = pokemon.minLevel;
+        if (this->tableMaxLevel < pokemon.maxLevel)
+            this->tableMaxLevel = pokemon.maxLevel;
+    }
 
-        // Add encounter chance data (in reverse order, to match the table's group order visually)
-        for (int i = numGroups - 1; i >= 0; i--)
-            set->append(entry.values.value(i, 0));
+    // Populate combo boxes
+    const QSignalBlocker blocker1(ui->comboBox_Species);
+    const QSignalBlocker blocker2(ui->comboBox_Group);
+    ui->comboBox_Species->clear();
+    ui->comboBox_Species->addItems(getSpeciesNames());
+    ui->comboBox_Group->clear();
+    if (usesGroupLabels()) {
+        ui->comboBox_Group->addItems(this->groupNames);
+        ui->comboBox_Group->setEnabled(true);
+    } else {
+        ui->comboBox_Group->setEnabled(false);
+    }
+}
 
-        // Insert bar set. We order them from lowest to highest total, left-to-right.
-        int i = 0;
-        for (; i < barSets.length(); i++){
-            if (barSets.at(i)->sum() > set->sum())
+void WildMonChart::createCharts() {
+    createSpeciesDistributionChart();
+    createLevelDistributionChart();
+    
+    // Turn off the animation once it's played, otherwise it replays any time the window changes size.
+    // TODO: Store timer, disable if closing or creating new chart
+    //QTimer::singleShot(chart->animationDuration() + 500, this, &WildMonChart::stopChartAnimation);
+}
+
+QStringList WildMonChart::getSpeciesNames() const {
+    return this->speciesToGroupedData.keys();
+}
+
+double WildMonChart::getSpeciesFrequency(const QString &species, const QString &groupName) const {
+    return this->speciesToGroupedData[species][groupName].speciesFrequency;
+}
+
+QMap<int, double> WildMonChart::getLevelFrequencies(const QString &species, const QString &groupName) const {
+    return this->speciesToGroupedData[species][groupName].levelFrequencies;
+}
+
+bool WildMonChart::usesGroupLabels() const {
+    return this->groupNames.length() > 1;
+}
+
+void WildMonChart::createSpeciesDistributionChart() {
+    QList<QBarSet*> barSets;
+    for (const auto species : getSpeciesNames()) {
+        // Add encounter chance data
+        auto set = new QBarSet(species);
+        for (auto groupName : this->groupNames)
+            set->append(getSpeciesFrequency(species, groupName) * 100);
+
+        // We order the bar sets from lowest to highest total, left-to-right.
+        for (int i = 0; i < barSets.length() + 1; i++){
+            if (i >= barSets.length() || barSets.at(i)->sum() > set->sum()) {
+                barSets.insert(i, set);
                 break;
+            }
         }
-        barSets.insert(i, set);
+
+        // Show species name and % when hovering over a bar set. This covers some shortfalls in our ability to control the chart design
+        // (i.e. bar segments may be too narrow to see the % label, or colors may be hard to match to the legend).
+        connect(set, &QBarSet::hovered, [set, species] (bool on, int i) {
+            QString text = on ? QString("%1 - %2%").arg(species).arg(set->at(i)) : "";
+            QToolTip::showText(QCursor::pos(), text);
+        });
     }
 
     auto series = new QHorizontalPercentBarSeries();
     series->setLabelsVisible();
-    //series->setLabelsPrecision(x); // This appears to have no effect for any value 'x'? Ideally we'd display 1-2 decimal places
     series->append(barSets);
 
     auto chart = new QChart();
@@ -135,29 +173,93 @@ void WildMonChart::updateChart() {
 
     // X-axis is the values (percentages). We're already showing percentages on the bar, so we just display 0/50/100%
     auto axisX = new QValueAxis();
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-    // Not critical, but the percentage ticks on the x-axis have no need for decimals.
-    // This property doesn't exist prior to Qt 6.7
-    axisX->setLabelDecimals(0);
-#endif
+    axisX->setLabelFormat("%u%%");
     axisX->setTickCount(3);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
     // Y-axis is the names of encounter groups (e.g. Old Rod, Good Rod...)
-    if (numGroups > 1) {
+    if (usesGroupLabels()) {
         auto axisY = new QBarCategoryAxis();
-        axisY->setCategories(groupNames);
+        axisY->setCategories(this->groupNames);
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisY);
+    } else {
+        // TODO: y-axis has weird labels for a few frames on opening
     }
 
-    delete ui->chartView->chart();
-    ui->chartView->setChart(chart);
-    
-    // Turn off the animation once it's played, otherwise it replays any time the window changes size.
-    QTimer::singleShot(chart->animationDuration() + 500, [this] {
-        if (ui->chartView->chart())
-            ui->chartView->chart()->setAnimationOptions(QChart::NoAnimation);
+    // TODO: Delete old chart
+    ui->chartView_SpeciesDistribution->setChart(chart);
+}
+
+void WildMonChart::createLevelDistributionChart() {
+    // TODO: Handle combined chart
+    const QString species = ui->comboBox_Species->currentText();
+    const QString groupName = ui->comboBox_Group->currentText();
+
+    const double speciesFrequency = getSpeciesFrequency(species, groupName);
+    const QMap<int, double> levelFrequencies = getLevelFrequencies(species, groupName);
+    const QList<int> levels = levelFrequencies.keys();
+
+    int minLevel = !levels.isEmpty() ? levels.first() : 0;
+    int maxLevel = !levels.isEmpty() ? levels.last() : 0;
+    if (maxLevel < minLevel)
+        return;
+
+    double maxPercent = 0.0;
+    QStringList categories;
+    auto set = new QBarSet(species);
+    for (int i = minLevel; i <= maxLevel; i++) {
+        double percent = (levelFrequencies.value(i, 0) / speciesFrequency) * 100;
+        if (maxPercent < percent)
+            maxPercent = percent;
+        set->append(percent);
+        categories.append(QString::number(i));
+    }
+
+    // Show level and % when hovering over a bar set. This covers some shortfalls in our ability to control the chart design.
+    connect(set, &QBarSet::hovered, [set, categories] (bool on, int i) {
+        QString text = on ? QString("Lv%1 - %2%").arg(categories.at(i)).arg(set->at(i)) : "";
+        QToolTip::showText(QCursor::pos(), text);
     });
+
+    auto series = new QBarSeries();
+    series->append(set);
+    //series->setLabelsVisible();
+
+    auto chart = new QChart();
+    chart->addSeries(series);
+    //chart->setTitle("");
+    chart->setAnimationOptions(QChart::SeriesAnimations);
+    chart->legend()->setVisible(true);
+    chart->legend()->setShowToolTips(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
+
+    QBarCategoryAxis *axisX = new QBarCategoryAxis();
+    axisX->append(categories);
+    chart->addAxis(axisX, Qt::AlignBottom);
+    series->attachAxis(axisX);
+
+    auto roundUp = [](int num, int multiple) {
+        auto remainder = num % multiple;
+        if (remainder == 0)
+            return num;
+        return num + multiple - remainder;
+    };
+
+    QValueAxis *axisY = new QValueAxis();
+    axisY->setMax(roundUp(qCeil(maxPercent), 5));
+    //axisY->setTickType(QValueAxis::TicksDynamic);
+    //axisY->setTickInterval(5);
+    axisY->setLabelFormat("%u%%");
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisY);
+
+    // TODO: Cache old chart
+    ui->chartView_LevelDistribution->setChart(chart);
+}
+
+void WildMonChart::stopChartAnimation() {
+    if (ui->chartView_SpeciesDistribution->chart())
+        ui->chartView_SpeciesDistribution->chart()->setAnimationOptions(QChart::NoAnimation);
 }
