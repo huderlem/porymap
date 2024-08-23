@@ -28,16 +28,16 @@ private:
     QStringList groupNames;
     QMap<int, QString> tableIndexToGroupName;
 
+    struct LevelRange {
+        int min;
+        int max;
+    };
+    QMap<QString, LevelRange> groupedLevelRanges;
+
     struct Summary {
         double speciesFrequency = 0.0;
         QMap<int, double> levelFrequencies;
     };
-
-    int tableMinLevel;
-    int tableMaxLevel;
-
-    // GroupedData maps a group name ("old_rod", "good_rod"...)
-    // to any summarized data needed for the charts.
     typedef QMap<QString, Summary> GroupedData;
 
     QMap<QString, GroupedData> speciesToGroupedData;
@@ -45,12 +45,14 @@ private:
     QStringList getSpeciesNames() const;
     double getSpeciesFrequency(const QString&, const QString&) const;
     QMap<int, double> getLevelFrequencies(const QString &, const QString &) const;
+    LevelRange getLevelRange(const QString &species, const QString &groupName) const;
     bool usesGroupLabels() const;
 
     void clearTableData();
     void readTable();
     void createSpeciesDistributionChart();
     void createLevelDistributionChart();
+    QBarSet* createLevelDistributionBarSet(const QString &, const QString &, bool, double *);
 
     void stopChartAnimation();
 };

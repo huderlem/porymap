@@ -4,17 +4,11 @@
 
 #include "log.h"
 
-// TODO: Make level range its own chart(s)?
 // TODO: Draw species icons below legend icons?
 // TODO: NoScrollComboBoxes
+// TODO: Consistent species->color across charts
 
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
-
-struct ChartData {
-    int minLevel;
-    int maxLevel;
-    QMap<QString, double> valueMap; // One value for each wild encounter group
-};
 
 WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     QWidget(parent),
@@ -24,6 +18,8 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowFlags(Qt::Window);
 
+    // Changing these settings changes which level distribution chart is shown
+    connect(ui->groupBox_Species, &QGroupBox::clicked, this, &WildMonChart::createLevelDistributionChart);
     connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
     connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
 
@@ -44,8 +40,7 @@ void WildMonChart::clearTableData() {
     this->groupNames.clear();
     this->tableIndexToGroupName.clear();
     this->speciesToGroupedData.clear();
-    this->tableMinLevel = INT_MAX;
-    this->tableMaxLevel = INT_MIN;
+    this->groupedLevelRanges.clear();
     setWindowTitle(baseWindowTitle);
 }
 
@@ -91,13 +86,22 @@ void WildMonChart::readTable() {
         for (int level = pokemon.minLevel; level <= pokemon.maxLevel; level++)
             summary->levelFrequencies[level] += frequency / numLevels;
 
-        if (this->tableMinLevel > pokemon.minLevel)
-            this->tableMinLevel = pokemon.minLevel;
-        if (this->tableMaxLevel < pokemon.maxLevel)
-            this->tableMaxLevel = pokemon.maxLevel;
+        // Update level min/max for showing level distribution across a group
+        if (!this->groupedLevelRanges.contains(groupName)) {
+            LevelRange *levelRange = &this->groupedLevelRanges[groupName];
+            levelRange->min = pokemon.minLevel;
+            levelRange->max = pokemon.maxLevel;
+        } else {
+            LevelRange *levelRange = &this->groupedLevelRanges[groupName];
+            if (levelRange->min > pokemon.minLevel)
+                levelRange->min = pokemon.minLevel;
+            if (levelRange->max < pokemon.maxLevel)
+                levelRange->max = pokemon.maxLevel;
+        }
     }
 
     // Populate combo boxes
+    // TODO: Limit width
     const QSignalBlocker blocker1(ui->comboBox_Species);
     const QSignalBlocker blocker2(ui->comboBox_Group);
     ui->comboBox_Species->clear();
@@ -132,6 +136,20 @@ QMap<int, double> WildMonChart::getLevelFrequencies(const QString &species, cons
     return this->speciesToGroupedData[species][groupName].levelFrequencies;
 }
 
+WildMonChart::LevelRange WildMonChart::getLevelRange(const QString &species, const QString &groupName) const {
+    const QList<int> levels = getLevelFrequencies(species, groupName).keys();
+
+    LevelRange range;
+    if (levels.isEmpty()) {
+        range.min = 0;
+        range.max = 0;
+    } else {
+        range.min = levels.first();
+        range.max = levels.last();
+    }
+    return range;
+}
+
 bool WildMonChart::usesGroupLabels() const {
     return this->groupNames.length() > 1;
 }
@@ -155,15 +173,17 @@ void WildMonChart::createSpeciesDistributionChart() {
         // Show species name and % when hovering over a bar set. This covers some shortfalls in our ability to control the chart design
         // (i.e. bar segments may be too narrow to see the % label, or colors may be hard to match to the legend).
         connect(set, &QBarSet::hovered, [set, species] (bool on, int i) {
-            QString text = on ? QString("%1 - %2%").arg(species).arg(set->at(i)) : "";
+            QString text = on ? QString("%1 (%2%)").arg(species).arg(set->at(i)) : "";
             QToolTip::showText(QCursor::pos(), text);
         });
     }
 
+    // Set up series
     auto series = new QHorizontalPercentBarSeries();
     series->setLabelsVisible();
     series->append(barSets);
 
+    // Set up chart
     auto chart = new QChart();
     chart->addSeries(series);
     chart->setAnimationOptions(QChart::SeriesAnimations);
@@ -171,7 +191,7 @@ void WildMonChart::createSpeciesDistributionChart() {
     chart->legend()->setShowToolTips(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
 
-    // X-axis is the values (percentages). We're already showing percentages on the bar, so we just display 0/50/100%
+    // X-axis is the % frequency. We're already showing percentages on the bar, so we just display 0/50/100%
     auto axisX = new QValueAxis();
     axisX->setLabelFormat("%u%%");
     axisX->setTickCount(3);
@@ -184,76 +204,102 @@ void WildMonChart::createSpeciesDistributionChart() {
         axisY->setCategories(this->groupNames);
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisY);
-    } else {
-        // TODO: y-axis has weird labels for a few frames on opening
     }
 
     // TODO: Delete old chart
     ui->chartView_SpeciesDistribution->setChart(chart);
 }
 
-void WildMonChart::createLevelDistributionChart() {
-    // TODO: Handle combined chart
-    const QString species = ui->comboBox_Species->currentText();
-    const QString groupName = ui->comboBox_Group->currentText();
-
-    const double speciesFrequency = getSpeciesFrequency(species, groupName);
+QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, const QString &groupName, bool individual, double *barMax) {
+    const double totalFrequency = individual ? getSpeciesFrequency(species, groupName) : 1.0;
     const QMap<int, double> levelFrequencies = getLevelFrequencies(species, groupName);
-    const QList<int> levels = levelFrequencies.keys();
 
-    int minLevel = !levels.isEmpty() ? levels.first() : 0;
-    int maxLevel = !levels.isEmpty() ? levels.last() : 0;
-    if (maxLevel < minLevel)
-        return;
-
-    double maxPercent = 0.0;
-    QStringList categories;
     auto set = new QBarSet(species);
-    for (int i = minLevel; i <= maxLevel; i++) {
-        double percent = (levelFrequencies.value(i, 0) / speciesFrequency) * 100;
-        if (maxPercent < percent)
-            maxPercent = percent;
+    LevelRange levelRange = individual ? getLevelRange(species, groupName) : this->groupedLevelRanges.value(groupName);
+    for (int i = levelRange.min; i <= levelRange.max; i++) {
+        double percent = levelFrequencies.value(i, 0) / totalFrequency * 100;
+        if (*barMax < percent)
+            *barMax = percent;
         set->append(percent);
-        categories.append(QString::number(i));
     }
 
-    // Show level and % when hovering over a bar set. This covers some shortfalls in our ability to control the chart design.
-    connect(set, &QBarSet::hovered, [set, categories] (bool on, int i) {
-        QString text = on ? QString("Lv%1 - %2%").arg(categories.at(i)).arg(set->at(i)) : "";
+    // Show data when hovering over a bar set. This covers some shortfalls in our ability to control the chart design.
+    connect(set, &QBarSet::hovered, [=] (bool on, int i) {
+        QString text = on ? QString("%1 Lv%2 (%3%)")
+                            .arg(individual ? "" : species)
+                            .arg(QString::number(i + levelRange.min))
+                            .arg(set->at(i))
+                          : "";
         QToolTip::showText(QCursor::pos(), text);
     });
 
-    auto series = new QBarSeries();
-    series->append(set);
-    //series->setLabelsVisible();
+    return set;
+}
 
+void WildMonChart::createLevelDistributionChart() {
+    const QString groupName = ui->comboBox_Group->currentText();
+
+    LevelRange levelRange;
+    double maxPercent = 0.0;
+    QList<QBarSet*> barSets;
+
+    // Create bar sets
+    if (ui->groupBox_Species->isChecked()) {
+        // Species box is active, we just display data for the selected species.
+        const QString species = ui->comboBox_Species->currentText();
+        barSets.append(createLevelDistributionBarSet(species, groupName, true, &maxPercent));
+        levelRange = getLevelRange(species, groupName);
+    } else {
+        // Species box is inactive, we display data for all species in the table.
+        for (const auto species : getSpeciesNames())
+            barSets.append(createLevelDistributionBarSet(species, groupName, false, &maxPercent));
+        levelRange = this->groupedLevelRanges.value(groupName);
+    }
+
+    // Set up chart
     auto chart = new QChart();
-    chart->addSeries(series);
     //chart->setTitle("");
     chart->setAnimationOptions(QChart::SeriesAnimations);
     chart->legend()->setVisible(true);
     chart->legend()->setShowToolTips(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
 
+    // X-axis is the level range.
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
-    axisX->append(categories);
+    for (int i = levelRange.min; i <= levelRange.max; i++)
+        axisX->append(QString::number(i));
     chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
 
+    // Y-axis is the % frequency. We round the max up to a multiple of 5.
     auto roundUp = [](int num, int multiple) {
         auto remainder = num % multiple;
         if (remainder == 0)
             return num;
         return num + multiple - remainder;
     };
-
     QValueAxis *axisY = new QValueAxis();
     axisY->setMax(roundUp(qCeil(maxPercent), 5));
     //axisY->setTickType(QValueAxis::TicksDynamic);
     //axisY->setTickInterval(5);
     axisY->setLabelFormat("%u%%");
     chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
+
+    // Set up series. Grouped mode uses a stacked bar series.
+    if (barSets.length() < 2) {
+        auto series = new QBarSeries();
+        series->append(barSets);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+        //series->setLabelsVisible();
+        chart->addSeries(series);
+    } else {
+        auto series = new QStackedBarSeries();
+        series->append(barSets);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+        //series->setLabelsVisible();
+        chart->addSeries(series);
+    }
 
     // TODO: Cache old chart
     ui->chartView_LevelDistribution->setChart(chart);
