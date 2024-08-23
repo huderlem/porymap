@@ -354,6 +354,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->customScriptsEditorGeometry = bytesFromString(value);
     } else if (key == "custom_scripts_editor_state") {
         this->customScriptsEditorState = bytesFromString(value);
+    } else if (key == "wild_mon_chart_geometry") {
+        this->wildMonChartGeometry = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "collision_zoom") {
@@ -380,6 +382,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetCheckerboardFill = getConfigBool(key, value);
     } else if (key == "theme") {
         this->theme = value;
+    } else if (key == "wild_mon_chart_theme") {
+        this->wildMonChartTheme = value;
     } else if (key == "text_editor_open_directory") {
         this->textEditorOpenFolder = value;
     } else if (key == "text_editor_goto_line") {
@@ -439,6 +443,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_settings_editor_state", stringFromByteArray(this->projectSettingsEditorState));
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
+    map.insert("wild_mon_chart_geometry", stringFromByteArray(this->wildMonChartGeometry));
     map.insert("collision_opacity", QString::number(this->collisionOpacity));
     map.insert("collision_zoom", QString::number(this->collisionZoom));
     map.insert("metatiles_zoom", QString::number(this->metatilesZoom));
@@ -453,6 +458,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("theme", this->theme);
+    map.insert("wild_mon_chart_theme", this->wildMonChartTheme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));

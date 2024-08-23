@@ -17,6 +17,8 @@ public:
     explicit WildMonChart(QWidget *parent, const EncounterTableModel *table);
     ~WildMonChart();
 
+    virtual void closeEvent(QCloseEvent *event) override;
+
 public slots:
     void setTable(const EncounterTableModel *table);
     void createCharts();

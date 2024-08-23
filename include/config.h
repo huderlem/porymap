@@ -72,6 +72,7 @@ public:
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
         this->theme = "default";
+        this->wildMonChartTheme = "";
         this->textEditorOpenFolder = "";
         this->textEditorGotoLine = "";
         this->paletteEditorBitDepth = 24;
@@ -117,6 +118,7 @@ public:
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     QString theme;
+    QString wildMonChartTheme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
     int paletteEditorBitDepth;
@@ -126,6 +128,7 @@ public:
     QDateTime lastUpdateCheckTime;
     QVersionNumber lastUpdateCheckVersion;
     QMap<QUrl, QDateTime> rateLimitTimes;
+    QByteArray wildMonChartGeometry;
 
 protected:
     virtual QString getConfigFilepath() override;

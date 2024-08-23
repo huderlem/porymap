@@ -5,7 +5,6 @@
 #include "log.h"
 
 // TODO: Draw species icons below legend icons?
-// TODO: Save window size, theme selection in config
 // TODO: Help button that explains the charts
 
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
@@ -38,6 +37,18 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     for (auto i : themes)
         ui->comboBox_Theme->addItem(i.first, i.second);
     connect(ui->comboBox_Theme, &QComboBox::currentTextChanged, this, &WildMonChart::updateTheme);
+
+    // User's theme choice is saved in the config
+    int configThemeIndex = ui->comboBox_Theme->findText(porymapConfig.wildMonChartTheme);
+    if (configThemeIndex >= 0) {
+        const QSignalBlocker blocker(ui->comboBox_Theme);
+        ui->comboBox_Theme->setCurrentIndex(configThemeIndex);
+    } else {
+        porymapConfig.wildMonChartTheme = ui->comboBox_Theme->currentText();
+    }
+
+    // TODO: Re-enable once finished
+    //restoreGeometry(porymapConfig.wildMonChartGeometry);
 
     setTable(table);
 };
@@ -238,7 +249,8 @@ void WildMonChart::createSpeciesDistributionChart() {
 
     applySpeciesColors(series);
 
-    // TODO: Delete old chart
+    if (ui->chartView_SpeciesDistribution->chart())
+        ui->chartView_SpeciesDistribution->chart()->deleteLater();
     ui->chartView_SpeciesDistribution->setChart(chart);
 }
 
@@ -264,6 +276,17 @@ QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, con
                           : "";
         QToolTip::showText(QCursor::pos(), text);
     });
+
+    // Clicking on a bar set in the stacked chart opens its individual chart
+    if (!individual) {
+        connect(set, &QBarSet::clicked, [this, species](int) {
+            const QSignalBlocker blocker1(ui->groupBox_Species);
+            const QSignalBlocker blocker2(ui->comboBox_Species);
+            ui->groupBox_Species->setChecked(true);
+            ui->comboBox_Species->setCurrentText(species);
+            createLevelDistributionChart();
+        });
+    }
 
     return set;
 }
@@ -336,7 +359,9 @@ void WildMonChart::createLevelDistributionChart() {
         applySpeciesColors(series);
     }
 
-    // TODO: Cache old chart
+    // TODO: Cache old charts?
+    if (ui->chartView_LevelDistribution->chart())
+        ui->chartView_LevelDistribution->chart()->deleteLater();
     ui->chartView_LevelDistribution->setChart(chart);
 }
 
@@ -346,6 +371,7 @@ QChart::ChartTheme WildMonChart::currentTheme() const {
 
 void WildMonChart::updateTheme() {
     auto theme = currentTheme();
+    porymapConfig.wildMonChartTheme = ui->comboBox_Theme->currentText();
 
     // In order to keep the color of each species in the legend consistent across
     // charts we save species->color mappings. The legend colors are overwritten
@@ -380,4 +406,9 @@ void WildMonChart::applySpeciesColors(QAbstractBarSeries *series) {
 void WildMonChart::stopChartAnimation() {
     if (ui->chartView_SpeciesDistribution->chart())
         ui->chartView_SpeciesDistribution->chart()->setAnimationOptions(QChart::NoAnimation);
+}
+
+void WildMonChart::closeEvent(QCloseEvent *event) {
+    porymapConfig.wildMonChartGeometry = saveGeometry();
+    QWidget::closeEvent(event);
 }
