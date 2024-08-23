@@ -41,11 +41,13 @@ private:
     typedef QMap<QString, Summary> GroupedData;
 
     QMap<QString, GroupedData> speciesToGroupedData;
+    QMap<QString, QColor> speciesToColor;
+
 
     QStringList getSpeciesNames() const;
     double getSpeciesFrequency(const QString&, const QString&) const;
     QMap<int, double> getLevelFrequencies(const QString &, const QString &) const;
-    LevelRange getLevelRange(const QString &species, const QString &groupName) const;
+    LevelRange getLevelRange(const QString &, const QString &) const;
     bool usesGroupLabels() const;
 
     void clearTableData();
@@ -54,6 +56,9 @@ private:
     void createLevelDistributionChart();
     QBarSet* createLevelDistributionBarSet(const QString &, const QString &, bool, double *);
 
+    void applySpeciesColors(QAbstractBarSeries *);
+    QChart::ChartTheme currentTheme() const;
+    void updateTheme();
     void stopChartAnimation();
 };
 

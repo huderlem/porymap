@@ -6,9 +6,21 @@
 
 // TODO: Draw species icons below legend icons?
 // TODO: NoScrollComboBoxes
-// TODO: Consistent species->color across charts
+// TODO: Save window size, theme selection in config
+// TODO: Help button that explains the charts
 
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
+
+static const QList<QPair<QString, QChart::ChartTheme>> themes = {
+    {"Light",         QChart::ChartThemeLight},
+    {"Dark",          QChart::ChartThemeDark},
+    {"Blue Cerulean", QChart::ChartThemeBlueCerulean},
+    {"Brown Sand",    QChart::ChartThemeBrownSand},
+    {"Blue NCS",      QChart::ChartThemeBlueNcs},
+    {"High Contrast", QChart::ChartThemeHighContrast},
+    {"Blue Icy",      QChart::ChartThemeBlueIcy},
+    {"Qt",            QChart::ChartThemeQt},
+};
 
 WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     QWidget(parent),
@@ -22,6 +34,11 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     connect(ui->groupBox_Species, &QGroupBox::clicked, this, &WildMonChart::createLevelDistributionChart);
     connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
     connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
+
+    // Set up Theme combo box
+    for (auto i : themes)
+        ui->comboBox_Theme->addItem(i.first, i.second);
+    connect(ui->comboBox_Theme, &QComboBox::currentTextChanged, this, &WildMonChart::updateTheme);
 
     setTable(table);
 };
@@ -39,8 +56,9 @@ void WildMonChart::setTable(const EncounterTableModel *table) {
 void WildMonChart::clearTableData() {
     this->groupNames.clear();
     this->tableIndexToGroupName.clear();
-    this->speciesToGroupedData.clear();
     this->groupedLevelRanges.clear();
+    this->speciesToGroupedData.clear();
+    this->speciesToColor.clear();
     setWindowTitle(baseWindowTitle);
 }
 
@@ -172,8 +190,8 @@ void WildMonChart::createSpeciesDistributionChart() {
 
         // Show species name and % when hovering over a bar set. This covers some shortfalls in our ability to control the chart design
         // (i.e. bar segments may be too narrow to see the % label, or colors may be hard to match to the legend).
-        connect(set, &QBarSet::hovered, [set, species] (bool on, int i) {
-            QString text = on ? QString("%1 (%2%)").arg(species).arg(set->at(i)) : "";
+        connect(set, &QBarSet::hovered, [set] (bool on, int i) {
+            QString text = on ? QString("%1 (%2%)").arg(set->label()).arg(set->at(i)) : "";
             QToolTip::showText(QCursor::pos(), text);
         });
     }
@@ -186,6 +204,7 @@ void WildMonChart::createSpeciesDistributionChart() {
     // Set up chart
     auto chart = new QChart();
     chart->addSeries(series);
+    chart->setTheme(currentTheme());
     chart->setAnimationOptions(QChart::SeriesAnimations);
     chart->legend()->setVisible(true);
     chart->legend()->setShowToolTips(true);
@@ -205,6 +224,8 @@ void WildMonChart::createSpeciesDistributionChart() {
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisY);
     }
+
+    applySpeciesColors(series);
 
     // TODO: Delete old chart
     ui->chartView_SpeciesDistribution->setChart(chart);
@@ -226,7 +247,7 @@ QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, con
     // Show data when hovering over a bar set. This covers some shortfalls in our ability to control the chart design.
     connect(set, &QBarSet::hovered, [=] (bool on, int i) {
         QString text = on ? QString("%1 Lv%2 (%3%)")
-                            .arg(individual ? "" : species)
+                            .arg(individual ? "" : set->label())
                             .arg(QString::number(i + levelRange.min))
                             .arg(set->at(i))
                           : "";
@@ -259,6 +280,7 @@ void WildMonChart::createLevelDistributionChart() {
     // Set up chart
     auto chart = new QChart();
     //chart->setTitle("");
+    chart->setTheme(currentTheme());
     chart->setAnimationOptions(QChart::SeriesAnimations);
     chart->legend()->setVisible(true);
     chart->legend()->setShowToolTips(true);
@@ -278,7 +300,7 @@ void WildMonChart::createLevelDistributionChart() {
         return num + multiple - remainder;
     };
     QValueAxis *axisY = new QValueAxis();
-    axisY->setMax(roundUp(qCeil(maxPercent), 5));
+    axisY->setMax(roundUp(qCeil(maxPercent), 5)); // TODO: This isn't taking stacking into account
     //axisY->setTickType(QValueAxis::TicksDynamic);
     //axisY->setTickInterval(5);
     axisY->setLabelFormat("%u%%");
@@ -292,6 +314,7 @@ void WildMonChart::createLevelDistributionChart() {
         series->attachAxis(axisY);
         //series->setLabelsVisible();
         chart->addSeries(series);
+        applySpeciesColors(series);
     } else {
         auto series = new QStackedBarSeries();
         series->append(barSets);
@@ -299,10 +322,48 @@ void WildMonChart::createLevelDistributionChart() {
         series->attachAxis(axisY);
         //series->setLabelsVisible();
         chart->addSeries(series);
+        applySpeciesColors(series);
     }
 
     // TODO: Cache old chart
     ui->chartView_LevelDistribution->setChart(chart);
+}
+
+QChart::ChartTheme WildMonChart::currentTheme() const {
+    return static_cast<QChart::ChartTheme>(ui->comboBox_Theme->currentData().toInt());
+}
+
+void WildMonChart::updateTheme() {
+    auto theme = currentTheme();
+
+    // In order to keep the color of each species in the legend consistent across
+    // charts we save species->color mappings. The legend colors are overwritten
+    // when we change themes, so we need to recalculate them. We let the species
+    // distribution chart determine what those mapping are (it always includes every
+    // species in the table) and then we apply those mappings to subsequent charts.
+    QChart *chart = ui->chartView_SpeciesDistribution->chart();
+    if (!chart)
+        return;
+    this->speciesToColor.clear();
+    chart->setTheme(theme);
+    applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0)));
+
+    chart = ui->chartView_LevelDistribution->chart();
+    if (chart) {
+        chart->setTheme(theme);
+        applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0)));
+    }
+}
+
+void WildMonChart::applySpeciesColors(QAbstractBarSeries *series) {
+    for (auto set : series->barSets()) {
+        const QString species = set->label();
+        if (speciesToColor.contains(species)) {
+            set->setColor(speciesToColor.value(species));
+        } else {
+            speciesToColor.insert(species, set->color());
+        }
+    }
 }
 
 void WildMonChart::stopChartAnimation() {
