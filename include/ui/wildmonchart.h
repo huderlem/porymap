@@ -64,6 +64,8 @@ private:
     QChart::ChartTheme currentTheme() const;
     void updateTheme();
     void stopChartAnimation();
+
+    void showHelpDialog();
 };
 
 #endif // WILDMONCHART_H

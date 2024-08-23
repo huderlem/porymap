@@ -5,7 +5,6 @@
 #include "log.h"
 
 // TODO: Draw species icons below legend icons?
-// TODO: Help button that explains the charts
 
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
 
@@ -27,6 +26,8 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowFlags(Qt::Window);
+
+    connect(ui->button_Help, &QAbstractButton::clicked, this, &WildMonChart::showHelpDialog);
 
     // Changing these settings changes which level distribution chart is shown
     connect(ui->groupBox_Species, &QGroupBox::clicked, this, &WildMonChart::createLevelDistributionChart);
@@ -406,6 +407,18 @@ void WildMonChart::applySpeciesColors(QAbstractBarSeries *series) {
 void WildMonChart::stopChartAnimation() {
     if (ui->chartView_SpeciesDistribution->chart())
         ui->chartView_SpeciesDistribution->chart()->setAnimationOptions(QChart::NoAnimation);
+}
+
+void WildMonChart::showHelpDialog() {
+    static const QString text = "This window provides some visualizations of the data in your current Wild Pokémon tab";
+    static const QString informative = "The <b>Species Distribution</b> tab shows the cumulative encounter chance for each species "
+                                       "in the table. In other words, it answers the question \"For a given encounter of this type, "
+                                       "what is the likelihood that the pokémon encountered will be of that species?\"<br><br>"
+                                       "The <b>Level Distribution</b> tab..."; // TODO
+    QMessageBox msgBox(QMessageBox::Information, "porymap", text, QMessageBox::Close, this);
+    msgBox.setTextFormat(Qt::RichText);
+    msgBox.setInformativeText(informative);
+    msgBox.exec();
 }
 
 void WildMonChart::closeEvent(QCloseEvent *event) {
