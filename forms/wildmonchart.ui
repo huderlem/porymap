@@ -133,6 +133,12 @@
             <property name="editable">
              <bool>false</bool>
             </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+            </property>
+            <property name="minimumContentsLength">
+             <number>8</number>
+            </property>
            </widget>
           </item>
           <item>
@@ -186,6 +192,12 @@
                </property>
                <property name="insertPolicy">
                 <enum>QComboBox::NoInsert</enum>
+               </property>
+               <property name="sizeAdjustPolicy">
+                <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+               </property>
+               <property name="minimumContentsLength">
+                <number>12</number>
                </property>
               </widget>
              </item>

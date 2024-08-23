@@ -26,6 +26,8 @@ private:
     const EncounterTableModel *table;
 
     QStringList groupNames;
+    QStringList groupNamesReversed;
+    QStringList speciesInLegendOrder;
     QMap<int, QString> tableIndexToGroupName;
 
     struct LevelRange {
@@ -44,7 +46,7 @@ private:
     QMap<QString, QColor> speciesToColor;
 
 
-    QStringList getSpeciesNames() const;
+    QStringList getSpeciesNamesAlphabetical() const;
     double getSpeciesFrequency(const QString&, const QString&) const;
     QMap<int, double> getLevelFrequencies(const QString &, const QString &) const;
     LevelRange getLevelRange(const QString &, const QString &) const;

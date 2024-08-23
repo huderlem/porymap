@@ -5,7 +5,6 @@
 #include "log.h"
 
 // TODO: Draw species icons below legend icons?
-// TODO: NoScrollComboBoxes
 // TODO: Save window size, theme selection in config
 // TODO: Help button that explains the charts
 
@@ -55,11 +54,18 @@ void WildMonChart::setTable(const EncounterTableModel *table) {
 
 void WildMonChart::clearTableData() {
     this->groupNames.clear();
+    this->groupNamesReversed.clear();
+    this->speciesInLegendOrder.clear();
     this->tableIndexToGroupName.clear();
     this->groupedLevelRanges.clear();
     this->speciesToGroupedData.clear();
     this->speciesToColor.clear();
     setWindowTitle(baseWindowTitle);
+
+    const QSignalBlocker blocker1(ui->comboBox_Species);
+    const QSignalBlocker blocker2(ui->comboBox_Group);
+    ui->comboBox_Species->clear();
+    ui->comboBox_Group->clear();
 }
 
 // Extract all the data from the table that we need for the charts
@@ -72,13 +78,18 @@ void WildMonChart::readTable() {
 
     // Read data about encounter groups, e.g. for "fishing_mons" we want to know table indexes 2-4 belong to "good_rod"
     for (auto groupPair : this->table->encounterField().groups) {
-        // Prepending names here instead of appending so that charts can match the order in the table visually.
-        this->groupNames.prepend(groupPair.first);
+        // Frustratingly when adding categories to the charts they insert bottom-to-top, but the table and combo box
+        // insert top-to-bottom. To keep the order visually the same across displays we keep separate ordered lists.
+        this->groupNames.append(groupPair.first);
+        this->groupNamesReversed.prepend(groupPair.first);
         for (auto i : groupPair.second)
             this->tableIndexToGroupName.insert(i, groupPair.first);
     }
-    if (this->groupNames.isEmpty())
-        this->groupNames.append(QString()); // Implicitly 1 unnamed group when none are listed
+    // Implicitly 1 unnamed group when none are listed
+    if (this->groupNames.isEmpty()) {
+        this->groupNames.append(QString());
+        this->groupNamesReversed.append(QString());
+    }
     
     // Read data from the table, combining data for duplicate entries
     const QList<double> tableFrequencies = this->table->percentages();
@@ -119,18 +130,13 @@ void WildMonChart::readTable() {
     }
 
     // Populate combo boxes
-    // TODO: Limit width
     const QSignalBlocker blocker1(ui->comboBox_Species);
     const QSignalBlocker blocker2(ui->comboBox_Group);
     ui->comboBox_Species->clear();
-    ui->comboBox_Species->addItems(getSpeciesNames());
+    ui->comboBox_Species->addItems(getSpeciesNamesAlphabetical());
     ui->comboBox_Group->clear();
-    if (usesGroupLabels()) {
-        ui->comboBox_Group->addItems(this->groupNames);
-        ui->comboBox_Group->setEnabled(true);
-    } else {
-        ui->comboBox_Group->setEnabled(false);
-    }
+    ui->comboBox_Group->addItems(this->groupNames);
+    ui->comboBox_Group->setEnabled(usesGroupLabels());
 }
 
 void WildMonChart::createCharts() {
@@ -142,7 +148,7 @@ void WildMonChart::createCharts() {
     //QTimer::singleShot(chart->animationDuration() + 500, this, &WildMonChart::stopChartAnimation);
 }
 
-QStringList WildMonChart::getSpeciesNames() const {
+QStringList WildMonChart::getSpeciesNamesAlphabetical() const {
     return this->speciesToGroupedData.keys();
 }
 
@@ -174,10 +180,10 @@ bool WildMonChart::usesGroupLabels() const {
 
 void WildMonChart::createSpeciesDistributionChart() {
     QList<QBarSet*> barSets;
-    for (const auto species : getSpeciesNames()) {
+    for (const auto species : getSpeciesNamesAlphabetical()) {
         // Add encounter chance data
         auto set = new QBarSet(species);
-        for (auto groupName : this->groupNames)
+        for (auto groupName : this->groupNamesReversed)
             set->append(getSpeciesFrequency(species, groupName) * 100);
 
         // We order the bar sets from lowest to highest total, left-to-right.
@@ -195,6 +201,11 @@ void WildMonChart::createSpeciesDistributionChart() {
             QToolTip::showText(QCursor::pos(), text);
         });
     }
+
+    // Preserve the order we set earlier so that the legend isn't shuffling around for the other all-species charts.
+    this->speciesInLegendOrder.clear();
+    for (auto set : barSets)
+        this->speciesInLegendOrder.append(set->label());
 
     // Set up series
     auto series = new QHorizontalPercentBarSeries();
@@ -220,7 +231,7 @@ void WildMonChart::createSpeciesDistributionChart() {
     // Y-axis is the names of encounter groups (e.g. Old Rod, Good Rod...)
     if (usesGroupLabels()) {
         auto axisY = new QBarCategoryAxis();
-        axisY->setCategories(this->groupNames);
+        axisY->setCategories(this->groupNamesReversed);
         chart->addAxis(axisY, Qt::AlignLeft);
         series->attachAxis(axisY);
     }
@@ -272,7 +283,7 @@ void WildMonChart::createLevelDistributionChart() {
         levelRange = getLevelRange(species, groupName);
     } else {
         // Species box is inactive, we display data for all species in the table.
-        for (const auto species : getSpeciesNames())
+        for (const auto species : this->speciesInLegendOrder)
             barSets.append(createLevelDistributionBarSet(species, groupName, false, &maxPercent));
         levelRange = this->groupedLevelRanges.value(groupName);
     }
