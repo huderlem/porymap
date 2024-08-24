@@ -58,9 +58,10 @@ private:
     void readTable();
     void createSpeciesDistributionChart();
     void createLevelDistributionChart();
-    QBarSet* createLevelDistributionBarSet(const QString &, const QString &, bool, double *);
+    QBarSet* createLevelDistributionBarSet(const QString &, const QString &, bool);
 
-    void applySpeciesColors(QAbstractBarSeries *);
+    void saveSpeciesColors(const QList<QBarSet*> &);
+    void applySpeciesColors(const QList<QBarSet*> &);
     QChart::ChartTheme currentTheme() const;
     void updateTheme();
     void stopChartAnimation();

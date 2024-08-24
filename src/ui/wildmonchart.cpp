@@ -232,6 +232,7 @@ void WildMonChart::createSpeciesDistributionChart() {
     chart->legend()->setVisible(true);
     chart->legend()->setShowToolTips(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
+    saveSpeciesColors(barSets);
 
     // X-axis is the % frequency. We're already showing percentages on the bar, so we just display 0/50/100%
     auto axisX = new QValueAxis();
@@ -248,24 +249,19 @@ void WildMonChart::createSpeciesDistributionChart() {
         series->attachAxis(axisY);
     }
 
-    applySpeciesColors(series);
-
     if (ui->chartView_SpeciesDistribution->chart())
         ui->chartView_SpeciesDistribution->chart()->deleteLater();
     ui->chartView_SpeciesDistribution->setChart(chart);
 }
 
-QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, const QString &groupName, bool individual, double *barMax) {
+QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, const QString &groupName, bool individual) {
     const double totalFrequency = individual ? getSpeciesFrequency(species, groupName) : 1.0;
     const QMap<int, double> levelFrequencies = getLevelFrequencies(species, groupName);
 
     auto set = new QBarSet(species);
     LevelRange levelRange = individual ? getLevelRange(species, groupName) : this->groupedLevelRanges.value(groupName);
     for (int i = levelRange.min; i <= levelRange.max; i++) {
-        double percent = levelFrequencies.value(i, 0) / totalFrequency * 100;
-        if (*barMax < percent)
-            *barMax = percent;
-        set->append(percent);
+        set->append(levelFrequencies.value(i, 0) / totalFrequency * 100);
     }
 
     // Show data when hovering over a bar set. This covers some shortfalls in our ability to control the chart design.
@@ -296,71 +292,58 @@ void WildMonChart::createLevelDistributionChart() {
     const QString groupName = ui->comboBox_Group->currentText();
 
     LevelRange levelRange;
-    double maxPercent = 0.0;
     QList<QBarSet*> barSets;
 
     // Create bar sets
     if (ui->groupBox_Species->isChecked()) {
         // Species box is active, we just display data for the selected species.
         const QString species = ui->comboBox_Species->currentText();
-        barSets.append(createLevelDistributionBarSet(species, groupName, true, &maxPercent));
+        barSets.append(createLevelDistributionBarSet(species, groupName, true));
         levelRange = getLevelRange(species, groupName);
     } else {
         // Species box is inactive, we display data for all species in the table.
         for (const auto species : this->speciesInLegendOrder)
-            barSets.append(createLevelDistributionBarSet(species, groupName, false, &maxPercent));
+            barSets.append(createLevelDistributionBarSet(species, groupName, false));
         levelRange = this->groupedLevelRanges.value(groupName);
     }
 
+    // Set up series
+    auto series = new QStackedBarSeries();
+    //series->setLabelsVisible();
+    series->append(barSets);
+
     // Set up chart
     auto chart = new QChart();
-    //chart->setTitle("");
+    chart->addSeries(series);
     chart->setTheme(currentTheme());
     chart->setAnimationOptions(QChart::SeriesAnimations);
     chart->legend()->setVisible(true);
     chart->legend()->setShowToolTips(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
+    applySpeciesColors(barSets); // Has to happen after theme is set
 
     // X-axis is the level range.
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     for (int i = levelRange.min; i <= levelRange.max; i++)
         axisX->append(QString::number(i));
     chart->addAxis(axisX, Qt::AlignBottom);
+    series->attachAxis(axisX);
 
-    // Y-axis is the % frequency. We round the max up to a multiple of 5.
+    // Y-axis is the % frequency
+    QValueAxis *axisY = new QValueAxis();
+    axisY->setLabelFormat("%u%%");
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisY);
+
+    // We round the y-axis max up to a multiple of 5.
     auto roundUp = [](int num, int multiple) {
         auto remainder = num % multiple;
         if (remainder == 0)
             return num;
         return num + multiple - remainder;
     };
-    QValueAxis *axisY = new QValueAxis();
-    axisY->setMax(roundUp(qCeil(maxPercent), 5)); // TODO: This isn't taking stacking into account
-    //axisY->setTickType(QValueAxis::TicksDynamic);
-    //axisY->setTickInterval(5);
-    axisY->setLabelFormat("%u%%");
-    chart->addAxis(axisY, Qt::AlignLeft);
+    axisY->setMax(roundUp(qCeil(axisY->max()), 5));
 
-    // Set up series. Grouped mode uses a stacked bar series.
-    if (barSets.length() < 2) {
-        auto series = new QBarSeries();
-        series->append(barSets);
-        series->attachAxis(axisX);
-        series->attachAxis(axisY);
-        //series->setLabelsVisible();
-        chart->addSeries(series);
-        applySpeciesColors(series);
-    } else {
-        auto series = new QStackedBarSeries();
-        series->append(barSets);
-        series->attachAxis(axisX);
-        series->attachAxis(axisY);
-        //series->setLabelsVisible();
-        chart->addSeries(series);
-        applySpeciesColors(series);
-    }
-
-    // TODO: Cache old charts?
     if (ui->chartView_LevelDistribution->chart())
         ui->chartView_LevelDistribution->chart()->deleteLater();
     ui->chartView_LevelDistribution->setChart(chart);
@@ -384,24 +367,23 @@ void WildMonChart::updateTheme() {
         return;
     this->speciesToColor.clear();
     chart->setTheme(theme);
-    applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0)));
+    saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 
     chart = ui->chartView_LevelDistribution->chart();
     if (chart) {
         chart->setTheme(theme);
-        applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0)));
+        applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
     }
 }
 
-void WildMonChart::applySpeciesColors(QAbstractBarSeries *series) {
-    for (auto set : series->barSets()) {
-        const QString species = set->label();
-        if (speciesToColor.contains(species)) {
-            set->setColor(speciesToColor.value(species));
-        } else {
-            speciesToColor.insert(species, set->color());
-        }
-    }
+void WildMonChart::saveSpeciesColors(const QList<QBarSet*> &barSets) {
+    for (auto set : barSets)
+        this->speciesToColor.insert(set->label(), set->color());
+}
+
+void WildMonChart::applySpeciesColors(const QList<QBarSet*> &barSets) {
+    for (auto set : barSets)
+        set->setColor(this->speciesToColor.value(set->label()));
 }
 
 void WildMonChart::stopChartAnimation() {
