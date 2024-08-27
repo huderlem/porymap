@@ -2,10 +2,6 @@
 #include "ui_wildmonchart.h"
 #include "config.h"
 
-#include "log.h"
-
-// TODO: Draw species icons below legend icons?
-
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
 
 static const QList<QPair<QString, QChart::ChartTheme>> themes = {
@@ -48,8 +44,7 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
         porymapConfig.wildMonChartTheme = ui->comboBox_Theme->currentText();
     }
 
-    // TODO: Re-enable once finished
-    //restoreGeometry(porymapConfig.wildMonChartGeometry);
+    restoreGeometry(porymapConfig.wildMonChartGeometry);
 
     setTable(table);
 };
@@ -158,25 +153,36 @@ void WildMonChart::readTable() {
 }
 
 void WildMonChart::refresh() {
+    const QSignalBlocker blocker1(ui->comboBox_Species);
+    const QSignalBlocker blocker2(ui->comboBox_Group);
+    const QString oldSpecies = ui->comboBox_Species->currentText();
+    const QString oldGroup = ui->comboBox_Group->currentText();
+
     readTable();
+
+    // If the old UI settings are still valid we should restore them
+    int index = ui->comboBox_Species->findText(oldSpecies);
+    if (index >= 0) ui->comboBox_Species->setCurrentIndex(index);
+
+    index = ui->comboBox_Group->findText(oldGroup);
+    if (index >= 0) ui->comboBox_Group->setCurrentIndex(index);
+
     refreshSpeciesDistributionChart();
     refreshLevelDistributionChart();
-
-    // Turn off the animation once it's played, otherwise it replays any time the window changes size.
-    // TODO: Store timer, disable if closing or creating new chart
-    //QTimer::singleShot(chart->animationDuration() + 500, this, &WildMonChart::stopChartAnimation);
 }
 
 void WildMonChart::refreshSpeciesDistributionChart() {
     if (ui->chartView_SpeciesDistribution->chart())
         ui->chartView_SpeciesDistribution->chart()->deleteLater();
     ui->chartView_SpeciesDistribution->setChart(createSpeciesDistributionChart());
+    limitChartAnimation(ui->chartView_SpeciesDistribution->chart());
 }
 
 void WildMonChart::refreshLevelDistributionChart() {
     if (ui->chartView_LevelDistribution->chart())
         ui->chartView_LevelDistribution->chart()->deleteLater();
     ui->chartView_LevelDistribution->setChart(createLevelDistributionChart());
+    limitChartAnimation(ui->chartView_LevelDistribution->chart());
 }
 
 QStringList WildMonChart::getSpeciesNamesAlphabetical() const {
@@ -401,18 +407,36 @@ void WildMonChart::applySpeciesColors(const QList<QBarSet*> &barSets) {
         set->setColor(this->speciesToColor.value(set->label()));
 }
 
-void WildMonChart::stopChartAnimation(QChart *chart) {
-    if (!chart)
-        return;
-    chart->setAnimationOptions(QChart::NoAnimation);
+// Turn off the animation once it's played, otherwise it replays any time the window changes size.
+void WildMonChart::limitChartAnimation(QChart *chart) {
+    // Chart may be destroyed before the animation finishes
+    QPointer<QChart> safeChart = chart;
+
+    // QChart has no signal for when the animation is finished, so we use a timer to stop the animation.
+    // It is technically possible to get the chart to freeze mid-animation by resizing the window after
+    // the timer starts but before it finishes, but 1. animations are short so this is difficult to do,
+    // and 2. the issue resolves if the window is resized afterwards, so it's probably fine.
+    QTimer::singleShot(chart->animationDuration() + 500, [safeChart] {
+        if (safeChart) safeChart->setAnimationOptions(QChart::NoAnimation);
+    });
 }
 
 void WildMonChart::showHelpDialog() {
     static const QString text = "This window provides some visualizations of the data in your current Wild Pokémon tab";
-    static const QString informative = "The <b>Species Distribution</b> tab shows the cumulative encounter chance for each species "
-                                       "in the table. In other words, it answers the question \"For a given encounter of this type, "
-                                       "what is the likelihood that the pokémon encountered will be of that species?\"<br><br>"
-                                       "The <b>Level Distribution</b> tab..."; // TODO
+    static const QString informative =
+        "The <b>Species Distribution</b> tab shows the cumulative encounter chance for each species "
+       "in the table. In other words, it answers the question \"What is the likelihood of encountering "
+       "each species in a single encounter?\""
+       "<br><br>"
+       "The <b>Level Distribution</b> tab shows the chance of encountering each species at a particular level. "
+       "In the top left under <b>Group</b> you can select which encounter group to show data for. "
+       "In the top right under <b>Species</b> you can select which species to show data for. "
+       "<br><br>"
+       "<b>Individual Mode</b> on the <b>Level Distribution</b> tab toggles whether data is shown for all species in the table. "
+       "The percentages will update to reflect whether you're showing all species or just that individual species. "
+       "In other words, while <b>Individual Mode</b> is checked the chart is answering the question \"If a species x "
+       "is encountered, what is the likelihood that it will be level y\", and while <b>Individual Mode</b> is not checked, "
+       "it answers the question \"For a single encounter, what is the likelihood of encountering a species x at level y.\"";
     QMessageBox msgBox(QMessageBox::Information, "porymap", text, QMessageBox::Close, this);
     msgBox.setTextFormat(Qt::RichText);
     msgBox.setInformativeText(informative);

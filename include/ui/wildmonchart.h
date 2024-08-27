@@ -67,7 +67,7 @@ private:
     void applySpeciesColors(const QList<QBarSet*> &);
     QChart::ChartTheme currentTheme() const;
     void updateTheme();
-    void stopChartAnimation(QChart*);
+    void limitChartAnimation(QChart*);
 
     void showHelpDialog();
 };
