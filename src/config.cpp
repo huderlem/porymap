@@ -85,6 +85,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
     {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
     {ProjectIdentifier::define_max_level,              {"define_max_level",              "MAX_LEVEL"}},
+    {ProjectIdentifier::define_max_encounter_rate,     {"define_max_encounter_rate",     "MAX_ENCOUNTER_RATE"}},
     {ProjectIdentifier::define_tiles_primary,          {"define_tiles_primary",          "NUM_TILES_IN_PRIMARY"}},
     {ProjectIdentifier::define_tiles_total,            {"define_tiles_total",            "NUM_TILES_TOTAL"}},
     {ProjectIdentifier::define_metatiles_primary,      {"define_metatiles_primary",      "NUM_METATILES_IN_PRIMARY"}},
@@ -174,6 +175,7 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::fieldmap,                         { "fieldmap",                        "src/fieldmap.c"}},
     {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
     {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
+    {ProjectFilePath::wild_encounter,                   { "wild_encounter",                  "src/wild_encounter.c"}},
     {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
 };
 

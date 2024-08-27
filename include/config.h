@@ -194,6 +194,7 @@ enum ProjectIdentifier {
     define_obj_event_count,
     define_min_level,
     define_max_level,
+    define_max_encounter_rate,
     define_tiles_primary,
     define_tiles_total,
     define_metatiles_primary,
@@ -281,6 +282,7 @@ enum ProjectFilePath {
     global_fieldmap,
     fieldmap,
     initial_facing_table,
+    wild_encounter,
     pokemon_icon_table,
     pokemon_gfx,
 };

@@ -67,6 +67,7 @@ The filepath that Porymap expects for each file can be overridden on the ``Files
    include/fieldmap.h, yes, no, ``constants_fieldmap``, reads tileset related constants
    src/fieldmap.c, yes, no, ``fieldmap``, reads ``symbol_attribute_table``
    src/event_object_movement.c, yes, no, ``initial_facing_table``, reads ``symbol_facing_directions``
+   src/wild_encounter.c, yes, no, ``wild_encounter``, reads ``define_max_encounter_rate``
    src/pokemon_icon.c, yes, no, ``pokemon_icon_table``, reads files in ``symbol_pokemon_icon_table``
    graphics/pokemon/\*/icon.png, yes, no, ``pokemon_gfx``, to search for Pokémon icons if they aren't found in ``symbol_pokemon_icon_table``
 
@@ -96,6 +97,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_obj_event_count``, ``OBJECT_EVENT_TEMPLATES_COUNT``, to limit total Object Events
    ``define_min_level``, ``MIN_LEVEL``, minimum wild encounters level
    ``define_max_level``, ``MAX_LEVEL``, maximum wild encounters level
+   ``define_max_encounter_rate``, ``MAX_ENCOUNTER_RATE``, this value / 16 will be the maximum encounter rate on the ``Wild Pokémon`` tab
    ``define_tiles_primary``, ``NUM_TILES_IN_PRIMARY``, 
    ``define_tiles_total``, ``NUM_TILES_TOTAL``,
    ``define_metatiles_primary``, ``NUM_METATILES_IN_PRIMARY``, total metatiles are calculated using metatile ID mask

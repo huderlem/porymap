@@ -75,15 +75,12 @@ QWidget *SpinBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewIt
 
     int col = index.column();
     if (col == EncounterTableModel::ColumnType::MinLevel || col == EncounterTableModel::ColumnType::MaxLevel) {
-        editor->setMinimum(this->project->miscConstants.value("min_level_define").toInt());
-        editor->setMaximum(this->project->miscConstants.value("max_level_define").toInt());
+        editor->setMinimum(this->project->pokemonMinLevel);
+        editor->setMaximum(this->project->pokemonMaxLevel);
     }
     else if (col == EncounterTableModel::ColumnType::EncounterRate) {
-        // The games multiply the encounter rate value provided here by 16, so the input limit is the max/16.
-        // TODO: Read MAX_ENCOUNTER_RATE?
-        static const int maxEncounterRate = 2880;
         editor->setMinimum(0);
-        editor->setMaximum(maxEncounterRate / 16);
+        editor->setMaximum(this->project->maxEncounterRate);
     }
 
     return editor;
