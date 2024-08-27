@@ -30,9 +30,9 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     connect(ui->button_Help, &QAbstractButton::clicked, this, &WildMonChart::showHelpDialog);
 
     // Changing these settings changes which level distribution chart is shown
-    connect(ui->groupBox_Species, &QGroupBox::clicked, this, &WildMonChart::createLevelDistributionChart);
-    connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
-    connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::createLevelDistributionChart);
+    connect(ui->groupBox_Species, &QGroupBox::clicked, this, &WildMonChart::refreshLevelDistributionChart);
+    connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
+    connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
 
     // Set up Theme combo box
     for (auto i : themes)
@@ -59,9 +59,14 @@ WildMonChart::~WildMonChart() {
 };
 
 void WildMonChart::setTable(const EncounterTableModel *table) {
+    if (this->table == table)
+        return;
     this->table = table;
-    readTable();
-    createCharts();
+    refresh();
+}
+
+void WildMonChart::clearTable() {
+    setTable(nullptr);
 }
 
 void WildMonChart::clearTableData() {
@@ -78,6 +83,7 @@ void WildMonChart::clearTableData() {
     const QSignalBlocker blocker2(ui->comboBox_Group);
     ui->comboBox_Species->clear();
     ui->comboBox_Group->clear();
+    ui->comboBox_Group->setEnabled(false);
 }
 
 // Extract all the data from the table that we need for the charts
@@ -151,13 +157,26 @@ void WildMonChart::readTable() {
     ui->comboBox_Group->setEnabled(usesGroupLabels());
 }
 
-void WildMonChart::createCharts() {
-    createSpeciesDistributionChart();
-    createLevelDistributionChart();
-    
+void WildMonChart::refresh() {
+    readTable();
+    refreshSpeciesDistributionChart();
+    refreshLevelDistributionChart();
+
     // Turn off the animation once it's played, otherwise it replays any time the window changes size.
     // TODO: Store timer, disable if closing or creating new chart
     //QTimer::singleShot(chart->animationDuration() + 500, this, &WildMonChart::stopChartAnimation);
+}
+
+void WildMonChart::refreshSpeciesDistributionChart() {
+    if (ui->chartView_SpeciesDistribution->chart())
+        ui->chartView_SpeciesDistribution->chart()->deleteLater();
+    ui->chartView_SpeciesDistribution->setChart(createSpeciesDistributionChart());
+}
+
+void WildMonChart::refreshLevelDistributionChart() {
+    if (ui->chartView_LevelDistribution->chart())
+        ui->chartView_LevelDistribution->chart()->deleteLater();
+    ui->chartView_LevelDistribution->setChart(createLevelDistributionChart());
 }
 
 QStringList WildMonChart::getSpeciesNamesAlphabetical() const {
@@ -190,7 +209,7 @@ bool WildMonChart::usesGroupLabels() const {
     return this->groupNames.length() > 1;
 }
 
-void WildMonChart::createSpeciesDistributionChart() {
+QChart* WildMonChart::createSpeciesDistributionChart() {
     QList<QBarSet*> barSets;
     for (const auto species : getSpeciesNamesAlphabetical()) {
         // Add encounter chance data
@@ -249,9 +268,7 @@ void WildMonChart::createSpeciesDistributionChart() {
         series->attachAxis(axisY);
     }
 
-    if (ui->chartView_SpeciesDistribution->chart())
-        ui->chartView_SpeciesDistribution->chart()->deleteLater();
-    ui->chartView_SpeciesDistribution->setChart(chart);
+    return chart;
 }
 
 QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, const QString &groupName, bool individual) {
@@ -281,14 +298,14 @@ QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, con
             const QSignalBlocker blocker2(ui->comboBox_Species);
             ui->groupBox_Species->setChecked(true);
             ui->comboBox_Species->setCurrentText(species);
-            createLevelDistributionChart();
+            refreshLevelDistributionChart();
         });
     }
 
     return set;
 }
 
-void WildMonChart::createLevelDistributionChart() {
+QChart* WildMonChart::createLevelDistributionChart() {
     const QString groupName = ui->comboBox_Group->currentText();
 
     LevelRange levelRange;
@@ -344,9 +361,7 @@ void WildMonChart::createLevelDistributionChart() {
     };
     axisY->setMax(roundUp(qCeil(axisY->max()), 5));
 
-    if (ui->chartView_LevelDistribution->chart())
-        ui->chartView_LevelDistribution->chart()->deleteLater();
-    ui->chartView_LevelDistribution->setChart(chart);
+    return chart;
 }
 
 QChart::ChartTheme WildMonChart::currentTheme() const {
@@ -365,7 +380,6 @@ void WildMonChart::updateTheme() {
     QChart *chart = ui->chartView_SpeciesDistribution->chart();
     if (!chart)
         return;
-    this->speciesToColor.clear();
     chart->setTheme(theme);
     saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 
@@ -377,6 +391,7 @@ void WildMonChart::updateTheme() {
 }
 
 void WildMonChart::saveSpeciesColors(const QList<QBarSet*> &barSets) {
+    this->speciesToColor.clear();
     for (auto set : barSets)
         this->speciesToColor.insert(set->label(), set->color());
 }
@@ -386,9 +401,10 @@ void WildMonChart::applySpeciesColors(const QList<QBarSet*> &barSets) {
         set->setColor(this->speciesToColor.value(set->label()));
 }
 
-void WildMonChart::stopChartAnimation() {
-    if (ui->chartView_SpeciesDistribution->chart())
-        ui->chartView_SpeciesDistribution->chart()->setAnimationOptions(QChart::NoAnimation);
+void WildMonChart::stopChartAnimation(QChart *chart) {
+    if (!chart)
+        return;
+    chart->setAnimationOptions(QChart::NoAnimation);
 }
 
 void WildMonChart::showHelpDialog() {

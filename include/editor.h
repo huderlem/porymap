@@ -26,6 +26,7 @@
 #include "movablerect.h"
 #include "cursortilerect.h"
 #include "mapruler.h"
+#include "encountertablemodel.h"
 
 class DraggablePixmapItem;
 class MetatilesPixmapItem;
@@ -84,7 +85,7 @@ public:
     void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
-    QTableView* getCurrentWildMonTable();
+    EncounterTableModel* getCurrentWildMonTable();
     void updateDiveMap(QString mapName);
     void updateEmergeMap(QString mapName);
     void setSelectedConnection(MapConnection *connection);
@@ -224,7 +225,9 @@ private slots:
 signals:
     void objectsChanged();
     void openConnectedMap(MapConnection*);
-    void wildMonDataChanged();
+    void wildMonTableOpened(EncounterTableModel*);
+    void wildMonTableClosed();
+    void wildMonTableEdited();
     void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);

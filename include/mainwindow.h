@@ -183,7 +183,6 @@ private slots:
     void onOpenConnectedMap(MapConnection*);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
-    void onWildMonDataChanged();
     void openNewMapPopupWindow();
     void onNewMapCreated();
     void onMapCacheCleared();

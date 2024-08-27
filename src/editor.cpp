@@ -7,7 +7,6 @@
 #include "mapsceneeventfilter.h"
 #include "metatile.h"
 #include "montabwidget.h"
-#include "encountertablemodel.h"
 #include "editcommands.h"
 #include "config.h"
 #include "scripting.h"
@@ -42,6 +41,11 @@ Editor::Editor(Ui::MainWindow* ui)
             updateSelectedEvents();
             selectNewEvents = false;
         }
+    });
+
+    // Send signals used for updating the wild pokemon summary chart
+    connect(ui->stackedWidget_WildMons, &QStackedWidget::currentChanged, [this] {
+        emit wildMonTableOpened(getCurrentWildMonTable());
     });
 }
 
@@ -79,9 +83,7 @@ void Editor::saveUiFields() {
 }
 
 void Editor::setProject(Project * project) {
-    if (this->project) {
-        closeProject();
-    }
+    closeProject();
     this->project = project;
     MapConnection::project = project;
 }
@@ -194,6 +196,7 @@ void Editor::setEditingConnections() {
 
 void Editor::clearWildMonTables() {
     QStackedWidget *stack = ui->stackedWidget_WildMons;
+    const QSignalBlocker blocker(stack);
 
     // delete widgets from previous map data if they exist
     while (stack->count()) {
@@ -203,6 +206,7 @@ void Editor::clearWildMonTables() {
     }
 
     ui->comboBox_EncounterGroupLabel->clear();
+    emit wildMonTableClosed();
 }
 
 void Editor::displayWildMonTables() {
@@ -243,8 +247,12 @@ void Editor::displayWildMonTables() {
             }
             tabIndex++;
         }
+        connect(tabWidget, &MonTabWidget::currentChanged, [this] {
+            emit wildMonTableOpened(getCurrentWildMonTable());
+        });
     }
     stack->setCurrentIndex(0);
+    emit wildMonTableOpened(getCurrentWildMonTable());
 }
 
 void Editor::addNewWildMonGroup(QWidget *window) {
@@ -359,7 +367,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             tabIndex++;
         }
         saveEncounterTabData();
-        emit wildMonDataChanged();
+        emit wildMonTableEdited();
     }
 }
 
@@ -397,7 +405,8 @@ void Editor::deleteWildMonGroup() {
         project->encounterGroupLabels.remove(i);
 
         displayWildMonTables();
-        emit wildMonDataChanged();
+        saveEncounterTabData();
+        emit wildMonTableEdited();
     }
 }
 
@@ -650,7 +659,8 @@ void Editor::configureEncounterJSON(QWidget *window) {
 
         // Re-draw the tab accordingly.
         displayWildMonTables();
-        emit wildMonDataChanged();
+        saveEncounterTabData();
+        emit wildMonTableEdited();
     }
 }
 
@@ -684,10 +694,14 @@ void Editor::saveEncounterTabData() {
     }
 }
 
-QTableView* Editor::getCurrentWildMonTable() {
-    QStackedWidget *stack = ui->stackedWidget_WildMons;
-    auto tabWidget = static_cast<MonTabWidget *>(stack->widget(stack->currentIndex()));
-    return tabWidget->tableAt(tabWidget->currentIndex());
+EncounterTableModel* Editor::getCurrentWildMonTable() {
+    auto tabWidget = static_cast<MonTabWidget*>(ui->stackedWidget_WildMons->currentWidget());
+    if (!tabWidget) return nullptr;
+
+    auto tableView = tabWidget->tableAt(tabWidget->currentIndex());
+    if (!tableView) return nullptr;
+
+    return static_cast<EncounterTableModel*>(tableView->model());
 }
 
 void Editor::updateEncounterFields(EncounterFields newFields) {

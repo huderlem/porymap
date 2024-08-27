@@ -79,8 +79,11 @@ QWidget *SpinBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewIt
         editor->setMaximum(this->project->miscConstants.value("max_level_define").toInt());
     }
     else if (col == EncounterTableModel::ColumnType::EncounterRate) {
+        // The games multiply the encounter rate value provided here by 16, so the input limit is the max/16.
+        // TODO: Read MAX_ENCOUNTER_RATE?
+        static const int maxEncounterRate = 2880;
         editor->setMinimum(0);
-        editor->setMaximum(180);
+        editor->setMaximum(maxEncounterRate / 16);
     }
 
     return editor;

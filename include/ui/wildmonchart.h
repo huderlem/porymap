@@ -21,7 +21,8 @@ public:
 
 public slots:
     void setTable(const EncounterTableModel *table);
-    void createCharts();
+    void clearTable();
+    void refresh();
 
 private:
     Ui::WildMonChart *ui;
@@ -56,15 +57,17 @@ private:
 
     void clearTableData();
     void readTable();
-    void createSpeciesDistributionChart();
-    void createLevelDistributionChart();
+    QChart* createSpeciesDistributionChart();
+    QChart* createLevelDistributionChart();
     QBarSet* createLevelDistributionBarSet(const QString &, const QString &, bool);
+    void refreshSpeciesDistributionChart();
+    void refreshLevelDistributionChart();
 
     void saveSpeciesColors(const QList<QBarSet*> &);
     void applySpeciesColors(const QList<QBarSet*> &);
     QChart::ChartTheme currentTheme() const;
     void updateTheme();
-    void stopChartAnimation();
+    void stopChartAnimation(QChart*);
 
     void showHelpDialog();
 };
