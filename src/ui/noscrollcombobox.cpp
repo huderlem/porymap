@@ -1,6 +1,7 @@
 #include "noscrollcombobox.h"
 
 #include <QCompleter>
+#include <QLineEdit>
 
 NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     : QComboBox(parent)
@@ -36,9 +37,15 @@ void NoScrollComboBox::setLineEdit(QLineEdit *edit) {
 
 void NoScrollComboBox::wheelEvent(QWheelEvent *event)
 {
-    // Only allow scrolling to modify contents when it explicitly has focus.
-    if (hasFocus())
+    // By default NoScrollComboBoxes will allow scrolling to modify its contents only when it explicitly has focus.
+    // If focusedScrollingEnabled is false it won't allow scrolling even with focus.
+    if (this->focusedScrollingEnabled && hasFocus())
         QComboBox::wheelEvent(event);
+}
+
+void NoScrollComboBox::setFocusedScrollingEnabled(bool enabled)
+{
+    this->focusedScrollingEnabled = enabled;
 }
 
 void NoScrollComboBox::setItem(int index, const QString &text)
@@ -72,4 +79,9 @@ void NoScrollComboBox::setNumberItem(int value)
 void NoScrollComboBox::setHexItem(uint32_t value)
 {
     this->setItem(this->findData(value), "0x" + QString::number(value, 16).toUpper());
+}
+
+void NoScrollComboBox::setClearButtonEnabled(bool enabled) {
+    if (this->lineEdit())
+        this->lineEdit()->setClearButtonEnabled(enabled);
 }

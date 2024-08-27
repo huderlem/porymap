@@ -8,10 +8,14 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
+- Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
 - An alert will be displayed when attempting to open a seemingly invalid project.
 
 ### Changed
+- Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
+- Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
+- A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
 - The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
 
@@ -25,6 +29,13 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix selections with multiple Events not always clearing when making a new selection.
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
+- New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
+- Fix changes to map connections not marking connected maps as unsaved.
+- Fix numerous issues related to connecting a map to itself.
+- Fix incorrect map connections getting selected when opening a map by double-clicking a map connection.
+- Fix a visual issue when quickly dragging map connections around.
+- Fix map connections rendering incorrectly if their direction name was unknown.
+- Fix map connections rendering incorrectly if their dimensions were smaller than the border draw distance.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

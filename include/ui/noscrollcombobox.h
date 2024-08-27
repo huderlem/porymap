@@ -13,11 +13,15 @@ public:
     void setTextItem(const QString &text);
     void setNumberItem(int value);
     void setHexItem(uint32_t value);
+    void setClearButtonEnabled(bool enabled);
     void setEditable(bool editable);
     void setLineEdit(QLineEdit *edit);
+    void setFocusedScrollingEnabled(bool enabled);
 
 private:
     void setItem(int index, const QString &text);
+
+    bool focusedScrollingEnabled = true;
 };
 
 #endif // NOSCROLLCOMBOBOX_H

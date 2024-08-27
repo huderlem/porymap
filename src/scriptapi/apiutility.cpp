@@ -164,7 +164,10 @@ int ScriptUtility::getMapViewTab() {
 }
 
 void ScriptUtility::setMapViewTab(int index) {
-    if (this->getMainTab() != 0 || !window->ui->mapViewTab || index < 0 || index >= window->ui->mapViewTab->count())
+    if (this->getMainTab() != MainTab::Map || !window->ui->mapViewTab || index < 0 || index >= window->ui->mapViewTab->count())
+        return;
+    // Can't select tab if it's disabled
+    if (!window->ui->mapViewTab->isTabEnabled(index))
         return;
     window->on_mapViewTab_tabBarClicked(index);
 }
@@ -178,7 +181,7 @@ bool ScriptUtility::getGridVisibility() {
 }
 
 void ScriptUtility::setBorderVisibility(bool visible) {
-    window->editor->toggleBorderVisibility(visible, false);
+    window->ui->checkBox_ToggleBorder->setChecked(visible);
 }
 
 bool ScriptUtility::getBorderVisibility() {
