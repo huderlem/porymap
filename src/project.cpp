@@ -2611,7 +2611,7 @@ bool Project::readSpeciesIconPaths() {
     const QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
 
     // Read species constants. If this fails we can get them from the icon table (but we shouldn't rely on it).
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix)};
+    const QStringList prefixes = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix))};
     const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
     fileWatcher.addPath(root + "/" + constantsFilename);
     QStringList speciesNames = parser.readCDefineNames(constantsFilename, prefixes);
