@@ -66,5 +66,6 @@
         <file>images/Entities_16x16.png</file>
         <file>images/pokemon_icon_placeholder.png</file>
         <file>icons/clipboard.ico</file>
+        <file>icons/map_go.ico</file>
     </qresource>
 </RCC>

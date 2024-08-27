@@ -330,6 +330,16 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->mainSplitterState = bytesFromString(value);
     } else if (key == "metatiles_splitter_state") {
         this->metatilesSplitterState = bytesFromString(value);
+    } else if (key == "mirror_connecting_maps") {
+        this->mirrorConnectingMaps = getConfigBool(key, value);
+    } else if (key == "show_dive_emerge_maps") {
+        this->showDiveEmergeMaps = getConfigBool(key, value);
+    } else if (key == "dive_emerge_map_opacity") {
+        this->diveEmergeMapOpacity = getConfigInteger(key, value, 10, 90, 30);
+    } else if (key == "dive_map_opacity") {
+        this->diveMapOpacity = getConfigInteger(key, value, 10, 90, 15);
+    } else if (key == "emerge_map_opacity") {
+        this->emergeMapOpacity = getConfigInteger(key, value, 10, 90, 15);
     } else if (key == "collision_opacity") {
         this->collisionOpacity = getConfigInteger(key, value, 0, 100, 50);
     } else if (key == "tileset_editor_geometry") {
@@ -444,6 +454,11 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
     map.insert("wild_mon_chart_geometry", stringFromByteArray(this->wildMonChartGeometry));
+    map.insert("mirror_connecting_maps", this->mirrorConnectingMaps ? "1" : "0");
+    map.insert("show_dive_emerge_maps", this->showDiveEmergeMaps ? "1" : "0");
+    map.insert("dive_emerge_map_opacity", QString::number(this->diveEmergeMapOpacity));
+    map.insert("dive_map_opacity", QString::number(this->diveMapOpacity));
+    map.insert("emerge_map_opacity", QString::number(this->emergeMapOpacity));
     map.insert("collision_opacity", QString::number(this->collisionOpacity));
     map.insert("collision_zoom", QString::number(this->collisionZoom));
     map.insert("metatiles_zoom", QString::number(this->metatilesZoom));

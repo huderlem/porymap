@@ -24,6 +24,7 @@ SOURCES += src/core/block.cpp \
     src/core/heallocation.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
+    src/core/mapconnection.cpp \
     src/core/maplayout.cpp \
     src/core/mapparser.cpp \
     src/core/metatile.cpp \
@@ -46,13 +47,16 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/connectionslistitem.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
+    src/ui/divingmappixmapitem.cpp \
     src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/newmapconnectiondialog.cpp \
     src/ui/overlay.cpp \
     src/ui/prefab.cpp \
     src/ui/projectsettingseditor.cpp \
@@ -140,13 +144,16 @@ HEADERS  += include/core/block.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/connectionslistitem.h \
     include/ui/customscriptseditor.h \
     include/ui/customscriptslistitem.h \
+    include/ui/divingmappixmapitem.h \
     include/ui/draggablepixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/newmapconnectiondialog.h \
     include/ui/prefabframe.h \
     include/ui/projectsettingseditor.h \
     include/ui/regionmaplayoutpixmapitem.h \
@@ -207,6 +214,8 @@ HEADERS  += include/core/block.h \
     include/ui/wildmonchart.h
 
 FORMS    += forms/mainwindow.ui \
+    forms/connectionslistitem.ui \
+    forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
     forms/tileseteditor.ui \
