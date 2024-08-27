@@ -36,6 +36,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix a visual issue when quickly dragging map connections around.
 - Fix map connections rendering incorrectly if their direction name was unknown.
 - Fix map connections rendering incorrectly if their dimensions were smaller than the border draw distance.
+- Fix the map list filter retaining text between project open/close.
+- Fix the map list mishandling value gaps when sorting by Area.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
