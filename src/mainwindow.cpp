@@ -1098,6 +1098,7 @@ void MainWindow::clearProjectUI() {
     const QSignalBlocker blocker7(ui->comboBox_Type);
     const QSignalBlocker blocker8(ui->comboBox_DiveMap);
     const QSignalBlocker blocker9(ui->comboBox_EmergeMap);
+    const QSignalBlocker blockerA(ui->lineEdit_filterBox);
 
     ui->comboBox_Song->clear();
     ui->comboBox_Location->clear();
@@ -1108,6 +1109,7 @@ void MainWindow::clearProjectUI() {
     ui->comboBox_Type->clear();
     ui->comboBox_DiveMap->clear();
     ui->comboBox_EmergeMap->clear();
+    ui->lineEdit_filterBox->clear();
 
     // Clear map list
     mapListModel->clear();
