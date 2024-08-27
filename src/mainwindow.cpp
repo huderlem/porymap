@@ -1109,6 +1109,7 @@ void MainWindow::clearProjectUI() {
 
     // Clear map list
     mapListModel->clear();
+    mapListIndexes.clear();
     mapGroupItemsList->clear();
 }
 
@@ -1125,6 +1126,7 @@ void MainWindow::sortMapList() {
 
     ui->mapList->setUpdatesEnabled(false);
     mapListModel->clear();
+    mapListIndexes.clear();
     mapGroupItemsList->clear();
     QStandardItem *root = mapListModel->invisibleRootItem();
 
