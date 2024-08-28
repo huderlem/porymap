@@ -115,6 +115,8 @@ private slots:
     void on_actionCut_triggered();
     void on_actionCopy_triggered();
     void on_actionPaste_triggered();
+    void on_horizontalSlider_MetatilesZoom_valueChanged(int value);
+    void on_horizontalSlider_TilesZoom_valueChanged(int value);
 
 private:
     void initUi();
@@ -131,6 +133,8 @@ private:
     void setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel);
     void reset();
     void drawSelectedTiles();
+    void redrawTileSelector();
+    void redrawMetatileSelector();
     void importTilesetTiles(Tileset*, bool);
     void importTilesetMetatiles(Tileset*, bool);
     void refresh();

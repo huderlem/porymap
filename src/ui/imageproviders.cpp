@@ -48,7 +48,6 @@ QImage getMetatileImage(
     QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset, useTruePalettes);
 
     QPainter metatile_painter(&metatile_image);
-    bool isTripleLayerMetatile = projectConfig.getTripleLayerMetatilesEnabled();
     const int numLayers = 3; // When rendering, metatiles always have 3 layers
     uint32_t layerType = metatile->layerType();
     for (int layer = 0; layer < numLayers; layer++)
@@ -60,7 +59,7 @@ QImage getMetatileImage(
         // Get the tile to render next
         Tile tile;
         int tileOffset = (y * 2) + x;
-        if (isTripleLayerMetatile) {
+        if (projectConfig.tripleLayerMetatilesEnabled) {
             tile = metatile->tiles.value(tileOffset + (l * 4));
         } else {
             // "Vanilla" metatiles only have 8 tiles, but render 12.

@@ -1,5 +1,5 @@
-Version: 5.2.0
-Date: January 2nd, 2024
+Version: 5.4.1
+Date: March 21st, 2024
 
 This version of porymap works with pokeruby and pokeemerald as of the following commit hashes:
 * pokeemerald: c76beed98990a57c84d3930190fd194abfedf7e8
@@ -11,6 +11,51 @@ Official Porymap documentation: https://huderlem.github.io/porymap/
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [5.4.1] - 2024-03-21
+### Fixed
+- Fix object event sprites not loading for some struct data formats.
+
+## [5.4.0] - 2024-02-13
+### Added
+- Add a `Check for Updates` option to show new releases (Windows and macOS only).
+
+### Changed
+- If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
+- Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
+- Selector images now center on the selection when eyedropping or zooming.
+
+### Fixed
+- Fix some minor visual issues with the various zoom sliders.
+- Smooth out scrolling when mouse is over tile/metatile images.
+- Fix the Tileset Editor selectors getting extra white space when changing tilesets.
+- Fix a crash when adding disabled events with the Pencil tool.
+- Fix error log about failing to find the scripts file when a new map is created.
+
+## [5.3.0] - 2024-01-15
+### Added
+- Add zoom sliders to the Tileset Editor.
+- Add `getMetatileBehaviorName` and `setMetatileBehaviorName` to the API.
+- Add `metatile_behaviors`, `num_primary_palettes`, and `num_secondary_palettes` to `constants` in the API.
+
+### Changed
+- Metatile ID strings are now padded to their current max, not the overall max.
+- Non-existent directories are now removed from the Open Recent Project menu.
+- Hovering on the layer view in the Tileset Editor now displays the tile ID.
+- Labels in the Script dropdown are now sorted alphabetically.
+- The name of the Heal Locations table is no longer enforced.
+- The API functions `addImage` and `createImage` now support project-relative paths.
+
+### Fixed
+- Fix the metatile selector rectangle jumping when selecting up or left of the origin.
+- Fix the event group tabs sometimes showing an event from the wrong group.
+- Fix the clear buttons in the Shortcuts Editor not actually removing shortcuts.
+- Fix slow speed for the script label autcomplete.
+- Fix deleted script labels still appearing in the autocomplete after project reload.
+- Fix the map search bar stealing focus on startup.
+- Fix border metatiles view not resizing properly.
+- Fix Open Recent Project not clearing the API overlay
+- Fix API error reporting.
 
 ## [5.2.0] - 2024-01-02
 ### Added

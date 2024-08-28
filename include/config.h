@@ -8,8 +8,13 @@
 #include <QSize>
 #include <QKeySequence>
 #include <QMultiMap>
+#include <QDateTime>
+#include <QUrl>
+#include <QVersionNumber>
 
 #include "events.h"
+
+static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
 
 // In both versions the default new map border is a generic tree
 #define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
@@ -28,21 +33,18 @@ class KeyValueConfigBase
 public:
     void save();
     void load();
-    void setSaveDisabled(bool disabled);
-    void logInvalidKey(const QString &key);
     virtual ~KeyValueConfigBase();
     virtual void reset() = 0;
 protected:
     virtual QString getConfigFilepath() = 0;
     virtual void parseConfigKeyValue(QString key, QString value) = 0;
     virtual QMap<QString, QString> getKeyValueMap() = 0;
-    virtual void onNewConfigFileCreated() = 0;
+    virtual void init() = 0;
     virtual void setUnreadKeys() = 0;
     bool getConfigBool(QString key, QString value);
     int getConfigInteger(QString key, QString value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
     uint32_t getConfigUint32(QString key, QString value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
-private:
-    bool saveDisabled = false;
+    void logInvalidKey(const QString &key);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -53,12 +55,20 @@ public:
     }
     virtual void reset() override {
         this->recentProjects.clear();
+        this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
         this->mapSortOrder = MapSortOrder::Group;
         this->prettyCursors = true;
+        this->mirrorConnectingMaps = true;
+        this->showDiveEmergeMaps = false;
+        this->diveEmergeMapOpacity = 30;
+        this->diveMapOpacity = 15;
+        this->emergeMapOpacity = 15;
         this->collisionOpacity = 50;
         this->collisionZoom = 30;
         this->metatilesZoom = 30;
+        this->tilesetEditorMetatilesZoom = 30;
+        this->tilesetEditorTilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;
         this->showBorder = true;
@@ -73,94 +83,42 @@ public:
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
         this->warpBehaviorWarningDisabled = false;
+        this->checkForUpdates = true;
+        this->lastUpdateCheckTime = QDateTime();
+        this->lastUpdateCheckVersion = porymapVersion;
+        this->rateLimitTimes.clear();
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
-    void setReopenOnLaunch(bool enabled);
-    void setMapSortOrder(MapSortOrder order);
-    void setPrettyCursors(bool enabled);
-    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray);
-    void setTilesetEditorGeometry(QByteArray, QByteArray);
+    QString getRecentProject();
+    QStringList getRecentProjects();
+    void setMainGeometry(QByteArray, QByteArray, QByteArray, QByteArray, QByteArray);
+    void setTilesetEditorGeometry(QByteArray, QByteArray, QByteArray);
     void setPaletteEditorGeometry(QByteArray, QByteArray);
     void setRegionMapEditorGeometry(QByteArray, QByteArray);
     void setProjectSettingsEditorGeometry(QByteArray, QByteArray);
     void setCustomScriptsEditorGeometry(QByteArray, QByteArray);
-    void setCollisionOpacity(int opacity);
-    void setCollisionZoom(int zoom);
-    void setMetatilesZoom(int zoom);
-    void setShowPlayerView(bool enabled);
-    void setShowCursorTile(bool enabled);
-    void setShowBorder(bool enabled);
-    void setShowGrid(bool enabled);
-    void setShowTilesetEditorMetatileGrid(bool enabled);
-    void setShowTilesetEditorLayerGrid(bool enabled);
-    void setMonitorFiles(bool monitor);
-    void setTilesetCheckerboardFill(bool checkerboard);
-    void setTheme(QString theme);
-    void setTextEditorOpenFolder(const QString &command);
-    void setTextEditorGotoLine(const QString &command);
-    void setPaletteEditorBitDepth(int bitDepth);
-    void setProjectSettingsTab(int tab);
-    void setWarpBehaviorWarningDisabled(bool disabled);
-    QString getRecentProject();
-    QStringList getRecentProjects();
-    bool getReopenOnLaunch();
-    MapSortOrder getMapSortOrder();
-    bool getPrettyCursors();
     QMap<QString, QByteArray> getMainGeometry();
     QMap<QString, QByteArray> getTilesetEditorGeometry();
     QMap<QString, QByteArray> getPaletteEditorGeometry();
     QMap<QString, QByteArray> getRegionMapEditorGeometry();
     QMap<QString, QByteArray> getProjectSettingsEditorGeometry();
     QMap<QString, QByteArray> getCustomScriptsEditorGeometry();
-    int getCollisionOpacity();
-    int getCollisionZoom();
-    int getMetatilesZoom();
-    bool getShowPlayerView();
-    bool getShowCursorTile();
-    bool getShowBorder();
-    bool getShowGrid();
-    bool getShowTilesetEditorMetatileGrid();
-    bool getShowTilesetEditorLayerGrid();
-    bool getMonitorFiles();
-    bool getTilesetCheckerboardFill();
-    QString getTheme();
-    QString getTextEditorOpenFolder();
-    QString getTextEditorGotoLine();
-    int getPaletteEditorBitDepth();
-    int getProjectSettingsTab();
-    bool getWarpBehaviorWarningDisabled();
-protected:
-    virtual QString getConfigFilepath() override;
-    virtual void parseConfigKeyValue(QString key, QString value) override;
-    virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override {};
-    virtual void setUnreadKeys() override {};
-private:
-    QStringList recentProjects;
+
     bool reopenOnLaunch;
-    QString stringFromByteArray(QByteArray);
-    QByteArray bytesFromString(QString);
+    bool projectManuallyClosed;
     MapSortOrder mapSortOrder;
     bool prettyCursors;
-    QByteArray mainWindowGeometry;
-    QByteArray mainWindowState;
-    QByteArray mapSplitterState;
-    QByteArray eventsSlpitterState;
-    QByteArray mainSplitterState;
-    QByteArray tilesetEditorGeometry;
-    QByteArray tilesetEditorState;
-    QByteArray paletteEditorGeometry;
-    QByteArray paletteEditorState;
-    QByteArray regionMapEditorGeometry;
-    QByteArray regionMapEditorState;
-    QByteArray projectSettingsEditorGeometry;
-    QByteArray projectSettingsEditorState;
-    QByteArray customScriptsEditorGeometry;
-    QByteArray customScriptsEditorState;
+    bool mirrorConnectingMaps;
+    bool showDiveEmergeMaps;
+    int diveEmergeMapOpacity;
+    int diveMapOpacity;
+    int emergeMapOpacity;
     int collisionOpacity;
     int collisionZoom;
     int metatilesZoom;
+    int tilesetEditorMetatilesZoom;
+    int tilesetEditorTilesZoom;
     bool showPlayerView;
     bool showCursorTile;
     bool showBorder;
@@ -175,11 +133,45 @@ private:
     int paletteEditorBitDepth;
     int projectSettingsTab;
     bool warpBehaviorWarningDisabled;
+    bool checkForUpdates;
+    QDateTime lastUpdateCheckTime;
+    QVersionNumber lastUpdateCheckVersion;
+    QMap<QUrl, QDateTime> rateLimitTimes;
+
+protected:
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void init() override {};
+    virtual void setUnreadKeys() override {};
+
+private:
+    QString stringFromByteArray(QByteArray);
+    QByteArray bytesFromString(QString);
+
+    QStringList recentProjects;
+    QByteArray mainWindowGeometry;
+    QByteArray mainWindowState;
+    QByteArray mapSplitterState;
+    QByteArray mainSplitterState;
+    QByteArray metatilesSplitterState;
+    QByteArray tilesetEditorGeometry;
+    QByteArray tilesetEditorState;
+    QByteArray tilesetEditorSplitterState;
+    QByteArray paletteEditorGeometry;
+    QByteArray paletteEditorState;
+    QByteArray regionMapEditorGeometry;
+    QByteArray regionMapEditorState;
+    QByteArray projectSettingsEditorGeometry;
+    QByteArray projectSettingsEditorState;
+    QByteArray customScriptsEditorGeometry;
+    QByteArray customScriptsEditorState;
 };
 
 extern PorymapConfig porymapConfig;
 
 enum BaseGameVersion {
+    none,
     pokeruby,
     pokefirered,
     pokeemerald,
@@ -301,7 +293,7 @@ public:
         this->baseGameVersion = BaseGameVersion::pokeemerald;
         // Reset non-version-specific settings
         this->usePoryScript = false;
-        this->enableTripleLayerMetatiles = false;
+        this->tripleLayerMetatilesEnabled = false;
         this->defaultMetatileId = 1;
         this->defaultElevation = 3;
         this->defaultCollision = 0;
@@ -327,52 +319,11 @@ public:
     static const QMap<ProjectIdentifier, QPair<QString, QString>> defaultIdentifiers;
     static const QMap<ProjectFilePath, QPair<QString, QString>> defaultPaths;
     static const QStringList versionStrings;
+    static BaseGameVersion stringToBaseGameVersion(const QString &string);
+
     void reset(BaseGameVersion baseGameVersion);
-    void setBaseGameVersion(BaseGameVersion baseGameVersion);
-    BaseGameVersion getBaseGameVersion();
-    QString getBaseGameVersionString();
-    QString getBaseGameVersionString(BaseGameVersion version);
-    BaseGameVersion stringToBaseGameVersion(QString string, bool * ok = nullptr);
-    void setUsePoryScript(bool usePoryScript);
-    bool getUsePoryScript();
-    void setProjectDir(QString projectDir);
-    QString getProjectDir();
-    void setUseCustomBorderSize(bool enable);
-    bool getUseCustomBorderSize();
-    void setEventWeatherTriggerEnabled(bool enable);
-    bool getEventWeatherTriggerEnabled();
-    void setEventSecretBaseEnabled(bool enable);
-    bool getEventSecretBaseEnabled();
-    void setHiddenItemQuantityEnabled(bool enable);
-    bool getHiddenItemQuantityEnabled();
-    void setHiddenItemRequiresItemfinderEnabled(bool enable);
-    bool getHiddenItemRequiresItemfinderEnabled();
-    void setHealLocationRespawnDataEnabled(bool enable);
-    bool getHealLocationRespawnDataEnabled();
-    void setEventCloneObjectEnabled(bool enable);
-    bool getEventCloneObjectEnabled();
-    void setFloorNumberEnabled(bool enable);
-    bool getFloorNumberEnabled();
-    void setCreateMapTextFileEnabled(bool enable);
-    bool getCreateMapTextFileEnabled();
-    void setTripleLayerMetatilesEnabled(bool enable);
-    bool getTripleLayerMetatilesEnabled();
-    int getNumLayersInMetatile();
-    int getNumTilesInMetatile();
-    void setDefaultMetatileId(uint16_t metatileId);
-    uint16_t getDefaultMetatileId();
-    void setDefaultElevation(uint16_t elevation);
-    uint16_t getDefaultElevation();
-    void setDefaultCollision(uint16_t collision);
-    uint16_t getDefaultCollision();
-    void setNewMapBorderMetatileIds(QList<uint16_t> metatileIds);
-    QList<uint16_t> getNewMapBorderMetatileIds();
-    QString getDefaultPrimaryTileset();
-    QString getDefaultSecondaryTileset();
-    void setDefaultPrimaryTileset(QString tilesetName);
-    void setDefaultSecondaryTileset(QString tilesetName);
-    void setFilePath(const QString &pathId, const QString &path);
     void setFilePath(ProjectFilePath pathId, const QString &path);
+    void setFilePath(const QString &pathId, const QString &path);
     QString getCustomFilePath(ProjectFilePath pathId);
     QString getCustomFilePath(const QString &pathId);
     QString getFilePath(ProjectFilePath pathId);
@@ -381,45 +332,15 @@ public:
     QString getCustomIdentifier(ProjectIdentifier id);
     QString getCustomIdentifier(const QString &id);
     QString getIdentifier(ProjectIdentifier id);
-    void setPrefabFilepath(QString filepath);
-    QString getPrefabFilepath();
-    void setPrefabImportPrompted(bool prompted);
-    bool getPrefabImportPrompted();
-    void setTilesetsHaveCallback(bool has);
-    bool getTilesetsHaveCallback();
-    void setTilesetsHaveIsCompressed(bool has);
-    bool getTilesetsHaveIsCompressed();
-    int getMetatileAttributesSize();
-    void setMetatileAttributesSize(int size);
-    uint32_t getMetatileBehaviorMask();
-    uint32_t getMetatileTerrainTypeMask();
-    uint32_t getMetatileEncounterTypeMask();
-    uint32_t getMetatileLayerTypeMask();
-    void setMetatileBehaviorMask(uint32_t mask);
-    void setMetatileTerrainTypeMask(uint32_t mask);
-    void setMetatileEncounterTypeMask(uint32_t mask);
-    void setMetatileLayerTypeMask(uint32_t mask);
-    uint16_t getBlockMetatileIdMask();
-    uint16_t getBlockCollisionMask();
-    uint16_t getBlockElevationMask();
-    void setBlockMetatileIdMask(uint16_t mask);
-    void setBlockCollisionMask(uint16_t mask);
-    void setBlockElevationMask(uint16_t mask);
-    bool getMapAllowFlagsEnabled();
-    void setMapAllowFlagsEnabled(bool enabled);
+    QString getBaseGameVersionString(BaseGameVersion version);
+    QString getBaseGameVersionString();
+    int getNumLayersInMetatile();
+    int getNumTilesInMetatile();
     void setEventIconPath(Event::Group group, const QString &path);
     QString getEventIconPath(Event::Group group);
     void setPokemonIconPath(const QString &species, const QString &path);
     QString getPokemonIconPath(const QString &species);
     QHash<QString, QString> getPokemonIconPaths();
-    void setCollisionSheetPath(const QString &path);
-    QString getCollisionSheetPath();
-    void setCollisionSheetWidth(int width);
-    int getCollisionSheetWidth();
-    void setCollisionSheetHeight(int height);
-    int getCollisionSheetHeight();
-    void setWarpBehaviors(const QSet<uint32_t> &behaviors);
-    QSet<uint32_t> getWarpBehaviors();
     void insertDefaultEventCustomAttribute(Event::Type eventType, const QString &key, QJsonValue value);
     void insertDefaultMapCustomAttribute(const QString &key, QJsonValue value);
     void removeDefaultEventCustomAttribute(Event::Type eventType, const QString &key);
@@ -427,38 +348,25 @@ public:
     QMap<QString, QJsonValue> getDefaultEventCustomAttributes(Event::Type eventType);
     QMap<QString, QJsonValue> getDefaultMapCustomAttributes();
 
-protected:
-    virtual QString getConfigFilepath() override;
-    virtual void parseConfigKeyValue(QString key, QString value) override;
-    virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override;
-    virtual void setUnreadKeys() override;
-private:
-    void parseCustomAttributes(const QString &key, const QString &value);
-    QString customAttributesToString(const QMap<QString, QJsonValue> attributes);
-
     BaseGameVersion baseGameVersion;
     QString projectDir;
-    QMap<ProjectIdentifier, QString> identifiers;
-    QMap<ProjectFilePath, QString> filePaths;
     bool usePoryScript;
     bool useCustomBorderSize;
-    bool enableEventWeatherTrigger;
-    bool enableEventSecretBase;
-    bool enableHiddenItemQuantity;
-    bool enableHiddenItemRequiresItemfinder;
-    bool enableHealLocationRespawnData;
-    bool enableEventCloneObject;
-    bool enableFloorNumber;
-    bool createMapTextFile;
-    bool enableTripleLayerMetatiles;
+    bool eventWeatherTriggerEnabled;
+    bool eventSecretBaseEnabled;
+    bool hiddenItemQuantityEnabled;
+    bool hiddenItemRequiresItemfinderEnabled;
+    bool healLocationRespawnDataEnabled;
+    bool eventCloneObjectEnabled;
+    bool floorNumberEnabled;
+    bool createMapTextFileEnabled;
+    bool tripleLayerMetatilesEnabled;
     uint16_t defaultMetatileId;
     uint16_t defaultElevation;
     uint16_t defaultCollision;
     QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;
-    QStringList readKeys;
     QString prefabFilepath;
     bool prefabImportPrompted;
     bool tilesetsHaveCallback;
@@ -471,15 +379,30 @@ private:
     uint16_t blockMetatileIdMask;
     uint16_t blockCollisionMask;
     uint16_t blockElevationMask;
-    bool enableMapAllowFlags;
-    QMap<Event::Group, QString> eventIconPaths;
-    QHash<QString, QString> pokemonIconPaths;
+    bool mapAllowFlagsEnabled;
     QString collisionSheetPath;
     int collisionSheetWidth;
     int collisionSheetHeight;
     QSet<uint32_t> warpBehaviors;
+
+protected:
+    virtual QString getConfigFilepath() override;
+    virtual void parseConfigKeyValue(QString key, QString value) override;
+    virtual QMap<QString, QString> getKeyValueMap() override;
+    virtual void init() override;
+    virtual void setUnreadKeys() override;
+
+private:
+    QStringList readKeys;
+    QMap<ProjectIdentifier, QString> identifiers;
+    QMap<ProjectFilePath, QString> filePaths;
+    QMap<Event::Group, QString> eventIconPaths;
+    QHash<QString, QString> pokemonIconPaths;
     QMap<Event::Type, QMap<QString, QJsonValue>> defaultEventCustomAttributes;
     QMap<QString, QJsonValue> defaultMapCustomAttributes;
+
+    void parseCustomAttributes(const QString &key, const QString &value);
+    QString customAttributesToString(const QMap<QString, QJsonValue> attributes);
 };
 
 extern ProjectConfig projectConfig;
@@ -496,32 +419,29 @@ public:
         this->customScripts.clear();
         this->readKeys.clear();
     }
-    void setRecentMap(const QString &map);
-    QString getRecentMap();
-    void setEncounterJsonActive(bool active);
-    bool getEncounterJsonActive();
-    void setProjectDir(QString projectDir);
-    QString getProjectDir();
+    void parseCustomScripts(QString input);
+    QString outputCustomScripts();
     void setCustomScripts(QStringList scripts, QList<bool> enabled);
     QStringList getCustomScriptPaths();
     QList<bool> getCustomScriptsEnabled();
-    void parseCustomScripts(QString input);
-    QString outputCustomScripts();
+
+    QString projectDir;
+    QString recentMap;
+    bool useEncounterJson;
+
 protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override;
+    virtual void init() override;
     virtual void setUnreadKeys() override;
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
     friend class ProjectConfig;
-#endif    
+#endif
+
 private:
-    QString projectDir;
-    QString recentMap;
-    bool useEncounterJson;
-    QMap<QString, bool> customScripts;
     QStringList readKeys;
+    QMap<QString, bool> customScripts;
 };
 
 extern UserConfig userConfig;
@@ -551,7 +471,7 @@ protected:
     virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
-    virtual void onNewConfigFileCreated() override { };
+    virtual void init() override { };
     virtual void setUnreadKeys() override { };
 
 private:

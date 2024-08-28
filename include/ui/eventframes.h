@@ -31,6 +31,8 @@ public:
     void invalidateUi();
     void invalidateValues();
 
+    void populateScriptDropdown(NoScrollComboBox * combo, Project * project);
+
     virtual void setActive(bool active);
 
 public:
@@ -89,8 +91,6 @@ public:
 
 private:
     ObjectEvent *object;
-
-    QCompleter *scriptCompleter = nullptr;
 };
 
 
@@ -160,8 +160,6 @@ public:
 
 private:
     TriggerEvent *trigger;
-
-    QCompleter *scriptCompleter = nullptr;
 };
 
 
@@ -205,8 +203,6 @@ public:
 
 private:
     SignEvent *sign;
-
-    QCompleter *scriptCompleter = nullptr;
 };
 
 

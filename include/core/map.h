@@ -60,6 +60,7 @@ public:
     bool hasUnsavedDataChanges = false;
     bool needsLayoutDir = true;
     bool needsHealLocation = false;
+    bool scriptsLoaded = false;
     QImage collision_image;
     QPixmap collision_pixmap;
     QImage image;
@@ -68,7 +69,6 @@ public:
     QMap<Event::Group, QList<Event *>> events;
     QList<Event *> ownedEvents; // for memory management
 
-    QList<MapConnection*> connections;
     QList<int> metatileLayerOrder;
     QList<float> metatileLayerOpacity;
 
@@ -94,10 +94,16 @@ public:
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     QList<Event *> getAllEvents() const;
-    QStringList getScriptLabels(Event::Group group = Event::Group::None) const;
+    QStringList getScriptLabels(Event::Group group = Event::Group::None);
     void removeEvent(Event *);
     void addEvent(Event *);
-    QPixmap renderConnection(MapConnection, MapLayout *);
+    void deleteConnections();
+    QList<MapConnection*> getConnections() const;
+    void removeConnection(MapConnection *);
+    void addConnection(MapConnection *);
+    void loadConnection(MapConnection *);
+    QRect getConnectionRect(const QString &direction, MapLayout *fromLayout = nullptr);
+    QPixmap renderConnection(const QString &direction, MapLayout *fromLayout = nullptr);
     QPixmap renderBorder(bool ignoreCache = false);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
@@ -121,17 +127,24 @@ public:
     QUndoStack editHistory;
     void modify();
     void clean();
+    void pruneEditHistory();
 
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
+    void trackConnection(MapConnection*);
+
+    // MapConnections in 'ownedConnections' but not 'connections' persist in the edit history.
+    QList<MapConnection*> connections;
+    QSet<MapConnection*> ownedConnections;
 
 signals:
-    void mapChanged(Map *map);
     void modified();
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
     void openScriptRequested(QString label);
+    void connectionAdded(MapConnection*);
+    void connectionRemoved(MapConnection*);
 };
 
 #endif // MAP_H

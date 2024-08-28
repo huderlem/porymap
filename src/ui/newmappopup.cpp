@@ -14,6 +14,7 @@ NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::NewMapPopup)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     this->project = project;
     this->existingLayout = false;
@@ -33,7 +34,7 @@ void NewMapPopup::init() {
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Song->addItems(project->songNames);
     ui->comboBox_NewMap_Type->addItems(project->mapTypes);
-    ui->comboBox_NewMap_Location->addItems(project->mapSectionValueToName.values());
+    ui->comboBox_NewMap_Location->addItems(project->mapSectionNameToValue.keys());
 
     // Set spin box limits
     ui->spinBox_NewMap_Width->setMinimum(1);
@@ -48,7 +49,7 @@ void NewMapPopup::init() {
     ui->spinBox_NewMap_Floor_Number->setMaximum(127);
 
     // Hide config specific ui elements
-    bool hasFlags = projectConfig.getMapAllowFlagsEnabled();
+    bool hasFlags = projectConfig.mapAllowFlagsEnabled;
     ui->checkBox_NewMap_Allow_Running->setVisible(hasFlags);
     ui->checkBox_NewMap_Allow_Biking->setVisible(hasFlags);
     ui->checkBox_NewMap_Allow_Escape_Rope->setVisible(hasFlags);
@@ -56,13 +57,13 @@ void NewMapPopup::init() {
     ui->label_NewMap_Allow_Biking->setVisible(hasFlags);
     ui->label_NewMap_Allow_Escape_Rope->setVisible(hasFlags);
 
-    bool hasCustomBorders = projectConfig.getUseCustomBorderSize();
+    bool hasCustomBorders = projectConfig.useCustomBorderSize;
     ui->spinBox_NewMap_BorderWidth->setVisible(hasCustomBorders);
     ui->spinBox_NewMap_BorderHeight->setVisible(hasCustomBorders);
     ui->label_NewMap_BorderWidth->setVisible(hasCustomBorders);
     ui->label_NewMap_BorderHeight->setVisible(hasCustomBorders);
 
-    bool hasFloorNumber = projectConfig.getFloorNumberEnabled();
+    bool hasFloorNumber = projectConfig.floorNumberEnabled;
     ui->spinBox_NewMap_Floor_Number->setVisible(hasFloorNumber);
     ui->label_NewMap_Floor_Number->setVisible(hasFloorNumber);
 
@@ -173,8 +174,8 @@ void NewMapPopup::setDefaultSettings(Project *project) {
     settings.borderHeight = DEFAULT_BORDER_HEIGHT;
     settings.primaryTilesetLabel = project->getDefaultPrimaryTilesetLabel();
     settings.secondaryTilesetLabel = project->getDefaultSecondaryTilesetLabel();
-    settings.type = project->mapTypes.at(0);
-    settings.location = project->mapSectionValueToName.values().at(0);
+    settings.type = project->mapTypes.value(0, "0");
+    settings.location = project->mapSectionNameToValue.keys().value(0, "0");
     settings.song = project->defaultSong;
     settings.canFlyTo = false;
     settings.showLocationName = true;
@@ -258,9 +259,9 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     newMap->location = this->ui->comboBox_NewMap_Location->currentText();
     newMap->song = this->ui->comboBox_NewMap_Song->currentText();
     newMap->requiresFlash = false;
-    newMap->weather = this->project->weatherNames.value(0);
+    newMap->weather = this->project->weatherNames.value(0, "0");
     newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked();
-    newMap->battle_scene = this->project->mapBattleScenes.value(0);
+    newMap->battle_scene = this->project->mapBattleScenes.value(0, "0");
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);
@@ -271,7 +272,7 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         layout->name = QString("%1_Layout").arg(newMap->name);
         layout->width = this->ui->spinBox_NewMap_Width->value();
         layout->height = this->ui->spinBox_NewMap_Height->value();
-        if (projectConfig.getUseCustomBorderSize()) {
+        if (projectConfig.useCustomBorderSize) {
             layout->border_width = this->ui->spinBox_NewMap_BorderWidth->value();
             layout->border_height = this->ui->spinBox_NewMap_BorderHeight->value();
         } else {
@@ -295,12 +296,12 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         newMap->needsHealLocation = true;
     }
 
-    if (projectConfig.getMapAllowFlagsEnabled()) {
+    if (projectConfig.mapAllowFlagsEnabled) {
         newMap->allowRunning = this->ui->checkBox_NewMap_Allow_Running->isChecked();
         newMap->allowBiking = this->ui->checkBox_NewMap_Allow_Biking->isChecked();
         newMap->allowEscaping = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked();
     }
-    if (projectConfig.getFloorNumberEnabled()) {
+    if (projectConfig.floorNumberEnabled) {
         newMap->floorNumber = this->ui->spinBox_NewMap_Floor_Number->value();
     }
     newMap->customHeaders = projectConfig.getDefaultMapCustomAttributes();

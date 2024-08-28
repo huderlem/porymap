@@ -54,6 +54,7 @@ public:
     QMap<int, QString> mapSectionValueToName;
     QMap<QString, EventGraphics*> eventGraphicsMap;
     QMap<QString, int> gfxDefines;
+    QString defaultSong;
     QStringList songNames;
     QStringList itemNames;
     QStringList flagNames;
@@ -78,6 +79,7 @@ public:
     bool usingAsmTilesets;
     QString importExportPath;
     QSet<QString> disabledSettingsNames;
+    bool wildEncountersLoaded;
 
     void set_root(QString);
 
@@ -94,6 +96,9 @@ public:
     DataQualifiers getDataQualifiers(QString, QString);
     DataQualifiers healLocationDataQualifiers;
     QString healLocationsTableName;
+
+    bool sanityCheck();
+    bool load();
 
     QMap<QString, Map*> mapCache;
     Map* loadMap(QString);
@@ -151,6 +156,7 @@ public:
     void saveAllMaps();
     void saveMap(Map*);
     void saveAllDataStructures();
+    void saveConfig();
     void saveMapLayouts();
     void saveMapGroups();
     void saveWildMonData();
@@ -162,8 +168,6 @@ public:
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);
     void saveTilesetPalettes(Tileset*);
-
-    QString defaultSong;
     void appendTilesetLabel(QString label, QString isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();
@@ -200,8 +204,6 @@ public:
     static QString getScriptFileExtension(bool usePoryScript);
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QStringList getEventScriptsFilePaths() const;
-    QCompleter *getEventScriptLabelCompleter(QStringList additionalScriptLabels);
-    QStringList getGlobalScriptLabels();
 
     QString getDefaultPrimaryTilesetLabel();
     QString getDefaultSecondaryTilesetLabel();
@@ -251,14 +253,11 @@ private:
     static int default_map_size;
     static int max_object_events;
 
-    QStringListModel eventScriptLabelModel;
-    QCompleter eventScriptLabelCompleter;
-
 signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
     void mapCacheCleared();
-    void disableWildEncountersUI();
+    void mapLoaded(Map *map);
 };
 
 #endif // PROJECT_H

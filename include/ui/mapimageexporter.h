@@ -50,9 +50,10 @@ private:
     ImageExporterMode mode = ImageExporterMode::Normal;
 
     void updatePreview();
+    void updateShowBorderState();
     void saveImage();
     QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
-    QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder);
+    QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder = false);
     bool historyItemAppliesToFrame(const QUndoCommand *command);
 
 private slots:

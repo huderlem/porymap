@@ -30,7 +30,9 @@ class Scripting
 {
 public:
     Scripting(MainWindow *mainWindow);
+    ~Scripting();
     static void init(MainWindow *mainWindow);
+    static void stop();
     static void populateGlobalObject(MainWindow *mainWindow);
     static QJSEngine *getEngine();
     static void invokeAction(int actionIndex);
@@ -52,7 +54,6 @@ public:
     static QJSValue fromBlock(Block block);
     static QJSValue fromTile(Tile tile);
     static Tile toTile(QJSValue obj);
-    static QJSValue version(QList<int> versionNums);
     static QJSValue dimensions(int width, int height);
     static QJSValue position(int x, int y);
     static const QImage * getImage(const QString &filepath, bool useCache);

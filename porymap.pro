@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui qml
+QT       += core gui qml network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -14,6 +14,8 @@ RC_ICONS = resources/icons/porymap-icon-2.ico
 ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++17 -Wall
 QMAKE_TARGET_BUNDLE_PREFIX = com.pret
+VERSION = 5.4.1
+DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/core/block.cpp \
     src/core/bitpacker.cpp \
@@ -22,10 +24,12 @@ SOURCES += src/core/block.cpp \
     src/core/heallocation.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
+    src/core/mapconnection.cpp \
     src/core/maplayout.cpp \
     src/core/mapparser.cpp \
     src/core/metatile.cpp \
     src/core/metatileparser.cpp \
+    src/core/network.cpp \
     src/core/paletteutil.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
@@ -43,15 +47,18 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/connectionslistitem.cpp \
     src/ui/customattributesdialog.cpp \
     src/ui/customattributestable.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
+    src/ui/divingmappixmapitem.cpp \
     src/ui/draggablepixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/newmapconnectiondialog.cpp \
     src/ui/overlay.cpp \
     src/ui/prefab.cpp \
     src/ui/projectsettingseditor.cpp \
@@ -104,7 +111,8 @@ SOURCES += src/core/block.cpp \
     src/project.cpp \
     src/settings.cpp \
     src/log.cpp \
-    src/ui/uintspinbox.cpp
+    src/ui/uintspinbox.cpp \
+    src/ui/updatepromoter.cpp
 
 HEADERS  += include/core/block.h \
     include/core/bitpacker.h \
@@ -119,6 +127,7 @@ HEADERS  += include/core/block.h \
     include/core/mapparser.h \
     include/core/metatile.h \
     include/core/metatileparser.h \
+    include/core/network.h \
     include/core/paletteutil.h \
     include/core/parseutil.h \
     include/core/tile.h \
@@ -136,15 +145,18 @@ HEADERS  += include/core/block.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/connectionslistitem.h \
     include/ui/customattributesdialog.h \
     include/ui/customattributestable.h \
     include/ui/customscriptseditor.h \
     include/ui/customscriptslistitem.h \
+    include/ui/divingmappixmapitem.h \
     include/ui/draggablepixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/newmapconnectiondialog.h \
     include/ui/prefabframe.h \
     include/ui/projectsettingseditor.h \
     include/ui/regionmaplayoutpixmapitem.h \
@@ -200,10 +212,13 @@ HEADERS  += include/core/block.h \
     include/scriptutility.h \
     include/settings.h \
     include/log.h \
-    include/ui/uintspinbox.h
+    include/ui/uintspinbox.h \
+    include/ui/updatepromoter.h
 
 FORMS    += forms/mainwindow.ui \
+    forms/connectionslistitem.ui \
     forms/customattributesframe.ui \
+    forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
     forms/tileseteditor.ui \
@@ -220,7 +235,8 @@ FORMS    += forms/mainwindow.ui \
     forms/projectsettingseditor.ui \
     forms/customscriptseditor.ui \
     forms/customscriptslistitem.ui \
-    forms/customattributesdialog.ui
+    forms/customattributesdialog.ui \
+    forms/updatepromoter.ui
 
 RESOURCES += \
     resources/images.qrc \

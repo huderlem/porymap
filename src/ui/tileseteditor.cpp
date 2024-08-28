@@ -20,6 +20,7 @@ TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
     map(map),
     hasUnsavedChanges(false)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
     this->initUi();
 }
@@ -71,8 +72,7 @@ bool TilesetEditor::selectMetatile(uint16_t metatileId) {
     if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset) || this->lockSelection)
         return false;
     this->metatileSelector->select(metatileId);
-    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(metatileId);
-    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y());
+    this->redrawMetatileSelector();
     return true;
 }
 
@@ -114,7 +114,7 @@ void TilesetEditor::initUi() {
 
 void TilesetEditor::setAttributesUi() {
     // Behavior
-    if (projectConfig.getMetatileBehaviorMask()) {
+    if (projectConfig.metatileBehaviorMask) {
         for (int num : project->metatileBehaviorMapInverse.keys()) {
             this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
         }
@@ -125,7 +125,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Terrain Type
-    if (projectConfig.getMetatileTerrainTypeMask()) {
+    if (projectConfig.metatileTerrainTypeMask) {
         this->ui->comboBox_terrainType->addItem("Normal", TERRAIN_NONE);
         this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
         this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
@@ -138,7 +138,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Encounter Type
-    if (projectConfig.getMetatileEncounterTypeMask()) {
+    if (projectConfig.metatileEncounterTypeMask) {
         this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
         this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
         this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
@@ -150,13 +150,13 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Layer Type
-    if (!projectConfig.getTripleLayerMetatilesEnabled()) {
+    if (!projectConfig.tripleLayerMetatilesEnabled) {
         this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
         this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
         this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
         this->ui->comboBox_layerType->setEditable(false);
         this->ui->comboBox_layerType->setMinimumContentsLength(0);
-        if (!projectConfig.getMetatileLayerTypeMask()) {
+        if (!projectConfig.metatileLayerTypeMask) {
             // User doesn't have triple layer metatiles, but has no layer type attribute.
             // Porymap is still using the layer type value to render metatiles, and with
             // no mask set every metatile will be "Middle/Top", so just display the combo
@@ -168,6 +168,7 @@ void TilesetEditor::setAttributesUi() {
         this->ui->label_layerType->setVisible(false);
         this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
+    this->ui->frame_Properties->adjustSize();
 }
 
 void TilesetEditor::setMetatileLabelValidator() {
@@ -187,7 +188,7 @@ void TilesetEditor::initMetatileSelector()
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::selectedMetatileChanged,
             this, &TilesetEditor::onSelectedMetatileChanged);
 
-    bool showGrid = porymapConfig.getShowTilesetEditorMetatileGrid();
+    bool showGrid = porymapConfig.showTilesetEditorMetatileGrid;
     this->ui->actionMetatile_Grid->setChecked(showGrid);
     this->metatileSelector->showGrid = showGrid;
 
@@ -196,7 +197,8 @@ void TilesetEditor::initMetatileSelector()
     this->metatileSelector->draw();
 
     this->ui->graphicsView_Metatiles->setScene(this->metatilesScene);
-    this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    this->ui->horizontalSlider_MetatilesZoom->setValue(porymapConfig.tilesetEditorMetatilesZoom);
 }
 
 void TilesetEditor::initMetatileLayersItem() {
@@ -211,7 +213,7 @@ void TilesetEditor::initMetatileLayersItem() {
     connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileCleared,
             this, &TilesetEditor::onHoveredTileCleared);
 
-    bool showGrid = porymapConfig.getShowTilesetEditorLayerGrid();
+    bool showGrid = porymapConfig.showTilesetEditorLayerGrid;
     this->ui->actionLayer_Grid->setChecked(showGrid);
     this->metatileLayersItem->showGrid = showGrid;
 
@@ -236,7 +238,8 @@ void TilesetEditor::initTileSelector()
     this->tileSelector->draw();
 
     this->ui->graphicsView_Tiles->setScene(this->tilesScene);
-    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
+    this->ui->graphicsView_Tiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    this->ui->horizontalSlider_TilesZoom->setValue(porymapConfig.tilesetEditorTilesZoom);
 }
 
 void TilesetEditor::initSelectedTileItem() {
@@ -293,6 +296,7 @@ void TilesetEditor::restoreWindowState() {
     QMap<QString, QByteArray> geometry = porymapConfig.getTilesetEditorGeometry();
     this->restoreGeometry(geometry.value("tileset_editor_geometry"));
     this->restoreState(geometry.value("tileset_editor_state"));
+    this->ui->splitter->restoreState(geometry.value("tileset_editor_splitter_state"));
 }
 
 void TilesetEditor::initMetatileHistory() {
@@ -314,7 +318,6 @@ void TilesetEditor::refresh() {
     this->tileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->select(this->getSelectedMetatileId());
-    this->drawSelectedTiles();
 
     if (metatileSelector) {
         if (metatileSelector->selectorShowUnused || metatileSelector->selectorShowCounts) {
@@ -330,11 +333,9 @@ void TilesetEditor::refresh() {
         }
     }
 
-    this->ui->graphicsView_Tiles->setSceneRect(0, 0, this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Tiles->setFixedSize(this->tileSelector->pixmap().width() + 2, this->tileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Metatiles->setSceneRect(0, 0, this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_Metatiles->setFixedSize(this->metatileSelector->pixmap().width() + 2, this->metatileSelector->pixmap().height() + 2);
-    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
+    this->redrawTileSelector();
+    this->redrawMetatileSelector();
+    this->drawSelectedTiles();
 }
 
 void TilesetEditor::drawSelectedTiles() {
@@ -360,7 +361,10 @@ void TilesetEditor::drawSelectedTiles() {
 
     this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(selectionImage));
     this->selectedTileScene->addItem(this->selectedTilePixmapItem);
-    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
+
+    QSize size(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
+    this->ui->graphicsView_selectedTile->setSceneRect(0, 0, size.width(), size.height());
+    this->ui->graphicsView_selectedTile->setFixedSize(size.width() + 2, size.height() + 2);
 }
 
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
@@ -476,13 +480,12 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
         }
     }
 
-    if (width == 1 && height == 1) {
-        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tileId));
-        ui->spinBox_paletteSelector->setValue(tiles[0].palette);
-        QPoint pos = tileSelector->getTileCoordsOnWidget(static_cast<uint16_t>(tiles[0].tileId));
-        ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y());
-    }
     this->tileSelector->setExternalSelection(width, height, tiles, tileIdxs);
+    if (width == 1 && height == 1) {
+        ui->spinBox_paletteSelector->setValue(tiles[0].palette);
+        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tileId));
+        this->redrawTileSelector();
+    }
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
@@ -766,7 +769,8 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
         if (this->paletteEditor) this->paletteEditor->close();
         porymapConfig.setTilesetEditorGeometry(
             this->saveGeometry(),
-            this->saveState()
+            this->saveState(),
+            this->ui->splitter->saveState()
         );
     }
 }
@@ -1066,13 +1070,13 @@ void TilesetEditor::on_actionShow_UnusedTiles_toggled(bool checked) {
 void TilesetEditor::on_actionMetatile_Grid_triggered(bool checked) {
     this->metatileSelector->showGrid = checked;
     this->metatileSelector->draw();
-    porymapConfig.setShowTilesetEditorMetatileGrid(checked);
+    porymapConfig.showTilesetEditorMetatileGrid = checked;
 }
 
 void TilesetEditor::on_actionLayer_Grid_triggered(bool checked) {
     this->metatileLayersItem->showGrid = checked;
     this->metatileLayersItem->draw();
-    porymapConfig.setShowTilesetEditorLayerGrid(checked);
+    porymapConfig.showTilesetEditorLayerGrid = checked;
 }
 
 void TilesetEditor::countMetatileUsage() {
@@ -1181,4 +1185,57 @@ void TilesetEditor::on_copyButton_metatileLabel_clicked() {
         label.prepend(tileset->getMetatileLabelPrefix());
     QGuiApplication::clipboard()->setText(label);
     QToolTip::showText(this->ui->copyButton_metatileLabel->mapToGlobal(QPoint(0, 0)), "Copied!");
+}
+
+void TilesetEditor::on_horizontalSlider_MetatilesZoom_valueChanged(int value) {
+    porymapConfig.tilesetEditorMetatilesZoom = value;
+    this->redrawMetatileSelector();
+}
+
+void TilesetEditor::redrawMetatileSelector() {
+    QSize size(this->metatileSelector->pixmap().width(), this->metatileSelector->pixmap().height());
+    this->ui->graphicsView_Metatiles->setSceneRect(0, 0, size.width(), size.height());
+
+    double scale = pow(3.0, static_cast<double>(porymapConfig.tilesetEditorMetatilesZoom - 30) / 30.0);
+    QTransform transform;
+    transform.scale(scale, scale);
+    size *= scale;
+
+    this->ui->graphicsView_Metatiles->setTransform(transform);
+    this->ui->graphicsView_Metatiles->setFixedSize(size.width() + 2, size.height() + 2);
+
+    QPoint pos = this->metatileSelector->getMetatileIdCoordsOnWidget(this->getSelectedMetatileId());
+    pos *= scale;
+
+    this->ui->scrollAreaWidgetContents_Metatiles->adjustSize();
+    auto viewport = this->ui->scrollArea_Metatiles->viewport();
+    this->ui->scrollArea_Metatiles->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
+}
+
+void TilesetEditor::on_horizontalSlider_TilesZoom_valueChanged(int value) {
+    porymapConfig.tilesetEditorTilesZoom = value;
+    this->redrawTileSelector();
+}
+
+void TilesetEditor::redrawTileSelector() {
+    QSize size(this->tileSelector->pixmap().width(), this->tileSelector->pixmap().height());
+    this->ui->graphicsView_Tiles->setSceneRect(0, 0, size.width(), size.height());
+
+    double scale = pow(3.0, static_cast<double>(porymapConfig.tilesetEditorTilesZoom - 30) / 30.0);
+    QTransform transform;
+    transform.scale(scale, scale);
+    size *= scale;
+
+    this->ui->graphicsView_Tiles->setTransform(transform);
+    this->ui->graphicsView_Tiles->setFixedSize(size.width() + 2, size.height() + 2);
+
+    this->ui->scrollAreaWidgetContents_Tiles->adjustSize();
+
+    auto tiles = this->tileSelector->getSelectedTiles();
+    if (!tiles.isEmpty()) {
+        QPoint pos = this->tileSelector->getTileCoordsOnWidget(tiles[0].tileId);
+        pos *= scale;
+        auto viewport = this->ui->scrollArea_Tiles->viewport();
+        this->ui->scrollArea_Tiles->ensureVisible(pos.x(), pos.y(), viewport->width() / 2, viewport->height() / 2);
+    }
 }

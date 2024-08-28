@@ -52,9 +52,6 @@
         <pointsize>12</pointsize>
        </font>
       </property>
-      <property name="text">
-       <string>Version 5.2.0 - January 2nd, 2024</string>
-      </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
       </property>

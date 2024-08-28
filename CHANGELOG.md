@@ -8,19 +8,81 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
+- Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
+- Add a `Close Project` option
+- An alert will be displayed when attempting to open a seemingly invalid project.
+
+### Changed
+- Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
+- Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
+- A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
+- The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
+- It's now possible to cancel quitting if there are unsaved changes in sub-windows.
+
+### Fixed
+- Fix `Add Region Map...` not updating the region map settings file.
+- Fix some crashes on invalid region map tilesets.
+- Improve error reporting for invalid region map editor settings.
+- Fix config files being written before the project is opened successfully.
+- Fix the map and other project info still displaying if a new project fails to open.
+- Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
+- Fix selections with multiple Events not always clearing when making a new selection.
+- Fix `About porymap` opening a new window each time it's activated.
+- Fix the `Edit History` window not raising to the front when reactivated.
+- New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
+- Fix changes to map connections not marking connected maps as unsaved.
+- Fix numerous issues related to connecting a map to itself.
+- Fix incorrect map connections getting selected when opening a map by double-clicking a map connection.
+- Fix a visual issue when quickly dragging map connections around.
+- Fix map connections rendering incorrectly if their direction name was unknown.
+- Fix map connections rendering incorrectly if their dimensions were smaller than the border draw distance.
+- Fix the map list filter retaining text between project open/close.
+- Fix the map list mishandling value gaps when sorting by Area.
+
+## [5.4.1] - 2024-03-21
+### Fixed
+- Fix object event sprites not loading for some struct data formats.
+
+## [5.4.0] - 2024-02-13
+### Added
+- Add a `Check for Updates` option to show new releases (Windows and macOS only).
+
+### Changed
+- If Wild Encounters fail to load they are now only disabled for that session, and the settings remain unchanged.
+- Defaults are used if project constants are missing, rather than failing to open the project or changing settings.
+- Selector images now center on the selection when eyedropping or zooming.
+
+### Fixed
+- Fix some minor visual issues with the various zoom sliders.
+- Smooth out scrolling when mouse is over tile/metatile images.
+- Fix the Tileset Editor selectors getting extra white space when changing tilesets.
+- Fix a crash when adding disabled events with the Pencil tool.
+- Fix error log about failing to find the scripts file when a new map is created.
+
+## [5.3.0] - 2024-01-15
+### Added
+- Add zoom sliders to the Tileset Editor.
 - Add `getMetatileBehaviorName` and `setMetatileBehaviorName` to the API.
 - Add `metatile_behaviors`, `num_primary_palettes`, and `num_secondary_palettes` to `constants` in the API.
 
 ### Changed
 - Metatile ID strings are now padded to their current max, not the overall max.
+- Non-existent directories are now removed from the Open Recent Project menu.
+- Hovering on the layer view in the Tileset Editor now displays the tile ID.
+- Labels in the Script dropdown are now sorted alphabetically.
 - The name of the Heal Locations table is no longer enforced.
 - The API functions `addImage` and `createImage` now support project-relative paths.
 
 ### Fixed
 - Fix the metatile selector rectangle jumping when selecting up or left of the origin.
-- Fix the event group tabs sometimes showing an event from the wrong group
+- Fix the event group tabs sometimes showing an event from the wrong group.
 - Fix the clear buttons in the Shortcuts Editor not actually removing shortcuts.
-- Fix API error reporting
+- Fix slow speed for the script label autcomplete.
+- Fix deleted script labels still appearing in the autocomplete after project reload.
+- Fix the map search bar stealing focus on startup.
+- Fix border metatiles view not resizing properly.
+- Fix Open Recent Project not clearing the API overlay
+- Fix API error reporting.
 
 ## [5.2.0] - 2024-01-02
 ### Added
@@ -452,7 +514,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.2.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/5.4.1...HEAD
+[5.4.1]: https://github.com/huderlem/porymap/compare/5.4.0...5.4.1
+[5.4.0]: https://github.com/huderlem/porymap/compare/5.3.0...5.4.0
+[5.3.0]: https://github.com/huderlem/porymap/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/huderlem/porymap/compare/5.1.1...5.2.0
 [5.1.1]: https://github.com/huderlem/porymap/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/huderlem/porymap/compare/5.0.0...5.1.0

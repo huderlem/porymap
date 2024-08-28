@@ -7,6 +7,18 @@ ScriptUtility::ScriptUtility(MainWindow *mainWindow) {
     this->window = mainWindow;
 }
 
+ScriptUtility::~ScriptUtility() {
+    if (window && window->ui && window->ui->menuTools) {
+        for (auto action : this->registeredActions) {
+            window->ui->menuTools->removeAction(action);
+        }
+    }
+    for (auto timer : this->activeTimers) {
+        timer->stop();
+        delete timer;
+    }
+}
+
 bool ScriptUtility::registerAction(QString functionName, QString actionName, QString shortcut) {
     if (!window || !window->ui || !window->ui->menuTools)
         return false;
@@ -44,12 +56,6 @@ bool ScriptUtility::registerToggleAction(QString functionName, QString actionNam
     return true;
 }
 
-void ScriptUtility::clearActions() {
-    for (auto action : this->registeredActions) {
-        window->ui->menuTools->removeAction(action);
-    }
-}
-
 QString ScriptUtility::getActionFunctionName(int actionIndex) {
     return this->actionMap.value(actionIndex);
 }
@@ -58,11 +64,15 @@ void ScriptUtility::setTimeout(QJSValue callback, int milliseconds) {
   if (!callback.isCallable() || milliseconds < 0)
       return;
 
-    QTimer *timer = new QTimer(0);
+    QTimer *timer = new QTimer();
     connect(timer, &QTimer::timeout, [=](){
-        this->callTimeoutFunction(callback);
+        if (this->activeTimers.remove(timer)) {
+            this->callTimeoutFunction(callback);
+            timer->deleteLater();
+        }
     });
-    connect(timer, &QTimer::timeout, timer, &QTimer::deleteLater);
+
+    this->activeTimers.insert(timer);
     timer->setSingleShot(true);
     timer->start(milliseconds);
 }
@@ -141,8 +151,8 @@ int ScriptUtility::getMainTab() {
 void ScriptUtility::setMainTab(int index) {
     if (!window || !window->ui || !window->ui->mainTabBar || index < 0 || index >= window->ui->mainTabBar->count())
         return;
-    // Can't select Wild Encounters tab if it's disabled
-    if (index == 4 && !userConfig.getEncounterJsonActive())
+    // Can't select tab if it's disabled
+    if (!window->ui->mainTabBar->isTabEnabled(index))
         return;
     window->on_mainTabBar_tabBarClicked(index);
 }
@@ -154,7 +164,10 @@ int ScriptUtility::getMapViewTab() {
 }
 
 void ScriptUtility::setMapViewTab(int index) {
-    if (this->getMainTab() != 0 || !window->ui->mapViewTab || index < 0 || index >= window->ui->mapViewTab->count())
+    if (this->getMainTab() != MainTab::Map || !window->ui->mapViewTab || index < 0 || index >= window->ui->mapViewTab->count())
+        return;
+    // Can't select tab if it's disabled
+    if (!window->ui->mapViewTab->isTabEnabled(index))
         return;
     window->on_mapViewTab_tabBarClicked(index);
 }
@@ -168,7 +181,7 @@ bool ScriptUtility::getGridVisibility() {
 }
 
 void ScriptUtility::setBorderVisibility(bool visible) {
-    window->editor->toggleBorderVisibility(visible, false);
+    window->ui->checkBox_ToggleBorder->setChecked(visible);
 }
 
 bool ScriptUtility::getBorderVisibility() {

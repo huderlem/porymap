@@ -27,6 +27,8 @@
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
 #include "customscriptseditor.h"
+#include "updatepromoter.h"
+#include "aboutporymap.h"
 
 
 
@@ -166,6 +168,7 @@ public slots:
 private slots:
     void on_action_Open_Project_triggered();
     void on_action_Reload_Project_triggered();
+    void on_action_Close_Project_triggered();
     void on_mapList_activated(const QModelIndex &index);
     void on_action_Save_Project_triggered();
     void openWarpMap(QString map_name, int event_id, Event::Group event_group);
@@ -176,14 +179,14 @@ private slots:
     void copy();
     void paste();
 
-    void onLoadMapRequested(QString, QString);
-    void onMapChanged(Map *map);
+    void onOpenConnectedMap(MapConnection*);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void onWildMonDataChanged();
     void openNewMapPopupWindow();
     void onNewMapCreated();
     void onMapCacheCleared();
+    void onMapLoaded(Map *map);
     void importMapFromAdvanceMap1_92();
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
@@ -216,10 +219,11 @@ private slots:
     void on_actionMove_triggered();
     void on_actionMap_Shift_triggered();
 
+    void onDeleteKeyPressed();
     void on_toolButton_deleteObject_clicked();
 
     void addNewEvent(Event::Type type);
-    void tryAddEventTab(QWidget * tab, Event::Group group);
+    void tryAddEventTab(QWidget * tab);
     void displayEventTabs();
     void updateSelectedObjects();
     void updateObjects();
@@ -242,11 +246,9 @@ private slots:
     void on_actionExport_Map_Timelapse_Image_triggered();
     void on_actionImport_Map_from_Advance_Map_1_92_triggered();
 
-    void on_comboBox_ConnectionDirection_currentTextChanged(const QString &arg1);
-    void on_spinBox_ConnectionOffset_valueChanged(int offset);
-    void on_comboBox_ConnectedMap_currentTextChanged(const QString &mapName);
     void on_pushButton_AddConnection_clicked();
-    void on_pushButton_RemoveConnection_clicked();
+    void on_button_OpenDiveMap_clicked();
+    void on_button_OpenEmergeMap_clicked();
     void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
     void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
     void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
@@ -269,6 +271,12 @@ private slots:
 
     void eventTabChanged(int index);
 
+    void on_checkBox_MirrorConnections_stateChanged(int selected);
+    void on_actionDive_Emerge_Map_triggered();
+    void on_groupBox_DiveMapOpacity_toggled(bool on);
+    void on_slider_DiveEmergeMapOpacity_valueChanged(int value);
+    void on_slider_DiveMapOpacity_valueChanged(int value);
+    void on_slider_EmergeMapOpacity_valueChanged(int value);
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
     void on_toolButton_ExpandAll_clicked();
     void on_toolButton_CollapseAll_clicked();
@@ -285,6 +293,7 @@ private slots:
     void on_spinBox_SelectedCollision_valueChanged(int collision);
     void on_actionRegion_Map_Editor_triggered();
     void on_actionPreferences_triggered();
+    void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
     void on_actionProject_Settings_triggered();
     void on_actionCustom_Scripts_triggered();
@@ -292,7 +301,7 @@ private slots:
 
 public:
     Ui::MainWindow *ui;
-    Editor *editor = nullptr;
+    QPointer<Editor> editor = nullptr;
 
 private:
     QLabel *label_MapRulerStatus = nullptr;
@@ -304,13 +313,14 @@ private:
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
+    QPointer<UpdatePromoter> updatePromoter = nullptr;
+    QPointer<NetworkAccessManager> networkAccessManager = nullptr;
+    QPointer<AboutPorymap> aboutWindow = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;
     QMap<QString, QModelIndex> mapListIndexes;
-    QIcon* mapIcon;
-    QIcon* mapEditedIcon;
-    QIcon* mapOpenedIcon;
+    QIcon mapIcon;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;
@@ -318,40 +328,32 @@ private:
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
 
-    QWidget *eventTabObjectWidget;
-    QWidget *eventTabWarpWidget;
-    QWidget *eventTabTriggerWidget;
-    QWidget *eventTabBGWidget;
-    QWidget *eventTabHealspotWidget;
-    QWidget *eventTabMultipleWidget;
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
-    bool projectHasUnsavedChanges;
-    bool projectOpenFailure = false;
     bool newMapDefaultsSet = false;
-
-    MapSortOrder mapSortOrder;
-
     bool tilesetNeedsRedraw = false;
 
+    bool userSetMap(QString, bool scrollTreeView = false);
     bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
     void refreshMapScene();
-    bool loadDataStructures();
-    bool loadProjectCombos();
-    bool populateMapList();
+    bool checkProjectSanity();
+    bool loadProjectData();
+    bool setProjectUI();
+    void clearProjectUI();
     void sortMapList();
     void openSubWindow(QWidget * window);
     QString getExistingDirectory(QString);
-    bool openProject(const QString &dir, bool initial = false);
+    bool openProject(QString dir, bool initial = false);
+    bool closeProject();
     void showProjectOpenFailure();
+    void saveGlobalConfigs();
     bool setInitialMap();
-    void setRecentMap(QString map_name);
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
     void refreshRecentProjectsMenu();
 
-    void drawMapListIcons(QAbstractItemModel *model);
+    void updateMapListIcon(const QString &mapName);
     void updateMapList();
 
     void displayMapProperties();
@@ -359,6 +361,7 @@ private:
     void clickToolButtonFromEditMode(QString editMode);
 
     void markMapEdited();
+    void markMapEdited(Map*);
     void showWindowTitle();
 
     void initWindow();
@@ -369,36 +372,59 @@ private:
     void initMapSortOrder();
     void initShortcuts();
     void initExtraShortcuts();
-    void setProjectSpecificUI();
-    void setWildEncountersUIEnabled(bool enabled);
     void loadUserSettings();
     void applyMapListFilter(QString filterText);
     void restoreWindowState();
     void setTheme(QString);
     void updateTilesetEditor();
     Event::Group getEventGroupFromTabWidget(QWidget *tab);
-    void closeSupplementaryWindows();
+    bool closeSupplementaryWindows();
     void setWindowDisabled(bool);
     void resetMapCustomAttributesTable();
     void initTilesetEditor();
     bool initRegionMapEditor(bool silent = false);
+    bool askToFixRegionMapEditor();
     void initShortcutsEditor();
     void initCustomScriptsEditor();
     void connectSubEditorsToShortcutsEditor();
     void openProjectSettingsEditor(int tab);
     bool isProjectOpen();
     void showExportMapImageWindow(ImageExporterMode mode);
+    double getMetatilesZoomScale();
     void redrawMetatileSelection();
+    void scrollMetatileSelectorToSelection();
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
     int insertTilesetLabel(QStringList * list, QString label);
+
+    void checkForUpdates(bool requestedByUser);
+    void setDivingMapsVisible(bool visible);
 };
 
 enum MapListUserRoles {
     GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
     TypeRole,  // Used to differentiate between the different layers of the map list tree view.
     TypeRole2, // Used for various extra data needed.
+};
+
+// These are namespaced in a struct to avoid colliding with e.g. class Map.
+struct MainTab {
+    enum {
+        Map,
+        Events,
+        Header,
+        Connections,
+        WildPokemon,
+    };
+};
+
+struct MapViewTab {
+    enum {
+        Metatiles,
+        Collision,
+        Prefabs,
+    };
 };
 
 #endif // MAINWINDOW_H

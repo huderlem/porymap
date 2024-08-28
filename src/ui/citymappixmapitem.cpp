@@ -15,7 +15,7 @@ void CityMapPixmapItem::init() {
     if (!binFile.open(QIODevice::ReadOnly)) return;
 
     data = binFile.readAll();
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+    if (projectConfig.baseGameVersion == BaseGameVersion::pokeruby) {
         for (int i = 0; i < data.size(); i++)
             data[i] = data[i] ^ 0x80;
     }
@@ -46,7 +46,7 @@ void CityMapPixmapItem::save() {
         logError(QString("Cannot save city map tilemap to %1.").arg(file));
         return;
     }
-    if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokeruby) {
+    if (projectConfig.baseGameVersion == BaseGameVersion::pokeruby) {
         for (int i = 0; i < data.size(); i++)
             data[i] = data[i] ^ 0x80;
     }

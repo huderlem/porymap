@@ -35,7 +35,7 @@ int Event::getEventIndex() {
 void Event::setDefaultValues(Project *) {
     this->setX(0);
     this->setY(0);
-    this->setElevation(projectConfig.getDefaultElevation());
+    this->setElevation(projectConfig.defaultElevation);
     this->setDefaultCustomAttributes();
 }
 
@@ -200,7 +200,7 @@ EventFrame *ObjectEvent::createEventFrame() {
 OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     OrderedJson::object objectJson;
 
-    if (projectConfig.getEventCloneObjectEnabled()) {
+    if (projectConfig.eventCloneObjectEnabled) {
         objectJson["type"] = "object";
     }
     objectJson["graphics_id"] = this->getGfx();
@@ -238,8 +238,8 @@ bool ObjectEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void ObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().first());
-    this->setMovement(project->movementTypes.first());
+    this->setGfx(project->gfxDefines.keys().value(0, "0"));
+    this->setMovement(project->movementTypes.value(0, "0"));
     this->setScript("NULL");
     this->setTrainerType(project->trainerTypes.value(0, "0"));
     this->setFlag("0");
@@ -265,7 +265,7 @@ const QSet<QString> expectedObjectFields = {
 QSet<QString> ObjectEvent::getExpectedFields() {
     QSet<QString> expectedFields = QSet<QString>();
     expectedFields = expectedObjectFields;
-    if (projectConfig.getEventCloneObjectEnabled()) {
+    if (projectConfig.eventCloneObjectEnabled) {
         expectedFields.insert("type");
     }
     expectedFields << "x" << "y";
@@ -410,7 +410,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
 }
 
 void CloneObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().first());
+    this->setGfx(project->gfxDefines.keys().value(0, "0"));
     this->setTargetID(1);
     if (this->getMap()) this->setTargetMap(this->getMap()->name);
     this->setDefaultCustomAttributes();
@@ -443,8 +443,8 @@ void CloneObjectEvent::loadPixmap(Project *project) {
         this->movement = clonedObject->getMovement();
     } else {
         // Invalid object specified, use default graphics data (as would be shown in-game)
-        this->gfx = project->gfxDefines.key(0);
-        this->movement = project->movementTypes.first();
+        this->gfx = project->gfxDefines.key(0, "0");
+        this->movement = project->movementTypes.value(0, "0");
     }
 
     EventGraphics *eventGfx = project->eventGraphicsMap.value(gfx, nullptr);
@@ -604,7 +604,7 @@ bool TriggerEvent::loadFromJson(QJsonObject json, Project *) {
 
 void TriggerEvent::setDefaultValues(Project *project) {
     this->setScriptLabel("NULL");
-    this->setScriptVar(project->varNames.first());
+    this->setScriptVar(project->varNames.value(0, "0"));
     this->setScriptVarValue("0");
     this->setElevation(0);
     this->setDefaultCustomAttributes();
@@ -674,7 +674,7 @@ bool WeatherTriggerEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void WeatherTriggerEvent::setDefaultValues(Project *project) {
-    this->setWeather(project->coordEventWeatherNames.first());
+    this->setWeather(project->coordEventWeatherNames.value(0, "0"));
     this->setElevation(0);
     this->setDefaultCustomAttributes();
 }
@@ -744,7 +744,7 @@ bool SignEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void SignEvent::setDefaultValues(Project *project) {
-    this->setFacingDirection(project->bgEventFacingDirections.first());
+    this->setFacingDirection(project->bgEventFacingDirections.value(0, "0"));
     this->setScriptLabel("NULL");
     this->setElevation(0);
     this->setDefaultCustomAttributes();
@@ -799,10 +799,10 @@ OrderedJson::object HiddenItemEvent::buildEventJson(Project *) {
     hiddenItemJson["elevation"] = this->getElevation();
     hiddenItemJson["item"] = this->getItem();
     hiddenItemJson["flag"] = this->getFlag();
-    if (projectConfig.getHiddenItemQuantityEnabled()) {
+    if (projectConfig.hiddenItemQuantityEnabled) {
         hiddenItemJson["quantity"] = this->getQuantity();
     }
-    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+    if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         hiddenItemJson["underfoot"] = this->getUnderfoot();
     }
 
@@ -817,10 +817,10 @@ bool HiddenItemEvent::loadFromJson(QJsonObject json, Project *) {
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
     this->setItem(ParseUtil::jsonToQString(json["item"]));
     this->setFlag(ParseUtil::jsonToQString(json["flag"]));
-    if (projectConfig.getHiddenItemQuantityEnabled()) {
+    if (projectConfig.hiddenItemQuantityEnabled) {
         this->setQuantity(ParseUtil::jsonToInt(json["quantity"]));
     }
-    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+    if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         this->setUnderfoot(ParseUtil::jsonToBool(json["underfoot"]));
     }
 
@@ -830,12 +830,12 @@ bool HiddenItemEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void HiddenItemEvent::setDefaultValues(Project *project) {
-    this->setItem(project->itemNames.first());
-    this->setFlag(project->flagNames.first());
-    if (projectConfig.getHiddenItemQuantityEnabled()) {
+    this->setItem(project->itemNames.value(0, "0"));
+    this->setFlag(project->flagNames.value(0, "0"));
+    if (projectConfig.hiddenItemQuantityEnabled) {
         this->setQuantity(1);
     }
-    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+    if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         this->setUnderfoot(false);
     }
     this->setDefaultCustomAttributes();
@@ -851,10 +851,10 @@ const QSet<QString> expectedHiddenItemFields = {
 QSet<QString> HiddenItemEvent::getExpectedFields() {
     QSet<QString> expectedFields = QSet<QString>();
     expectedFields = expectedHiddenItemFields;
-    if (projectConfig.getHiddenItemQuantityEnabled()) {
+    if (projectConfig.hiddenItemQuantityEnabled) {
         expectedFields << "quantity";
     }
-    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+    if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         expectedFields << "underfoot";
     }
     expectedFields << "x" << "y";
@@ -910,7 +910,7 @@ bool SecretBaseEvent::loadFromJson(QJsonObject json, Project *) {
 }
 
 void SecretBaseEvent::setDefaultValues(Project *project) {
-    this->setBaseID(project->secretBaseIds.first());
+    this->setBaseID(project->secretBaseIds.value(0, "0"));
     this->setElevation(0);
     this->setDefaultCustomAttributes();
 }
@@ -943,11 +943,11 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *) {
 }
 
 void HealLocationEvent::setDefaultValues(Project *) {
-    this->setElevation(projectConfig.getDefaultElevation());
+    this->setElevation(projectConfig.defaultElevation);
     this->setDefaultCustomAttributes();
     if (!this->getMap())
         return;
-    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
     const QString mapConstant = Map::mapConstantFromName(this->getMap()->name, false);
     const QString prefix = projectConfig.getIdentifier(respawnEnabled ? ProjectIdentifier::define_spawn_prefix
                                                                       : ProjectIdentifier::define_heal_locations_prefix);

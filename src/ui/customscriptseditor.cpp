@@ -11,7 +11,7 @@
 CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CustomScriptsEditor),
-    baseDir(userConfig.getProjectDir() + QDir::separator())
+    baseDir(userConfig.projectDir + QDir::separator())
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -23,7 +23,7 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     for (int i = 0; i < paths.length(); i++)
         this->displayScript(paths.at(i), enabled.at(i));
 
-    this->fileDialogDir = userConfig.getProjectDir();
+    this->fileDialogDir = userConfig.projectDir;
 
     connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);
     connect(ui->button_LoadScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::loadScript);

@@ -1,5 +1,5 @@
 #include "bitpacker.h"
-#include <limits>
+#include <climits>
 
 // Sometimes we can't explicitly define bitfields because we need to allow users to
 // change the size and arrangement of its members. In those cases we use this

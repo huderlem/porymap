@@ -185,6 +185,23 @@ void EventFrame::setActive(bool active) {
     this->blockSignals(!active);
 }
 
+void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * project) {
+    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
+    if (this->event->getMap())
+        combo->addItems(this->event->getMap()->getScriptLabels(this->event->getEventGroup()));
+
+    // The dropdown's autocomplete has all script labels across the full project.
+    auto completer = new QCompleter(project->globalScriptLabels, combo);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
+    completer->setFilterMode(Qt::MatchContains);
+
+    // Improve display speed for the autocomplete popup
+    auto popup = (QListView *)completer->popup();
+    if (popup) popup->setUniformItemSizes(true);
+
+    combo->setCompleter(completer);
+}
 
 
 void ObjectFrame::setup() {
@@ -360,7 +377,7 @@ void ObjectFrame::initialize() {
 
     // script
     this->combo_script->setCurrentText(this->object->getScript());
-    if (porymapConfig.getTextEditorGotoLine().isEmpty())
+    if (porymapConfig.textEditorGotoLine.isEmpty())
         this->button_script->hide();
 
     // flag
@@ -384,20 +401,7 @@ void ObjectFrame::populate(Project *project) {
     this->combo_flag->addItems(project->flagNames);
     this->combo_trainer_type->addItems(project->trainerTypes);
 
-    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
-    QStringList scriptLabels;
-    if (this->object->getMap()) {
-        scriptLabels.append(this->object->getMap()->getScriptLabels());
-        this->combo_script->addItems(scriptLabels);
-    }
-
-    // The dropdown's autocomplete has all script labels across the full project.
-    scriptLabels.append(project->getGlobalScriptLabels());
-    scriptLabels.removeDuplicates();
-    this->scriptCompleter = new QCompleter(scriptLabels, this);
-    this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    this->scriptCompleter->setFilterMode(Qt::MatchContains);
-    this->combo_script->setCompleter(this->scriptCompleter);
+    this->populateScriptDropdown(this->combo_script, project);
 }
 
 
@@ -654,20 +658,7 @@ void TriggerFrame::populate(Project *project) {
     // var combo
     this->combo_var->addItems(project->varNames);
 
-    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
-    QStringList scriptLabels;
-    if (this->trigger->getMap()) {
-        scriptLabels.append(this->trigger->getMap()->getScriptLabels());
-        this->combo_script->addItems(scriptLabels);
-    }
-
-    // The dropdown's autocomplete has all script labels across the full project.
-    scriptLabels.append(project->getGlobalScriptLabels());
-    scriptLabels.removeDuplicates();
-    this->scriptCompleter = new QCompleter(scriptLabels, this);
-    this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    this->scriptCompleter->setFilterMode(Qt::MatchContains);
-    this->combo_script->setCompleter(this->scriptCompleter);
+    this->populateScriptDropdown(this->combo_script, project);
 }
 
 
@@ -789,20 +780,7 @@ void SignFrame::populate(Project *project) {
     // facing dir
     this->combo_facing_dir->addItems(project->bgEventFacingDirections);
 
-    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
-    QStringList scriptLabels;
-    if (this->sign->getMap()) {
-        scriptLabels.append(this->sign->getMap()->getScriptLabels());
-        this->combo_script->addItems(scriptLabels);
-    }
-
-    // The dropdown's autocomplete has all script labels across the full project.
-    scriptLabels.append(project->getGlobalScriptLabels());
-    scriptLabels.removeDuplicates();
-    this->scriptCompleter = new QCompleter(scriptLabels, this);
-    this->scriptCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    this->scriptCompleter->setFilterMode(Qt::MatchContains);
-    this->combo_script->setCompleter(this->scriptCompleter);
+    this->populateScriptDropdown(this->combo_script, project);
 }
 
 
@@ -897,16 +875,16 @@ void HiddenItemFrame::initialize() {
     this->combo_flag->setTextItem(this->hiddenItem->getFlag());
 
     // quantity
-    if (projectConfig.getHiddenItemQuantityEnabled()) {
+    if (projectConfig.hiddenItemQuantityEnabled) {
         this->spinner_quantity->setValue(this->hiddenItem->getQuantity());
     }
-    this->hideable_quantity->setVisible(projectConfig.getHiddenItemQuantityEnabled());
+    this->hideable_quantity->setVisible(projectConfig.hiddenItemQuantityEnabled);
 
     // underfoot
-    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+    if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         this->check_itemfinder->setChecked(this->hiddenItem->getUnderfoot());
     }
-    this->hideable_itemfinder->setVisible(projectConfig.getHiddenItemRequiresItemfinderEnabled());
+    this->hideable_itemfinder->setVisible(projectConfig.hiddenItemRequiresItemfinderEnabled);
 }
 
 void HiddenItemFrame::populate(Project *project) {
@@ -1010,7 +988,7 @@ void HealLocationFrame::connectSignals(MainWindow *window) {
 
     EventFrame::connectSignals(window);
 
-    if (projectConfig.getHealLocationRespawnDataEnabled()) {
+    if (projectConfig.healLocationRespawnDataEnabled) {
         this->combo_respawn_map->disconnect();
         connect(this->combo_respawn_map, &QComboBox::currentTextChanged, [this](const QString &text) {
             this->healLocation->setRespawnMap(text);
@@ -1031,7 +1009,7 @@ void HealLocationFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
     if (respawnEnabled) {
         this->combo_respawn_map->setTextItem(this->healLocation->getRespawnMap());
         this->spinner_respawn_npc->setValue(this->healLocation->getRespawnNPC());
@@ -1047,6 +1025,6 @@ void HealLocationFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    if (projectConfig.getHealLocationRespawnDataEnabled())
+    if (projectConfig.healLocationRespawnDataEnabled)
         this->combo_respawn_map->addItems(project->mapNames);
 }

@@ -1,9 +1,10 @@
+#include <QQmlEngine>
+
 #include "scripting.h"
 #include "log.h"
 #include "config.h"
-#include "aboutporymap.h"
 
-QMap<CallbackType, QString> callbackFunctions = {
+const QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
     {OnProjectClosed, "onProjectClosed"},
     {OnBlockChanged, "onBlockChanged"},
@@ -22,20 +23,21 @@ QMap<CallbackType, QString> callbackFunctions = {
 
 Scripting *instance = nullptr;
 
+void Scripting::stop() {
+    delete instance;
+    instance = nullptr;
+}
+
 void Scripting::init(MainWindow *mainWindow) {
-    mainWindow->ui->graphicsView_Map->clearOverlayMap();
-    if (instance) {
-        instance->engine->setInterrupted(true);
-        instance->scriptUtility->clearActions();
-        qDeleteAll(instance->imageCache);
-        delete instance;
-    }
+    if (mainWindow->ui->graphicsView_Map)
+        mainWindow->ui->graphicsView_Map->clearOverlayMap();
+    Scripting::stop();
     instance = new Scripting(mainWindow);
 }
 
 Scripting::Scripting(MainWindow *mainWindow) {
     this->mainWindow = mainWindow;
-    this->engine = new QJSEngine(mainWindow);
+    this->engine = new QJSEngine();
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     const QStringList paths = userConfig.getCustomScriptPaths();
     const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
@@ -45,6 +47,13 @@ Scripting::Scripting(MainWindow *mainWindow) {
     }
     this->loadModules(this->filepaths);
     this->scriptUtility = new ScriptUtility(mainWindow);
+}
+
+Scripting::~Scripting() {
+    this->engine->setInterrupted(true);
+    qDeleteAll(this->imageCache);
+    delete this->engine;
+    delete this->scriptUtility;
 }
 
 void Scripting::loadModules(QStringList moduleFiles) {
@@ -75,17 +84,19 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(mainWindow->ui->graphicsView_Map));
     instance->engine->globalObject().setProperty("utility", instance->engine->newQObject(instance->scriptUtility));
 
+    // Note: QJSEngine also has these functions, but not in Qt 5.15.
+    QQmlEngine::setObjectOwnership(mainWindow, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(mainWindow->ui->graphicsView_Map, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(instance->scriptUtility, QQmlEngine::CppOwnership);
+
     QJSValue constants = instance->engine->newObject();
 
-    // Invisibly create an "About" window to read Porymap version
-    AboutPorymap *about = new AboutPorymap(mainWindow);
-    if (about) {
-        QJSValue version = Scripting::version(about->getVersionNumbers());
-        constants.setProperty("version", version);
-        delete about;
-    } else {
-        logError("Failed to read Porymap version for API");
-    }
+    // Get version numbers
+    QJSValue version = instance->engine->newObject();
+    version.setProperty("major", porymapVersion.majorVersion());
+    version.setProperty("minor", porymapVersion.minorVersion());
+    version.setProperty("patch", porymapVersion.microVersion());
+    constants.setProperty("version", version);
 
     // Get basic tileset information
     int numTilesPrimary = Project::getNumTilesPrimary();
@@ -340,14 +351,6 @@ QJSValue Scripting::position(int x, int y) {
     QJSValue obj = instance->engine->newObject();
     obj.setProperty("x", x);
     obj.setProperty("y", y);
-    return obj;
-}
-
-QJSValue Scripting::version(QList<int> versionNums) {
-    QJSValue obj = instance->engine->newObject();
-    obj.setProperty("major", versionNums.at(0));
-    obj.setProperty("minor", versionNums.at(1));
-    obj.setProperty("patch", versionNums.at(2));
     return obj;
 }
 
