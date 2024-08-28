@@ -416,7 +416,11 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
             // Encountered an enum, extract the elements of the enum and give each an appropriate expression
             int baseNum = 0;
             QString baseExpression = "0";
-            static const QRegularExpression re_enumElement("\\b(?<name>\\w+)\\b\\s*=?\\s*(?<expression>.+)?[,\\$]"); // TODO: Ignores terminal element lacking comma
+
+            // Note: We lazily consider an enum's expression to be any characters after the assignment up until the first comma or EOL.
+            // This would be a problem for e.g. NAME = MACRO(a, b), but we're currently unable to parse function-like macros anyway.
+            // If this changes then the regex below needs to be updated.
+            static const QRegularExpression re_enumElement("\\b(?<name>\\w+)\\b\\s*=?\\s*(?<expression>[^,]*)");
             QRegularExpressionMatchIterator elementIter = re_enumElement.globalMatch(enumBody);
             while (elementIter.hasNext()) {
                 QRegularExpressionMatch elementMatch = elementIter.next();
@@ -462,6 +466,7 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
         filteredValues.insert(name, evaluateDefine(name, expression, &allValues, &defines.expressions));
         logRecordedErrors(); // Only log errors for defines that Porymap is looking for
     }
+
     return filteredValues;
 }
 

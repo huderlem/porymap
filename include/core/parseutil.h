@@ -99,8 +99,8 @@ private:
     QString createErrorMessage(const QString &message, const QString &expression);
 
     struct ParsedDefines {
-        QMap<QString,QString> expressions; // Map of all define names->expressions encountered
-        QStringList filteredNames; // Define names matching the search text in the order they were encountered in the file
+        QMap<QString,QString> expressions; // Map of all define names encountered to their expressions
+        QStringList filteredNames; // List of define names that matched the search text, in the order that they were encountered
     };
     ParsedDefines readCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
     QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
