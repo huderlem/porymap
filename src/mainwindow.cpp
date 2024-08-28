@@ -124,6 +124,10 @@ void MainWindow::initWindow() {
     ui->actionCheck_for_Updates->setVisible(false);
 #endif
 
+#ifdef DISABLE_CHARTS_MODULE
+    ui->pushButton_SummaryChart->setVisible(false);
+#endif
+
     setWindowDisabled(true);
 }
 

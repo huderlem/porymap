@@ -1,3 +1,4 @@
+#if __has_include(<QtCharts>)
 #include "wildmonchart.h"
 #include "ui_wildmonchart.h"
 #include "config.h"
@@ -447,3 +448,5 @@ void WildMonChart::closeEvent(QCloseEvent *event) {
     porymapConfig.wildMonChartGeometry = saveGeometry();
     QWidget::closeEvent(event);
 }
+
+#endif // __has_include(<QtCharts>)

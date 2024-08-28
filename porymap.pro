@@ -4,7 +4,11 @@
 #
 #-------------------------------------------------
 
-QT       += core gui qml network charts
+QT       += core gui qml network
+
+!win32 {
+    QT += charts
+}
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

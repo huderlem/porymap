@@ -4,6 +4,8 @@
 #include "encountertablemodel.h"
 
 #include <QWidget>
+
+#if __has_include(<QtCharts>)
 #include <QtCharts>
 
 namespace Ui {
@@ -71,5 +73,26 @@ private:
 
     void showHelpDialog();
 };
+
+#else
+
+// As of writing our static Qt build for Windows doesn't include the QtCharts module, so we dummy the class out here.
+// The charts module is additionally excluded from Windows in porymap.pro
+#define DISABLE_CHARTS_MODULE
+
+class WildMonChart : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit WildMonChart(QWidget *, const EncounterTableModel *) {};
+    ~WildMonChart() {};
+
+public slots:
+    void setTable(const EncounterTableModel *) {};
+    void clearTable() {};
+    void refresh() {};
+};
+
+#endif // __has_include(<QtCharts>)
 
 #endif // WILDMONCHART_H
