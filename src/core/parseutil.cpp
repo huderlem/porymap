@@ -15,6 +15,22 @@ const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|l
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
+static const QMap<QString, int> defaultDefineValues = {
+    {"FALSE", 0},
+    {"TRUE", 1},
+    {"SCHAR_MIN", SCHAR_MIN},
+    {"SCHAR_MAX", SCHAR_MAX},
+    {"CHAR_MIN", CHAR_MIN},
+    {"CHAR_MAX", CHAR_MAX},
+    {"UCHAR_MAX", UCHAR_MAX},
+    {"SHRT_MIN", SHRT_MIN},
+    {"SHRT_MAX", SHRT_MAX},
+    {"USHRT_MAX", USHRT_MAX},
+    {"INT_MIN", INT_MIN},
+    {"INT_MAX", INT_MAX},
+    {"UINT_MAX", UINT_MAX},
+};
+
 using OrderedJson = poryjson::Json;
 
 ParseUtil::ParseUtil() { }
@@ -353,12 +369,14 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     return paths;
 }
 
-QString ParseUtil::readCDefinesFile(const QString &filename)
+// Open the file and return all the names and expressions defined by #define or enum
+QMap<QString,QString> ParseUtil::readCDefineExpressions(const QString &filename)
 {
+    QMap<QString, QString> expressions;
     this->file = filename;
 
     if (this->file.isEmpty()) {
-        return QString();
+        return expressions;
     }
 
     QString filepath = this->root + "/" + this->file;
@@ -366,50 +384,82 @@ QString ParseUtil::readCDefinesFile(const QString &filename)
 
     if (this->text.isNull()) {
         logError(QString("Failed to read C defines file: '%1'").arg(filepath));
-        return QString();
+        return expressions;
     }
 
     static const QRegularExpression re_extraChars("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)");
     this->text.replace(re_extraChars, "");
     static const QRegularExpression re_extraSpaces("(\\\\\\s+)");
     this->text.replace(re_extraSpaces, "");
-    return this->text;
-}
 
-// Read all the define names and their expressions in the specified file, then evaluate the ones matching the search text (and any they depend on).
-// If 'fullMatch' is true, 'searchText' is a list of exact define names to evaluate and return.
-// If 'fullMatch' is false, 'searchText' is a list of prefixes or regexes for define names to evaluate and return.
-QMap<QString, int> ParseUtil::readCDefines(const QString &filename, const QStringList &searchText, bool fullMatch)
-{
-    QMap<QString, int> filteredValues;
+    if (this->text.isEmpty())
+        return expressions;
 
-    this->text = this->readCDefinesFile(filename);
-    if (this->text.isEmpty()) {
-        return filteredValues;
-    }
+    // Capture either the name and value of a #define, or everything between the braces of 'enum { }'
+    static const QRegularExpression re("#define\\s+(?<defineName>\\w+)[\\s\\n][^\\S\\n]*(?<defineValue>.+)?"
+                                       "|\\benum\\b[^{]*{(?<enumBody>[^}]*)}");
 
-    // Extract all the define names and expressions
-    QMap<QString, QString> allExpressions;
-    QMap<QString, QString> filteredExpressions;
-    static const QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+(?<defineValue>.+)");
     QRegularExpressionMatchIterator iter = re.globalMatch(this->text);
     while (iter.hasNext()) {
         QRegularExpressionMatch match = iter.next();
-        const QString name = match.captured("defineName");
-        const QString expression = match.captured("defineValue");
-        // If name matches the search text record it for evaluation.
+        const QString enumBody = match.captured("enumBody");
+        if (!enumBody.isNull()) {
+            // Encountered an enum, extract the elements of the enum and give each an appropriate expression
+            int baseNum = 0;
+            QString baseExpression = "0";
+            static const QRegularExpression re_enumElement("\\b(?<name>\\w+)\\b\\s*=?\\s*(?<expression>.+)?[,\\$]"); // TODO: Ignores terminal element lacking comma
+            QRegularExpressionMatchIterator elementIter = re_enumElement.globalMatch(enumBody);
+            while (elementIter.hasNext()) {
+                QRegularExpressionMatch elementMatch = elementIter.next();
+                QString expression = elementMatch.captured("expression");
+                if (expression.isEmpty()) {
+                    // enum values may use tokens that we don't know how to evaluate yet.
+                    // For now we define each element to be 1 + the previous element's expression.
+                    expression = QString("((%1)+%2)").arg(baseExpression).arg(baseNum++);
+                } else {
+                    // This element was explicitly assigned an expression with '=', reset the bases for any subsequent elements.
+                    baseExpression = expression;
+                    baseNum = 1;
+                }
+                expressions.insert(elementMatch.captured("name"), expression);
+            }
+        } else {
+            // Encountered a #define
+            expressions.insert(match.captured("defineName"), match.captured("defineValue"));
+        }
+    }
+
+    return expressions;
+}
+
+// Given a map of define names->expressions, returns a map of define names->expressions where all the names match searchText.
+// If 'fullMatch' is true, 'searchText' is a list of exact define names to match.
+// If 'fullMatch' is false, 'searchText' is a list of prefixes or regexes of define names to match.
+QMap<QString,QString> ParseUtil::filterCDefineExpressions(const QMap<QString,QString> &allExpressions, QStringList searchText, bool fullMatch) {
+    QMap<QString,QString> filteredExpressions;
+    searchText.removeDuplicates();
+    for (auto i = allExpressions.cbegin(), end = allExpressions.cend(); i != end; i++) {
+        const QString name = i.key();
         for (auto s : searchText) {
             if ((fullMatch && name == s) || (!fullMatch && (name.startsWith(s) || QRegularExpression(s).match(name).hasMatch()))) {
-                filteredExpressions.insert(name, expression);
+                filteredExpressions.insert(name, i.value());
                 break;
             }
         }
-        allExpressions.insert(name, expression);
     }
+    return filteredExpressions;
+}
 
-    QMap<QString, int> allValues;
-    allValues.insert("FALSE", 0);
-    allValues.insert("TRUE", 1);
+// Read all the define names and their expressions in the specified file, then evaluate the ones matching the search text (and any they depend on).
+QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QStringList &searchText, bool fullMatch) {
+    QMap<QString, int> filteredValues;
+    QMap<QString, int> allValues = defaultDefineValues;
+
+    QMap<QString, QString> allExpressions = this->readCDefineExpressions(filename);
+    if (allExpressions.isEmpty())
+        return filteredValues;
+
+    QMap<QString, QString> filteredExpressions = this->filterCDefineExpressions(allExpressions, searchText, fullMatch);
 
     // Evaluate defines
     this->errorMap.clear();
@@ -425,39 +475,20 @@ QMap<QString, int> ParseUtil::readCDefines(const QString &filename, const QStrin
 }
 
 // Find and evaluate an unknown list of defines with a known name prefix.
-QMap<QString, int> ParseUtil::readCDefinesByPrefix(const QString &filename, QStringList prefixes) {
-    prefixes.removeDuplicates();
-    return this->readCDefines(filename, prefixes, false);
+QMap<QString, int> ParseUtil::readCDefinesByPrefix(const QString &filename, QStringList searchText) {
+    return this->evaluateCDefines(filename, searchText, false);
 }
 
 // Find and evaluate a specific set of defines with known names.
 QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, QStringList names) {
-    names.removeDuplicates();
-    return this->readCDefines(filename, names, true);
+    return this->evaluateCDefines(filename, names, true);
 }
 
-// Similar to readCDefines, but for cases where we only need to show a list of define names.
-// We can skip reading/evaluating any expressions (and by extension skip reporting any errors from this process).
-QStringList ParseUtil::readCDefineNames(const QString &filename, const QStringList &prefixes) {
-    QStringList filteredNames;
-
-    this->text = this->readCDefinesFile(filename);
-    if (this->text.isEmpty()) {
-        return filteredNames;
-    }
-
-    static const QRegularExpression re("#define\\s+(?<defineName>\\w+)[^\\S\\n]+");
-    QRegularExpressionMatchIterator iter = re.globalMatch(this->text);
-    while (iter.hasNext()) {
-        QRegularExpressionMatch match = iter.next();
-        QString name = match.captured("defineName");
-        for (QString prefix : prefixes) {
-            if (name.startsWith(prefix) || QRegularExpression(prefix).match(name).hasMatch()) {
-                filteredNames.append(name);
-            }
-        }
-    }
-    return filteredNames;
+// Similar to readCDefinesByPrefix, but for cases where we only need to show a list of define names.
+// We can skip evaluating any expressions (and by extension skip reporting any errors from this process).
+QStringList ParseUtil::readCDefineNames(const QString &filename, QStringList searchText) {
+    // TODO: These will now be alphabetical. Is that ok?
+    return this->filterCDefineExpressions(this->readCDefineExpressions(filename), searchText, false).keys();
 }
 
 QStringList ParseUtil::readCArray(const QString &filename, const QString &label) {

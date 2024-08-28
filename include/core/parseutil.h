@@ -54,9 +54,9 @@ public:
     QString readCIncbin(const QString &text, const QString &label);
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
-    QMap<QString, int> readCDefinesByPrefix(const QString &filename, QStringList prefixes);
+    QMap<QString, int> readCDefinesByPrefix(const QString &filename, QStringList searchText);
     QMap<QString, int> readCDefinesByName(const QString &filename, QStringList names);
-    QStringList readCDefineNames(const QString&, const QStringList&);
+    QStringList readCDefineNames(const QString&, QStringList searchText);
     QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
@@ -97,8 +97,9 @@ private:
     void recordErrors(const QStringList &errors);
     void logRecordedErrors();
     QString createErrorMessage(const QString &message, const QString &expression);
-    QString readCDefinesFile(const QString &filename);
-    QMap<QString, int> readCDefines(const QString &filename, const QStringList &searchText, bool fullMatch);
+    QMap<QString, QString> readCDefineExpressions(const QString &filename);
+    QMap<QString,QString> filterCDefineExpressions(const QMap<QString,QString> &allExpressions, QStringList searchText, bool fullMatch);
+    QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &searchText, bool fullMatch);
 
     static const QRegularExpression re_incScriptLabel;
     static const QRegularExpression re_globalIncScriptLabel;
