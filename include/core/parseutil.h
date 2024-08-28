@@ -54,9 +54,9 @@ public:
     QString readCIncbin(const QString &text, const QString &label);
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
-    QMap<QString, int> readCDefinesByPrefix(const QString &filename, const QStringList &searchText);
+    QMap<QString, int> readCDefinesByRegex(const QString &filename, const QStringList &regexList);
     QMap<QString, int> readCDefinesByName(const QString &filename, const QStringList &names);
-    QStringList readCDefineNames(const QString&, const QStringList &searchText);
+    QStringList readCDefineNames(const QString &filename, const QStringList &regexList);
     QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
@@ -102,9 +102,9 @@ private:
         QMap<QString,QString> expressions; // Map of all define names->expressions encountered
         QStringList filteredNames; // Define names matching the search text in the order they were encountered in the file
     };
-    ParsedDefines readCDefines(const QString &filename, const QStringList &filterList, bool fullMatch);
-    QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &filterList, bool fullMatch);
-    bool defineNameMatchesFilter(const QString &name, const QStringList &filterList, bool fullMatch);
+    ParsedDefines readCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
+    QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
+    bool defineNameMatchesFilter(const QString &name, const QStringList &filterList, bool useRegex);
 
     static const QRegularExpression re_incScriptLabel;
     static const QRegularExpression re_globalIncScriptLabel;
