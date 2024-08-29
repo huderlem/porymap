@@ -241,10 +241,11 @@ QList<Token> ParseUtil::generatePostfix(const QList<Token> &tokens) {
     }
 
     while (!operatorStack.isEmpty()) {
-        if (operatorStack.top().value == "(" || operatorStack.top().value == ")") {
+        Token token = operatorStack.pop();
+        if (token.value == "(" || token.value == ")") {
             recordError("Mismatched parentheses detected in expression!");
         } else {
-            output.append(operatorStack.pop());
+            output.append(token);
         }
     }
 
