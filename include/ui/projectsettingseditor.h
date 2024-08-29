@@ -61,7 +61,7 @@ private:
     void chooseImageFile(QLineEdit * filepathEdit);
     void chooseFile(QLineEdit * filepathEdit, const QString &description, const QString &extensions);
     QString stripProjectDir(QString s);
-    void disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath);
+    bool disableParsedSetting(QWidget * widget, const QString &identifier, const QString &filepath);
     void updateMaskOverlapWarning(QLabel * warning, QList<UIntSpinBox*> masks);
     QStringList getWarpBehaviorsList();
     void setWarpBehaviorsList(QStringList list);

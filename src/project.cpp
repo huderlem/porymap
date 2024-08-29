@@ -113,6 +113,7 @@ bool Project::sanityCheck() {
 }
 
 bool Project::load() {
+    this->disabledSettingsNames.clear();
     bool success = readMapLayouts()
                 && readRegionMapSections()
                 && readItemNames()
@@ -1960,6 +1961,7 @@ bool Project::readFieldmapProperties() {
     const QString numPalsPrimaryName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_primary);
     const QString numPalsTotalName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_total);
     const QString maxMapSizeName = projectConfig.getIdentifier(ProjectIdentifier::define_map_size);
+    const QString numTilesPerMetatileName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_per_metatile);
     const QStringList names = {
         numTilesPrimaryName,
         numTilesTotalName,
@@ -1967,6 +1969,7 @@ bool Project::readFieldmapProperties() {
         numPalsPrimaryName,
         numPalsTotalName,
         maxMapSizeName,
+        numTilesPerMetatileName,
     };
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
@@ -2007,6 +2010,22 @@ bool Project::readFieldmapProperties() {
                 .arg(Project::max_map_data_size));
     }
 
+    it = defines.find(numTilesPerMetatileName);
+    if (it != defines.end()) {
+        // We can determine whether triple-layer metatiles are in-use by reading this constant.
+        // If the constant is missing (or is using a value other than 8 or 12) the user must tell
+        // us whether they're using triple-layer metatiles under Project Settings.
+        static const int numTilesPerLayer = 4;
+        int numTilesPerMetatile = it.value();
+        if (numTilesPerMetatile == 2 * numTilesPerLayer) {
+            projectConfig.tripleLayerMetatilesEnabled = false;
+            this->disabledSettingsNames.insert(numTilesPerMetatileName);
+        } else if (numTilesPerMetatile == 3 * numTilesPerLayer) {
+            projectConfig.tripleLayerMetatilesEnabled = true;
+            this->disabledSettingsNames.insert(numTilesPerMetatileName);
+        }
+    }
+
     return true;
 }
 
@@ -2032,7 +2051,8 @@ bool Project::readFieldmapMasks() {
     // If users do have the defines we disable them in the settings editor and direct them to their project files.
     // Record the names we read so we know later which settings to disable.
     const QStringList defineNames = defines.keys();
-    this->disabledSettingsNames = QSet<QString>(defineNames.constBegin(), defineNames.constEnd());
+    for (auto name : defineNames)
+        this->disabledSettingsNames.insert(name);
 
     // Read Block masks
     auto readBlockMask = [defines](const QString name, uint16_t *value) {

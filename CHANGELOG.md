@@ -18,6 +18,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
 - The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
+- The triple-layer metatiles setting can now be set automatically using a project constant.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
