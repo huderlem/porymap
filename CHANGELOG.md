@@ -11,6 +11,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
 - An alert will be displayed when attempting to open a seemingly invalid project.
+- Add support for defining project values with `enum` where `#define` was expected.
 
 ### Changed
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
@@ -38,6 +39,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix map connections rendering incorrectly if their dimensions were smaller than the border draw distance.
 - Fix the map list filter retaining text between project open/close.
 - Fix the map list mishandling value gaps when sorting by Area.
+- Fix a freeze on startup if project values are defined with mismatched parentheses.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
