@@ -1358,7 +1358,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                     if (newEvent) {
                         newEvent->move(pos.x(), pos.y());
                         emit objectsChanged();
-                        selectMapEvent(newEvent, false);
+                        selectMapEvent(newEvent);
                     }
                 }
             }
@@ -1994,10 +1994,6 @@ void Editor::updateSelectedEvents() {
     emit objectsChanged();
 }
 
-void Editor::selectMapEvent(DraggablePixmapItem *object) {
-    selectMapEvent(object, false);
-}
-
 void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
     if (!selected_events || !object)
         return;
@@ -2228,10 +2224,8 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
 
     bool multiSelect = event->modifiers() & Qt::ControlModifier;
     if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
-        DraggablePixmapItem *first = selected_events->first();
-        selected_events->clear();
-        selected_events->append(first);
-        updateSelectedEvents();
+        // User is clearing group selection by clicking on the background
+        this->selectMapEvent(selected_events->first());
     }
     selectingEvent = false;
 }

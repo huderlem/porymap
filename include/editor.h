@@ -95,8 +95,7 @@ public:
     Tileset *getCurrentMapPrimaryTileset();
 
     DraggablePixmapItem *addMapEvent(Event *event);
-    void selectMapEvent(DraggablePixmapItem *object);
-    void selectMapEvent(DraggablePixmapItem *object, bool toggle);
+    void selectMapEvent(DraggablePixmapItem *object, bool toggle = false);
     DraggablePixmapItem *addNewEvent(Event::Type type);
     void updateSelectedEvents();
     void duplicateSelectedEvents();

@@ -2014,7 +2014,7 @@ void MainWindow::addNewEvent(Event::Type type) {
             auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
             object->moveTo(Metatile::coordFromPixmapCoord(centerPos));
             updateObjects();
-            editor->selectMapEvent(object, false);
+            editor->selectMapEvent(object);
         } else {
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new event");
