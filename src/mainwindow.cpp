@@ -1761,7 +1761,7 @@ void MainWindow::paste() {
                 editor->metatile_selector_item->setExternalSelection(width, height, metatiles, collisions);
                 break;
             }
-            case 1:
+            case MainTab::Events:
             {
                 // can only paste events to this tab
                 if (pasteObject["object"].toString() != "events") {
@@ -1773,56 +1773,25 @@ void MainWindow::paste() {
                 QJsonArray events = pasteObject["events"].toArray();
                 for (QJsonValue event : events) {
                     // paste the event to the map
-                    Event *pasteEvent = nullptr;
-
-                    Event::Type type = Event::eventTypeFromString(event["event_type"].toString());
+                    const QString typeString = event["event_type"].toString();
+                    Event::Type type = Event::eventTypeFromString(typeString);
 
                     if (this->editor->eventLimitReached(type)) {
-                        logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(event["event_type"].toString()));
-                        break;
+                        logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(typeString));
+                        continue;
+                    }
+                    if (type == Event::Type::HealLocation) {
+                        logWarn(QString("Cannot paste events of type '%1'").arg(typeString));
+                        continue;
                     }
 
-                    switch (type) {
-                    case Event::Type::Object:
-                        pasteEvent = new ObjectEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::CloneObject:
-                        pasteEvent = new CloneObjectEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::Warp:
-                        pasteEvent = new WarpEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::Trigger:
-                        pasteEvent = new TriggerEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::WeatherTrigger:
-                        pasteEvent = new WeatherTriggerEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::Sign:
-                        pasteEvent = new SignEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::HiddenItem:
-                        pasteEvent = new HiddenItemEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::SecretBase:
-                        pasteEvent = new SecretBaseEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    default:
-                        break;
-                    }
+                    Event *pasteEvent = Event::create(type);
+                    if (!pasteEvent)
+                        continue;
 
-                    if (pasteEvent) {
-                        pasteEvent->setMap(this->editor->map);
-                        newEvents.append(pasteEvent);
-                    }
+                    pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                    pasteEvent->setMap(this->editor->map);
+                    newEvents.append(pasteEvent);
                 }
 
                 if (!newEvents.empty()) {

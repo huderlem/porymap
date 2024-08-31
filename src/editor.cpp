@@ -2003,10 +2003,10 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
         selected_events->clear();
         selected_events->append(object);
     } else if (!selected_events->contains(object)) {
-        // Adding event to selection
+        // Adding event to group selection
         selected_events->append(object);
     } else if (selected_events->length() > 1) {
-        // Removing from group selection
+        // Removing event from group selection
         selected_events->removeOne(object);
     } else {
         // Attempting to toggle the only currently-selected event.
@@ -2068,56 +2068,24 @@ void Editor::duplicateSelectedEvents() {
 }
 
 DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
-    Event *event = nullptr;
+    if (!project || !map || eventLimitReached(type))
+        return nullptr;
 
-    if (project && map && !eventLimitReached(type)) {
-        switch (type) {
-        case Event::Type::Object:
-            event = new ObjectEvent();
-            break;
-        case Event::Type::CloneObject:
-            event = new CloneObjectEvent();
-            break;
-        case Event::Type::Warp:
-            event = new WarpEvent();
-            break;
-        case Event::Type::Trigger:
-            event = new TriggerEvent();
-            break;
-        case Event::Type::WeatherTrigger:
-            event = new WeatherTriggerEvent();
-            break;
-        case Event::Type::Sign:
-            event = new SignEvent();
-            break;
-        case Event::Type::HiddenItem:
-            event = new HiddenItemEvent();
-            break;
-        case Event::Type::SecretBase:
-            event = new SecretBaseEvent();
-            break;
-        case Event::Type::HealLocation: {
-            event = new HealLocationEvent();
-            event->setMap(this->map);
-            event->setDefaultValues(this->project);
-            HealLocation healLocation = HealLocation::fromEvent(event);
-            project->healLocations.append(healLocation);
-            ((HealLocationEvent *)event)->setIndex(project->healLocations.length());
-            break;
-        }
-        default:
-            break;
-        }
-        if (!event) return nullptr;
+    Event *event = Event::create(type);
+    if (!event)
+        return nullptr;
 
-        event->setMap(this->map);
-        event->setDefaultValues(this->project);
+    event->setMap(this->map);
+    event->setDefaultValues(this->project);
 
-        map->editHistory.push(new EventCreate(this, map, event));
-        return event->getPixmapItem();
+    if (type == Event::Type::HealLocation) {
+        HealLocation healLocation = HealLocation::fromEvent(event);
+        project->healLocations.append(healLocation);
+        ((HealLocationEvent *)event)->setIndex(project->healLocations.length());
     }
 
-    return nullptr;
+    map->editHistory.push(new EventCreate(this, map, event));
+    return event->getPixmapItem();
 }
 
 // Currently only object events have an explicit limit
