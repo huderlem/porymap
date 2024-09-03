@@ -77,6 +77,7 @@ public:
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
         this->theme = "default";
+        this->wildMonChartTheme = "";
         this->textEditorOpenFolder = "";
         this->textEditorGotoLine = "";
         this->paletteEditorBitDepth = 24;
@@ -127,6 +128,7 @@ public:
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     QString theme;
+    QString wildMonChartTheme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
     int paletteEditorBitDepth;
@@ -136,6 +138,7 @@ public:
     QDateTime lastUpdateCheckTime;
     QVersionNumber lastUpdateCheckVersion;
     QMap<QUrl, QDateTime> rateLimitTimes;
+    QByteArray wildMonChartGeometry;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -191,6 +194,7 @@ enum ProjectIdentifier {
     define_obj_event_count,
     define_min_level,
     define_max_level,
+    define_max_encounter_rate,
     define_tiles_primary,
     define_tiles_total,
     define_metatiles_primary,
@@ -215,6 +219,7 @@ enum ProjectIdentifier {
     define_map_section_prefix,
     define_map_section_empty,
     define_map_section_count,
+    define_species_prefix,
     regex_behaviors,
     regex_obj_event_gfx,
     regex_items,
@@ -229,7 +234,6 @@ enum ProjectIdentifier {
     regex_sign_facing_directions,
     regex_trainer_types,
     regex_music,
-    regex_species,
 };
 
 enum ProjectFilePath {
@@ -278,6 +282,7 @@ enum ProjectFilePath {
     global_fieldmap,
     fieldmap,
     initial_facing_table,
+    wild_encounter,
     pokemon_icon_table,
     pokemon_gfx,
 };

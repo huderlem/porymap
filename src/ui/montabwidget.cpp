@@ -68,7 +68,7 @@ void MonTabWidget::paste(int index) {
     WildMonInfo newInfo = getDefaultMonInfo(this->editor->project->wildMonFields.at(index));
     combineEncounters(newInfo, encounterClipboard);
     populateTab(index, newInfo);
-    emit editor->wildMonDataChanged();
+    emit editor->wildMonTableEdited();
 }
 
 void MonTabWidget::actionCopyTab(int index) {
@@ -88,21 +88,19 @@ void MonTabWidget::actionCopyTab(int index) {
 }
 
 void MonTabWidget::actionAddDeleteTab(int index) {
+    clearTableAt(index);
     if (activeTabs[index]) {
         // delete tab
-        clearTableAt(index);
         deactivateTab(index);
         editor->saveEncounterTabData();
-        emit editor->wildMonDataChanged();
     }
     else {
         // add tab
-        clearTableAt(index);
         populateTab(index, getDefaultMonInfo(editor->project->wildMonFields.at(index)));
         editor->saveEncounterTabData();
         setCurrentIndex(index);
-        emit editor->wildMonDataChanged();
     }
+    emit editor->wildMonTableEdited();
 }
 
 void MonTabWidget::clearTableAt(int tabIndex) {
@@ -130,6 +128,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
 
     EncounterTableModel *model = new EncounterTableModel(monInfo, editor->project->wildMonFields, tabIndex, this);
     connect(model, &EncounterTableModel::edited, editor, &Editor::saveEncounterTabData);
+    connect(model, &EncounterTableModel::edited, editor, &Editor::wildMonTableEdited);
     speciesTable->setModel(model);
 
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::Species, new SpeciesComboDelegate(editor->project, this));
@@ -158,6 +157,8 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
 }
 
 QTableView *MonTabWidget::tableAt(int tabIndex) {
+    if (tabIndex < 0)
+        return nullptr;
     return static_cast<QTableView *>(this->widget(tabIndex));
 }
 

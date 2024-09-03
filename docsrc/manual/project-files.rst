@@ -67,6 +67,7 @@ The filepath that Porymap expects for each file can be overridden on the ``Files
    include/fieldmap.h, yes, no, ``constants_fieldmap``, reads tileset related constants
    src/fieldmap.c, yes, no, ``fieldmap``, reads ``symbol_attribute_table``
    src/event_object_movement.c, yes, no, ``initial_facing_table``, reads ``symbol_facing_directions``
+   src/wild_encounter.c, yes, no, ``wild_encounter``, reads ``define_max_encounter_rate``
    src/pokemon_icon.c, yes, no, ``pokemon_icon_table``, reads files in ``symbol_pokemon_icon_table``
    graphics/pokemon/\*/icon.png, yes, no, ``pokemon_gfx``, to search for Pokémon icons if they aren't found in ``symbol_pokemon_icon_table``
 
@@ -96,6 +97,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_obj_event_count``, ``OBJECT_EVENT_TEMPLATES_COUNT``, to limit total Object Events
    ``define_min_level``, ``MIN_LEVEL``, minimum wild encounters level
    ``define_max_level``, ``MAX_LEVEL``, maximum wild encounters level
+   ``define_max_encounter_rate``, ``MAX_ENCOUNTER_RATE``, this value / 16 will be the maximum encounter rate on the ``Wild Pokémon`` tab
    ``define_tiles_primary``, ``NUM_TILES_IN_PRIMARY``, 
    ``define_tiles_total``, ``NUM_TILES_TOTAL``,
    ``define_metatiles_primary``, ``NUM_METATILES_IN_PRIMARY``, total metatiles are calculated using metatile ID mask
@@ -120,6 +122,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_map_section_prefix``, ``MAPSEC_``, expected prefix for location macro names
    ``define_map_section_empty``, ``NONE``, macro name after prefix for empty region map sections
    ``define_map_section_count``, ``COUNT``, macro name after prefix for total number of region map sections
+   ``define_species_prefix``, ``SPECIES_``, expected prefix for species macro names
    ``regex_behaviors``, ``\bMB_``, regex to find metatile behavior macro names
    ``regex_obj_event_gfx``, ``\bOBJ_EVENT_GFX_``, regex to find Object Event graphics ID macro names
    ``regex_items``, ``\bITEM_(?!(B_)?USE_)``, regex to find item macro names
@@ -134,4 +137,3 @@ In addition to these files, there are some specific symbol and macro names that 
    ``regex_sign_facing_directions``, ``\bBG_EVENT_PLAYER_FACING_``, regex to find sign facing direction macro names
    ``regex_trainer_types``, ``\bTRAINER_TYPE_``, regex to find trainer type macro names
    ``regex_music``, ``\b(SE|MUS)_``, regex to find music macro names
-   ``regex_species``, ``\bSPECIES_``, regex to find species macro names
