@@ -103,6 +103,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_metatiles_primary``, ``NUM_METATILES_IN_PRIMARY``, total metatiles are calculated using metatile ID mask
    ``define_pals_primary``, ``NUM_PALS_IN_PRIMARY``,
    ``define_pals_total``, ``NUM_PALS_TOTAL``, 
+   ``define_tiles_per_metatile``, ``NUM_TILES_PER_METATILE``, to determine if triple-layer metatiles are in use. Values other than 8 or 12 are ignored
    ``define_map_size``, ``MAX_MAP_DATA_SIZE``, to limit map dimensions
    ``define_mask_metatile``, ``MAPGRID_METATILE_ID_MASK``, optionally read to get settings on ``Maps`` tab
    ``define_mask_collision``, ``MAPGRID_COLLISION_MASK``, optionally read to get settings on ``Maps`` tab

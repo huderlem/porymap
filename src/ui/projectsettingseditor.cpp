@@ -133,53 +133,40 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_CollisionMask->setMaximum(Block::maxValue);
     ui->spinBox_ElevationMask->setMaximum(Block::maxValue);
 
-    // Some settings can be determined by constants in the project.
-    // We reflect that here by disabling their UI elements.
-    if (project) {
-        const QString maskFilepath = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
-        const QString attrTableFilepath = projectConfig.getFilePath(ProjectFilePath::fieldmap);
-        const QString metatileIdMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_metatile);
-        const QString collisionMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_collision);
-        const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
-        const QString behaviorMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior);
-        const QString layerTypeMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer);
-        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
-        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
-        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
-        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
-        const QString attrTableName = projectConfig.getIdentifier(ProjectIdentifier::symbol_attribute_table);
+    // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
+    // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
+    const QString globalFieldmapPath = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
+    const QString constantsFieldmapPath = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
+    const QString fieldmapPath = projectConfig.getFilePath(ProjectFilePath::fieldmap);
 
-        // Block masks
-        if (project->disabledSettingsNames.contains(metatileIdMaskName))
-            this->disableParsedSetting(ui->spinBox_MetatileIdMask, metatileIdMaskName, maskFilepath);
-        if (project->disabledSettingsNames.contains(collisionMaskName))
-            this->disableParsedSetting(ui->spinBox_CollisionMask, collisionMaskName, maskFilepath);
-        if (project->disabledSettingsNames.contains(elevationMaskName))
-            this->disableParsedSetting(ui->spinBox_ElevationMask, elevationMaskName, maskFilepath);
+    // Block masks
+    this->disableParsedSetting(ui->spinBox_MetatileIdMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_metatile), globalFieldmapPath);
+    this->disableParsedSetting(ui->spinBox_CollisionMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_collision), globalFieldmapPath);
+    this->disableParsedSetting(ui->spinBox_ElevationMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation), globalFieldmapPath);
 
-        // Behavior mask
-        if (project->disabledSettingsNames.contains(behaviorMaskName))
-            this->disableParsedSetting(ui->spinBox_BehaviorMask, behaviorMaskName, maskFilepath);
-        else if (project->disabledSettingsNames.contains(behaviorTableName))
-            this->disableParsedSetting(ui->spinBox_BehaviorMask, attrTableName, attrTableFilepath);
+    // Behavior mask
+    if (!this->disableParsedSetting(ui->spinBox_BehaviorMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior), globalFieldmapPath))
+        this->disableParsedSetting(ui->spinBox_BehaviorMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior), fieldmapPath);
 
-        // Layer type mask
-        if (project->disabledSettingsNames.contains(layerTypeMaskName))
-            this->disableParsedSetting(ui->spinBox_LayerTypeMask, layerTypeMaskName, maskFilepath);
-        else if (project->disabledSettingsNames.contains(layerTypeTableName))
-            this->disableParsedSetting(ui->spinBox_LayerTypeMask, attrTableName, attrTableFilepath);
+    // Layer type mask
+    if (!this->disableParsedSetting(ui->spinBox_LayerTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer), globalFieldmapPath))
+        this->disableParsedSetting(ui->spinBox_LayerTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer), fieldmapPath);
 
-        // Encounter and terrain type masks
-        if (project->disabledSettingsNames.contains(encounterTypeTableName))
-            this->disableParsedSetting(ui->spinBox_EncounterTypeMask, attrTableName, attrTableFilepath);
-        if (project->disabledSettingsNames.contains(terrainTypeTableName))
-            this->disableParsedSetting(ui->spinBox_TerrainTypeMask, attrTableName, attrTableFilepath);
-    }
+    // Encounter and terrain type masks
+    this->disableParsedSetting(ui->spinBox_EncounterTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter), fieldmapPath);
+    this->disableParsedSetting(ui->spinBox_TerrainTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain), fieldmapPath);
+
+    // Tripe layer metatiles
+    this->disableParsedSetting(ui->checkBox_EnableTripleLayerMetatiles, projectConfig.getIdentifier(ProjectIdentifier::define_tiles_per_metatile), constantsFieldmapPath);
 }
 
-void ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath) {
-    widget->setEnabled(false);
-    widget->setToolTip(QString("This value has been read from '%1' in %2").arg(name).arg(filepath));
+bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &identifier, const QString &filepath) {
+    if (project && project->disabledSettingsNames.contains(identifier)) {
+        widget->setEnabled(false);
+        widget->setToolTip(QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath));
+        return true;
+    }
+    return false;
 }
 
 // Remember the current settings tab for future sessions

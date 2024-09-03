@@ -200,6 +200,7 @@ enum ProjectIdentifier {
     define_metatiles_primary,
     define_pals_primary,
     define_pals_total,
+    define_tiles_per_metatile,
     define_map_size,
     define_mask_metatile,
     define_mask_collision,

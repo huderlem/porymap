@@ -20,6 +20,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
 - The max encounter rate is now read from the project, rather than assuming the default value from RSE.
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
+- The triple-layer metatiles setting can now be set automatically using a project constant.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
