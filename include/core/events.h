@@ -118,6 +118,8 @@ public:
         }
     }
 
+    static Event* create(Event::Type type);
+
     static QMap<Event::Group, const QPixmap*> icons;
 
 // standard public methods

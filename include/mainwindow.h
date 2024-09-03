@@ -27,6 +27,7 @@
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
 #include "customscriptseditor.h"
+#include "wildmonchart.h"
 #include "updatepromoter.h"
 #include "aboutporymap.h"
 
@@ -182,7 +183,6 @@ private slots:
     void onOpenConnectedMap(MapConnection*);
     void onMapNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
-    void onWildMonDataChanged();
     void openNewMapPopupWindow();
     void onNewMapCreated();
     void onMapCacheCleared();
@@ -287,6 +287,7 @@ private slots:
     void on_horizontalSlider_CollisionZoom_valueChanged(int value);
     void on_pushButton_NewWildMonGroup_clicked();
     void on_pushButton_DeleteWildMonGroup_clicked();
+    void on_pushButton_SummaryChart_clicked();
     void on_pushButton_ConfigureEncountersJSON_clicked();
     void on_pushButton_CreatePrefab_clicked();
     void on_spinBox_SelectedElevation_valueChanged(int elevation);
@@ -316,6 +317,7 @@ private:
     QPointer<UpdatePromoter> updatePromoter = nullptr;
     QPointer<NetworkAccessManager> networkAccessManager = nullptr;
     QPointer<AboutPorymap> aboutWindow = nullptr;
+    QPointer<WildMonChart> wildMonChart = nullptr;
     FilterChildrenProxyModel *mapListProxyModel;
     QStandardItemModel *mapListModel;
     QList<QStandardItem*> *mapGroupItemsList;

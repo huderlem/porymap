@@ -6,6 +6,21 @@
 
 QMap<Event::Group, const QPixmap*> Event::icons;
 
+Event* Event::create(Event::Type type) {
+    switch (type) {
+    case Event::Type::Object: return new ObjectEvent();
+    case Event::Type::CloneObject: return new CloneObjectEvent();
+    case Event::Type::Warp: return new WarpEvent();
+    case Event::Type::Trigger: return new TriggerEvent();
+    case Event::Type::WeatherTrigger: return new WeatherTriggerEvent();
+    case Event::Type::Sign: return new SignEvent();
+    case Event::Type::HiddenItem: return new HiddenItemEvent();
+    case Event::Type::SecretBase: return new SecretBaseEvent();
+    case Event::Type::HealLocation: return new HealLocationEvent();
+    default: return nullptr;
+    }
+}
+
 Event::~Event() {
     if (this->eventFrame)
         this->eventFrame->deleteLater();

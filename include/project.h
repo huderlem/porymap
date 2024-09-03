@@ -39,7 +39,6 @@ public:
     QMap<QString, int> mapGroups;
     QList<QStringList> groupedMapNames;
     QStringList mapNames;
-    QMap<QString, QVariant> miscConstants;
     QList<HealLocation> healLocations;
     QMap<QString, int> healLocationNameToValue;
     QMap<QString, QString> mapConstantsToMapNames;
@@ -79,6 +78,9 @@ public:
     bool usingAsmTilesets;
     QString importExportPath;
     QSet<QString> disabledSettingsNames;
+    int pokemonMinLevel;
+    int pokemonMaxLevel;
+    int maxEncounterRate;
     bool wildEncountersLoaded;
 
     void set_root(QString);

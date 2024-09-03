@@ -10,6 +10,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Added
 - Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
+- Add charts to the `Wild Pokémon` tab that show species and level distributions.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 
 ### Changed
@@ -17,7 +18,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
 - A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
 - The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
+- The max encounter rate is now read from the project, rather than assuming the default value from RSE.
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
+- The triple-layer metatiles setting can now be set automatically using a project constant.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -30,6 +33,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
+- Fix invalid species names clearing from wild pokémon data when revisited.
+- Fix editing wild pokémon data not marking the map as edited.
 - Fix changes to map connections not marking connected maps as unsaved.
 - Fix numerous issues related to connecting a map to itself.
 - Fix incorrect map connections getting selected when opening a map by double-clicking a map connection.

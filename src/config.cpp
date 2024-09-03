@@ -85,11 +85,13 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
     {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
     {ProjectIdentifier::define_max_level,              {"define_max_level",              "MAX_LEVEL"}},
+    {ProjectIdentifier::define_max_encounter_rate,     {"define_max_encounter_rate",     "MAX_ENCOUNTER_RATE"}},
     {ProjectIdentifier::define_tiles_primary,          {"define_tiles_primary",          "NUM_TILES_IN_PRIMARY"}},
     {ProjectIdentifier::define_tiles_total,            {"define_tiles_total",            "NUM_TILES_TOTAL"}},
     {ProjectIdentifier::define_metatiles_primary,      {"define_metatiles_primary",      "NUM_METATILES_IN_PRIMARY"}},
     {ProjectIdentifier::define_pals_primary,           {"define_pals_primary",           "NUM_PALS_IN_PRIMARY"}},
     {ProjectIdentifier::define_pals_total,             {"define_pals_total",             "NUM_PALS_TOTAL"}},
+    {ProjectIdentifier::define_tiles_per_metatile,     {"define_tiles_per_metatile",     "NUM_TILES_PER_METATILE"}},
     {ProjectIdentifier::define_map_size,               {"define_map_size",               "MAX_MAP_DATA_SIZE"}},
     {ProjectIdentifier::define_mask_metatile,          {"define_mask_metatile",          "MAPGRID_METATILE_ID_MASK"}},
     {ProjectIdentifier::define_mask_collision,         {"define_mask_collision",         "MAPGRID_COLLISION_MASK"}},
@@ -109,6 +111,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
     {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
     {ProjectIdentifier::define_map_section_count,      {"define_map_section_count",      "COUNT"}},
+    {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
     // Regex
     {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
     {ProjectIdentifier::regex_obj_event_gfx,           {"regex_obj_event_gfx",           "\\bOBJ_EVENT_GFX_"}},
@@ -124,7 +127,6 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
     {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
     {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
-    {ProjectIdentifier::regex_species,                 {"regex_species",                 "\\bSPECIES_"}},
 };
 
 const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths = {
@@ -174,6 +176,7 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::fieldmap,                         { "fieldmap",                        "src/fieldmap.c"}},
     {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
     {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
+    {ProjectFilePath::wild_encounter,                   { "wild_encounter",                  "src/wild_encounter.c"}},
     {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
 };
 
@@ -368,6 +371,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->customScriptsEditorGeometry = bytesFromString(value);
     } else if (key == "custom_scripts_editor_state") {
         this->customScriptsEditorState = bytesFromString(value);
+    } else if (key == "wild_mon_chart_geometry") {
+        this->wildMonChartGeometry = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "collision_zoom") {
@@ -394,6 +399,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetCheckerboardFill = getConfigBool(key, value);
     } else if (key == "theme") {
         this->theme = value;
+    } else if (key == "wild_mon_chart_theme") {
+        this->wildMonChartTheme = value;
     } else if (key == "text_editor_open_directory") {
         this->textEditorOpenFolder = value;
     } else if (key == "text_editor_goto_line") {
@@ -453,6 +460,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_settings_editor_state", stringFromByteArray(this->projectSettingsEditorState));
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
+    map.insert("wild_mon_chart_geometry", stringFromByteArray(this->wildMonChartGeometry));
     map.insert("mirror_connecting_maps", this->mirrorConnectingMaps ? "1" : "0");
     map.insert("show_dive_emerge_maps", this->showDiveEmergeMaps ? "1" : "0");
     map.insert("dive_emerge_map_opacity", QString::number(this->diveEmergeMapOpacity));
@@ -472,6 +480,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("theme", this->theme);
+    map.insert("wild_mon_chart_theme", this->wildMonChartTheme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));

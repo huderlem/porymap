@@ -50,7 +50,7 @@ QWidget *SpeciesComboDelegate::createEditor(QWidget *parent, const QStyleOptionV
 void SpeciesComboDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const {
     QString species = index.data(Qt::EditRole).toString();
     NoScrollComboBox *combo = static_cast<NoScrollComboBox *>(editor);
-    combo->setCurrentIndex(combo->findText(species));
+    combo->setCurrentText(species);
 }
 
 void SpeciesComboDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
@@ -75,12 +75,12 @@ QWidget *SpinBoxDelegate::createEditor(QWidget *parent, const QStyleOptionViewIt
 
     int col = index.column();
     if (col == EncounterTableModel::ColumnType::MinLevel || col == EncounterTableModel::ColumnType::MaxLevel) {
-        editor->setMinimum(this->project->miscConstants.value("min_level_define").toInt());
-        editor->setMaximum(this->project->miscConstants.value("max_level_define").toInt());
+        editor->setMinimum(this->project->pokemonMinLevel);
+        editor->setMaximum(this->project->pokemonMaxLevel);
     }
     else if (col == EncounterTableModel::ColumnType::EncounterRate) {
         editor->setMinimum(0);
-        editor->setMaximum(180);
+        editor->setMaximum(this->project->maxEncounterRate);
     }
 
     return editor;

@@ -2925,6 +2925,13 @@
                    </spacer>
                   </item>
                   <item>
+                   <widget class="QPushButton" name="pushButton_SummaryChart">
+                    <property name="text">
+                     <string>Summary Chart...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <widget class="QPushButton" name="pushButton_ConfigureEncountersJSON">
                     <property name="text">
                      <string>Configure JSON...</string>

@@ -331,7 +331,7 @@ void EventCreate::redo() {
 
     // select this event
     editor->selected_events->clear();
-    editor->selectMapEvent(event->getPixmapItem(), false);
+    editor->selectMapEvent(event->getPixmapItem());
 }
 
 void EventCreate::undo() {

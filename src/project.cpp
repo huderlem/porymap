@@ -113,6 +113,7 @@ bool Project::sanityCheck() {
 }
 
 bool Project::load() {
+    this->disabledSettingsNames.clear();
     bool success = readMapLayouts()
                 && readRegionMapSections()
                 && readItemNames()
@@ -1654,15 +1655,43 @@ void Project::deleteFile(QString path) {
 }
 
 bool Project::readWildMonData() {
-    extraEncounterGroups.clear();
-    wildMonFields.clear();
-    wildMonData.clear();
-    encounterGroupLabels.clear();
+    this->extraEncounterGroups.clear();
+    this->wildMonFields.clear();
+    this->wildMonData.clear();
+    this->encounterGroupLabels.clear();
+    this->pokemonMinLevel = 0;
+    this->pokemonMaxLevel = 100;
+    this->maxEncounterRate = 2880/16;
     this->wildEncountersLoaded = false;
     if (!userConfig.useEncounterJson) {
         return true;
     }
 
+    // Read max encounter rate. The games multiply the encounter rate value in the map data by 16, so our input limit is the max/16.
+    const QString encounterRateFile = projectConfig.getFilePath(ProjectFilePath::wild_encounter);
+    const QString maxEncounterRateName = projectConfig.getIdentifier(ProjectIdentifier::define_max_encounter_rate);
+
+    fileWatcher.addPath(QString("%1/%2").arg(root).arg(encounterRateFile));
+    auto defines = parser.readCDefinesByName(encounterRateFile, {maxEncounterRateName});
+    if (defines.contains(maxEncounterRateName))
+        this->maxEncounterRate = defines.value(maxEncounterRateName)/16;
+
+    // Read min/max level
+    const QString levelRangeFile = projectConfig.getFilePath(ProjectFilePath::constants_pokemon);
+    const QString minLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_min_level);
+    const QString maxLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_max_level);
+
+    fileWatcher.addPath(QString("%1/%2").arg(root).arg(levelRangeFile));
+    defines = parser.readCDefinesByName(levelRangeFile, {minLevelName, maxLevelName});
+    if (defines.contains(minLevelName))
+        this->pokemonMinLevel = defines.value(minLevelName);
+    if (defines.contains(maxLevelName))
+        this->pokemonMaxLevel = defines.value(maxLevelName);
+
+    this->pokemonMinLevel = qMin(this->pokemonMinLevel, this->pokemonMaxLevel);
+    this->pokemonMaxLevel = qMax(this->pokemonMinLevel, this->pokemonMaxLevel);
+
+    // Read encounter data
     QString wildMonJsonFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_wild_encounters));
     fileWatcher.addPath(wildMonJsonFilepath);
 
@@ -1960,6 +1989,7 @@ bool Project::readFieldmapProperties() {
     const QString numPalsPrimaryName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_primary);
     const QString numPalsTotalName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_total);
     const QString maxMapSizeName = projectConfig.getIdentifier(ProjectIdentifier::define_map_size);
+    const QString numTilesPerMetatileName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_per_metatile);
     const QStringList names = {
         numTilesPrimaryName,
         numTilesTotalName,
@@ -1967,6 +1997,7 @@ bool Project::readFieldmapProperties() {
         numPalsPrimaryName,
         numPalsTotalName,
         maxMapSizeName,
+        numTilesPerMetatileName,
     };
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
@@ -2007,6 +2038,22 @@ bool Project::readFieldmapProperties() {
                 .arg(Project::max_map_data_size));
     }
 
+    it = defines.find(numTilesPerMetatileName);
+    if (it != defines.end()) {
+        // We can determine whether triple-layer metatiles are in-use by reading this constant.
+        // If the constant is missing (or is using a value other than 8 or 12) the user must tell
+        // us whether they're using triple-layer metatiles under Project Settings.
+        static const int numTilesPerLayer = 4;
+        int numTilesPerMetatile = it.value();
+        if (numTilesPerMetatile == 2 * numTilesPerLayer) {
+            projectConfig.tripleLayerMetatilesEnabled = false;
+            this->disabledSettingsNames.insert(numTilesPerMetatileName);
+        } else if (numTilesPerMetatile == 3 * numTilesPerLayer) {
+            projectConfig.tripleLayerMetatilesEnabled = true;
+            this->disabledSettingsNames.insert(numTilesPerMetatileName);
+        }
+    }
+
     return true;
 }
 
@@ -2032,7 +2079,8 @@ bool Project::readFieldmapMasks() {
     // If users do have the defines we disable them in the settings editor and direct them to their project files.
     // Record the names we read so we know later which settings to disable.
     const QStringList defineNames = defines.keys();
-    this->disabledSettingsNames = QSet<QString>(defineNames.constBegin(), defineNames.constEnd());
+    for (auto name : defineNames)
+        this->disabledSettingsNames.insert(name);
 
     // Read Block masks
     auto readBlockMask = [defines](const QString name, uint16_t *value) {
@@ -2412,17 +2460,6 @@ bool Project::readObjEventGfxConstants() {
 }
 
 bool Project::readMiscellaneousConstants() {
-    miscConstants.clear();
-    if (userConfig.useEncounterJson) {
-        const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_pokemon);
-        const QString minLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_min_level);
-        const QString maxLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_max_level);
-        fileWatcher.addPath(root + "/" + filename);
-        QMap<QString, int> pokemonDefines = parser.readCDefinesByName(filename, {minLevelName, maxLevelName});
-        miscConstants.insert("max_level_define", pokemonDefines.value(maxLevelName) > pokemonDefines.value(minLevelName) ? pokemonDefines.value(maxLevelName) : 100);
-        miscConstants.insert("min_level_define", pokemonDefines.value(minLevelName) < pokemonDefines.value(maxLevelName) ? pokemonDefines.value(minLevelName) : 1);
-    }
-
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_global);
     const QString maxObjectEventsName = projectConfig.getIdentifier(ProjectIdentifier::define_obj_event_count);
     fileWatcher.addPath(root + "/" + filename);
@@ -2611,7 +2648,7 @@ bool Project::readSpeciesIconPaths() {
     const QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
 
     // Read species constants. If this fails we can get them from the icon table (but we shouldn't rely on it).
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_species)};
+    const QStringList prefixes = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix))};
     const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
     fileWatcher.addPath(root + "/" + constantsFilename);
     QStringList speciesNames = parser.readCDefineNames(constantsFilename, prefixes);
