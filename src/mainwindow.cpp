@@ -124,6 +124,10 @@ void MainWindow::initWindow() {
     ui->actionCheck_for_Updates->setVisible(false);
 #endif
 
+#ifdef DISABLE_CHARTS_MODULE
+    ui->pushButton_SummaryChart->setVisible(false);
+#endif
+
     setWindowDisabled(true);
 }
 
@@ -239,10 +243,8 @@ void MainWindow::initExtraSignals() {
     connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
 
     // Change pages on wild encounter groups
-    QStackedWidget *stack = ui->stackedWidget_WildMons;
-    QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
-    connect(labelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
-        stack->setCurrentIndex(index);
+    connect(ui->comboBox_EncounterGroupLabel, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index){
+        ui->stackedWidget_WildMons->setCurrentIndex(index);
     });
 
     // Convert the layout of the map tools' frame into an adjustable FlowLayout
@@ -309,7 +311,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
     connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
-    connect(this->editor, &Editor::wildMonDataChanged, this, &MainWindow::onWildMonDataChanged);
+    connect(this->editor, &Editor::wildMonTableEdited, [this] { this->markMapEdited(); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
@@ -1113,6 +1115,7 @@ void MainWindow::clearProjectUI() {
 
     // Clear map list
     mapListModel->clear();
+    mapListIndexes.clear();
     mapGroupItemsList->clear();
 }
 
@@ -1129,6 +1132,7 @@ void MainWindow::sortMapList() {
 
     ui->mapList->setUpdatesEnabled(false);
     mapListModel->clear();
+    mapListIndexes.clear();
     mapGroupItemsList->clear();
     QStandardItem *root = mapListModel->invisibleRootItem();
 
@@ -1761,7 +1765,7 @@ void MainWindow::paste() {
                 editor->metatile_selector_item->setExternalSelection(width, height, metatiles, collisions);
                 break;
             }
-            case 1:
+            case MainTab::Events:
             {
                 // can only paste events to this tab
                 if (pasteObject["object"].toString() != "events") {
@@ -1773,56 +1777,25 @@ void MainWindow::paste() {
                 QJsonArray events = pasteObject["events"].toArray();
                 for (QJsonValue event : events) {
                     // paste the event to the map
-                    Event *pasteEvent = nullptr;
-
-                    Event::Type type = Event::eventTypeFromString(event["event_type"].toString());
+                    const QString typeString = event["event_type"].toString();
+                    Event::Type type = Event::eventTypeFromString(typeString);
 
                     if (this->editor->eventLimitReached(type)) {
-                        logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(event["event_type"].toString()));
-                        break;
+                        logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(typeString));
+                        continue;
+                    }
+                    if (type == Event::Type::HealLocation) {
+                        logWarn(QString("Cannot paste events of type '%1'").arg(typeString));
+                        continue;
                     }
 
-                    switch (type) {
-                    case Event::Type::Object:
-                        pasteEvent = new ObjectEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::CloneObject:
-                        pasteEvent = new CloneObjectEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::Warp:
-                        pasteEvent = new WarpEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::Trigger:
-                        pasteEvent = new TriggerEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::WeatherTrigger:
-                        pasteEvent = new WeatherTriggerEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::Sign:
-                        pasteEvent = new SignEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::HiddenItem:
-                        pasteEvent = new HiddenItemEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    case Event::Type::SecretBase:
-                        pasteEvent = new SecretBaseEvent();
-                        pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
-                        break;
-                    default:
-                        break;
-                    }
+                    Event *pasteEvent = Event::create(type);
+                    if (!pasteEvent)
+                        continue;
 
-                    if (pasteEvent) {
-                        pasteEvent->setMap(this->editor->map);
-                        newEvents.append(pasteEvent);
-                    }
+                    pasteEvent->loadFromJson(event["event"].toObject(), this->editor->project);
+                    pasteEvent->setMap(this->editor->map);
+                    newEvents.append(pasteEvent);
                 }
 
                 if (!newEvents.empty()) {
@@ -2014,7 +1987,7 @@ void MainWindow::addNewEvent(Event::Type type) {
             auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
             object->moveTo(Metatile::coordFromPixmapCoord(centerPos));
             updateObjects();
-            editor->selectMapEvent(object, false);
+            editor->selectMapEvent(object);
         } else {
             QMessageBox msgBox(this);
             msgBox.setText("Failed to add new event");
@@ -2562,11 +2535,6 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
         redrawMapScene();
 }
 
-void MainWindow::onWildMonDataChanged() {
-    editor->saveEncounterTabData();
-    markMapEdited();
-}
-
 void MainWindow::onMapRulerStatusChanged(const QString &status) {
     if (status.isEmpty()) {
         label_MapRulerStatus->hide();
@@ -2657,6 +2625,16 @@ void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
 
 void MainWindow::on_pushButton_DeleteWildMonGroup_clicked() {
     editor->deleteWildMonGroup();
+}
+
+void MainWindow::on_pushButton_SummaryChart_clicked() {
+    if (!this->wildMonChart) {
+        this->wildMonChart = new WildMonChart(this, this->editor->getCurrentWildMonTable());
+        connect(this->editor, &Editor::wildMonTableOpened, this->wildMonChart, &WildMonChart::setTable);
+        connect(this->editor, &Editor::wildMonTableClosed, this->wildMonChart, &WildMonChart::clearTable);
+        connect(this->editor, &Editor::wildMonTableEdited, this->wildMonChart, &WildMonChart::refresh);
+    }
+    openSubWindow(this->wildMonChart);
 }
 
 void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
@@ -3114,6 +3092,10 @@ bool MainWindow::closeSupplementaryWindows() {
     if (this->customScriptsEditor && !this->customScriptsEditor->close())
         return false;
     this->customScriptsEditor = nullptr;
+
+    if (this->wildMonChart && !this->wildMonChart->close())
+        return false;
+    this->wildMonChart = nullptr;
 
     if (this->projectSettingsEditor) this->projectSettingsEditor->closeQuietly();
     this->projectSettingsEditor = nullptr;

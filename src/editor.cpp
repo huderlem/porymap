@@ -7,7 +7,6 @@
 #include "mapsceneeventfilter.h"
 #include "metatile.h"
 #include "montabwidget.h"
-#include "encountertablemodel.h"
 #include "editcommands.h"
 #include "config.h"
 #include "scripting.h"
@@ -42,6 +41,11 @@ Editor::Editor(Ui::MainWindow* ui)
             updateSelectedEvents();
             selectNewEvents = false;
         }
+    });
+
+    // Send signals used for updating the wild pokemon summary chart
+    connect(ui->stackedWidget_WildMons, &QStackedWidget::currentChanged, [this] {
+        emit wildMonTableOpened(getCurrentWildMonTable());
     });
 }
 
@@ -79,9 +83,7 @@ void Editor::saveUiFields() {
 }
 
 void Editor::setProject(Project * project) {
-    if (this->project) {
-        closeProject();
-    }
+    closeProject();
     this->project = project;
     MapConnection::project = project;
 }
@@ -194,6 +196,7 @@ void Editor::setEditingConnections() {
 
 void Editor::clearWildMonTables() {
     QStackedWidget *stack = ui->stackedWidget_WildMons;
+    const QSignalBlocker blocker(stack);
 
     // delete widgets from previous map data if they exist
     while (stack->count()) {
@@ -203,6 +206,7 @@ void Editor::clearWildMonTables() {
     }
 
     ui->comboBox_EncounterGroupLabel->clear();
+    emit wildMonTableClosed();
 }
 
 void Editor::displayWildMonTables() {
@@ -243,8 +247,12 @@ void Editor::displayWildMonTables() {
             }
             tabIndex++;
         }
+        connect(tabWidget, &MonTabWidget::currentChanged, [this] {
+            emit wildMonTableOpened(getCurrentWildMonTable());
+        });
     }
     stack->setCurrentIndex(0);
+    emit wildMonTableOpened(getCurrentWildMonTable());
 }
 
 void Editor::addNewWildMonGroup(QWidget *window) {
@@ -359,7 +367,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             tabIndex++;
         }
         saveEncounterTabData();
-        emit wildMonDataChanged();
+        emit wildMonTableEdited();
     }
 }
 
@@ -397,7 +405,8 @@ void Editor::deleteWildMonGroup() {
         project->encounterGroupLabels.remove(i);
 
         displayWildMonTables();
-        emit wildMonDataChanged();
+        saveEncounterTabData();
+        emit wildMonTableEdited();
     }
 }
 
@@ -650,7 +659,8 @@ void Editor::configureEncounterJSON(QWidget *window) {
 
         // Re-draw the tab accordingly.
         displayWildMonTables();
-        emit wildMonDataChanged();
+        saveEncounterTabData();
+        emit wildMonTableEdited();
     }
 }
 
@@ -682,6 +692,16 @@ void Editor::saveEncounterTabData() {
             encounterHeader.wildMons[fieldName] = model->encounterData();
         }
     }
+}
+
+EncounterTableModel* Editor::getCurrentWildMonTable() {
+    auto tabWidget = static_cast<MonTabWidget*>(ui->stackedWidget_WildMons->currentWidget());
+    if (!tabWidget) return nullptr;
+
+    auto tableView = tabWidget->tableAt(tabWidget->currentIndex());
+    if (!tableView) return nullptr;
+
+    return static_cast<EncounterTableModel*>(tableView->model());
 }
 
 void Editor::updateEncounterFields(EncounterFields newFields) {
@@ -1358,7 +1378,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, MapPixmapItem *item
                     if (newEvent) {
                         newEvent->move(pos.x(), pos.y());
                         emit objectsChanged();
-                        selectMapEvent(newEvent, false);
+                        selectMapEvent(newEvent);
                     }
                 }
             }
@@ -1994,10 +2014,6 @@ void Editor::updateSelectedEvents() {
     emit objectsChanged();
 }
 
-void Editor::selectMapEvent(DraggablePixmapItem *object) {
-    selectMapEvent(object, false);
-}
-
 void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
     if (!selected_events || !object)
         return;
@@ -2007,10 +2023,10 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
         selected_events->clear();
         selected_events->append(object);
     } else if (!selected_events->contains(object)) {
-        // Adding event to selection
+        // Adding event to group selection
         selected_events->append(object);
     } else if (selected_events->length() > 1) {
-        // Removing from group selection
+        // Removing event from group selection
         selected_events->removeOne(object);
     } else {
         // Attempting to toggle the only currently-selected event.
@@ -2072,56 +2088,24 @@ void Editor::duplicateSelectedEvents() {
 }
 
 DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
-    Event *event = nullptr;
+    if (!project || !map || eventLimitReached(type))
+        return nullptr;
 
-    if (project && map && !eventLimitReached(type)) {
-        switch (type) {
-        case Event::Type::Object:
-            event = new ObjectEvent();
-            break;
-        case Event::Type::CloneObject:
-            event = new CloneObjectEvent();
-            break;
-        case Event::Type::Warp:
-            event = new WarpEvent();
-            break;
-        case Event::Type::Trigger:
-            event = new TriggerEvent();
-            break;
-        case Event::Type::WeatherTrigger:
-            event = new WeatherTriggerEvent();
-            break;
-        case Event::Type::Sign:
-            event = new SignEvent();
-            break;
-        case Event::Type::HiddenItem:
-            event = new HiddenItemEvent();
-            break;
-        case Event::Type::SecretBase:
-            event = new SecretBaseEvent();
-            break;
-        case Event::Type::HealLocation: {
-            event = new HealLocationEvent();
-            event->setMap(this->map);
-            event->setDefaultValues(this->project);
-            HealLocation healLocation = HealLocation::fromEvent(event);
-            project->healLocations.append(healLocation);
-            ((HealLocationEvent *)event)->setIndex(project->healLocations.length());
-            break;
-        }
-        default:
-            break;
-        }
-        if (!event) return nullptr;
+    Event *event = Event::create(type);
+    if (!event)
+        return nullptr;
 
-        event->setMap(this->map);
-        event->setDefaultValues(this->project);
+    event->setMap(this->map);
+    event->setDefaultValues(this->project);
 
-        map->editHistory.push(new EventCreate(this, map, event));
-        return event->getPixmapItem();
+    if (type == Event::Type::HealLocation) {
+        HealLocation healLocation = HealLocation::fromEvent(event);
+        project->healLocations.append(healLocation);
+        ((HealLocationEvent *)event)->setIndex(project->healLocations.length());
     }
 
-    return nullptr;
+    map->editHistory.push(new EventCreate(this, map, event));
+    return event->getPixmapItem();
 }
 
 // Currently only object events have an explicit limit
@@ -2228,10 +2212,8 @@ void Editor::objectsView_onMousePress(QMouseEvent *event) {
 
     bool multiSelect = event->modifiers() & Qt::ControlModifier;
     if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
-        DraggablePixmapItem *first = selected_events->first();
-        selected_events->clear();
-        selected_events->append(first);
-        updateSelectedEvents();
+        // User is clearing group selection by clicking on the background
+        this->selectMapEvent(selected_events->first());
     }
     selectingEvent = false;
 }

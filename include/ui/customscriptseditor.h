@@ -55,7 +55,8 @@ private slots:
     void dialogButtonClicked(QAbstractButton *button);
     void createNewScript();
     void loadScript();
-    void refreshScripts();
+    bool refreshScripts();
+    void userRefreshScripts();
     void removeSelectedScripts();
     void openSelectedScripts();
 };

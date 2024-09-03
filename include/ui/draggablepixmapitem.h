@@ -24,19 +24,19 @@ public:
         updatePosition();
     }
 
-    Editor *editor = nullptr;
     Event *event = nullptr;
-    QGraphicsItemAnimation *pos_anim = nullptr;
-
-    bool active;
-    int last_x;
-    int last_y;
 
     void updatePosition();
     void move(int dx, int dy);
     void moveTo(const QPoint &pos);
     void emitPositionChanged();
     void updatePixmap();
+
+private:
+    Editor *editor = nullptr;
+    QPoint lastPos;
+    bool active = false;
+    bool releaseSelectionQueued = false;
 
 signals:
     void positionChanged(Event *event);
