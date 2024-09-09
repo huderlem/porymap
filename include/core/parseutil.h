@@ -54,9 +54,9 @@ public:
     QString readCIncbin(const QString &text, const QString &label);
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
-    QMap<QString, int> readCDefinesByPrefix(const QString &filename, QStringList prefixes);
-    QMap<QString, int> readCDefinesByName(const QString &filename, QStringList names);
-    QStringList readCDefineNames(const QString&, const QStringList&);
+    QMap<QString, int> readCDefinesByRegex(const QString &filename, const QStringList &regexList);
+    QMap<QString, int> readCDefinesByName(const QString &filename, const QStringList &names);
+    QStringList readCDefineNames(const QString &filename, const QStringList &regexList);
     QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
@@ -97,8 +97,14 @@ private:
     void recordErrors(const QStringList &errors);
     void logRecordedErrors();
     QString createErrorMessage(const QString &message, const QString &expression);
-    QString readCDefinesFile(const QString &filename);
-    QMap<QString, int> readCDefines(const QString &filename, const QStringList &searchText, bool fullMatch);
+
+    struct ParsedDefines {
+        QMap<QString,QString> expressions; // Map of all define names encountered to their expressions
+        QStringList filteredNames; // List of define names that matched the search text, in the order that they were encountered
+    };
+    ParsedDefines readCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
+    QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
+    bool defineNameMatchesFilter(const QString &name, const QStringList &filterList, bool useRegex);
 
     static const QRegularExpression re_incScriptLabel;
     static const QRegularExpression re_globalIncScriptLabel;
