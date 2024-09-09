@@ -44,6 +44,7 @@ protected:
     bool getConfigBool(QString key, QString value);
     int getConfigInteger(QString key, QString value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
     uint32_t getConfigUint32(QString key, QString value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
+    void logInvalidKey(const QString &key);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -317,6 +318,8 @@ public:
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
         this->identifiers.clear();
+        this->defaultEventCustomAttributes.clear();
+        this->defaultMapCustomAttributes.clear();
         this->readKeys.clear();
     }
     static const QMap<ProjectIdentifier, QPair<QString, QString>> defaultIdentifiers;
@@ -344,6 +347,12 @@ public:
     void setPokemonIconPath(const QString &species, const QString &path);
     QString getPokemonIconPath(const QString &species);
     QHash<QString, QString> getPokemonIconPaths();
+    void insertDefaultEventCustomAttribute(Event::Type eventType, const QString &key, QJsonValue value);
+    void insertDefaultMapCustomAttribute(const QString &key, QJsonValue value);
+    void removeDefaultEventCustomAttribute(Event::Type eventType, const QString &key);
+    void removeDefaultMapCustomAttribute(const QString &key);
+    QMap<QString, QJsonValue> getDefaultEventCustomAttributes(Event::Type eventType);
+    QMap<QString, QJsonValue> getDefaultMapCustomAttributes();
 
     BaseGameVersion baseGameVersion;
     QString projectDir;
@@ -395,6 +404,11 @@ private:
     QMap<ProjectFilePath, QString> filePaths;
     QMap<Event::Group, QString> eventIconPaths;
     QHash<QString, QString> pokemonIconPaths;
+    QMap<Event::Type, QMap<QString, QJsonValue>> defaultEventCustomAttributes;
+    QMap<QString, QJsonValue> defaultMapCustomAttributes;
+
+    void parseCustomAttributes(const QString &key, const QString &value);
+    QString customAttributesToString(const QMap<QString, QJsonValue> attributes);
 };
 
 extern ProjectConfig projectConfig;

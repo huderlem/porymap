@@ -10,7 +10,7 @@
 #include "editcommands.h"
 #include "config.h"
 #include "scripting.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1906,6 +1906,11 @@ void Editor::toggleBorderVisibility(bool visible, bool enableScriptCallback)
         Scripting::cb_BorderVisibilityToggled(visible);
 }
 
+void Editor::updateCustomMapHeaderValues() {
+    map->customHeaders = ui->mapCustomAttributesFrame->table->getAttributes();
+    map->modify();
+}
+
 void Editor::updateBorderVisibility() {
     // On the connections tab the border is always visible, and the connections can be edited.
     bool editingConnections = (ui->mainTabBar->currentIndex() == MainTab::Connections);
@@ -1930,12 +1935,6 @@ void Editor::updateBorderVisibility() {
         bool fullRender = (this->map && item->connection && this->map->name == item->connection->targetMapName());
         item->render(fullRender);
     }
-}
-
-void Editor::updateCustomMapHeaderValues(QTableWidget *table)
-{
-    map->customHeaders = CustomAttributesTable::getAttributes(table);
-    map->modify();
 }
 
 Tileset* Editor::getCurrentMapPrimaryTileset()
