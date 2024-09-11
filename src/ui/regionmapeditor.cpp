@@ -1009,7 +1009,6 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
 }
 
 void RegionMapEditor::on_comboBox_RM_ConnectedMap_textActivated(const QString &mapsec) {
-    QString layer = this->region_map->getLayer();
     this->region_map->setSquareMapSection(this->currIndex, mapsec);
 
     onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image

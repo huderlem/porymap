@@ -1933,8 +1933,6 @@ void Project::appendTilesetLabel(QString label, QString isSecondaryStr) {
 }
 
 bool Project::readTilesetLabels() {
-    QStringList primaryTilesets;
-    QStringList secondaryTilesets;
     this->primaryTilesetLabels.clear();
     this->secondaryTilesetLabels.clear();
     this->tilesetLabelsOrdered.clear();

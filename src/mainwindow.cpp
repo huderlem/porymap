@@ -1253,7 +1253,6 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point)
 
     // Build custom context menu depending on which type of item was selected (map group, map name, etc.)
     if (itemType == "map_group") {
-        QString groupName = selectedItem->data(Qt::UserRole).toString();
         int groupNum = selectedItem->data(MapListUserRoles::GroupRole).toInt();
         QMenu* menu = new QMenu(this);
         QActionGroup* actions = new QActionGroup(menu);
@@ -1727,7 +1726,6 @@ void MainWindow::paste() {
     else if (!clipboardText.isEmpty()) {
         // we only can paste json text
         // so, check if clipboard text is valid json
-        QString parseError;
         QJsonDocument pasteJsonDoc = QJsonDocument::fromJson(clipboardText.toUtf8());
 
         // test empty
@@ -2033,7 +2031,6 @@ void MainWindow::updateObjects() {
 }
 
 void MainWindow::updateSelectedObjects() {
-    QList<DraggablePixmapItem *> all_events = editor->getObjects();
     QList<DraggablePixmapItem *> events;
 
     if (editor->selected_events && editor->selected_events->length()) {

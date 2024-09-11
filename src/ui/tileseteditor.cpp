@@ -996,7 +996,6 @@ void TilesetEditor::on_actionImport_Secondary_Metatiles_triggered()
 
 void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
 {
-    QString descriptor = primary ? "primary" : "secondary";
     QString descriptorCaps = primary ? "Primary" : "Secondary";
 
     QString filepath = QFileDialog::getOpenFileName(
