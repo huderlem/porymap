@@ -218,7 +218,7 @@ bool WildMonChart::usesGroupLabels() const {
 
 QChart* WildMonChart::createSpeciesDistributionChart() {
     QList<QBarSet*> barSets;
-    for (const auto species : getSpeciesNamesAlphabetical()) {
+    for (const auto &species : getSpeciesNamesAlphabetical()) {
         // Add encounter chance data
         auto set = new QBarSet(species);
         for (auto groupName : this->groupNamesReversed)
@@ -326,7 +326,7 @@ QChart* WildMonChart::createLevelDistributionChart() {
         levelRange = getLevelRange(species, groupName);
     } else {
         // Species box is inactive, we display data for all species in the table.
-        for (const auto species : this->speciesInLegendOrder)
+        for (const auto &species : this->speciesInLegendOrder)
             barSets.append(createLevelDistributionBarSet(species, groupName, false));
         levelRange = this->groupedLevelRanges.value(groupName);
     }

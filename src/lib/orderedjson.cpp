@@ -33,7 +33,6 @@ static const int max_depth = 200;
 using std::map;
 using std::make_shared;
 using std::initializer_list;
-using std::move;
 
 /* Helper for representing null - just a do-nothing struct, plus comparison
  * operators so the helpers in JsonValue work. We can't use nullptr_t because
@@ -164,7 +163,7 @@ protected:
 
     // Constructors
     explicit Value(const T &value) : m_value(value) {}
-    explicit Value(T &&value)      : m_value(move(value)) {}
+    explicit Value(T &&value)      : m_value(std::move(value)) {}
 
     // Get type tag
     Json::Type type() const override {
@@ -211,7 +210,7 @@ class JsonString final : public Value<Json::STRING, QString> {
     const QString &string_value() const override { return m_value; }
 public:
     explicit JsonString(const QString &value) : Value(value) {}
-    explicit JsonString(QString &&value)      : Value(move(value)) {}
+    explicit JsonString(QString &&value)      : Value(std::move(value)) {}
 };
 
 class JsonArray final : public Value<Json::ARRAY, Json::array> {
@@ -219,7 +218,7 @@ class JsonArray final : public Value<Json::ARRAY, Json::array> {
     const Json & operator[](int i) const override;
 public:
     explicit JsonArray(const Json::array &value) : Value(value) {}
-    explicit JsonArray(Json::array &&value)      : Value(move(value)) {}
+    explicit JsonArray(Json::array &&value)      : Value(std::move(value)) {}
 };
 
 class JsonObject final : public Value<Json::OBJECT, Json::object> {
@@ -227,7 +226,7 @@ class JsonObject final : public Value<Json::OBJECT, Json::object> {
     const Json & operator[](const QString &key) const override;
 public:
     explicit JsonObject(const Json::object &value) : Value(value) {}
-    explicit JsonObject(Json::object &&value)      : Value(move(value)) {}
+    explicit JsonObject(Json::object &&value)      : Value(std::move(value)) {}
 };
 
 class JsonNull final : public Value<Json::NUL, NullStruct> {
@@ -269,12 +268,12 @@ Json::Json(double value)               : m_ptr(make_shared<JsonDouble>(value)) {
 Json::Json(int value)                  : m_ptr(make_shared<JsonInt>(value)) {}
 Json::Json(bool value)                 : m_ptr(value ? statics().t : statics().f) {}
 Json::Json(const QString &value)        : m_ptr(make_shared<JsonString>(value)) {}
-Json::Json(QString &&value)             : m_ptr(make_shared<JsonString>(move(value))) {}
+Json::Json(QString &&value)             : m_ptr(make_shared<JsonString>(std::move(value))) {}
 Json::Json(const char * value)         : m_ptr(make_shared<JsonString>(value)) {}
 Json::Json(const Json::array &values)  : m_ptr(make_shared<JsonArray>(values)) {}
-Json::Json(Json::array &&values)       : m_ptr(make_shared<JsonArray>(move(values))) {}
+Json::Json(Json::array &&values)       : m_ptr(make_shared<JsonArray>(std::move(values))) {}
 Json::Json(const Json::object &values) : m_ptr(make_shared<JsonObject>(values)) {}
-Json::Json(Json::object &&values)      : m_ptr(make_shared<JsonObject>(move(values))) {}
+Json::Json(Json::object &&values)      : m_ptr(make_shared<JsonObject>(std::move(values))) {}
 
 /* * * * * * * * * * * * * * * * * * * *
  * Accessors
@@ -399,7 +398,7 @@ struct JsonParser final {
      * Mark this parse as failed.
      */
     Json fail(QString &&msg) {
-        return fail(move(msg), Json());
+        return fail(std::move(msg), Json());
     }
 
     template <typename T>

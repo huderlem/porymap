@@ -234,10 +234,6 @@ void TilesetEditorMetatileSelector::drawUnused() {
 
     int primaryLength = this->primaryTileset->metatiles.length();
     int length_ = primaryLength + this->secondaryTileset->metatiles.length();
-    int height_ = length_ / this->numMetatilesWide;
-    if (length_ % this->numMetatilesWide != 0) {
-        height_++;
-    }
 
     for (int i = 0; i < length_; i++) {
         int tile = i;
@@ -277,10 +273,6 @@ void TilesetEditorMetatileSelector::drawCounts() {
 
     int primaryLength = this->primaryTileset->metatiles.length();
     int length_ = primaryLength + this->secondaryTileset->metatiles.length();
-    int height_ = length_ / this->numMetatilesWide;
-    if (length_ % this->numMetatilesWide != 0) {
-        height_++;
-    }
 
     for (int i = 0; i < length_; i++) {
         int tile = i;

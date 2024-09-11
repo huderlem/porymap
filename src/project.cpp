@@ -1963,9 +1963,9 @@ bool Project::readTilesetLabels() {
     } else {
         this->usingAsmTilesets = false;
         const auto structs = parser.readCStructs(filename, "", Tileset::getHeaderMemberMap(this->usingAsmTilesets));
-        QStringList labels = structs.keys();
+        const QStringList labels = structs.keys();
         // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
-        for (const auto tilesetLabel : labels){
+        for (const auto &tilesetLabel : labels){
             appendTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
         }
     }
@@ -2242,7 +2242,7 @@ bool Project::readHealLocations() {
     // Pattern for an x, y number pair
     const QString coordPattern = "\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)"; 
 
-    for (const auto idName : constants) {
+    for (const auto &idName : constants) {
         // Create regex pattern for e.g. "SPAWN_PALLET_TOWN - 1] = "
         const QString initializerPattern = QString("%1\\s*-\\s*1\\s*\\]\\s*=\\s*").arg(idName);
 

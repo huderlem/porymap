@@ -49,10 +49,10 @@ void ParseUtil::recordErrors(const QStringList &errors) {
 }
 
 void ParseUtil::logRecordedErrors() {
-    QStringList errors = this->errorMap.value(this->curDefine);
+    const QStringList errors = this->errorMap.value(this->curDefine);
     if (errors.isEmpty()) return;
     QString message = QString("Failed to parse '%1':").arg(this->curDefine);
-    for (const auto error : errors)
+    for (const auto &error : errors)
         message.append(QString("\n%1").arg(error));
     logError(message);
 }
