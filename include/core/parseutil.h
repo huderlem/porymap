@@ -104,7 +104,8 @@ private:
     };
     ParsedDefines readCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
     QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
-    bool defineNameMatchesFilter(const QString &name, const QStringList &filterList, bool useRegex);
+    bool defineNameMatchesFilter(const QString &name, const QStringList &filterList) const;
+    bool defineNameMatchesFilter(const QString &name, const QList<QRegularExpression> &filterList) const;
 
     static const QRegularExpression re_incScriptLabel;
     static const QRegularExpression re_globalIncScriptLabel;
