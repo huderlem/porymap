@@ -33,6 +33,10 @@ UpdatePromoter::UpdatePromoter(QWidget *parent, NetworkAccessManager *manager)
     this->resetDialog();
 }
 
+UpdatePromoter::~UpdatePromoter() {
+    delete ui;
+}
+
 void UpdatePromoter::resetDialog() {
     this->button_Downloads->setEnabled(false);
 

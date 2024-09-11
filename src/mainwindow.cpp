@@ -85,6 +85,9 @@ MainWindow::~MainWindow()
 {
     delete label_MapRulerStatus;
     delete editor;
+    delete mapListProxyModel;
+    delete mapGroupItemsList;
+    delete mapListModel;
     delete ui;
 }
 
@@ -1117,6 +1120,8 @@ void MainWindow::clearProjectUI() {
     mapListModel->clear();
     mapListIndexes.clear();
     mapGroupItemsList->clear();
+
+    Event::clearIcons();
 }
 
 void MainWindow::sortMapList() {

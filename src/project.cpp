@@ -44,6 +44,8 @@ Project::~Project()
 {
     clearMapCache();
     clearTilesetCache();
+    clearMapLayouts();
+    clearEventGraphics();
 }
 
 void Project::initSignals() {
@@ -362,6 +364,7 @@ bool Project::loadMapData(Map* map) {
                 heal->setRespawnNPC(loc.respawnNPC);
             }
             map->events[Event::Group::Heal].append(heal);
+            map->ownedEvents.append(heal);
         }
     }
 
@@ -455,9 +458,14 @@ bool Project::loadMapLayout(Map* map) {
     }
 }
 
-bool Project::readMapLayouts() {
+void Project::clearMapLayouts() {
+    qDeleteAll(mapLayouts);
     mapLayouts.clear();
     mapLayoutsTable.clear();
+}
+
+bool Project::readMapLayouts() {
+    clearMapLayouts();
 
     QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
     QString fullFilepath = QString("%1/%2").arg(root).arg(layoutsFilepath);
@@ -483,7 +491,7 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
-    QList<QString> requiredFields = QList<QString>{
+    static const QList<QString> requiredFields = QList<QString>{
         "id",
         "name",
         "width",
@@ -2554,7 +2562,14 @@ void Project::setEventPixmap(Event *event, bool forceLoad) {
         event->loadPixmap(this);
 }
 
+void Project::clearEventGraphics() {
+    qDeleteAll(eventGraphicsMap);
+    eventGraphicsMap.clear();
+}
+
 bool Project::readEventGraphics() {
+    clearEventGraphics();
+
     fileWatcher.addPaths(QStringList() << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers)
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables)
@@ -2564,8 +2579,6 @@ bool Project::readEventGraphics() {
     const QString pointersName = projectConfig.getIdentifier(ProjectIdentifier::symbol_obj_event_gfx_pointers);
     QMap<QString, QString> pointerHash = parser.readNamedIndexCArray(pointersFilepath, pointersName);
 
-    qDeleteAll(eventGraphicsMap);
-    eventGraphicsMap.clear();
     QStringList gfxNames = gfxDefines.keys();
 
     // The positions of each of the required members for the gfx info struct.
@@ -2584,14 +2597,13 @@ bool Project::readEventGraphics() {
     QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
 
     for (QString gfxName : gfxNames) {
-        EventGraphics * eventGraphics = new EventGraphics;
-
         QString info_label = pointerHash[gfxName].replace("&", "");
         if (!gfxInfos.contains(info_label))
             continue;
 
         const auto gfxInfoAttributes = gfxInfos[info_label];
 
+        auto eventGraphics = new EventGraphics;
         eventGraphics->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));
         QString pic_label = gfxInfoAttributes.value("images");
         QString dimensions_label = gfxInfoAttributes.value("oam");

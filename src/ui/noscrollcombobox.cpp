@@ -19,7 +19,7 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     this->completer()->setFilterMode(Qt::MatchContains);
 
     static const QRegularExpression re("[^\\s]*");
-    QValidator *validator = new QRegularExpressionValidator(re);
+    QValidator *validator = new QRegularExpressionValidator(re, this);
     this->setValidator(validator);
 }
 

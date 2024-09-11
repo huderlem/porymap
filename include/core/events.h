@@ -187,6 +187,7 @@ public:
     static QString eventGroupToString(Event::Group group);
     static QString eventTypeToString(Event::Type type);
     static Event::Type eventTypeFromString(QString type);
+    static void clearIcons();
     static void setIcons();
 
 // protected attributes

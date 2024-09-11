@@ -89,6 +89,8 @@ public:
 
     void clearMapCache();
     void clearTilesetCache();
+    void clearMapLayouts();
+    void clearEventGraphics();
 
     struct DataQualifiers
     {
