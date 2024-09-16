@@ -45,6 +45,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the map list filter retaining text between project open/close.
 - Fix the map list mishandling value gaps when sorting by Area.
 - Fix a freeze on startup if project values are defined with mismatched parentheses.
+- Fix stitched map images sometimes rendering garbage
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
