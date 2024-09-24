@@ -72,8 +72,6 @@ public:
     QMap<Event::Group, QList<Event *>> events;
     QList<Event *> ownedEvents; // for memory management
 
-    QList<MapConnection*> connections;
-
     QList<int> metatileLayerOrder;
     QList<float> metatileLayerOpacity;
 
@@ -92,21 +90,34 @@ public:
     void removeEvent(Event *);
     void addEvent(Event *);
 
+    void deleteConnections();
+    QList<MapConnection*> getConnections() const;
+    void removeConnection(MapConnection *);
+    void addConnection(MapConnection *);
+    void loadConnection(MapConnection *);
+    QRect getConnectionRect(const QString &direction, Layout *fromLayout = nullptr);
+    QPixmap renderConnection(const QString &direction, Layout *fromLayout = nullptr);
+
     QUndoStack editHistory;
     void modify();
     void clean();
     bool hasUnsavedChanges();
+    void pruneEditHistory();
 
-    QPixmap renderConnection(MapConnection, Layout *);
+private:
+    void trackConnection(MapConnection*);
 
-
+    // MapConnections in 'ownedConnections' but not 'connections' persist in the edit history.
+    QList<MapConnection*> connections;
+    QSet<MapConnection*> ownedConnections;
 
 signals:
-    void mapChanged(Map *map);
     void modified();
     void mapDimensionsChanged(const QSize &size);
     void mapNeedsRedrawing();
     void openScriptRequested(QString label);
+    void connectionAdded(MapConnection*);
+    void connectionRemoved(MapConnection*);
 };
 
 #endif // MAP_H

@@ -12,7 +12,7 @@
 
 class Project;
 
-enum MapListRoles {
+enum MapListUserRoles {
     GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
     TypeRole,  // Used to differentiate between the different layers of the map list tree view.
     TypeRole2, // Used for various extra data needed.

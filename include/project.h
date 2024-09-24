@@ -39,7 +39,6 @@ public:
     QMap<QString, int> mapGroups;
     QList<QStringList> groupedMapNames;
     QStringList mapNames;
-    QMap<QString, QVariant> miscConstants;
     QList<HealLocation> healLocations;
     QMap<QString, int> healLocationNameToValue;
     QMap<QString, QString> mapConstantsToMapNames;
@@ -80,6 +79,9 @@ public:
     bool usingAsmTilesets;
     QString importExportPath;
     QSet<QString> disabledSettingsNames;
+    int pokemonMinLevel;
+    int pokemonMaxLevel;
+    int maxEncounterRate;
     bool wildEncountersLoaded;
 
     // For files that are read and could contain extra text
@@ -101,6 +103,9 @@ public:
     DataQualifiers getDataQualifiers(QString, QString);
     DataQualifiers healLocationDataQualifiers;
     QString healLocationsTableName;
+
+    bool sanityCheck();
+    bool load();
 
     QMap<QString, Map*> mapCache;
     Map* loadMap(QString);
@@ -164,6 +169,7 @@ public:
     void saveAllMaps();
     void saveMap(Map *);
     void saveAllDataStructures();
+    void saveConfig();
     void saveMapLayouts();
     void saveMapGroups();
     void saveMapSections();
@@ -264,6 +270,7 @@ private:
 signals:
     void reloadProject();
     void uncheckMonitorFilesAction();
+    void mapLoaded(Map *map);
 };
 
 #endif // PROJECT_H

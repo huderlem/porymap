@@ -3,9 +3,11 @@
 #define EDITCOMMANDS_H
 
 #include "blockdata.h"
+#include "mapconnection.h"
 
 #include <QUndoCommand>
 #include <QList>
+#include <QPointer>
 
 class Map;
 class Layout;
@@ -31,6 +33,11 @@ enum CommandId {
     ID_EventDelete,
     ID_EventDuplicate,
     ID_EventPaste,
+    ID_MapConnectionMove,
+    ID_MapConnectionChangeDirection,
+    ID_MapConnectionChangeMap,
+    ID_MapConnectionAdd,
+    ID_MapConnectionRemove,
 };
 
 #define IDMask_EventType_Object  (1 << 8)
@@ -378,5 +385,114 @@ private:
     int newBorderWidth;
     int newBorderHeight;
 };
+
+
+
+/// Implements a command to commit Map Connectien move actions.
+/// Actions are merged into one until the mouse is released when editing by click-and-drag,
+/// or when the offset spin box loses focus when editing with the list UI.
+class MapConnectionMove : public QUndoCommand {
+public:
+    MapConnectionMove(MapConnection *connection, int newOffset, unsigned actionId,
+        QUndoCommand *parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+    bool mergeWith(const QUndoCommand *command) override;
+    int id() const override { return CommandId::ID_MapConnectionMove; }
+
+private:
+    MapConnection *connection;
+    int newOffset;
+    int oldOffset;
+    bool mirrored;
+    unsigned actionId;
+};
+
+
+
+/// Implements a command to commit changes to a Map Connectien's 'direction' field.
+class MapConnectionChangeDirection : public QUndoCommand {
+public:
+    MapConnectionChangeDirection(MapConnection *connection, QString newDirection,
+        QUndoCommand *parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+    int id() const override { return CommandId::ID_MapConnectionChangeDirection; }
+
+private:
+    QPointer<MapConnection> connection;
+    QString newDirection;
+    QString oldDirection;
+    int oldOffset;
+    int newOffset;
+    bool mirrored;
+};
+
+
+
+/// Implements a command to commit changes to a Map Connectien's 'map' field.
+class MapConnectionChangeMap : public QUndoCommand {
+public:
+    MapConnectionChangeMap(MapConnection *connection, QString newMapName,
+        QUndoCommand *parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+    int id() const override { return CommandId::ID_MapConnectionChangeMap; }
+
+private:
+    QPointer<MapConnection> connection;
+    QString newMapName;
+    QString oldMapName;
+    int oldOffset;
+    int newOffset;
+    bool mirrored;
+};
+
+
+
+/// Implements a command to commit adding a Map Connection to a map.
+class MapConnectionAdd : public QUndoCommand {
+public:
+    MapConnectionAdd(Map *map, MapConnection *connection,
+        QUndoCommand *parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+    int id() const override { return CommandId::ID_MapConnectionAdd; }
+
+private:
+    Map *map = nullptr;
+    Map *mirrorMap = nullptr;
+    QPointer<MapConnection> connection = nullptr;
+    QPointer<MapConnection> mirror = nullptr;
+};
+
+
+
+/// Implements a command to commit removing a Map Connection from a map.
+class MapConnectionRemove : public QUndoCommand {
+public:
+    MapConnectionRemove(Map *map, MapConnection *connection,
+        QUndoCommand *parent = nullptr);
+
+    void undo() override;
+    void redo() override;
+
+    int id() const override { return CommandId::ID_MapConnectionRemove; }
+
+private:
+    Map *map = nullptr;
+    Map *mirrorMap = nullptr;
+    QPointer<MapConnection> connection = nullptr;
+    QPointer<MapConnection> mirror = nullptr;
+};
+
 
 #endif // EDITCOMMANDS_H

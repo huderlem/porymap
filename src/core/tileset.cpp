@@ -238,7 +238,7 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
         dataString.append(QString("\t.4byte gTilesetTiles_%1\n").arg(friendlyName));
         dataString.append(QString("\t.4byte gTilesetPalettes_%1\n").arg(friendlyName));
         dataString.append(QString("\t.4byte gMetatiles_%1\n").arg(friendlyName));
-        if (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered) {
+        if (projectConfig.baseGameVersion == BaseGameVersion::pokefirered) {
             dataString.append("\t.4byte NULL @ animation callback\n");
             dataString.append(QString("\t.4byte gMetatileAttributes_%1\n").arg(friendlyName));
         } else {
@@ -248,13 +248,13 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
     } else {
         // Append to C file
         dataString.append(QString("const struct Tileset %1 =\n{\n").arg(this->name));
-        if (projectConfig.getTilesetsHaveIsCompressed()) dataString.append("    .isCompressed = TRUE,\n");
+        if (projectConfig.tilesetsHaveIsCompressed) dataString.append("    .isCompressed = TRUE,\n");
         dataString.append(QString("    .isSecondary = %1,\n").arg(isSecondaryStr));
         dataString.append(QString("    .tiles = gTilesetTiles_%1,\n").arg(friendlyName));
         dataString.append(QString("    .palettes = gTilesetPalettes_%1,\n").arg(friendlyName));
         dataString.append(QString("    .metatiles = gMetatiles_%1,\n").arg(friendlyName));
         dataString.append(QString("    .metatileAttributes = gMetatileAttributes_%1,\n").arg(friendlyName));
-        if (projectConfig.getTilesetsHaveCallback()) dataString.append("    .callback = NULL,\n");
+        if (projectConfig.tilesetsHaveCallback) dataString.append("    .callback = NULL,\n");
         dataString.append("};\n");
     }
     file.write(dataString.toUtf8());
@@ -325,7 +325,7 @@ bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAs
     } else {
         // Append to C file
         dataString.append(QString("const u16 gMetatiles_%1[] = INCBIN_U16(\"%2\");\n").arg(friendlyName, metatilesPath));
-        QString numBits = QString::number(projectConfig.getMetatileAttributesSize() * 8);
+        QString numBits = QString::number(projectConfig.metatileAttributesSize * 8);
         dataString.append(QString("const u%1 gMetatileAttributes_%2[] = INCBIN_U%1(\"%3\");\n").arg(numBits, friendlyName, metatileAttrsPath));
     }
     file.write(dataString.toUtf8());
@@ -358,7 +358,7 @@ QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
     int paddingOffset = usingAsm ? 1 : 0;
 
     // The position of metatileAttributes changes between games
-    bool isPokefirered = (projectConfig.getBaseGameVersion() == BaseGameVersion::pokefirered);
+    bool isPokefirered = (projectConfig.baseGameVersion == BaseGameVersion::pokefirered);
     int metatileAttrPosition = (isPokefirered ? 6 : 5) + paddingOffset;
 
     auto map = QHash<int, QString>();

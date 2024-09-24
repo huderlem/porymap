@@ -73,7 +73,7 @@ QMimeData *MapGroupModel::mimeData(const QModelIndexList &indexes) const {
 
     // if dropping a selection containing a group(s) and map(s), clear all selection but first group.
     for (const QModelIndex &index : indexes) {
-        if (index.isValid() && data(index, MapListRoles::TypeRole).toString() == "map_group") {
+        if (index.isValid() && data(index, MapListUserRoles::TypeRole).toString() == "map_group") {
             QString groupName = data(index, Qt::UserRole).toString();
             stream << groupName;
             mimeData->setData("application/porymap.mapgroupmodel.group", encodedData);
@@ -221,8 +221,8 @@ QStandardItem *MapGroupModel::createGroupItem(QString groupName, int groupIndex,
     if (!group) group = new QStandardItem;
     group->setText(groupName);
     group->setData(groupName, Qt::UserRole);
-    group->setData("map_group", MapListRoles::TypeRole);
-    group->setData(groupIndex, MapListRoles::GroupRole);
+    group->setData("map_group", MapListUserRoles::TypeRole);
+    group->setData(groupIndex, MapListUserRoles::GroupRole);
     group->setFlags(Qt::ItemIsEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsSelectable);
     this->groupItems.insert(groupName, group);
     return group;
@@ -231,7 +231,7 @@ QStandardItem *MapGroupModel::createGroupItem(QString groupName, int groupIndex,
 QStandardItem *MapGroupModel::createMapItem(QString mapName, QStandardItem *map) {
     if (!map) map = new QStandardItem;
     map->setData(mapName, Qt::UserRole);
-    map->setData("map_name", MapListRoles::TypeRole);
+    map->setData("map_name", MapListUserRoles::TypeRole);
     map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
     this->mapItems[mapName] = map;
     return map;
@@ -315,7 +315,7 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
         }
 
         QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListRoles::TypeRole).toString();
+        QString type = item->data(MapListUserRoles::TypeRole).toString();
 
         if (type == "map_group") {
             if (!item->hasChildren()) {
@@ -340,7 +340,7 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
     }
     else if (role == Qt::DisplayRole) {
         QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListRoles::TypeRole).toString();
+        QString type = item->data(MapListUserRoles::TypeRole).toString();
 
         if (type == "map_name") {
             return QString("[%1.%2] ").arg(this->getItem(index)->row()).arg(row, 2, 10, QLatin1Char('0')) + item->data(Qt::UserRole).toString();
@@ -354,7 +354,7 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
 }
 
 bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (role == Qt::UserRole && data(index, MapListRoles::TypeRole).toString() == "map_group") {
+    if (role == Qt::UserRole && data(index, MapListUserRoles::TypeRole).toString() == "map_group") {
         // verify uniqueness of new group name
         if (this->project->groupNames.contains(value.toString())) {
             return false;
@@ -379,8 +379,8 @@ QStandardItem *MapAreaModel::createAreaItem(QString mapsecName, int areaIndex) {
     area->setText(mapsecName);
     area->setEditable(false);
     area->setData(mapsecName, Qt::UserRole);
-    area->setData("map_section", MapListRoles::TypeRole);
-    area->setData(areaIndex, MapListRoles::GroupRole);
+    area->setData("map_section", MapListUserRoles::TypeRole);
+    area->setData(areaIndex, MapListUserRoles::GroupRole);
     // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
     this->areaItems.insert(mapsecName, area);
     return area;
@@ -391,7 +391,7 @@ QStandardItem *MapAreaModel::createMapItem(QString mapName, int groupIndex, int 
     map->setText(mapName);
     map->setEditable(false);
     map->setData(mapName, Qt::UserRole);
-    map->setData("map_name", MapListRoles::TypeRole);
+    map->setData("map_name", MapListUserRoles::TypeRole);
     // map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
     this->mapItems.insert(mapName, map);
     return map;
@@ -401,7 +401,7 @@ QStandardItem *MapAreaModel::insertAreaItem(QString areaName) {
     int newAreaIndex = this->project->appendMapsec(areaName);
     QStandardItem *item = createAreaItem(areaName, newAreaIndex);
     this->root->insertRow(newAreaIndex, item);
-    this->areaItems["MAPSEC_NONE"]->setData(newAreaIndex + 1, MapListRoles::GroupRole);
+    this->areaItems["MAPSEC_NONE"]->setData(newAreaIndex + 1, MapListUserRoles::GroupRole);
     return item;
 }
 
@@ -425,7 +425,7 @@ void MapAreaModel::removeArea(int areaIndex) {
 void MapAreaModel::initialize() {
     this->areaItems.clear();
     this->mapItems.clear();
-    this->setSortRole(MapListRoles::GroupRole);
+    this->setSortRole(MapListUserRoles::GroupRole);
 
     for (int i : this->project->mapSectionNameToValue) {
         QString mapsecName = project->mapSectionValueToName.value(i);
@@ -487,7 +487,7 @@ QVariant MapAreaModel::data(const QModelIndex &index, int role) const {
         }
 
         QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListRoles::TypeRole).toString();
+        QString type = item->data(MapListUserRoles::TypeRole).toString();
 
         if (type == "map_section") {
             if (item->hasChildren()) {
@@ -512,11 +512,11 @@ QVariant MapAreaModel::data(const QModelIndex &index, int role) const {
     }
     else if (role == Qt::DisplayRole) {
         QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListRoles::TypeRole).toString();
+        QString type = item->data(MapListUserRoles::TypeRole).toString();
 
         if (type == "map_section") {
             return QString("[0x%1] %2")
-                .arg(QString("%1").arg(item->data(MapListRoles::GroupRole).toInt(), 2, 16, QLatin1Char('0')).toUpper())
+                .arg(QString("%1").arg(item->data(MapListUserRoles::GroupRole).toInt(), 2, 16, QLatin1Char('0')).toUpper())
                 .arg(item->data(Qt::UserRole).toString());
         }
     }
@@ -538,7 +538,7 @@ QStandardItem *LayoutTreeModel::createLayoutItem(QString layoutId) {
     layout->setText(this->project->layoutIdsToNames[layoutId]);
     layout->setEditable(false);
     layout->setData(layoutId, Qt::UserRole);
-    layout->setData("map_layout", MapListRoles::TypeRole);
+    layout->setData("map_layout", MapListUserRoles::TypeRole);
     // // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
     this->layoutItems.insert(layoutId, layout);
     return layout;
@@ -549,7 +549,7 @@ QStandardItem *LayoutTreeModel::createMapItem(QString mapName) {
     map->setText(mapName);
     map->setEditable(false);
     map->setData(mapName, Qt::UserRole);
-    map->setData("map_name", MapListRoles::TypeRole);
+    map->setData("map_name", MapListUserRoles::TypeRole);
     map->setFlags(Qt::NoItemFlags | Qt::ItemNeverHasChildren);
     this->mapItems.insert(mapName, map);
     return map;
@@ -624,7 +624,7 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
         static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
 
         QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListRoles::TypeRole).toString();
+        QString type = item->data(MapListUserRoles::TypeRole).toString();
 
         if (type == "map_layout") {
             QString layoutId = item->data(Qt::UserRole).toString();
