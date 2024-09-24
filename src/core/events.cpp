@@ -146,10 +146,13 @@ void Event::loadPixmap(Project *) {
     this->pixmap = pixmap ? *pixmap : QPixmap();
 }
 
-void Event::setIcons() {
+void Event::clearIcons() {
     qDeleteAll(icons);
     icons.clear();
+}
 
+void Event::setIcons() {
+    clearIcons();
     const int w = 16;
     const int h = 16;
     static const QPixmap defaultIcons = QPixmap(":/images/Entities_16x16.png");

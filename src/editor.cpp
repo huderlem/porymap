@@ -1561,7 +1561,7 @@ bool Editor::displayMap() {
 bool Editor::displayLayout() {
     if (!scene) {
         scene = new QGraphicsScene;
-        MapSceneEventFilter *filter = new MapSceneEventFilter();
+        MapSceneEventFilter *filter = new MapSceneEventFilter(scene);
         scene->installEventFilter(filter);
         connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
         scene->installEventFilter(this->map_ruler);

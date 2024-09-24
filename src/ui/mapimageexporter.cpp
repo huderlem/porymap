@@ -326,6 +326,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
     progress->setMaximum(stitchedMaps.size());
     int numDrawn = 0;
     QPixmap stitchedPixmap((maxX - minX) * 16, (maxY - minY) * 16);
+    stitchedPixmap.fill(Qt::black);
     QPainter painter(&stitchedPixmap);
     for (StitchedMap map : stitchedMaps) {
         if (progress->wasCanceled()) {

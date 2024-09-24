@@ -136,7 +136,7 @@ bool QGifImagePrivate::load(QIODevice *device)
     int error;
     GifFileType *gifFile = DGifOpen(device, readFromIODevice, &error);
     if (!gifFile) {
-        qWarning(GifErrorString(error));
+        qWarning("%s", GifErrorString(error));
         return false;
     }
 
@@ -228,7 +228,7 @@ bool QGifImagePrivate::save(QIODevice *device) const
     int error;
     GifFileType *gifFile = EGifOpen(device, writeToIODevice, &error);
     if (!gifFile) {
-        qWarning(GifErrorString(error));
+        qWarning("%s", GifErrorString(error));
         return false;
     }
 

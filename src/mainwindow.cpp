@@ -1337,6 +1337,8 @@ void MainWindow::clearProjectUI() {
         delete this->layoutListProxyModel;
         this->layoutListProxyModel = nullptr;
     }
+
+    Event::clearIcons();
 }
 
 void MainWindow::scrollTreeView(QString itemName) {
@@ -2149,7 +2151,6 @@ void MainWindow::paste() {
     else if (!clipboardText.isEmpty()) {
         // we only can paste json text
         // so, check if clipboard text is valid json
-        QString parseError;
         QJsonDocument pasteJsonDoc = QJsonDocument::fromJson(clipboardText.toUtf8());
 
         // test empty
@@ -2457,7 +2458,6 @@ void MainWindow::updateObjects() {
 }
 
 void MainWindow::updateSelectedObjects() {
-    QList<DraggablePixmapItem *> all_events = editor->getObjects();
     QList<DraggablePixmapItem *> events;
 
     if (editor->selected_events && editor->selected_events->length()) {

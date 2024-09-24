@@ -208,7 +208,6 @@ void KeyValueConfigBase::load() {
     }
 
     QTextStream in(&file);
-    QList<QString> configLines;
     static const QRegularExpression re("^(?<key>[^=]+)=(?<value>.*)$");
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
@@ -1063,7 +1062,6 @@ QMap<QString, QString> UserConfig::getKeyValueMap() {
 }
 
 void UserConfig::init() {
-    QString dirName = QDir(this->projectDir).dirName().toLower();
     this->useEncounterJson = true;
     this->customScripts.clear();
 }

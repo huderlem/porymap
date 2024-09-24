@@ -93,7 +93,8 @@ public:
 
     void clearMapCache();
     void clearTilesetCache();
-    void clearLayoutsTable();
+    void clearMapLayouts();
+    void clearEventGraphics();
 
     struct DataQualifiers
     {

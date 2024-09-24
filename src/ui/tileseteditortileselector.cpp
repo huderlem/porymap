@@ -294,8 +294,6 @@ void TilesetEditorTileSelector::drawUnused() {
     QPixmap redX(16, 16);
     redX.fill(Qt::transparent);
 
-    QBitmap mask(16, 16);
-
     QPen whitePen(Qt::white);
     whitePen.setWidth(1);
     QPen pinkPen(Qt::magenta);

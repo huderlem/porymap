@@ -42,9 +42,10 @@ Project::Project(QObject *parent) :
 
 Project::~Project()
 {
-    clearLayoutsTable();
     clearMapCache();
     clearTilesetCache();
+    clearMapLayouts();
+    clearEventGraphics();
 }
 
 void Project::initSignals() {
@@ -169,17 +170,6 @@ void Project::clearTilesetCache() {
             delete tileset;
     }
     tilesetCache.clear();
-}
-
-void Project::clearLayoutsTable() {
-    // clearMapLayouts
-    // QMap<QString, Layout*> mapLayouts;
-    // QMap<QString, Layout*> mapLayoutsMaster;
-    for (Layout *layout : mapLayouts.values()) {
-        if (layout)
-            delete layout;
-    }
-    mapLayouts.clear();
 }
 
 Map* Project::loadMap(QString map_name) {
@@ -373,6 +363,7 @@ bool Project::loadMapData(Map* map) {
                 heal->setRespawnNPC(loc.respawnNPC);
             }
             map->events[Event::Group::Heal].append(heal);
+            map->ownedEvents.append(heal);
         }
     }
 
@@ -542,10 +533,15 @@ bool Project::loadMapLayout(Map* map) {
     }
 }
 
-bool Project::readMapLayouts() {
+void Project::clearMapLayouts() {
+    qDeleteAll(mapLayouts);
     mapLayouts.clear();
     mapLayoutsTable.clear();
     layoutIdsToNames.clear();
+}
+
+bool Project::readMapLayouts() {
+    clearMapLayouts();
 
     QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
     QString fullFilepath = QString("%1/%2").arg(root).arg(layoutsFilepath);
@@ -571,7 +567,7 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
-    QList<QString> requiredFields = QList<QString>{
+    static const QList<QString> requiredFields = QList<QString>{
         "id",
         "name",
         "width",
@@ -1683,8 +1679,8 @@ bool Project::readTilesetMetatileLabels() {
     QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
 
-    const QStringList prefixes = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix))};
-    QMap<QString, int> defines = parser.readCDefinesByPrefix(metatileLabelsFilename, prefixes);
+    const QStringList regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix))};
+    QMap<QString, int> defines = parser.readCDefinesByRegex(metatileLabelsFilename, regexList);
 
     for (QString label : defines.keys()) {
         uint32_t metatileId = static_cast<uint32_t>(defines[label]);
@@ -2059,8 +2055,6 @@ void Project::appendTilesetLabel(QString label, QString isSecondaryStr) {
 }
 
 bool Project::readTilesetLabels() {
-    QStringList primaryTilesets;
-    QStringList secondaryTilesets;
     this->primaryTilesetLabels.clear();
     this->secondaryTilesetLabels.clear();
     this->tilesetLabelsOrdered.clear();
@@ -2089,9 +2083,9 @@ bool Project::readTilesetLabels() {
     } else {
         this->usingAsmTilesets = false;
         const auto structs = parser.readCStructs(filename, "", Tileset::getHeaderMemberMap(this->usingAsmTilesets));
-        QStringList labels = structs.keys();
+        const QStringList labels = structs.keys();
         // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
-        for (const auto tilesetLabel : labels){
+        for (const auto &tilesetLabel : labels){
             appendTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
         }
     }
@@ -2288,10 +2282,10 @@ bool Project::readRegionMapSections() {
     this->mapSectionNameToValue.clear();
     this->mapSectionValueToName.clear();
 
-    const QStringList prefixes = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix))};
+    const QStringList regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix))};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_region_map_sections);
     fileWatcher.addPath(root + "/" + filename);
-    this->mapSectionNameToValue = parser.readCDefinesByPrefix(filename, prefixes);
+    this->mapSectionNameToValue = parser.readCDefinesByRegex(filename, regexList);
     if (this->mapSectionNameToValue.isEmpty()) {
         logError(QString("Failed to read region map sections from %1.").arg(filename));
         return false;
@@ -2343,13 +2337,13 @@ int Project::appendMapsec(QString name) {
 // Read the constants to preserve any "unused" heal locations when writing the file later
 bool Project::readHealLocationConstants() {
     this->healLocationNameToValue.clear();
-    const QStringList prefixes = {
+    const QStringList regexList = {
         QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix)),
         QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_spawn_prefix))
     };
     QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
     fileWatcher.addPath(root + "/" + constantsFilename);
-    this->healLocationNameToValue = parser.readCDefinesByPrefix(constantsFilename, prefixes);
+    this->healLocationNameToValue = parser.readCDefinesByRegex(constantsFilename, regexList);
     // No need to check if empty, not finding any heal location constants is ok
     return true;
 }
@@ -2405,7 +2399,7 @@ bool Project::readHealLocations() {
     // Pattern for an x, y number pair
     const QString coordPattern = "\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)"; 
 
-    for (const auto idName : constants) {
+    for (const auto &idName : constants) {
         // Create regex pattern for e.g. "SPAWN_PALLET_TOWN - 1] = "
         const QString initializerPattern = QString("%1\\s*-\\s*1\\s*\\]\\s*=\\s*").arg(idName);
 
@@ -2448,40 +2442,40 @@ bool Project::readHealLocations() {
 }
 
 bool Project::readItemNames() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_items)};  
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_items)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_items);
     fileWatcher.addPath(root + "/" + filename);
-    itemNames = parser.readCDefineNames(filename, prefixes);
+    itemNames = parser.readCDefineNames(filename, regexList);
     if (itemNames.isEmpty())
         logWarn(QString("Failed to read item constants from %1").arg(filename));
     return true;
 }
 
 bool Project::readFlagNames() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_flags)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_flags)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
     fileWatcher.addPath(root + "/" + filename);
-    flagNames = parser.readCDefineNames(filename, prefixes);
+    flagNames = parser.readCDefineNames(filename, regexList);
     if (flagNames.isEmpty())
         logWarn(QString("Failed to read flag constants from %1").arg(filename));
     return true;
 }
 
 bool Project::readVarNames() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_vars)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_vars)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_vars);
     fileWatcher.addPath(root + "/" + filename);
-    varNames = parser.readCDefineNames(filename, prefixes);
+    varNames = parser.readCDefineNames(filename, regexList);
     if (varNames.isEmpty())
         logWarn(QString("Failed to read var constants from %1").arg(filename));
     return true;
 }
 
 bool Project::readMovementTypes() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_movement_types)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_movement_types)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_event_movement);
     fileWatcher.addPath(root + "/" + filename);
-    movementTypes = parser.readCDefineNames(filename, prefixes);
+    movementTypes = parser.readCDefineNames(filename, regexList);
     if (movementTypes.isEmpty())
         logWarn(QString("Failed to read movement type constants from %1").arg(filename));
     return true;
@@ -2497,30 +2491,30 @@ bool Project::readInitialFacingDirections() {
 }
 
 bool Project::readMapTypes() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_map_types)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_map_types)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
-    mapTypes = parser.readCDefineNames(filename, prefixes);
+    mapTypes = parser.readCDefineNames(filename, regexList);
     if (mapTypes.isEmpty())
         logWarn(QString("Failed to read map type constants from %1").arg(filename));
     return true;
 }
 
 bool Project::readMapBattleScenes() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_battle_scenes)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_battle_scenes)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
-    mapBattleScenes = parser.readCDefineNames(filename, prefixes);
+    mapBattleScenes = parser.readCDefineNames(filename, regexList);
     if (mapBattleScenes.isEmpty())
         logWarn(QString("Failed to read map battle scene constants from %1").arg(filename));
     return true;
 }
 
 bool Project::readWeatherNames() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_weather)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_weather)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
-    weatherNames = parser.readCDefineNames(filename, prefixes);
+    weatherNames = parser.readCDefineNames(filename, regexList);
     if (weatherNames.isEmpty())
         logWarn(QString("Failed to read weather constants from %1").arg(filename));
     return true;
@@ -2530,10 +2524,10 @@ bool Project::readCoordEventWeatherNames() {
     if (!projectConfig.eventWeatherTriggerEnabled)
         return true;
 
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_coord_event_weather)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_coord_event_weather)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
-    coordEventWeatherNames = parser.readCDefineNames(filename, prefixes);
+    coordEventWeatherNames = parser.readCDefineNames(filename, regexList);
     if (coordEventWeatherNames.isEmpty())
         logWarn(QString("Failed to read coord event weather constants from %1").arg(filename));
     return true;
@@ -2543,30 +2537,30 @@ bool Project::readSecretBaseIds() {
     if (!projectConfig.eventSecretBaseEnabled)
         return true;
 
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_secret_bases)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_secret_bases)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
     fileWatcher.addPath(root + "/" + filename);
-    secretBaseIds = parser.readCDefineNames(filename, prefixes);
+    secretBaseIds = parser.readCDefineNames(filename, regexList);
     if (secretBaseIds.isEmpty())
         logWarn(QString("Failed to read secret base id constants from '%1'").arg(filename));
     return true;
 }
 
 bool Project::readBgEventFacingDirections() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_sign_facing_directions)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_sign_facing_directions)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_event_bg);
     fileWatcher.addPath(root + "/" + filename);
-    bgEventFacingDirections = parser.readCDefineNames(filename, prefixes);
+    bgEventFacingDirections = parser.readCDefineNames(filename, regexList);
     if (bgEventFacingDirections.isEmpty())
         logWarn(QString("Failed to read bg event facing direction constants from %1").arg(filename));
     return true;
 }
 
 bool Project::readTrainerTypes() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_trainer_types)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_trainer_types)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_trainer_types);
     fileWatcher.addPath(root + "/" + filename);
-    trainerTypes = parser.readCDefineNames(filename, prefixes);
+    trainerTypes = parser.readCDefineNames(filename, regexList);
     if (trainerTypes.isEmpty())
         logWarn(QString("Failed to read trainer type constants from %1").arg(filename));
     return true;
@@ -2576,10 +2570,10 @@ bool Project::readMetatileBehaviors() {
     this->metatileBehaviorMap.clear();
     this->metatileBehaviorMapInverse.clear();
 
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
     fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> defines = parser.readCDefinesByPrefix(filename, prefixes);
+    QMap<QString, int> defines = parser.readCDefinesByRegex(filename, regexList);
     if (defines.isEmpty()) {
         // Not having any metatile behavior names is ok (their values will be displayed instead).
         // If the user's metatiles can have nonzero values then warn them, as they likely want names.
@@ -2598,10 +2592,10 @@ bool Project::readMetatileBehaviors() {
 }
 
 bool Project::readSongNames() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_music)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_music)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_songs);
     fileWatcher.addPath(root + "/" + filename);
-    this->songNames = parser.readCDefineNames(filename, prefixes);
+    this->songNames = parser.readCDefineNames(filename, regexList);
     if (this->songNames.isEmpty())
         logWarn(QString("Failed to read song names from %1.").arg(filename));
 
@@ -2613,10 +2607,10 @@ bool Project::readSongNames() {
 }
 
 bool Project::readObjEventGfxConstants() {
-    const QStringList prefixes = {projectConfig.getIdentifier(ProjectIdentifier::regex_obj_event_gfx)};
+    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_obj_event_gfx)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_events);
     fileWatcher.addPath(root + "/" + filename);
-    this->gfxDefines = parser.readCDefinesByPrefix(filename, prefixes);
+    this->gfxDefines = parser.readCDefinesByRegex(filename, regexList);
     if (this->gfxDefines.isEmpty())
         logWarn(QString("Failed to read object event graphics constants from %1.").arg(filename));
     return true;
@@ -2719,7 +2713,14 @@ void Project::setEventPixmap(Event *event, bool forceLoad) {
         event->loadPixmap(this);
 }
 
+void Project::clearEventGraphics() {
+    qDeleteAll(eventGraphicsMap);
+    eventGraphicsMap.clear();
+}
+
 bool Project::readEventGraphics() {
+    clearEventGraphics();
+
     fileWatcher.addPaths(QStringList() << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers)
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables)
@@ -2729,8 +2730,6 @@ bool Project::readEventGraphics() {
     const QString pointersName = projectConfig.getIdentifier(ProjectIdentifier::symbol_obj_event_gfx_pointers);
     QMap<QString, QString> pointerHash = parser.readNamedIndexCArray(pointersFilepath, pointersName);
 
-    qDeleteAll(eventGraphicsMap);
-    eventGraphicsMap.clear();
     QStringList gfxNames = gfxDefines.keys();
 
     // The positions of each of the required members for the gfx info struct.
@@ -2749,14 +2748,13 @@ bool Project::readEventGraphics() {
     QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
 
     for (QString gfxName : gfxNames) {
-        EventGraphics * eventGraphics = new EventGraphics;
-
         QString info_label = pointerHash[gfxName].replace("&", "");
         if (!gfxInfos.contains(info_label))
             continue;
 
         const auto gfxInfoAttributes = gfxInfos[info_label];
 
+        auto eventGraphics = new EventGraphics;
         eventGraphics->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));
         QString pic_label = gfxInfoAttributes.value("images");
         QString dimensions_label = gfxInfoAttributes.value("oam");
@@ -2811,10 +2809,10 @@ bool Project::readSpeciesIconPaths() {
     const QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
 
     // Read species constants. If this fails we can get them from the icon table (but we shouldn't rely on it).
-    const QStringList prefixes = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix))};
+    const QStringList regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix))};
     const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
     fileWatcher.addPath(root + "/" + constantsFilename);
-    QStringList speciesNames = parser.readCDefineNames(constantsFilename, prefixes);
+    QStringList speciesNames = parser.readCDefineNames(constantsFilename, regexList);
     if (speciesNames.isEmpty())
         speciesNames = monIconNames.keys();
 
