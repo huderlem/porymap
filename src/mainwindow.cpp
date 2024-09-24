@@ -1304,6 +1304,7 @@ void MainWindow::clearProjectUI() {
     const QSignalBlocker blocker8(ui->comboBox_DiveMap);
     const QSignalBlocker blocker9(ui->comboBox_EmergeMap);
     const QSignalBlocker blockerA(ui->lineEdit_filterBox);
+    const QSignalBlocker blockerB(ui->comboBox_LayoutSelector);
 
     ui->comboBox_Song->clear();
     ui->comboBox_Location->clear();
@@ -1315,6 +1316,7 @@ void MainWindow::clearProjectUI() {
     ui->comboBox_DiveMap->clear();
     ui->comboBox_EmergeMap->clear();
     ui->lineEdit_filterBox->clear();
+    ui->comboBox_LayoutSelector->clear();
 
     // Clear map models
     if (this->mapGroupModel) {
@@ -3676,8 +3678,8 @@ bool MainWindow::closeProject() {
             return false;
         }
     }
-    clearProjectUI();
     editor->closeProject();
+    clearProjectUI();
     setWindowDisabled(true);
     setWindowTitle(QCoreApplication::applicationName());
 
