@@ -47,6 +47,10 @@ Editor::Editor(Ui::MainWindow* ui)
     connect(ui->stackedWidget_WildMons, &QStackedWidget::currentChanged, [this] {
         emit wildMonTableOpened(getCurrentWildMonTable());
     });
+
+    connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this, &Editor::openMapScripts);
+    connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this, &Editor::openProjectInTextEditor);
+    connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, this, &Editor::toggleGrid);
 }
 
 Editor::~Editor()
@@ -1842,40 +1846,49 @@ int Editor::getBorderDrawDistance(int dimension) {
     }
 }
 
-void Editor::onToggleGridClicked(bool checked) {
+void Editor::toggleGrid(bool checked) {
+    if (porymapConfig.showGrid == checked)
+        return;
     porymapConfig.showGrid = checked;
+
+    // Synchronize action and checkbox
+    const QSignalBlocker b_Action(ui->actionShow_Grid);
+    const QSignalBlocker b_Checkbox(ui->checkBox_ToggleGrid);
+    ui->actionShow_Grid->setChecked(checked);
+    ui->checkBox_ToggleGrid->setChecked(checked);
+
+    this->mapGrid->setVisible(checked);
+
     if (ui->graphicsView_Map->scene())
         ui->graphicsView_Map->scene()->update();
 }
 
 void Editor::clearMapGrid() {
-    for (QGraphicsLineItem* item : gridLines) {
-        if (item) delete item;
-    }
-    gridLines.clear();
+    delete this->mapGrid;
+    this->mapGrid = nullptr;
 }
 
 void Editor::displayMapGrid() {
     clearMapGrid();
-    ui->checkBox_ToggleGrid->disconnect();
 
-    int pixelWidth = map->getWidth() * 16;
-    int pixelHeight = map->getHeight() * 16;
-    for (int i = 0; i <= map->getWidth(); i++) {
-        int x = i * 16;
-        QGraphicsLineItem *line = new QGraphicsLineItem(x, 0, x, pixelHeight);
-        line->setVisible(ui->checkBox_ToggleGrid->isChecked());
-        gridLines.append(line);
-        connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
-    }
-    for (int j = 0; j <= map->getHeight(); j++) {
-        int y = j * 16;
-        QGraphicsLineItem *line = new QGraphicsLineItem(0, y, pixelWidth, y);
-        line->setVisible(ui->checkBox_ToggleGrid->isChecked());
-        gridLines.append(line);
-        connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, [=](bool checked){line->setVisible(checked);});
-    }
-    connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, this, &Editor::onToggleGridClicked);
+    // Note: The grid lines are not added to the scene. They need to be drawn on top of the overlay
+    //       elements of the scripting API, so they're painted manually in MapView::drawForeground.
+    this->mapGrid = new QGraphicsItemGroup();
+
+    const uint pixelMapWidth = map->getWidth() * 16;
+    const uint pixelMapHeight = map->getHeight() * 16;
+
+    // Create vertical lines
+    int offset = this->gridSettings.offsetX % this->gridSettings.width;
+    for (uint i = offset; i <= pixelMapWidth; i += this->gridSettings.width)
+        this->mapGrid->addToGroup(new QGraphicsLineItem(i, 0, i, pixelMapHeight));
+
+    // Create horizontal lines
+    offset = this->gridSettings.offsetY % this->gridSettings.height;
+    for (uint i = offset; i <= pixelMapHeight; i += this->gridSettings.height)
+        this->mapGrid->addToGroup(new QGraphicsLineItem(0, i, pixelMapWidth, i));
+
+    this->mapGrid->setVisible(porymapConfig.showGrid);
 }
 
 void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)

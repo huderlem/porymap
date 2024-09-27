@@ -31,9 +31,11 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
     if (!editor) return;
 
     QStyleOptionGraphicsItem option;
-    for (QGraphicsLineItem* line : editor->gridLines) {
-        if (line && line->isVisible())
-            line->paint(painter, &option, this);
+    if (editor->mapGrid) {
+        for (auto item : editor->mapGrid->childItems()) {
+            if (item->isVisible())
+                item->paint(painter, &option, this);
+        }
     }
     if (editor->playerViewRect && editor->playerViewRect->isVisible())
         editor->playerViewRect->paint(painter, &option, this);

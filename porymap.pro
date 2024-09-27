@@ -60,6 +60,7 @@ SOURCES += src/core/block.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/gridsettingsdialog.cpp \
     src/ui/newmapconnectiondialog.cpp \
     src/ui/overlay.cpp \
     src/ui/prefab.cpp \
@@ -157,6 +158,7 @@ HEADERS  += include/core/block.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/gridsettingsdialog.h \
     include/ui/newmapconnectiondialog.h \
     include/ui/prefabframe.h \
     include/ui/projectsettingseditor.h \
@@ -219,6 +221,7 @@ HEADERS  += include/core/block.h \
 
 FORMS    += forms/mainwindow.ui \
     forms/connectionslistitem.ui \
+    forms/gridsettingsdialog.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
