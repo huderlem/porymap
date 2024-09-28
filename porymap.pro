@@ -51,6 +51,7 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/colorinputwidget.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
@@ -175,6 +176,7 @@ HEADERS  += include/core/block.h \
     include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
+    include/ui/colorinputwidget.h \
     include/ui/mapsceneeventfilter.h \
     include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \
@@ -220,6 +222,7 @@ HEADERS  += include/core/block.h \
     include/ui/wildmonchart.h
 
 FORMS    += forms/mainwindow.ui \
+    forms/colorinputwidget.ui \
     forms/connectionslistitem.ui \
     forms/gridsettingsdialog.ui \
     forms/newmapconnectiondialog.ui \

@@ -34,6 +34,7 @@ private slots:
     void on_spinBox_X_valueChanged(int value);
     void on_spinBox_Y_valueChanged(int value);
     void on_comboBox_Style_currentIndexChanged(int index);
+    void onColorChanged(QRgb color);
 };
 
 inline bool operator==(const struct GridSettings &a, const struct GridSettings &b) {

@@ -1,7 +1,6 @@
 #include "ui_gridsettingsdialog.h"
 #include "gridsettingsdialog.h"
 
-// TODO: Add color picker
 // TODO: Add linking chain button to width/height
 // TODO: Add "snap to metatile" check box?
 // TODO: Save settings in config
@@ -39,9 +38,7 @@ GridSettingsDialog::GridSettingsDialog(GridSettings *settings, QWidget *parent) 
     reset(true);
 
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &GridSettingsDialog::dialogButtonClicked);
-
-    // TODO: Connect color picker
-    // connect(ui->, &, this, &GridSettingsDialog::changedGridSettings);
+    connect(ui->colorInput, &ColorInputWidget::colorChanged, this, &GridSettingsDialog::onColorChanged);
 }
 
 GridSettingsDialog::~GridSettingsDialog() {
@@ -59,11 +56,13 @@ void GridSettingsDialog::reset(bool force) {
     const QSignalBlocker b_X(ui->spinBox_X);
     const QSignalBlocker b_Y(ui->spinBox_Y);
     const QSignalBlocker b_Style(ui->comboBox_Style);
+    const QSignalBlocker b_Color(ui->colorInput);
 
     ui->spinBox_Width->setValue(this->settings->width);
     ui->spinBox_Height->setValue(this->settings->height);
     ui->spinBox_X->setValue(this->settings->offsetX);
     ui->spinBox_Y->setValue(this->settings->offsetY);
+    ui->colorInput->setColor(this->settings->color.rgb());
 
     // TODO: Debug
     //ui->comboBox_Style->setCurrentIndex(ui->comboBox_Style->findData(static_cast<int>(this->settings->style)));
@@ -73,7 +72,6 @@ void GridSettingsDialog::reset(bool force) {
             break;
         }
     }
-    // TODO: Initialize color with settings-color
 
     emit changedGridSettings();
 }
@@ -106,6 +104,11 @@ void GridSettingsDialog::on_comboBox_Style_currentIndexChanged(int index) {
     emit changedGridSettings();
 }
 
+void GridSettingsDialog::onColorChanged(QRgb color) {
+    this->settings->color = QColor::fromRgb(color);
+    emit changedGridSettings();
+}
+
 void GridSettingsDialog::dialogButtonClicked(QAbstractButton *button) {
     auto role = ui->buttonBox->buttonRole(button);
     if (role == QDialogButtonBox::AcceptRole) {
@@ -114,6 +117,6 @@ void GridSettingsDialog::dialogButtonClicked(QAbstractButton *button) {
         reset();
         close();
     } else if (role == QDialogButtonBox::ResetRole) {
-        reset();
+        reset(); // TODO: We should restore to original defaults, not to the values when the window was opened.
     }
 }

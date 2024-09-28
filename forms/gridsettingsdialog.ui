@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>423</width>
-    <height>375</height>
+    <width>331</width>
+    <height>467</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,39 +24,23 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>397</width>
-        <height>309</height>
+        <width>305</width>
+        <height>401</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="0" colspan="2">
-        <widget class="QGroupBox" name="groupBox_Offset">
-         <property name="title">
-          <string>Offset (in pixels)</string>
+       <item row="4" column="0" colspan="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
          </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_X">
-            <property name="text">
-             <string>X</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_Y">
-            <property name="text">
-             <string>Y</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="NoScrollSpinBox" name="spinBox_X"/>
-          </item>
-          <item row="1" column="1">
-           <widget class="NoScrollSpinBox" name="spinBox_Y"/>
-          </item>
-         </layout>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_Color">
@@ -68,6 +52,19 @@
          </property>
          <property name="text">
           <string>Color</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="NoScrollComboBox" name="comboBox_Style">
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
+         </property>
+         <property name="minimumContentsLength">
+          <number>0</number>
          </property>
         </widget>
        </item>
@@ -121,31 +118,41 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_Style">
-         <property name="editable">
-          <bool>false</bool>
+       <item row="1" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_Offset">
+         <property name="title">
+          <string>Offset (in pixels)</string>
          </property>
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
-         </property>
-         <property name="minimumContentsLength">
-          <number>0</number>
-         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_X">
+            <property name="text">
+             <string>X</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_Y">
+            <property name="text">
+             <string>Y</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="NoScrollSpinBox" name="spinBox_X"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="NoScrollSpinBox" name="spinBox_Y"/>
+          </item>
+         </layout>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
+       <item row="3" column="1">
+        <widget class="ColorInputWidget" name="colorInput">
+         <property name="title">
+          <string/>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -173,6 +180,12 @@
    <class>NoScrollComboBox</class>
    <extends>QComboBox</extends>
    <header>noscrollcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ColorInputWidget</class>
+   <extends>QGroupBox</extends>
+   <header>colorinputwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
