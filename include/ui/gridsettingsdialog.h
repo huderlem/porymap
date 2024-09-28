@@ -4,19 +4,11 @@
 #include <QDialog>
 #include <QAbstractButton>
 
+#include "settings.h"
+
 namespace Ui {
 class GridSettingsDialog;
 }
-
-struct GridSettings {
-	uint width = 16;
-	uint height = 16;
-	int offsetX = 0;
-	int offsetY = 0;
-	QString style;
-	QColor color;
-};
-
 
 class GridSettingsDialog : public QDialog
 {
@@ -41,7 +33,7 @@ private slots:
     void on_spinBox_Height_valueChanged(int value);
     void on_spinBox_X_valueChanged(int value);
     void on_spinBox_Y_valueChanged(int value);
-    void on_comboBox_Style_currentTextChanged(QString style);
+    void on_comboBox_Style_currentIndexChanged(int index);
 };
 
 inline bool operator==(const struct GridSettings &a, const struct GridSettings &b) {

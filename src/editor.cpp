@@ -1878,15 +1878,25 @@ void Editor::displayMapGrid() {
     const uint pixelMapWidth = map->getWidth() * 16;
     const uint pixelMapHeight = map->getHeight() * 16;
 
+    QPen pen;
+    pen.setStyle(this->gridSettings.style);
+    pen.setColor(this->gridSettings.color);
+
     // Create vertical lines
     int offset = this->gridSettings.offsetX % this->gridSettings.width;
-    for (uint i = offset; i <= pixelMapWidth; i += this->gridSettings.width)
-        this->mapGrid->addToGroup(new QGraphicsLineItem(i, 0, i, pixelMapHeight));
+    for (uint i = offset; i <= pixelMapWidth; i += this->gridSettings.width) {
+        auto line = new QGraphicsLineItem(i, 0, i, pixelMapHeight);
+        line->setPen(pen);
+        this->mapGrid->addToGroup(line);
+    }
 
     // Create horizontal lines
     offset = this->gridSettings.offsetY % this->gridSettings.height;
-    for (uint i = offset; i <= pixelMapHeight; i += this->gridSettings.height)
-        this->mapGrid->addToGroup(new QGraphicsLineItem(0, i, pixelMapWidth, i));
+    for (uint i = offset; i <= pixelMapHeight; i += this->gridSettings.height) {
+        auto line = new QGraphicsLineItem(0, i, pixelMapWidth, i);
+        line->setPen(pen);
+        this->mapGrid->addToGroup(line);
+    }
 
     this->mapGrid->setVisible(porymapConfig.showGrid);
 }

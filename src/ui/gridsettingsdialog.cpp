@@ -2,13 +2,18 @@
 #include "gridsettingsdialog.h"
 
 // TODO: Add color picker
-// TODO: Add styles
-// TODO: Update units in UI
 // TODO: Add linking chain button to width/height
 // TODO: Add "snap to metatile" check box?
 // TODO: Save settings in config
 // TODO: Look into custom painting to improve performance
 // TODO: Add tooltips
+
+const QList<QPair<QString, Qt::PenStyle>> penStyleMap = {
+    {"Solid",          Qt::SolidLine},
+    {"Large Dashes",   Qt::DashLine},
+    {"Small Dashes",   Qt::DotLine},
+    {"Dots",           Qt::CustomDashLine}, // TODO: Implement a custom pattern for this
+};
 
 GridSettingsDialog::GridSettingsDialog(GridSettings *settings, QWidget *parent) :
     QDialog(parent),
@@ -18,14 +23,16 @@ GridSettingsDialog::GridSettingsDialog(GridSettings *settings, QWidget *parent) 
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    // TODO: Populate comboBox_Style
+    // Populate the styles combo box
+    for (const auto &pair : penStyleMap)
+        ui->comboBox_Style->addItem(pair.first, static_cast<int>(pair.second));
 
     ui->spinBox_Width->setMaximum(INT_MAX);
     ui->spinBox_Height->setMaximum(INT_MAX);
     ui->spinBox_X->setMaximum(INT_MAX);
     ui->spinBox_Y->setMaximum(INT_MAX);
 
-    // Initialize UI values
+    // Initialize the settings
     if (!this->settings)
         this->settings = new GridSettings; // TODO: Don't leak this
     this->originalSettings = *this->settings;
@@ -35,6 +42,10 @@ GridSettingsDialog::GridSettingsDialog(GridSettings *settings, QWidget *parent) 
 
     // TODO: Connect color picker
     // connect(ui->, &, this, &GridSettingsDialog::changedGridSettings);
+}
+
+GridSettingsDialog::~GridSettingsDialog() {
+    delete ui;
 }
 
 void GridSettingsDialog::reset(bool force) {
@@ -47,12 +58,21 @@ void GridSettingsDialog::reset(bool force) {
     const QSignalBlocker b_Height(ui->spinBox_Height);
     const QSignalBlocker b_X(ui->spinBox_X);
     const QSignalBlocker b_Y(ui->spinBox_Y);
+    const QSignalBlocker b_Style(ui->comboBox_Style);
 
     ui->spinBox_Width->setValue(this->settings->width);
     ui->spinBox_Height->setValue(this->settings->height);
     ui->spinBox_X->setValue(this->settings->offsetX);
     ui->spinBox_Y->setValue(this->settings->offsetY);
-    // TODO: Initialize comboBox_Style with settings->style
+
+    // TODO: Debug
+    //ui->comboBox_Style->setCurrentIndex(ui->comboBox_Style->findData(static_cast<int>(this->settings->style)));
+    for (const auto &pair : penStyleMap) {
+        if (pair.second == this->settings->style) {
+            ui->comboBox_Style->setCurrentText(pair.first);
+            break;
+        }
+    }
     // TODO: Initialize color with settings-color
 
     emit changedGridSettings();
@@ -78,8 +98,11 @@ void GridSettingsDialog::on_spinBox_Y_valueChanged(int value) {
     emit changedGridSettings();
 }
 
-void GridSettingsDialog::on_comboBox_Style_currentTextChanged(QString text) {
-    this->settings->style = text;
+void GridSettingsDialog::on_comboBox_Style_currentIndexChanged(int index) {
+    if (index < 0 || index >= penStyleMap.length())
+        return;
+
+    this->settings->style = penStyleMap.at(index).second;
     emit changedGridSettings();
 }
 
@@ -93,8 +116,4 @@ void GridSettingsDialog::dialogButtonClicked(QAbstractButton *button) {
     } else if (role == QDialogButtonBox::ResetRole) {
         reset();
     }
-}
-
-GridSettingsDialog::~GridSettingsDialog() {
-    delete ui;
 }

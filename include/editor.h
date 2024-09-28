@@ -23,7 +23,6 @@
 #include "collisionpixmapitem.h"
 #include "mappixmapitem.h"
 #include "settings.h"
-#include "gridsettingsdialog.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
 #include "mapruler.h"
