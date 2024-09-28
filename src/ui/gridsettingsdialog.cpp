@@ -1,8 +1,6 @@
 #include "ui_gridsettingsdialog.h"
 #include "gridsettingsdialog.h"
 
-// TODO: Add linking chain button to width/height
-// TODO: Add "snap to metatile" check box?
 // TODO: Save settings in config
 // TODO: Look into custom painting to improve performance
 // TODO: Add tooltips
@@ -31,6 +29,9 @@ GridSettingsDialog::GridSettingsDialog(GridSettings *settings, QWidget *parent) 
     ui->spinBox_X->setMaximum(INT_MAX);
     ui->spinBox_Y->setMaximum(INT_MAX);
 
+    ui->button_LinkDimensions->setChecked(this->dimensionsLinked);
+    ui->button_LinkOffsets->setChecked(this->offsetsLinked);
+
     // Initialize the settings
     if (!this->settings)
         this->settings = new GridSettings; // TODO: Don't leak this
@@ -38,6 +39,8 @@ GridSettingsDialog::GridSettingsDialog(GridSettings *settings, QWidget *parent) 
     reset(true);
 
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &GridSettingsDialog::dialogButtonClicked);
+    connect(ui->button_LinkDimensions, &QAbstractButton::toggled, [this](bool on) { this->dimensionsLinked = on; });
+    connect(ui->button_LinkOffsets, &QAbstractButton::toggled, [this](bool on) { this->offsetsLinked = on; });
     connect(ui->colorInput, &ColorInputWidget::colorChanged, this, &GridSettingsDialog::onColorChanged);
 }
 
@@ -50,20 +53,15 @@ void GridSettingsDialog::reset(bool force) {
         return;
     *this->settings = this->originalSettings;
 
-    // Avoid sending changedGridSettings multiple times
-    const QSignalBlocker b_Width(ui->spinBox_Width);
-    const QSignalBlocker b_Height(ui->spinBox_Height);
-    const QSignalBlocker b_X(ui->spinBox_X);
-    const QSignalBlocker b_Y(ui->spinBox_Y);
-    const QSignalBlocker b_Style(ui->comboBox_Style);
-    const QSignalBlocker b_Color(ui->colorInput);
+    setWidth(this->settings->width);
+    setHeight(this->settings->height);
+    setOffsetX(this->settings->offsetX);
+    setOffsetY(this->settings->offsetY);
 
-    ui->spinBox_Width->setValue(this->settings->width);
-    ui->spinBox_Height->setValue(this->settings->height);
-    ui->spinBox_X->setValue(this->settings->offsetX);
-    ui->spinBox_Y->setValue(this->settings->offsetY);
+    const QSignalBlocker b_Color(ui->colorInput);
     ui->colorInput->setColor(this->settings->color.rgb());
 
+    const QSignalBlocker b_Style(ui->comboBox_Style);
     // TODO: Debug
     //ui->comboBox_Style->setCurrentIndex(ui->comboBox_Style->findData(static_cast<int>(this->settings->style)));
     for (const auto &pair : penStyleMap) {
@@ -76,23 +74,59 @@ void GridSettingsDialog::reset(bool force) {
     emit changedGridSettings();
 }
 
-void GridSettingsDialog::on_spinBox_Width_valueChanged(int value) {
+void GridSettingsDialog::setWidth(int value) {
+    const QSignalBlocker b(ui->spinBox_Width);
+    ui->spinBox_Width->setValue(value);
     this->settings->width = value;
+}
+
+void GridSettingsDialog::setHeight(int value) {
+    const QSignalBlocker b(ui->spinBox_Height);
+    ui->spinBox_Height->setValue(value);
+    this->settings->height = value;
+}
+
+void GridSettingsDialog::setOffsetX(int value) {
+    const QSignalBlocker b(ui->spinBox_X);
+    ui->spinBox_X->setValue(value);
+    this->settings->offsetX = value;
+}
+
+void GridSettingsDialog::setOffsetY(int value) {
+    const QSignalBlocker b(ui->spinBox_Y);
+    ui->spinBox_Y->setValue(value);
+    this->settings->offsetY = value;
+}
+
+void GridSettingsDialog::on_spinBox_Width_valueChanged(int value) {
+    setWidth(value);
+    if (this->dimensionsLinked)
+        setHeight(value);
+
     emit changedGridSettings();
 }
 
 void GridSettingsDialog::on_spinBox_Height_valueChanged(int value) {
-    this->settings->height = value;
+    setHeight(value);
+    if (this->dimensionsLinked)
+        setWidth(value);
+
     emit changedGridSettings();
 }
 
 void GridSettingsDialog::on_spinBox_X_valueChanged(int value) {
-    this->settings->offsetX = value;
+    setOffsetX(value);
+    if (this->offsetsLinked)
+        setOffsetY(value);
+
     emit changedGridSettings();
 }
 
 void GridSettingsDialog::on_spinBox_Y_valueChanged(int value) {
-    this->settings->offsetY = value;
+    setOffsetY(value);
+    if (this->offsetsLinked)
+        setOffsetX(value);
+
     emit changedGridSettings();
 }
 

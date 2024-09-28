@@ -24,8 +24,14 @@ private:
     Ui::GridSettingsDialog *ui;
     GridSettings *settings;
     GridSettings originalSettings;
+    bool dimensionsLinked = true;
+    bool offsetsLinked = true;
 
     void reset(bool force = false);
+    void setWidth(int value);
+    void setHeight(int value);
+    void setOffsetX(int value);
+    void setOffsetY(int value);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
