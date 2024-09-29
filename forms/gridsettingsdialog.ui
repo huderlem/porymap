@@ -114,7 +114,10 @@
           <item row="1" column="2">
            <widget class="NoScrollSpinBox" name="spinBox_Height">
             <property name="minimum">
-             <number>1</number>
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <number>999</number>
             </property>
            </widget>
           </item>
@@ -141,7 +144,10 @@
           <item row="0" column="2">
            <widget class="NoScrollSpinBox" name="spinBox_Width">
             <property name="minimum">
-             <number>1</number>
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <number>999</number>
             </property>
            </widget>
           </item>
@@ -175,10 +181,24 @@
            </widget>
           </item>
           <item row="1" column="2">
-           <widget class="NoScrollSpinBox" name="spinBox_Y"/>
+           <widget class="NoScrollSpinBox" name="spinBox_Y">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>999</number>
+            </property>
+           </widget>
           </item>
           <item row="0" column="2">
-           <widget class="NoScrollSpinBox" name="spinBox_X"/>
+           <widget class="NoScrollSpinBox" name="spinBox_X">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>999</number>
+            </property>
+           </widget>
           </item>
           <item row="0" column="0" rowspan="2">
            <widget class="QToolButton" name="button_LinkOffsets">

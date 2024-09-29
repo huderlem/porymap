@@ -31,12 +31,24 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
     if (!editor) return;
 
     QStyleOptionGraphicsItem option;
-    if (editor->mapGrid) {
-        for (auto item : editor->mapGrid->childItems()) {
-            if (item->isVisible())
-                item->paint(painter, &option, this);
+
+    // Draw elements of the map view that should always render on top of anything added by the user with the scripting API.
+
+    // Draw map grid
+    if (editor->mapGrid && editor->mapGrid->isVisible()) {
+        painter->save();
+        if (editor->map) {
+            // We're clipping here to hide parts of the grid that are outside the map.
+            const QRectF mapRect(-0.5, -0.5, editor->map->getWidth() * 16 + 1.5, editor->map->getHeight() * 16 + 1.5);
+            painter->setClipping(true);
+            painter->setClipRect(mapRect);
         }
+        for (auto item : editor->mapGrid->childItems())
+            item->paint(painter, &option, this);
+        painter->restore();
     }
+
+    // Draw cursor rectangles
     if (editor->playerViewRect && editor->playerViewRect->isVisible())
         editor->playerViewRect->paint(painter, &option, this);
     if (editor->cursorMapTileRect && editor->cursorMapTileRect->isVisible())

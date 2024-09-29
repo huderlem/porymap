@@ -1875,30 +1875,40 @@ void Editor::displayMapGrid() {
     //       elements of the scripting API, so they're painted manually in MapView::drawForeground.
     this->mapGrid = new QGraphicsItemGroup();
 
-    const uint pixelMapWidth = map->getWidth() * 16;
-    const uint pixelMapHeight = map->getHeight() * 16;
+    const int pixelMapWidth = map->getWidth() * 16;
+    const int pixelMapHeight = map->getHeight() * 16;
+
+    // The grid can be moved with a user-specified x/y offset. The grid's dash patterns will only wrap in full pattern increments,
+    // so we draw an additional row/column outside the map that can be revealed as the offset changes.
+    const int offsetX = (this->gridSettings.offsetX % this->gridSettings.width) - this->gridSettings.width;
+    const int offsetY = (this->gridSettings.offsetY % this->gridSettings.height) - this->gridSettings.height;
 
     QPen pen;
-    pen.setStyle(this->gridSettings.style);
     pen.setColor(this->gridSettings.color);
 
     // Create vertical lines
-    int offset = this->gridSettings.offsetX % this->gridSettings.width;
-    for (uint i = offset; i <= pixelMapWidth; i += this->gridSettings.width) {
-        auto line = new QGraphicsLineItem(i, 0, i, pixelMapHeight);
+    pen.setDashPattern(this->gridSettings.getVerticalDashPattern());
+    for (int i = offsetX; i <= pixelMapWidth; i += this->gridSettings.width) {
+        auto line = new QGraphicsLineItem(i, offsetY, i, pixelMapHeight);
         line->setPen(pen);
         this->mapGrid->addToGroup(line);
     }
 
     // Create horizontal lines
-    offset = this->gridSettings.offsetY % this->gridSettings.height;
-    for (uint i = offset; i <= pixelMapHeight; i += this->gridSettings.height) {
-        auto line = new QGraphicsLineItem(0, i, pixelMapWidth, i);
+    pen.setDashPattern(this->gridSettings.getHorizontalDashPattern());
+    for (int i = offsetY; i <= pixelMapHeight; i += this->gridSettings.height) {
+        auto line = new QGraphicsLineItem(offsetX, i, pixelMapWidth, i);
         line->setPen(pen);
         this->mapGrid->addToGroup(line);
     }
 
     this->mapGrid->setVisible(porymapConfig.showGrid);
+}
+
+void Editor::updateMapGrid() {
+    displayMapGrid();
+    if (ui->graphicsView_Map->scene())
+        ui->graphicsView_Map->scene()->update();
 }
 
 void Editor::updatePrimaryTileset(QString tilesetLabel, bool forceLoad)

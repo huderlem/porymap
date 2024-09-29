@@ -26,7 +26,7 @@
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
-#include "gridsettingsdialog.h"
+#include "gridsettings.h"
 #include "customscriptseditor.h"
 #include "wildmonchart.h"
 #include "updatepromoter.h"

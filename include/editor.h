@@ -23,6 +23,7 @@
 #include "collisionpixmapitem.h"
 #include "mappixmapitem.h"
 #include "settings.h"
+#include "gridsettings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
 #include "mapruler.h"
@@ -68,6 +69,7 @@ public:
     void displayMapConnections();
     void displayMapBorder();
     void displayMapGrid();
+    void updateMapGrid();
     void displayWildMonTables();
 
     void updateMapBorder();

@@ -1929,7 +1929,7 @@ void MainWindow::on_actionShow_Grid_triggered() {
 void MainWindow::on_actionGrid_Settings_triggered() {
     if (!this->gridSettingsDialog) {
         this->gridSettingsDialog = new GridSettingsDialog(&this->editor->gridSettings, this);
-        connect(this->gridSettingsDialog, &GridSettingsDialog::changedGridSettings, this->editor, &Editor::displayMapGrid);
+        connect(this->gridSettingsDialog, &GridSettingsDialog::changedGridSettings, this->editor, &Editor::updateMapGrid);
     }
     openSubWindow(this->gridSettingsDialog);
 }
