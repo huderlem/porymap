@@ -4,8 +4,6 @@
 
 #include <cmath>
 
-// TODO: Refactor palette editor to make use of this class
-
 class HexCodeValidator : public QValidator {
     virtual QValidator::State validate(QString &input, int &) const override {
         input = input.toUpper();

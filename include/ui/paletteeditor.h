@@ -2,10 +2,8 @@
 #define PALETTEEDITOR_H
 
 #include <QMainWindow>
-#include <QValidator>
-#include <QSlider>
-#include <QFrame>
-#include <QLabel>
+
+#include "colorinputwidget.h"
 #include "project.h"
 #include "history.h"
 
@@ -32,43 +30,26 @@ public:
 private:
     Ui::PaletteEditor *ui;
     Project *project = nullptr;
-
-    QList<QList<QSlider*>> sliders;
-    QList<QList<QSpinBox *>> spinners;
-    QList<QFrame*> frames;
-    QList<QToolButton *> pickButtons;
-    QList<QLineEdit *> hexEdits;
+    QList<ColorInputWidget*> colorInputs;
 
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
 
     QList<History<PaletteHistoryItem*>> palettesHistory;
 
-    void refreshColorUis();
-    void updateColorUi(int index, QRgb color);
-    void commitEditHistory(int paletteid);
+    Tileset* getTileset(int paletteId);
+    void refreshColorInputs();
+    void commitEditHistory(int paletteId);
     void restoreWindowState();
-    void setSignalsEnabled(bool enabled);
-    void setColorsFromHistory(PaletteHistoryItem*, int);
     void closeEvent(QCloseEvent*);
-    void pickColor(int i);
 
     void setRgb(int index, QRgb rgb);
-    void setRgbFromSliders(int colorIndex);
-    void setRgbFromHexEdit(int colorIndex);
-    void setRgbFromSpinners(int colorIndex);
+    void setPalette(int paletteId, const QList<QRgb> &palette);
 
     void setBitDepth(int bits);
     int bitDepth = 24;
 
-    class HexCodeValidator : public QValidator {
-        virtual QValidator::State validate(QString &input, int &) const override {
-            input = input.toUpper();
-            return QValidator::Acceptable;
-        }
-    };
-
-    HexCodeValidator *hexValidator = nullptr;
+    static const int numColors = 16;
 
 signals:
     void closed();
