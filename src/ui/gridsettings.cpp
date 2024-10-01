@@ -22,7 +22,7 @@ GridSettings::Style GridSettings::getStyleFromName(const QString &name) {
 // We do some extra work here to A: try and center the dashes away from the intersections, and B: keep the dash pattern's total
 // length equal to the length of a grid square. This keeps the patterns looking reasonable regardless of the grid size.
 // Otherwise, the dashes can start to intersect in weird ways and create grid patterns that don't look like a rectangular grid.
-QList<qreal> GridSettings::getCenteredDashPattern(uint length, qreal dashLength, qreal gapLength) const {
+QVector<qreal> GridSettings::getCenteredDashPattern(uint length, qreal dashLength, qreal gapLength) const {
     const qreal minEdgesLength = 0.6*2;
     if (length <= dashLength + minEdgesLength)
         return {dashLength};
@@ -36,7 +36,7 @@ QList<qreal> GridSettings::getCenteredDashPattern(uint length, qreal dashLength,
     const qreal edgeLength = (length - mainLength) / 2;
 
     // Fill the pattern
-    QList<qreal> pattern = {0, edgeLength};
+    QVector<qreal> pattern = {0, edgeLength};
     for (int i = 0; i < numDashes-1; i++) {
         pattern.append(dashLength);
         pattern.append(gapLength);
@@ -47,7 +47,7 @@ QList<qreal> GridSettings::getCenteredDashPattern(uint length, qreal dashLength,
     return pattern;
 }
 
-QList<qreal> GridSettings::getDashPattern(uint length) const {
+QVector<qreal> GridSettings::getDashPattern(uint length) const {
     switch (this->style) {
 
     // Equivalent to setting Qt::PenStyle::Solid with no dash pattern.

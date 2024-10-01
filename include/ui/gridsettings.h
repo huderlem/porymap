@@ -23,16 +23,16 @@ public:
     int offsetY = 0;
     Style style = Style::Solid;
     QColor color = Qt::black;
-    QList<qreal> getHorizontalDashPattern() const { return this->getDashPattern(this->width); }
-    QList<qreal> getVerticalDashPattern() const { return this->getDashPattern(this->height); }
+    QVector<qreal> getHorizontalDashPattern() const { return this->getDashPattern(this->width); }
+    QVector<qreal> getVerticalDashPattern() const { return this->getDashPattern(this->height); }
 
     static QString getStyleName(Style style);
     static GridSettings::Style getStyleFromName(const QString &name);
 private:
     static const QMap<Style, QString> styleToName;
 
-    QList<qreal> getCenteredDashPattern(uint length, qreal dashLength, qreal gapLength) const;
-    QList<qreal> getDashPattern(uint length) const;
+    QVector<qreal> getCenteredDashPattern(uint length, qreal dashLength, qreal gapLength) const;
+    QVector<qreal> getDashPattern(uint length) const;
 };
 
 inline bool operator==(const GridSettings &a, const GridSettings &b) {
