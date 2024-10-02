@@ -377,6 +377,7 @@ void MapImageExporter::updatePreview() {
         progress.setAutoClose(true);
         progress.setWindowModality(Qt::WindowModal);
         progress.setModal(true);
+        progress.setMinimumDuration(1000);
         this->preview = getStitchedImage(&progress, this->showBorder);
         progress.close();
     } else {
