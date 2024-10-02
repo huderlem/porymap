@@ -23,6 +23,19 @@ QString getTitle(ImageExporterMode mode) {
     return "";
 }
 
+QString getDescription(ImageExporterMode mode) {
+    switch (mode)
+    {
+        case ImageExporterMode::Normal:
+            return "Exports an image of the selected map.";
+        case ImageExporterMode::Stitch:
+            return "Exports a combined image of all the maps connected to the selected map.";
+        case ImageExporterMode::Timelapse:
+            return "Exports a GIF of the edit history for the selected map.";
+    }
+    return "";
+}
+
 MapImageExporter::MapImageExporter(QWidget *parent_, Editor *editor_, ImageExporterMode mode) :
     QDialog(parent_),
     ui(new Ui::MapImageExporter)
@@ -33,19 +46,30 @@ MapImageExporter::MapImageExporter(QWidget *parent_, Editor *editor_, ImageExpor
     this->editor = editor_;
     this->mode = mode;
     this->setWindowTitle(getTitle(this->mode));
+    this->ui->label_Description->setText(getDescription(this->mode));
     this->ui->groupBox_Connections->setVisible(this->mode != ImageExporterMode::Stitch);
     this->ui->groupBox_Timelapse->setVisible(this->mode == ImageExporterMode::Timelapse);
 
     this->ui->comboBox_MapSelection->addItems(editor->project->mapNames);
     this->ui->comboBox_MapSelection->setCurrentText(map->name);
     this->ui->comboBox_MapSelection->setEnabled(false);// TODO: allow selecting map from drop-down
-
-    updatePreview();
 }
 
 MapImageExporter::~MapImageExporter() {
     delete scene;
     delete ui;
+}
+
+// Allow the window to open before displaying the preview.
+void MapImageExporter::showEvent(QShowEvent *event) {
+    QWidget::showEvent(event);
+    if (!event->spontaneous())
+        QTimer::singleShot(0, this, &MapImageExporter::updatePreview);
+}
+
+void MapImageExporter::resizeEvent(QResizeEvent *event) {
+    QDialog::resizeEvent(event);
+    scalePreview();
 }
 
 void MapImageExporter::saveImage() {
@@ -74,22 +98,10 @@ void MapImageExporter::saveImage() {
         editor->project->setImportExportPath(filepath);
         switch (this->mode) {
             case ImageExporterMode::Normal:
+            case ImageExporterMode::Stitch:
+                // Normal and Stitch modes already have the image ready to go in the preview.
                 this->preview.save(filepath);
                 break;
-        case ImageExporterMode::Stitch: {
-                QProgressDialog progress("Building map stitch...", "Cancel", 0, 1, this);
-                progress.setAutoClose(true);
-                progress.setWindowModality(Qt::WindowModal);
-                progress.setModal(true);
-                QPixmap pixmap = this->getStitchedImage(&progress, this->showBorder);
-                if (progress.wasCanceled()) {
-                    progress.close();
-                    return;
-                }
-                pixmap.save(filepath);
-                progress.close();
-                break;
-            }
             case ImageExporterMode::Timelapse:
                 QProgressDialog progress("Building map timelapse...", "Cancel", 0, 1, this);
                 progress.setAutoClose(true);
@@ -354,19 +366,32 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
 }
 
 void MapImageExporter::updatePreview() {
-    if (scene) {
-        delete scene;
-        scene = nullptr;
+    if (this->scene) {
+        delete this->scene;
+        this->scene = nullptr;
     }
+    this->scene = new QGraphicsScene;
 
-    preview = getFormattedMapPixmap(this->map);
-    scene = new QGraphicsScene;
-    scene->addPixmap(preview);
-    this->scene->setSceneRect(this->scene->itemsBoundingRect());
+    if (this->mode == ImageExporterMode::Stitch) { 
+        QProgressDialog progress("Building map stitch...", "Cancel", 0, 1, this);
+        progress.setAutoClose(true);
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setModal(true);
+        this->preview = getStitchedImage(&progress, this->showBorder);
+        progress.close();
+    } else {
+        // Timelapse mode doesn't currently have a real preview. It just displays the current map as in Normal mode.
+        this->preview = getFormattedMapPixmap(this->map);
+    }
+    this->scene->addPixmap(this->preview);
+    ui->graphicsView_Preview->setScene(scene);
+    scalePreview();
+}
 
-    this->ui->graphicsView_Preview->setScene(scene);
-    this->ui->graphicsView_Preview->setFixedSize(scene->itemsBoundingRect().width() + 2,
-                                                 scene->itemsBoundingRect().height() + 2);
+void MapImageExporter::scalePreview() {
+    if (this->scene && !this->previewActualSize){
+       ui->graphicsView_Preview->fitInView(this->scene->sceneRect(), Qt::KeepAspectRatioByExpanding);
+    }
 }
 
 QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
@@ -537,6 +562,15 @@ void MapImageExporter::on_checkBox_ConnectionRight_stateChanged(int state) {
     showRightConnections = (state == Qt::Checked);
     updateShowBorderState();
     updatePreview();
+}
+
+void MapImageExporter::on_checkBox_ActualSize_stateChanged(int state) {
+    previewActualSize = (state == Qt::Checked);
+    if (previewActualSize) {
+        ui->graphicsView_Preview->resetTransform();
+    } else {
+        scalePreview();
+    }
 }
 
 void MapImageExporter::on_pushButton_Save_pressed() {

@@ -45,16 +45,22 @@ private:
     bool showGrid = false;
     bool showBorder = false;
     bool showCollision = false;
+    bool previewActualSize = false;
     int timelapseSkipAmount = 1;
     int timelapseDelayMs = 200;
     ImageExporterMode mode = ImageExporterMode::Normal;
 
     void updatePreview();
+    void scalePreview();
     void updateShowBorderState();
     void saveImage();
     QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
     QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder = false);
     bool historyItemAppliesToFrame(const QUndoCommand *command);
+
+protected:
+    virtual void showEvent(QShowEvent *) override;
+    virtual void resizeEvent(QResizeEvent *) override;
 
 private slots:
     void on_checkBox_Objects_stateChanged(int state);
@@ -77,6 +83,8 @@ private slots:
     void on_pushButton_Cancel_pressed();
     void on_spinBox_TimelapseDelay_valueChanged(int delayMs);
     void on_spinBox_FrameSkip_valueChanged(int skip);
+
+    void on_checkBox_ActualSize_stateChanged(int state);
 };
 
 #endif // MAPIMAGEEXPORTER_H
