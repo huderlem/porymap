@@ -220,23 +220,23 @@ void MainWindow::applyUserShortcuts() {
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
-static const QMap<int, QString> mainTabNames = {
-    {MainTab::Map, "Map"},
-    {MainTab::Events, "Events"},
-    {MainTab::Header, "Header"},
-    {MainTab::Connections, "Connections"},
-    {MainTab::WildPokemon, "Wild Pokemon"},
-};
-
-static const QMap<int, QIcon> mainTabIcons = {
-    {MainTab::Map, QIcon(QStringLiteral(":/icons/minimap.ico"))},
-    {MainTab::Events, QIcon(QStringLiteral(":/icons/viewsprites.ico"))},
-    {MainTab::Header, QIcon(QStringLiteral(":/icons/application_form_edit.ico"))},
-    {MainTab::Connections, QIcon(QStringLiteral(":/icons/connections.ico"))},
-    {MainTab::WildPokemon, QIcon(QStringLiteral(":/icons/tall_grass.ico"))},
-};
-
 void MainWindow::initCustomUI() {
+    static const QMap<int, QString> mainTabNames = {
+        {MainTab::Map, "Map"},
+        {MainTab::Events, "Events"},
+        {MainTab::Header, "Header"},
+        {MainTab::Connections, "Connections"},
+        {MainTab::WildPokemon, "Wild Pokemon"},
+    };
+
+    static const QMap<int, QIcon> mainTabIcons = {
+        {MainTab::Map, QIcon(QStringLiteral(":/icons/minimap.ico"))},
+        {MainTab::Events, QIcon(QStringLiteral(":/icons/viewsprites.ico"))},
+        {MainTab::Header, QIcon(QStringLiteral(":/icons/application_form_edit.ico"))},
+        {MainTab::Connections, QIcon(QStringLiteral(":/icons/connections.ico"))},
+        {MainTab::WildPokemon, QIcon(QStringLiteral(":/icons/tall_grass.ico"))},
+    };
+
     // Set up the tab bar
     while (ui->mainTabBar->count()) ui->mainTabBar->removeTab(0);
 

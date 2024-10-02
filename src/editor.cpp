@@ -1247,6 +1247,7 @@ void Editor::unsetMap() {
         for (auto connection : map->getConnections())
             disconnectMapConnection(connection);
     }
+    clearMapConnections();
 
     this->map = nullptr;
 }
