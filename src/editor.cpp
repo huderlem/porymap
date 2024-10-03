@@ -1568,6 +1568,7 @@ bool Editor::displayLayout() {
         scene->installEventFilter(this->map_ruler);
     }
 
+    clearConnectionMask();
     displayMetatileSelector();
     displayMapMetatiles();
     displayMovementPermissionSelector();
