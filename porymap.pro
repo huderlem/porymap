@@ -69,14 +69,15 @@ SOURCES += src/core/block.cpp \
     src/ui/cursortilerect.cpp \
     src/ui/customattributestable.cpp \
     src/ui/eventframes.cpp \
+    src/ui/eventfilters.cpp \
     src/ui/filterchildrenproxymodel.cpp \
+    src/ui/maplistmodels.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
-    src/ui/mappixmapitem.cpp \
+    src/ui/layoutpixmapitem.cpp \
     src/ui/prefabcreationdialog.cpp \
     src/ui/regionmappixmapitem.cpp \
     src/ui/citymappixmapitem.cpp \
-    src/ui/mapsceneeventfilter.cpp \
     src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
@@ -165,15 +166,16 @@ HEADERS  += include/core/block.h \
     include/ui/cursortilerect.h \
     include/ui/customattributestable.h \
     include/ui/eventframes.h \
+    include/ui/eventfilters.h \
     include/ui/filterchildrenproxymodel.h \
+    include/ui/maplistmodels.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
-    include/ui/mappixmapitem.h \
+    include/ui/layoutpixmapitem.h \
     include/ui/mapview.h \
     include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
-    include/ui/mapsceneeventfilter.h \
     include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \
     include/ui/movablerect.h \

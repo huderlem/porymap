@@ -21,6 +21,7 @@
 #include "regionmapeditor.h"
 #include "mapimageexporter.h"
 #include "filterchildrenproxymodel.h"
+#include "maplistmodels.h"
 #include "newmappopup.h"
 #include "newtilesetdialog.h"
 #include "shortcutseditor.h"
@@ -170,8 +171,13 @@ private slots:
     void on_action_Open_Project_triggered();
     void on_action_Reload_Project_triggered();
     void on_action_Close_Project_triggered();
+
     void on_mapList_activated(const QModelIndex &index);
+    void on_areaList_activated(const QModelIndex &index);
+    void on_layoutList_activated(const QModelIndex &index);
+
     void on_action_Save_Project_triggered();
+
     void openWarpMap(QString map_name, int event_id, Event::Group event_group);
 
     void duplicate();
@@ -180,16 +186,19 @@ private slots:
     void copy();
     void paste();
 
+    void onLayoutChanged(Layout *layout);
     void onOpenConnectedMap(MapConnection*);
     void onMapNeedsRedrawing();
+    void onLayoutNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void openNewMapPopupWindow();
     void onNewMapCreated();
-    void onMapCacheCleared();
     void onMapLoaded(Map *map);
     void importMapFromAdvanceMap1_92();
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
+    void markMapEdited();
+    void markSpecificMapEdited(Map*);
 
     void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
@@ -200,6 +209,7 @@ private slots:
     void on_comboBox_Weather_currentTextChanged(const QString &arg1);
     void on_comboBox_Type_currentTextChanged(const QString &arg1);
     void on_comboBox_BattleScene_currentTextChanged(const QString &arg1);
+    void on_comboBox_LayoutSelector_currentTextChanged(const QString &arg1);
     void on_checkBox_ShowLocation_stateChanged(int selected);
     void on_checkBox_AllowRunning_stateChanged(int selected);
     void on_checkBox_AllowBiking_stateChanged(int selected);
@@ -235,6 +245,7 @@ private slots:
     void on_toolButton_Move_clicked();
     void on_toolButton_Shift_clicked();
 
+    void on_mapListContainer_currentChanged(int index);
     void onOpenMapListContextMenu(const QPoint &point);
     void onAddNewMapToGroupClick(QAction* triggeredAction);
     void onAddNewMapToAreaClick(QAction* triggeredAction);
@@ -262,9 +273,9 @@ private slots:
 
     void on_actionTileset_Editor_triggered();
 
-    void mapSortOrder_changed(QAction *action);
-
     void on_lineEdit_filterBox_textChanged(const QString &arg1);
+    void on_lineEdit_filterBox_Areas_textChanged(const QString &arg1);
+    void on_lineEdit_filterBox_Layouts_textChanged(const QString &arg1);
 
     void moveEvent(QMoveEvent *event);
     void closeEvent(QCloseEvent *);
@@ -278,8 +289,21 @@ private slots:
     void on_slider_DiveMapOpacity_valueChanged(int value);
     void on_slider_EmergeMapOpacity_valueChanged(int value);
     void on_horizontalSlider_CollisionTransparency_valueChanged(int value);
-    void on_toolButton_ExpandAll_clicked();
-    void on_toolButton_CollapseAll_clicked();
+
+    void do_HideShow();
+    void do_ExpandAll();
+    void do_CollapseAll();
+    void on_toolButton_HideShow_Groups_clicked();
+    void on_toolButton_ExpandAll_Groups_clicked();
+    void on_toolButton_CollapseAll_Groups_clicked();
+    void on_toolButton_EnableDisable_EditGroups_clicked();
+    void on_toolButton_HideShow_Areas_clicked();
+    void on_toolButton_ExpandAll_Areas_clicked();
+    void on_toolButton_CollapseAll_Areas_clicked();
+    void on_toolButton_HideShow_Layouts_clicked();
+    void on_toolButton_ExpandAll_Layouts_clicked();
+    void on_toolButton_CollapseAll_Layouts_clicked();
+
     void on_actionAbout_Porymap_triggered();
     void on_actionOpen_Log_File_triggered();
     void on_actionOpen_Config_Folder_triggered();
@@ -317,15 +341,20 @@ private:
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
+
+    FilterChildrenProxyModel *groupListProxyModel;
+    MapGroupModel *mapGroupModel;
+
+    FilterChildrenProxyModel *areaListProxyModel;
+    MapAreaModel *mapAreaModel;
+
+    FilterChildrenProxyModel *layoutListProxyModel;
+    LayoutTreeModel *layoutTreeModel;
+
     QPointer<UpdatePromoter> updatePromoter = nullptr;
     QPointer<NetworkAccessManager> networkAccessManager = nullptr;
     QPointer<AboutPorymap> aboutWindow = nullptr;
     QPointer<WildMonChart> wildMonChart = nullptr;
-    FilterChildrenProxyModel *mapListProxyModel;
-    QStandardItemModel *mapListModel;
-    QList<QStandardItem*> *mapGroupItemsList;
-    QMap<QString, QModelIndex> mapListIndexes;
-    QIcon mapIcon;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;
@@ -337,36 +366,58 @@ private:
 
     bool isProgrammaticEventTabChange;
     bool newMapDefaultsSet = false;
+
     bool tilesetNeedsRedraw = false;
 
+    bool setDefaultView();
+    bool setRecentView();
+    bool setLayout(QString layoutId);
+    bool setMap(QString, bool scroll = false);
+    void unsetMap();
     bool userSetMap(QString, bool scrollTreeView = false);
-    bool setMap(QString, bool scrollTreeView = false);
     void redrawMapScene();
+    void redrawLayoutScene();
     void refreshMapScene();
+
     bool checkProjectSanity();
     bool loadProjectData();
     bool setProjectUI();
     void clearProjectUI();
-    void sortMapList();
+
     void openSubWindow(QWidget * window);
+    void scrollTreeView(QString itemName);
     QString getExistingDirectory(QString);
     bool openProject(QString dir, bool initial = false);
     bool closeProject();
     void showProjectOpenFailure();
-    void saveGlobalConfigs();
-    bool setInitialMap();
+
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
+
+    bool setInitialMap();
+    bool setInitialLayout();
+    QString getDefaultMap();
+    QString getDefaultLayout();
+
+    void setRecentMapConfig(QString map_name);
+    void setRecentLayoutConfig(QString layoutId);
+    void saveGlobalConfigs();
+
     void refreshRecentProjectsMenu();
 
-    void updateMapListIcon(const QString &mapName);
     void updateMapList();
+    void mapListAddItem();
+    void mapListRemoveItem();
+    void mapListAddGroup();
+    void mapListAddLayout();
+    void mapListAddArea();
+    void mapListRemoveGroup();
+    void mapListRemoveArea();
+    void mapListRemoveLayout();
 
     void displayMapProperties();
     void checkToolButtons();
-    void clickToolButtonFromEditMode(QString editMode);
+    void clickToolButtonFromEditAction(Editor::EditAction editAction);
 
-    void markMapEdited();
-    void markMapEdited(Map*);
     void showWindowTitle();
 
     void initWindow();
@@ -407,12 +458,6 @@ private:
     void setDivingMapsVisible(bool visible);
 };
 
-enum MapListUserRoles {
-    GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
-    TypeRole,  // Used to differentiate between the different layers of the map list tree view.
-    TypeRole2, // Used for various extra data needed.
-};
-
 // These are namespaced in a struct to avoid colliding with e.g. class Map.
 struct MainTab {
     enum {
@@ -429,6 +474,12 @@ struct MapViewTab {
         Metatiles,
         Collision,
         Prefabs,
+    };
+};
+
+struct MapListTab {
+    enum {
+        Groups = 0, Areas, Layouts
     };
 };
 

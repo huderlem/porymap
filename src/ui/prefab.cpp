@@ -158,32 +158,32 @@ QList<PrefabItem> Prefab::getPrefabsForTilesets(QString primaryTileset, QString 
     return filteredPrefabs;
 }
 
-void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Map *map) {
+void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Layout *layout) {
     this->selector = selector;
     this->prefabWidget = prefabWidget;
     this->emptyPrefabLabel = emptyPrefabLabel;
     this->loadPrefabs();
-    this->updatePrefabUi(map);
+    this->updatePrefabUi(layout);
 }
 
 // This function recreates the UI state for the prefab tab.
 // We completely delete all the prefab widgets, and recreate new widgets
 // from the relevant list of prefab items.
 // This is not very efficient, but it gets the job done.
-void Prefab::updatePrefabUi(Map *map) {
+void Prefab::updatePrefabUi(Layout *layout) {
     if (!this->selector)
         return;
     // Cleanup the PrefabFrame to have a clean slate.
-    auto layout = this->prefabWidget->layout();
-    while (layout && layout->count() > 1) {
-        auto child = layout->takeAt(1);
+    auto uiLayout = this->prefabWidget->layout();
+    while (uiLayout && uiLayout->count() > 1) {
+        auto child = uiLayout->takeAt(1);
         if (child->widget()) {
             delete child->widget();
         }
         delete child;
     }
 
-    QList<PrefabItem> prefabs = this->getPrefabsForTilesets(map->layout->tileset_primary_label, map->layout->tileset_secondary_label);
+    QList<PrefabItem> prefabs = this->getPrefabsForTilesets(layout->tileset_primary_label, layout->tileset_secondary_label);
     if (prefabs.isEmpty()) {
         emptyPrefabLabel->setVisible(true);
         return;
@@ -202,7 +202,7 @@ void Prefab::updatePrefabUi(Map *map) {
         frame->ui->label_Name->setText(item.name);
 
         auto scene = new QGraphicsScene;
-        scene->addPixmap(drawMetatileSelection(item.selection, map));
+        scene->addPixmap(drawMetatileSelection(item.selection, layout));
         scene->setSceneRect(scene->itemsBoundingRect());
         frame->ui->graphicsView_Prefab->setScene(scene);
         frame->ui->graphicsView_Prefab->setFixedSize(scene->itemsBoundingRect().width() + 2,
@@ -216,7 +216,7 @@ void Prefab::updatePrefabUi(Map *map) {
         });
 
         // Clicking the delete button removes it from the list of known prefabs and updates the UI.
-        QObject::connect(frame->ui->pushButton_DeleteItem, &QPushButton::clicked, [this, item, map](){
+        QObject::connect(frame->ui->pushButton_DeleteItem, &QPushButton::clicked, [this, item, layout](){
             for (int i = 0; i < this->items.size(); i++) {
                 if (this->items[i].id == item.id) {
                     QMessageBox msgBox;
@@ -234,7 +234,7 @@ void Prefab::updatePrefabUi(Map *map) {
                     if (msgBox.clickedButton() == deleteButton) {
                         this->items.removeAt(i);
                         this->savePrefabs();
-                        this->updatePrefabUi(map);
+                        this->updatePrefabUi(layout);
                     }
                     break;
                 }
@@ -246,7 +246,7 @@ void Prefab::updatePrefabUi(Map *map) {
     prefabWidget->layout()->addItem(verticalSpacer);
 }
 
-void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
+void Prefab::addPrefab(MetatileSelection selection, Layout *layout, QString name) {
     // First, determine which tilesets are actually used in this new prefab,
     // based on the metatile ids.
     bool usesPrimaryTileset = false;
@@ -264,12 +264,12 @@ void Prefab::addPrefab(MetatileSelection selection, Map *map, QString name) {
     this->items.append(PrefabItem{
                            QUuid::createUuid(),
                            name,
-                           usesPrimaryTileset ? map->layout->tileset_primary_label : "",
-                           usesSecondaryTileset ? map->layout->tileset_secondary_label: "",
+                           usesPrimaryTileset ? layout->tileset_primary_label : "",
+                           usesSecondaryTileset ? layout->tileset_secondary_label: "",
                            selection
                        });
     this->savePrefabs();
-    this->updatePrefabUi(map);
+    this->updatePrefabUi(layout);
 }
 
 bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, QString filepath) {

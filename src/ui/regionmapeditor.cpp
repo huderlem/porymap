@@ -1095,7 +1095,7 @@ void RegionMapEditor::on_spinBox_RM_LayoutWidth_valueChanged(int value) {
         int newHeight = this->region_map->layoutHeight();
         QMap<QString, QList<LayoutSquare>> newLayouts = this->region_map->getAllLayouts();
 
-        ResizeLayout *commit = new ResizeLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
+        ResizeRMLayout *commit = new ResizeRMLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
         this->region_map->editHistory.push(commit);
     }
 }
@@ -1112,7 +1112,7 @@ void RegionMapEditor::on_spinBox_RM_LayoutHeight_valueChanged(int value) {
         int newHeight = this->region_map->layoutHeight();
         QMap<QString, QList<LayoutSquare>> newLayouts = this->region_map->getAllLayouts();
 
-        ResizeLayout *commit = new ResizeLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
+        ResizeRMLayout *commit = new ResizeRMLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
         this->region_map->editHistory.push(commit);
     }
 }

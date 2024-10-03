@@ -23,9 +23,9 @@ static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_
 #define CONFIG_BACKWARDS_COMPATABILITY
 
 enum MapSortOrder {
-    Group   =  0,
-    Area    =  1,
-    Layout  =  2,
+    SortByGroup   =  0,
+    SortByArea    =  1,
+    SortByLayout  =  2,
 };
 
 class KeyValueConfigBase
@@ -56,7 +56,7 @@ public:
         this->recentProjects.clear();
         this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
-        this->mapSortOrder = MapSortOrder::Group;
+        this->mapSortOrder = MapSortOrder::SortByGroup;
         this->prettyCursors = true;
         this->mirrorConnectingMaps = true;
         this->showDiveEmergeMaps = false;
@@ -407,6 +407,7 @@ public:
     }
     virtual void reset() override {
         this->recentMap = QString();
+        this->recentLayout = QString();
         this->useEncounterJson = true;
         this->customScripts.clear();
         this->readKeys.clear();
@@ -419,6 +420,7 @@ public:
 
     QString projectDir;
     QString recentMap;
+    QString recentLayout;
     bool useEncounterJson;
 
 protected:
