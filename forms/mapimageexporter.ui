@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>817</width>
-    <height>518</height>
+    <height>535</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -52,7 +52,28 @@
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
           <layout class="QGridLayout" name="gridLayout_Event_Options">
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="checkBox_Triggers">
+             <property name="text">
+              <string>Triggers</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="1">
+            <widget class="QCheckBox" name="checkBox_Objects">
+             <property name="text">
+              <string>Objects</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QCheckBox" name="checkBox_HealLocations">
+             <property name="text">
+              <string>Heal Locations</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
             <widget class="QCheckBox" name="checkBox_Warps">
              <property name="text">
               <string>Warps</string>
@@ -60,30 +81,16 @@
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QCheckBox" name="checkBox_Objects">
+            <widget class="QCheckBox" name="checkBox_AllEvents">
              <property name="text">
-              <string>Objects</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QCheckBox" name="checkBox_BGs">
-             <property name="text">
-              <string>BGs</string>
+              <string>All</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QCheckBox" name="checkBox_Triggers">
+            <widget class="QCheckBox" name="checkBox_BGs">
              <property name="text">
-              <string>Triggers</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QCheckBox" name="checkBox_HealSpots">
-             <property name="text">
-              <string>Heal Spots</string>
+              <string>BGs</string>
              </property>
             </widget>
            </item>
@@ -100,31 +107,38 @@
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="0">
           <layout class="QGridLayout" name="gridLayout_Connection_Options">
-           <item row="0" column="0">
-            <widget class="QCheckBox" name="checkBox_ConnectionUp">
-             <property name="text">
-              <string>Up</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="checkBox_ConnectionDown">
-             <property name="text">
-              <string>Down</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
+           <item row="1" column="2">
             <widget class="QCheckBox" name="checkBox_ConnectionLeft">
              <property name="text">
               <string>Left</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="3">
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="checkBox_ConnectionUp">
+             <property name="text">
+              <string>Up</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
             <widget class="QCheckBox" name="checkBox_ConnectionRight">
              <property name="text">
               <string>Right</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="checkBox_ConnectionDown">
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="checkBox_AllConnections">
+             <property name="text">
+              <string>All</string>
              </property>
             </widget>
            </item>
@@ -317,8 +331,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>500</width>
-           <height>439</height>
+           <width>469</width>
+           <height>464</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout">

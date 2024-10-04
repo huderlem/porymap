@@ -53,6 +53,9 @@ MapImageExporter::MapImageExporter(QWidget *parent_, Editor *editor_, ImageExpor
     this->ui->comboBox_MapSelection->addItems(editor->project->mapNames);
     this->ui->comboBox_MapSelection->setCurrentText(map->name);
     this->ui->comboBox_MapSelection->setEnabled(false);// TODO: allow selecting map from drop-down
+
+    connect(ui->pushButton_Save,   &QPushButton::pressed, this, &MapImageExporter::saveImage);
+    connect(ui->pushButton_Cancel, &QPushButton::pressed, this, &MapImageExporter::close);
 }
 
 MapImageExporter::~MapImageExporter() {
@@ -73,6 +76,12 @@ void MapImageExporter::resizeEvent(QResizeEvent *event) {
 }
 
 void MapImageExporter::saveImage() {
+    // Make sure preview is up-to-date before we save.
+    if (this->preview.isNull())
+        updatePreview();
+    if (this->preview.isNull())
+        return;
+
     QString title = getTitle(this->mode);
     QString defaultFilename;
     switch (this->mode)
@@ -219,11 +228,11 @@ bool MapImageExporter::historyItemAppliesToFrame(const QUndoCommand *command) {
         case CommandId::ID_EventDelete:
         case CommandId::ID_EventDuplicate: {
             bool eventTypeIsApplicable =
-                       (this->showObjects   && (command->id() & IDMask_EventType_Object)  != 0)
-                    || (this->showWarps     && (command->id() & IDMask_EventType_Warp)    != 0)
-                    || (this->showBGs       && (command->id() & IDMask_EventType_BG)      != 0)
-                    || (this->showTriggers  && (command->id() & IDMask_EventType_Trigger) != 0)
-                    || (this->showHealSpots && (command->id() & IDMask_EventType_Heal)    != 0);
+                       (this->showObjects       && (command->id() & IDMask_EventType_Object)  != 0)
+                    || (this->showWarps         && (command->id() & IDMask_EventType_Warp)    != 0)
+                    || (this->showBGs           && (command->id() & IDMask_EventType_BG)      != 0)
+                    || (this->showTriggers      && (command->id() & IDMask_EventType_Trigger) != 0)
+                    || (this->showHealLocations && (command->id() & IDMask_EventType_Heal)    != 0);
             return eventTypeIsApplicable;
         }
         default:
@@ -435,6 +444,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     if (!ignoreBorder && (this->showUpConnections || this->showDownConnections || this->showLeftConnections || this->showRightConnections)) {
         // if showing connections, draw on outside of image
         QPainter connectionPainter(&pixmap);
+        // TODO: Reading the connections from the editor and not 'map' is incorrect.
         for (auto connectionItem : editor->connection_items) {
             const QString direction = connectionItem->connection->direction();
             if ((showUpConnections && direction == "up")
@@ -448,27 +458,30 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
     }
 
     // draw events
-    QPainter eventPainter(&pixmap);
-    QList<Event *> events = map->getAllEvents();
-    int pixelOffset = 0;
-    if (!ignoreBorder && this->showBorder) {
-        pixelOffset = this->mode == ImageExporterMode::Normal ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
+    if (this->showObjects || this->showWarps || this->showBGs || this->showTriggers || this->showHealLocations) {
+        QPainter eventPainter(&pixmap);
+        int pixelOffset = 0;
+        if (!ignoreBorder && this->showBorder) {
+            pixelOffset = this->mode == ImageExporterMode::Normal ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
+        }
+        const QList<Event *> events = map->getAllEvents();
+        for (const auto &event : events) {
+            Event::Group group = event->getEventGroup();
+            if ((this->showObjects && group == Event::Group::Object)
+             || (this->showWarps && group == Event::Group::Warp)
+             || (this->showBGs && group == Event::Group::Bg)
+             || (this->showTriggers && group == Event::Group::Coord)
+             || (this->showHealLocations && group == Event::Group::Heal)) {
+                editor->project->setEventPixmap(event);
+                eventPainter.drawImage(QPoint(event->getPixelX() + pixelOffset, event->getPixelY() + pixelOffset), event->getPixmap().toImage());
+            }
+        }
+        eventPainter.end();
     }
-    for (Event *event : events) {
-        editor->project->setEventPixmap(event);
-        Event::Group group = event->getEventGroup();
-        if ((showObjects && group == Event::Group::Object)
-         || (showWarps && group == Event::Group::Warp)
-         || (showBGs && group == Event::Group::Bg)
-         || (showTriggers && group == Event::Group::Coord)
-         || (showHealSpots && group == Event::Group::Heal))
-            eventPainter.drawImage(QPoint(event->getPixelX() + pixelOffset, event->getPixelY() + pixelOffset), event->getPixmap().toImage());
-    }
-    eventPainter.end();
 
     // draw grid directly onto the pixmap
     // since the last grid lines are outside of the pixmap, add a pixel to the bottom and right
-    if (showGrid) {
+    if (this->showGrid) {
         int addX = 1, addY = 1;
         if (borderHeight) addY = 0;
         if (borderWidth) addX = 0;
@@ -491,14 +504,11 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
 
 void MapImageExporter::updateShowBorderState() {
     // If any of the Connections settings are enabled then this setting is locked (it's implicitly enabled)
+    bool on = (showUpConnections || showDownConnections || showLeftConnections || showRightConnections);
     const QSignalBlocker blocker(ui->checkBox_Border);
-    if (showUpConnections || showDownConnections || showLeftConnections || showRightConnections) {
-        ui->checkBox_Border->setChecked(true);
-        ui->checkBox_Border->setDisabled(true);
-        showBorder = true;
-    } else {
-        ui->checkBox_Border->setDisabled(false);
-    }
+    ui->checkBox_Border->setChecked(on);
+    ui->checkBox_Border->setDisabled(on);
+    showBorder = on;
 }
 
 void MapImageExporter::on_checkBox_Elevation_stateChanged(int state) {
@@ -536,8 +546,40 @@ void MapImageExporter::on_checkBox_Triggers_stateChanged(int state) {
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_HealSpots_stateChanged(int state) {
-    showHealSpots = (state == Qt::Checked);
+void MapImageExporter::on_checkBox_HealLocations_stateChanged(int state) {
+    showHealLocations = (state == Qt::Checked);
+    updatePreview();
+}
+
+// Shortcut setting for enabling all events
+void MapImageExporter::on_checkBox_AllEvents_stateChanged(int state) {
+    bool on = (state == Qt::Checked);
+
+    const QSignalBlocker b_Objects(ui->checkBox_Objects);
+    ui->checkBox_Objects->setChecked(on);
+    ui->checkBox_Objects->setDisabled(on);
+    showObjects = on;
+
+    const QSignalBlocker b_Warps(ui->checkBox_Warps);
+    ui->checkBox_Warps->setChecked(on);
+    ui->checkBox_Warps->setDisabled(on);
+    showWarps = on;
+
+    const QSignalBlocker b_BGs(ui->checkBox_BGs);
+    ui->checkBox_BGs->setChecked(on);
+    ui->checkBox_BGs->setDisabled(on);
+    showBGs = on;
+
+    const QSignalBlocker b_Triggers(ui->checkBox_Triggers);
+    ui->checkBox_Triggers->setChecked(on);
+    ui->checkBox_Triggers->setDisabled(on);
+    showTriggers = on;
+
+    const QSignalBlocker b_HealLocations(ui->checkBox_HealLocations);
+    ui->checkBox_HealLocations->setChecked(on);
+    ui->checkBox_HealLocations->setDisabled(on);
+    showHealLocations = on;
+
     updatePreview();
 }
 
@@ -565,6 +607,34 @@ void MapImageExporter::on_checkBox_ConnectionRight_stateChanged(int state) {
     updatePreview();
 }
 
+// Shortcut setting for enabling all connection directions
+void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
+    bool on = (state == Qt::Checked);
+
+    const QSignalBlocker b_Up(ui->checkBox_ConnectionUp);
+    ui->checkBox_ConnectionUp->setChecked(on);
+    ui->checkBox_ConnectionUp->setDisabled(on);
+    showUpConnections = on;
+
+    const QSignalBlocker b_Down(ui->checkBox_ConnectionDown);
+    ui->checkBox_ConnectionDown->setChecked(on);
+    ui->checkBox_ConnectionDown->setDisabled(on);
+    showDownConnections = on;
+
+    const QSignalBlocker b_Left(ui->checkBox_ConnectionLeft);
+    ui->checkBox_ConnectionLeft->setChecked(on);
+    ui->checkBox_ConnectionLeft->setDisabled(on);
+    showLeftConnections = on;
+
+    const QSignalBlocker b_Right(ui->checkBox_ConnectionRight);
+    ui->checkBox_ConnectionRight->setChecked(on);
+    ui->checkBox_ConnectionRight->setDisabled(on);
+    showRightConnections = on;
+
+    updateShowBorderState();
+    updatePreview();
+}
+
 void MapImageExporter::on_checkBox_ActualSize_stateChanged(int state) {
     previewActualSize = (state == Qt::Checked);
     if (previewActualSize) {
@@ -574,17 +644,12 @@ void MapImageExporter::on_checkBox_ActualSize_stateChanged(int state) {
     }
 }
 
-void MapImageExporter::on_pushButton_Save_pressed() {
-    saveImage();
-}
-
 void MapImageExporter::on_pushButton_Reset_pressed() {
-    for (auto widget : this->findChildren<QCheckBox *>())
+    for (auto widget : this->findChildren<QCheckBox *>()) {
+        const QSignalBlocker b(widget);
         widget->setChecked(false);
-}
-
-void MapImageExporter::on_pushButton_Cancel_pressed() {
-    this->close();
+    }
+    updatePreview();
 }
 
 void MapImageExporter::on_spinBox_TimelapseDelay_valueChanged(int delayMs) {
