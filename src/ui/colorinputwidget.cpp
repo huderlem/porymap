@@ -34,6 +34,7 @@ ColorInputWidget::ColorInputWidget(const QString &title, QWidget *parent) :
 void ColorInputWidget::init() {
     ui->setupUi(this);
 
+    // Connect color change signals
     connect(ui->slider_Red,   &QSlider::valueChanged, this, &ColorInputWidget::setRgbFromSliders);
     connect(ui->slider_Green, &QSlider::valueChanged, this, &ColorInputWidget::setRgbFromSliders);
     connect(ui->slider_Blue,  &QSlider::valueChanged, this, &ColorInputWidget::setRgbFromSliders);
@@ -46,6 +47,19 @@ void ColorInputWidget::init() {
     ui->lineEdit_Hex->setValidator(&hexValidator);
     connect(ui->lineEdit_Hex, &QLineEdit::textEdited, this, &ColorInputWidget::setRgbFromHexString);
 
+    // We have separate signals for when color input editing finishes.
+    // This is mostly useful for external commit histories, esp. for the sliders which can rapidly emit color change signals.
+    connect(ui->slider_Red,   &QSlider::sliderReleased, this, &ColorInputWidget::editingFinished);
+    connect(ui->slider_Green, &QSlider::sliderReleased, this, &ColorInputWidget::editingFinished);
+    connect(ui->slider_Blue,  &QSlider::sliderReleased, this, &ColorInputWidget::editingFinished);
+
+    connect(ui->spinBox_Red,   &QSpinBox::editingFinished, this, &ColorInputWidget::editingFinished);
+    connect(ui->spinBox_Green, &QSpinBox::editingFinished, this, &ColorInputWidget::editingFinished);
+    connect(ui->spinBox_Blue,  &QSpinBox::editingFinished, this, &ColorInputWidget::editingFinished);
+
+    connect(ui->lineEdit_Hex, &QLineEdit::editingFinished, this, &ColorInputWidget::editingFinished);
+
+    // Connect color picker
     connect(ui->button_Eyedrop, &QToolButton::clicked, this, &ColorInputWidget::pickColor);
 
     setBitDepth(24);
@@ -210,5 +224,6 @@ void ColorInputWidget::pickColor() {
     if (picker.exec() == QDialog::Accepted) {
         QColor c = picker.getColor();
         setColor(c.rgb());
+        emit editingFinished();
     }
 }

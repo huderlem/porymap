@@ -39,6 +39,7 @@ private:
 
     Tileset* getTileset(int paletteId);
     void refreshColorInputs();
+    void commitEditHistory();
     void commitEditHistory(int paletteId);
     void restoreWindowState();
     void closeEvent(QCloseEvent*);

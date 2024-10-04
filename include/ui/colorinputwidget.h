@@ -25,6 +25,7 @@ public:
 signals:
     void colorChanged(QRgb color);
     void bitDepthChanged(int bits);
+    void editingFinished();
 
 private:
     Ui::ColorInputWidget *ui;

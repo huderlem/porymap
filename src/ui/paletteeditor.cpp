@@ -24,6 +24,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     for (int i = 0; i < this->numColors; i++) {
         auto colorInput = new ColorInputWidget(QString("Color %1").arg(i));
         connect(colorInput, &ColorInputWidget::colorChanged, [this, i](QRgb color) { setRgb(i, color); });
+        connect(colorInput, &ColorInputWidget::editingFinished, [this] { commitEditHistory(); });
         this->colorInputs.append(colorInput);
         ui->layout_Colors->addWidget(colorInput, i / numColorsPerRow, i % numColorsPerRow);
     }
@@ -46,7 +47,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     connect(this->ui->bit_depth_24, &QRadioButton::toggled, [this](bool checked){ if (checked) this->setBitDepth(24); });
 
     this->setPaletteId(paletteId);
-    this->commitEditHistory(this->ui->spinBox_PaletteId->value());
+    this->commitEditHistory();
     this->restoreWindowState();
 }
 
@@ -75,8 +76,7 @@ void PaletteEditor::setRgb(int colorIndex, QRgb rgb) {
     Tileset *tileset = getTileset(paletteId);
     tileset->palettes[paletteId][colorIndex] = rgb;
     tileset->palettePreviews[paletteId][colorIndex] = rgb;
-    
-    commitEditHistory(paletteId);
+
     emit changedPaletteColor();
 }
 
@@ -118,6 +118,10 @@ void PaletteEditor::on_spinBox_PaletteId_valueChanged(int paletteId) {
         this->commitEditHistory(paletteId);
     }
     emit this->changedPalette(paletteId);
+}
+
+void PaletteEditor::commitEditHistory() {
+    commitEditHistory(ui->spinBox_PaletteId->value());
 }
 
 void PaletteEditor::commitEditHistory(int paletteId) {
