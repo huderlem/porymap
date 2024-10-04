@@ -16,6 +16,24 @@ enum ImageExporterMode {
     Timelapse,
 };
 
+struct ImageExporterSettings {
+    bool showObjects = false;
+    bool showWarps = false;
+    bool showBGs = false;
+    bool showTriggers = false;
+    bool showHealLocations = false;
+    bool showUpConnections = false;
+    bool showDownConnections = false;
+    bool showLeftConnections = false;
+    bool showRightConnections = false;
+    bool showGrid = false;
+    bool showBorder = false;
+    bool showCollision = false;
+    bool previewActualSize = false;
+    int timelapseSkipAmount = 1;
+    int timelapseDelayMs = 200;
+};
+
 class MapImageExporter : public QDialog
 {
     Q_OBJECT
@@ -33,21 +51,7 @@ private:
 
     QPixmap preview;
 
-    bool showObjects = false;
-    bool showWarps = false;
-    bool showBGs = false;
-    bool showTriggers = false;
-    bool showHealLocations = false;
-    bool showUpConnections = false;
-    bool showDownConnections = false;
-    bool showLeftConnections = false;
-    bool showRightConnections = false;
-    bool showGrid = false;
-    bool showBorder = false;
-    bool showCollision = false;
-    bool previewActualSize = false;
-    int timelapseSkipAmount = 1;
-    int timelapseDelayMs = 200;
+    ImageExporterSettings settings;
     ImageExporterMode mode = ImageExporterMode::Normal;
 
     void updatePreview();
