@@ -31,6 +31,8 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
     connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
 
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &WildMonChart::limitChartAnimation);
+
     // Set up Theme combo box
     for (auto i : themes)
         ui->comboBox_Theme->addItem(i.first, i.second);
@@ -176,14 +178,16 @@ void WildMonChart::refreshSpeciesDistributionChart() {
     if (ui->chartView_SpeciesDistribution->chart())
         ui->chartView_SpeciesDistribution->chart()->deleteLater();
     ui->chartView_SpeciesDistribution->setChart(createSpeciesDistributionChart());
-    limitChartAnimation(ui->chartView_SpeciesDistribution->chart());
+    if (ui->tabWidget->currentWidget() == ui->tabSpecies)
+        limitChartAnimation();
 }
 
 void WildMonChart::refreshLevelDistributionChart() {
     if (ui->chartView_LevelDistribution->chart())
         ui->chartView_LevelDistribution->chart()->deleteLater();
     ui->chartView_LevelDistribution->setChart(createLevelDistributionChart());
-    limitChartAnimation(ui->chartView_LevelDistribution->chart());
+    if (ui->tabWidget->currentWidget() == ui->tabLevels)
+        limitChartAnimation();
 }
 
 QStringList WildMonChart::getSpeciesNamesAlphabetical() const {
@@ -408,17 +412,27 @@ void WildMonChart::applySpeciesColors(const QList<QBarSet*> &barSets) {
         set->setColor(this->speciesToColor.value(set->label()));
 }
 
-// Turn off the animation once it's played, otherwise it replays any time the window changes size.
-void WildMonChart::limitChartAnimation(QChart *chart) {
+// Turn off the chart animation once it's played, otherwise it replays any time the window changes size.
+// The animation only begins when it's first displayed, so we'll only ever consider the chart for the current tab,
+// and when the tab changes we'll call this again.
+void WildMonChart::limitChartAnimation() {
     // Chart may be destroyed before the animation finishes
-    QPointer<QChart> safeChart = chart;
+    QPointer<QChart> chart;
+    if (ui->tabWidget->currentWidget() == ui->tabSpecies) {
+        chart = ui->chartView_SpeciesDistribution->chart();
+    } else if (ui->tabWidget->currentWidget() == ui->tabLevels) {
+        chart = ui->chartView_LevelDistribution->chart();
+    }
+
+    if (!chart || chart->animationOptions() == QChart::NoAnimation)
+        return;
 
     // QChart has no signal for when the animation is finished, so we use a timer to stop the animation.
     // It is technically possible to get the chart to freeze mid-animation by resizing the window after
     // the timer starts but before it finishes, but 1. animations are short so this is difficult to do,
     // and 2. the issue resolves if the window is resized afterwards, so it's probably fine.
-    QTimer::singleShot(chart->animationDuration() + 500, [safeChart] {
-        if (safeChart) safeChart->setAnimationOptions(QChart::NoAnimation);
+    QTimer::singleShot(chart->animationDuration(), Qt::PreciseTimer, [chart] {
+        if (chart) chart->setAnimationOptions(QChart::NoAnimation);
     });
 }
 
