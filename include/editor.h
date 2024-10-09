@@ -23,6 +23,7 @@
 #include "collisionpixmapitem.h"
 #include "mappixmapitem.h"
 #include "settings.h"
+#include "gridsettings.h"
 #include "movablerect.h"
 #include "cursortilerect.h"
 #include "mapruler.h"
@@ -48,6 +49,7 @@ public:
     QPointer<Project> project = nullptr;
     Map *map = nullptr;
     Settings *settings;
+    GridSettings gridSettings;
     void setProject(Project * project);
     void saveProject();
     void save();
@@ -67,6 +69,7 @@ public:
     void displayMapConnections();
     void displayMapBorder();
     void displayMapGrid();
+    void updateMapGrid();
     void displayWildMonTables();
 
     void updateMapBorder();
@@ -118,7 +121,7 @@ public:
     QPointer<CollisionPixmapItem> collision_item = nullptr;
     QGraphicsItemGroup *events_group = nullptr;
     QList<QGraphicsPixmapItem*> borderItems;
-    QList<QGraphicsLineItem*> gridLines;
+    QGraphicsItemGroup *mapGrid = nullptr;
     MovableRect *playerViewRect = nullptr;
     CursorTileRect *cursorMapTileRect = nullptr;
     MapRuler *map_ruler = nullptr;
@@ -165,6 +168,7 @@ public slots:
     void maskNonVisibleConnectionTiles();
     void onBorderMetatilesChanged();
     void selectedEventIndexChanged(int index, Event::Group eventGroup);
+    void toggleGrid(bool);
 
 private:
     const QImage defaultCollisionImgSheet = QImage(":/images/collisions.png");
@@ -219,7 +223,6 @@ private slots:
     void onHoveredMapMovementPermissionCleared();
     void onSelectedMetatilesChanged();
     void onWheelZoom(int);
-    void onToggleGridClicked(bool);
 
 signals:
     void objectsChanged();
@@ -231,6 +234,7 @@ signals:
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void tilesetUpdated(QString);
+    void gridToggled(bool);
 };
 
 #endif // EDITOR_H

@@ -149,10 +149,6 @@ void MainWindow::initExtraShortcuts() {
     shortcutReset_Zoom->setObjectName("shortcutZoom_Reset");
     shortcutReset_Zoom->setWhatsThis("Zoom Reset");
 
-    auto *shortcutToggle_Grid = new Shortcut(QKeySequence("Ctrl+G"), ui->checkBox_ToggleGrid, SLOT(toggle()));
-    shortcutToggle_Grid->setObjectName("shortcutToggle_Grid");
-    shortcutToggle_Grid->setWhatsThis("Toggle Grid");
-
     auto *shortcutDuplicate_Events = new Shortcut(QKeySequence("Ctrl+D"), this, SLOT(duplicate()));
     shortcutDuplicate_Events->setObjectName("shortcutDuplicate_Events");
     shortcutDuplicate_Events->setWhatsThis("Duplicate Selected Event(s)");
@@ -317,8 +313,6 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::wildMonTableEdited, [this] { this->markMapEdited(); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
-    connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this->editor, &Editor::openMapScripts);
-    connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this->editor, &Editor::openProjectInTextEditor);
 
     this->loadUserSettings();
 
@@ -465,27 +459,45 @@ void MainWindow::applyMapListFilter(QString filterText)
 }
 
 void MainWindow::loadUserSettings() {
-    const QSignalBlocker blocker1(ui->horizontalSlider_CollisionTransparency);
-    const QSignalBlocker blocker2(ui->slider_DiveEmergeMapOpacity);
-    const QSignalBlocker blocker3(ui->slider_DiveMapOpacity);
-    const QSignalBlocker blocker4(ui->slider_EmergeMapOpacity);
-    const QSignalBlocker blocker5(ui->horizontalSlider_MetatileZoom);
-    const QSignalBlocker blocker6(ui->horizontalSlider_CollisionZoom);
-
+    // Better Cursors
     ui->actionBetter_Cursors->setChecked(porymapConfig.prettyCursors);
     this->editor->settings->betterCursors = porymapConfig.prettyCursors;
+
+    // Player view rectangle
     ui->actionPlayer_View_Rectangle->setChecked(porymapConfig.showPlayerView);
     this->editor->settings->playerViewRectEnabled = porymapConfig.showPlayerView;
+
+    // Cursor tile outline
     ui->actionCursor_Tile_Outline->setChecked(porymapConfig.showCursorTile);
     this->editor->settings->cursorTileRectEnabled = porymapConfig.showCursorTile;
+
+    // Border
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
+
+    // Grid
+    const QSignalBlocker b_Grid(ui->checkBox_ToggleGrid);
+    ui->actionShow_Grid->setChecked(porymapConfig.showGrid);
     ui->checkBox_ToggleGrid->setChecked(porymapConfig.showGrid);
+
+    // Mirror connections
     ui->checkBox_MirrorConnections->setChecked(porymapConfig.mirrorConnectingMaps);
+
+    // Collision opacity/transparency
+    const QSignalBlocker b_CollisionTransparency(ui->horizontalSlider_CollisionTransparency);
     this->editor->collisionOpacity = static_cast<qreal>(porymapConfig.collisionOpacity) / 100;
     ui->horizontalSlider_CollisionTransparency->setValue(porymapConfig.collisionOpacity);
+
+    // Dive map opacity/transparency
+    const QSignalBlocker b_DiveEmergeOpacity(ui->slider_DiveEmergeMapOpacity);
+    const QSignalBlocker b_DiveMapOpacity(ui->slider_DiveMapOpacity);
+    const QSignalBlocker b_EmergeMapOpacity(ui->slider_EmergeMapOpacity);
     ui->slider_DiveEmergeMapOpacity->setValue(porymapConfig.diveEmergeMapOpacity);
     ui->slider_DiveMapOpacity->setValue(porymapConfig.diveMapOpacity);
     ui->slider_EmergeMapOpacity->setValue(porymapConfig.emergeMapOpacity);
+
+    // Zoom
+    const QSignalBlocker b_MetatileZoom(ui->horizontalSlider_MetatileZoom);
+    const QSignalBlocker b_CollisionZoom(ui->horizontalSlider_CollisionZoom);
     ui->horizontalSlider_MetatileZoom->setValue(porymapConfig.metatilesZoom);
     ui->horizontalSlider_CollisionZoom->setValue(porymapConfig.collisionZoom);
 
@@ -1908,6 +1920,18 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
         this->editor->cursorMapTileRect->setVisible(enabled && this->editor->cursorMapTileRect->getActive());
         ui->graphicsView_Map->scene()->update();
     }
+}
+
+void MainWindow::on_actionShow_Grid_triggered() {
+    this->editor->toggleGrid(ui->actionShow_Grid->isChecked());
+}
+
+void MainWindow::on_actionGrid_Settings_triggered() {
+    if (!this->gridSettingsDialog) {
+        this->gridSettingsDialog = new GridSettingsDialog(&this->editor->gridSettings, this);
+        connect(this->gridSettingsDialog, &GridSettingsDialog::changedGridSettings, this->editor, &Editor::updateMapGrid);
+    }
+    openSubWindow(this->gridSettingsDialog);
 }
 
 void MainWindow::on_actionShortcuts_triggered()
