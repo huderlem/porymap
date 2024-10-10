@@ -36,6 +36,18 @@ public:
                                    QString *selectedFilter = nullptr,
                                    QFileDialog::Options options = Options());
 
+    static QStringList getOpenFileNames(QWidget *parent = nullptr,
+                                        const QString &caption = QString(),
+                                        const QString &dir = QString(),
+                                        const QString &filter = QString(),
+                                        QString *selectedFilter = nullptr,
+                                        QFileDialog::Options options = Options());
+
+    static QString getExistingDirectory(QWidget *parent = nullptr,
+                                        const QString &caption = QString(),
+                                        const QString &dir = QString(),
+                                        QFileDialog::Options options = ShowDirsOnly);
+
     static QString getSaveFileName(QWidget *parent = nullptr,
                                    const QString &caption = QString(),
                                    const QString &dir = QString(),
