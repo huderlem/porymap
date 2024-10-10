@@ -50,6 +50,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix stitched map images sometimes rendering garbage
 - Fix the `Reset` button on `Export Map Timelapse Image` not resetting the Timelapse settings.
 - Stop sliders in the Palette Editor from creating a bunch of edit history when used.
+- Fix scrolling on some containers locking up when the mouse stops over a spin box or combo box.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
