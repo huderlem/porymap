@@ -10,7 +10,6 @@
 #include <QDir>
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QFileDialog>
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QSpinBox>

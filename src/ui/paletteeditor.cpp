@@ -3,8 +3,8 @@
 #include "paletteutil.h"
 #include "config.h"
 #include "log.h"
+#include "filedialog.h"
 
-#include <QFileDialog>
 #include <QMessageBox>
 
 
@@ -158,15 +158,10 @@ void PaletteEditor::on_actionRedo_triggered()
 
 void PaletteEditor::on_actionImport_Palette_triggered()
 {
-    QString filepath = QFileDialog::getOpenFileName(
-                this,
-                QString("Import Tileset Palette"),
-                this->project->importExportPath,
-                "Palette Files (*.pal *.act *tpl *gpl)");
+    QString filepath = FileDialog::getOpenFileName(this, "Import Tileset Palette", "", "Palette Files (*.pal *.act *tpl *gpl)");
     if (filepath.isEmpty()) {
         return;
     }
-    this->project->setImportExportPath(filepath);
     bool error = false;
     QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
     if (error) {

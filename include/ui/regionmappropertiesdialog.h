@@ -4,7 +4,6 @@
 #include "orderedjson.h"
 
 #include <QDialog>
-#include <QFileDialog>
 
 class Project;
 
@@ -33,7 +32,7 @@ private:
 
     void hideMessages();
 
-    QString browse(QString filter, QFileDialog::FileMode mode);
+    QString browse(QString filter);
 
 private slots:
     void on_browse_tilesetImagePath_clicked();

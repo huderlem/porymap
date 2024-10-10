@@ -2,8 +2,8 @@
 #include "ui_mapimageexporter.h"
 #include "qgifimage.h"
 #include "editcommands.h"
+#include "filedialog.h"
 
-#include <QFileDialog>
 #include <QImage>
 #include <QPainter>
 #include <QPoint>
@@ -98,13 +98,12 @@ void MapImageExporter::saveImage() {
     }
 
     QString defaultFilepath = QString("%1/%2.%3")
-            .arg(editor->project->importExportPath)
+            .arg(FileDialog::getDirectory())
             .arg(defaultFilename)
             .arg(this->mode == ImageExporterMode::Timelapse ? "gif" : "png");
     QString filter = this->mode == ImageExporterMode::Timelapse ? "Image Files (*.gif)" : "Image Files (*.png *.jpg *.bmp)";
-    QString filepath = QFileDialog::getSaveFileName(this, title, defaultFilepath, filter);
+    QString filepath = FileDialog::getSaveFileName(this, title, defaultFilepath, filter);
     if (!filepath.isEmpty()) {
-        editor->project->setImportExportPath(filepath);
         switch (this->mode) {
             case ImageExporterMode::Normal:
             case ImageExporterMode::Stitch:

@@ -1,6 +1,7 @@
 #include "project.h"
 #include "regionmappropertiesdialog.h"
 #include "ui_regionmappropertiesdialog.h"
+#include "filedialog.h"
 
 RegionMapPropertiesDialog::RegionMapPropertiesDialog(QWidget *parent) :
     QDialog(parent),
@@ -30,13 +31,9 @@ void RegionMapPropertiesDialog::hideMessages() {
     this->adjustSize();
 }
 
-QString RegionMapPropertiesDialog::browse(QString filter, QFileDialog::FileMode mode) {
+QString RegionMapPropertiesDialog::browse(QString filter) {
     if (!this->project) return QString();
-    QFileDialog browser;
-    browser.setFileMode(mode);
-    QString filepath = browser.getOpenFileName(this, "Select a File", this->project->importExportPath, filter);
-    if (!filepath.isEmpty())
-        this->project->setImportExportPath(filepath);
+    QString filepath = FileDialog::getOpenFileName(this, "Select a File", "", filter);
 
     // remove the project root from the filepath
     return filepath.replace(this->project->root + "/", "");
@@ -107,21 +104,21 @@ poryjson::Json RegionMapPropertiesDialog::saveToJson() {
 }
 
 void RegionMapPropertiesDialog::on_browse_tilesetImagePath_clicked() {
-    QString path = browse("Images (*.png *.bmp)", QFileDialog::ExistingFile);
+    QString path = browse("Images (*.png *.bmp)");
     if (!path.isEmpty()) {
         ui->config_tilemapImagePath->setText(path);
     }
 }
 
 void RegionMapPropertiesDialog::on_browse_tilemapBinPath_clicked() {
-    QString path = browse("Binary (*.bin *.tilemap *.4bpp *.8bpp)", QFileDialog::AnyFile);
+    QString path = browse("Binary (*.bin *.tilemap *.4bpp *.8bpp)");
     if (!path.isEmpty()) {
         ui->config_tilemapBinPath->setText(path);
     }
 }
 
 void RegionMapPropertiesDialog::on_browse_tilemapPalettePath_clicked() {
-    QString path = browse("Text (*.pal)", QFileDialog::AnyFile);
+    QString path = browse("Text (*.pal)");
     if (!path.isEmpty()) {
         ui->config_tilemapPalettePath->setText(path);
     }
@@ -129,12 +126,12 @@ void RegionMapPropertiesDialog::on_browse_tilemapPalettePath_clicked() {
 
 void RegionMapPropertiesDialog::on_browse_layoutPath_clicked() {
     if (ui->config_layoutFormat->currentIndex() == 0) {
-        QString path = browse("Text File (*.h *.c *.inc *.txt)", QFileDialog::AnyFile);
+        QString path = browse("Text File (*.h *.c *.inc *.txt)");
         if (!path.isEmpty()) {
             ui->config_layoutPath->setText(path);
         }
     } else {
-        QString path = browse("Binary (*.bin)", QFileDialog::AnyFile);
+        QString path = browse("Binary (*.bin)");
         if (!path.isEmpty()) {
             ui->config_layoutPath->setText(path);
         }

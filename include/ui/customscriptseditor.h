@@ -31,7 +31,6 @@ private:
     Ui::CustomScriptsEditor *ui;
 
     bool hasUnsavedChanges = false;
-    QString fileDialogDir;
     const QString baseDir;
 
     void displayScript(const QString &filepath, bool enabled);

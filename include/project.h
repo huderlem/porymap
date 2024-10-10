@@ -76,7 +76,6 @@ public:
     QFileSystemWatcher fileWatcher;
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
-    QString importExportPath;
     QSet<QString> disabledSettingsNames;
     int pokemonMinLevel;
     int pokemonMaxLevel;
@@ -216,7 +215,6 @@ public:
     QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
     QString findMetatileLabelsTileset(QString label);
 
-    void setImportExportPath(QString filename);
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
 
