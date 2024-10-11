@@ -107,7 +107,7 @@ public:
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
     void updateSecondaryTileset(QString tilesetLabel, bool forceLoad = false);
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
-    void updateCustomMapHeaderValues(QTableWidget *);
+    void updateCustomMapAttributes();
 
     DraggablePixmapItem *addMapEvent(Event *event);
     bool eventLimitReached(Map *, Event::Type);

@@ -10,7 +10,7 @@
 #include "editcommands.h"
 #include "config.h"
 #include "scripting.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include "validator.h"
 #include <QCheckBox>
 #include <QPainter>
@@ -52,6 +52,7 @@ Editor::Editor(Ui::MainWindow* ui)
     connect(ui->toolButton_Open_Scripts, &QToolButton::pressed, this, &Editor::openMapScripts);
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this, &Editor::openProjectInTextEditor);
     connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, this, &Editor::toggleGrid);
+    connect(ui->mapCustomAttributesFrame->table(), &CustomAttributesTable::edited, this, &Editor::updateCustomMapAttributes);
 }
 
 Editor::~Editor()
@@ -1975,9 +1976,9 @@ void Editor::updateBorderVisibility() {
     }
 }
 
-void Editor::updateCustomMapHeaderValues(QTableWidget *table)
+void Editor::updateCustomMapAttributes()
 {
-    map->setCustomAttributes(CustomAttributesTable::getAttributes(table));
+    map->setCustomAttributes(ui->mapCustomAttributesFrame->table()->getAttributes());
     map->modify();
 }
 

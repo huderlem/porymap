@@ -52,6 +52,8 @@ public:
     QFrame *frame_contents;
     QVBoxLayout *layout_contents;
 
+    CustomAttributesFrame *custom_attributes;
+
 protected:
     bool populated = false;
     bool initialized = false;
