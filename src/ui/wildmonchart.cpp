@@ -82,6 +82,7 @@ void WildMonChart::clearTableData() {
     ui->comboBox_Species->clear();
     ui->comboBox_Group->clear();
     ui->comboBox_Group->setEnabled(false);
+    ui->label_Group->setEnabled(false);
 }
 
 // Extract all the data from the table that we need for the charts
@@ -152,7 +153,9 @@ void WildMonChart::readTable() {
     ui->comboBox_Species->addItems(getSpeciesNamesAlphabetical());
     ui->comboBox_Group->clear();
     ui->comboBox_Group->addItems(this->groupNames);
-    ui->comboBox_Group->setEnabled(usesGroupLabels());
+    bool enableGroupSelection = usesGroupLabels();
+    ui->comboBox_Group->setEnabled(enableGroupSelection);
+    ui->label_Group->setEnabled(enableGroupSelection);
 }
 
 void WildMonChart::refresh() {
@@ -438,23 +441,33 @@ void WildMonChart::limitChartAnimation() {
 
 void WildMonChart::showHelpDialog() {
     static const QString text = "This window provides some visualizations of the data in your current Wild Pokémon tab";
-    static const QString informative =
-        "The <b>Species Distribution</b> tab shows the cumulative encounter chance for each species "
+
+    // Describe the Species Distribution tab
+    static const QString speciesTabInfo =
+       "The <b>Species Distribution</b> tab shows the cumulative encounter chance for each species "
        "in the table. In other words, it answers the question \"What is the likelihood of encountering "
-       "each species in a single encounter?\""
-       "<br><br>"
+       "each species in a single encounter?\"";
+
+    // Describe the Level Distribution tab
+    static const QString levelTabInfo =
        "The <b>Level Distribution</b> tab shows the chance of encountering each species at a particular level. "
        "In the top left under <b>Group</b> you can select which encounter group to show data for. "
-       "In the top right under <b>Species</b> you can select which species to show data for. "
+       "In the top right you can enable <b>Individual Mode</b>. When enabled data will be shown for only the selected species."
        "<br><br>"
-       "<b>Individual Mode</b> on the <b>Level Distribution</b> tab toggles whether data is shown for all species in the table. "
-       "The percentages will update to reflect whether you're showing all species or just that individual species. "
        "In other words, while <b>Individual Mode</b> is checked the chart is answering the question \"If a species x "
        "is encountered, what is the likelihood that it will be level y\", and while <b>Individual Mode</b> is not checked, "
        "it answers the question \"For a single encounter, what is the likelihood of encountering a species x at level y.\"";
+
+    QString informativeText;
+    if (ui->tabWidget->currentWidget() == ui->tabSpecies) {
+        informativeText = speciesTabInfo;
+    } else if (ui->tabWidget->currentWidget() == ui->tabLevels) {
+        informativeText = levelTabInfo;
+    }
+
     QMessageBox msgBox(QMessageBox::Information, "porymap", text, QMessageBox::Close, this);
     msgBox.setTextFormat(Qt::RichText);
-    msgBox.setInformativeText(informative);
+    msgBox.setInformativeText(informativeText);
     msgBox.exec();
 }
 
