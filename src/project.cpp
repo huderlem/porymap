@@ -1013,7 +1013,7 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
-        for (Metatile *metatile : tileset->metatiles) {
+        for (const auto &metatile : tileset->metatiles()) {
             uint32_t attributes = metatile->getAttributes();
             for (int i = 0; i < projectConfig.metatileAttributesSize; i++)
                 data.append(static_cast<char>(attributes >> (8 * i)));
@@ -1029,7 +1029,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
     if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
         int numTiles = projectConfig.getNumTilesInMetatile();
-        for (Metatile *metatile : tileset->metatiles) {
+        for (const auto &metatile : tileset->metatiles()) {
             for (int i = 0; i < numTiles; i++) {
                 uint16_t tile = metatile->tiles.at(i).rawValue();
                 data.append(static_cast<char>(tile));
@@ -1038,7 +1038,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
         }
         metatiles_file.write(data);
     } else {
-        tileset->metatiles.clear();
+        tileset->clearMetatiles();
         logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 }
@@ -1522,16 +1522,16 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             }
             metatiles.append(metatile);
         }
-        tileset->metatiles = metatiles;
+        tileset->setMetatiles(metatiles);
     } else {
-        tileset->metatiles.clear();
+        tileset->clearMetatiles();
         logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
-        int num_metatiles = tileset->metatiles.count();
+        int num_metatiles = tileset->numMetatiles();
         int attrSize = projectConfig.metatileAttributesSize;
         int num_metatileAttrs = data.length() / attrSize;
         if (num_metatiles != num_metatileAttrs) {
@@ -1544,7 +1544,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             uint32_t attributes = 0;
             for (int j = 0; j < attrSize; j++)
                 attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
-            tileset->metatiles.at(i)->setAttributes(attributes);
+            tileset->metatileAt(i)->setAttributes(attributes);
         }
     } else {
         logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));

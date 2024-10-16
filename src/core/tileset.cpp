@@ -29,8 +29,8 @@ Tileset::Tileset(const Tileset &other)
         tiles.append(tile.copy());
     }
 
-    for (auto *metatile : other.metatiles) {
-        metatiles.append(new Metatile(*metatile));
+    for (auto *metatile : other.m_metatiles) {
+        m_metatiles.append(new Metatile(*metatile));
     }
 }
 
@@ -55,12 +55,40 @@ Tileset &Tileset::operator=(const Tileset &other) {
         tiles.append(tile.copy());
     }
 
-    metatiles.clear();
-    for (auto *metatile : other.metatiles) {
-        metatiles.append(new Metatile(*metatile));
+    clearMetatiles();
+    for (auto *metatile : other.m_metatiles) {
+        m_metatiles.append(new Metatile(*metatile));
     }
 
     return *this;
+}
+
+Tileset::~Tileset() {
+    clearMetatiles();
+}
+
+void Tileset::clearMetatiles() {
+    qDeleteAll(m_metatiles);
+    m_metatiles.clear();
+}
+
+void Tileset::setMetatiles(const QList<Metatile*> &metatiles) {
+    clearMetatiles();
+    m_metatiles = metatiles;
+}
+
+void Tileset::addMetatile(Metatile* metatile) {
+    m_metatiles.append(metatile);
+}
+
+void Tileset::resizeMetatiles(unsigned int newNumMetatiles) {
+    while (m_metatiles.length() > newNumMetatiles) {
+        delete m_metatiles.takeLast();
+    }
+    const int numTiles = projectConfig.getNumTilesInMetatile();
+    while (m_metatiles.length() < newNumMetatiles) {
+        m_metatiles.append(new Metatile(numTiles));
+    }
 }
 
 Tileset* Tileset::getTileTileset(int tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -89,7 +117,7 @@ Metatile* Tileset::getMetatile(int metatileId, Tileset *primaryTileset, Tileset 
         return nullptr;
     }
     int index = Metatile::getIndexInTileset(metatileId);
-    return tileset->metatiles.value(index, nullptr);
+    return tileset->m_metatiles.value(index, nullptr);
 }
 
 // Metatile labels are stored per-tileset. When looking for a metatile label, first search in the tileset
@@ -178,10 +206,10 @@ bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tile
     if (metatileId >= Project::getNumMetatilesTotal())
         return false;
 
-    if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->metatiles.length())
+    if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->numMetatiles())
         return false;
 
-    if (metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->metatiles.length())
+    if (metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->numMetatiles())
         return false;
 
     return true;

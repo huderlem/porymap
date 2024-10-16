@@ -1445,7 +1445,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
                 }
                 mt->tiles.append(tile);
             }
-            newSet.metatiles.append(mt);
+            newSet.addMetatile(mt);
         }
         for(int i = 0; i < 16; ++i) {
             QList<QRgb> currentPal;
