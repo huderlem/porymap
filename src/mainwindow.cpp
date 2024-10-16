@@ -19,8 +19,8 @@
 #include "montabwidget.h"
 #include "imageexport.h"
 #include "newmapconnectiondialog.h"
+#include "filedialog.h"
 
-#include <QFileDialog>
 #include <QClipboard>
 #include <QDirIterator>
 #include <QStandardItemModel>
@@ -730,7 +730,7 @@ void MainWindow::openSubWindow(QWidget * window) {
 }
 
 QString MainWindow::getExistingDirectory(QString dir) {
-    return QFileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly);
+    return FileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly);
 }
 
 void MainWindow::on_action_Open_Project_triggered()
@@ -2596,15 +2596,11 @@ void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered(){
 
 void MainWindow::importMapFromAdvanceMap1_92()
 {
-    QString filepath = QFileDialog::getOpenFileName(
-                this,
-                QString("Import Map from Advance Map 1.92"),
-                this->editor->project->importExportPath,
-                "Advance Map 1.92 Map Files (*.map)");
+    QString filepath = FileDialog::getOpenFileName(this, "Import Map from Advance Map 1.92", "", "Advance Map 1.92 Map Files (*.map)");
     if (filepath.isEmpty()) {
         return;
     }
-    this->editor->project->setImportExportPath(filepath);
+
     MapParser parser;
     bool error = false;
     MapLayout *mapLayout = parser.parse(filepath, &error, editor->project);

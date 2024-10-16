@@ -1,6 +1,5 @@
 #include "newtilesetdialog.h"
 #include "ui_newtilesetdialog.h"
-#include <QFileDialog>
 #include "project.h"
 
 NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
