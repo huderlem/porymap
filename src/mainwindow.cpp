@@ -425,12 +425,14 @@ void MainWindow::showWindowTitle() {
         );
     }
     if (editor && editor->layout) {
-        ui->mainTabBar->setTabIcon(0, QIcon());
+        // For some reason (perhaps on Qt < 6?) we had to clear the icon first here or mainTabBar wouldn't display correctly.
+        ui->mainTabBar->setTabIcon(MainTab::Map, QIcon());
+
         QPixmap pixmap = editor->layout->pixmap;
         if (!pixmap.isNull()) {
-            ui->mainTabBar->setTabIcon(0, QIcon(pixmap));
+            ui->mainTabBar->setTabIcon(MainTab::Map, QIcon(pixmap));
         } else {
-            ui->mainTabBar->setTabIcon(0, QIcon(QStringLiteral(":/icons/map.ico")));
+            ui->mainTabBar->setTabIcon(MainTab::Map, QIcon(QStringLiteral(":/icons/map.ico")));
         }
     }
     updateMapList();
@@ -801,14 +803,7 @@ void MainWindow::on_action_Close_Project_triggered() {
 
 void MainWindow::unsetMap() {
     this->editor->unsetMap();
-
-    // disable other tabs
-    this->ui->mainTabBar->setTabEnabled(1, false);
-    this->ui->mainTabBar->setTabEnabled(2, false);
-    this->ui->mainTabBar->setTabEnabled(3, false);
-    this->ui->mainTabBar->setTabEnabled(4, false);
-
-    this->ui->comboBox_LayoutSelector->setEnabled(false);
+    setLayoutOnlyMode(true);
 }
 
 // setMap, but with a visible error message in case of failure.
@@ -859,13 +854,7 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
         ui->mapList->setExpanded(groupListProxyModel->mapFromSource(mapGroupModel->indexOfMap(map_name)), false);
     }
 
-    this->ui->mainTabBar->setTabEnabled(1, true);
-    this->ui->mainTabBar->setTabEnabled(2, true);
-    this->ui->mainTabBar->setTabEnabled(3, true);
-    this->ui->mainTabBar->setTabEnabled(4, true);
-
-    this->ui->comboBox_LayoutSelector->setEnabled(true);
-
+    setLayoutOnlyMode(false);
     this->lastSelectedEvent.clear();
 
     refreshMapScene();
@@ -889,6 +878,18 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
     prefab.updatePrefabUi(editor->layout);
     updateTilesetEditor();
     return true;
+}
+
+// These parts of the UI only make sense when editing maps.
+// When editing in layout-only mode they are disabled.
+void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
+    bool mapEditingEnabled = !layoutOnly;
+    this->ui->mainTabBar->setTabEnabled(MainTab::Events, mapEditingEnabled);
+    this->ui->mainTabBar->setTabEnabled(MainTab::Header, mapEditingEnabled);
+    this->ui->mainTabBar->setTabEnabled(MainTab::Connections, mapEditingEnabled);
+    this->ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, mapEditingEnabled);
+
+    this->ui->comboBox_LayoutSelector->setEnabled(mapEditingEnabled);
 }
 
 bool MainWindow::setLayout(QString layoutId) {

@@ -380,6 +380,7 @@ private:
     void redrawMapScene();
     void redrawLayoutScene();
     void refreshMapScene();
+    void setLayoutOnlyMode(bool layoutOnly);
 
     bool checkProjectSanity();
     bool loadProjectData();

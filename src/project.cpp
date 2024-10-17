@@ -2327,11 +2327,14 @@ bool Project::readRegionMapSections() {
 int Project::appendMapsec(QString name) {
     // This function assumes a valid and unique name.
     // Will return the new index.
-    int noneBefore = this->mapSectionNameToValue[projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + "NONE"];
+    const QString emptyMapsecName = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix)
+                                    + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty);
+
+    int noneBefore = this->mapSectionNameToValue[emptyMapsecName];
     this->mapSectionNameToValue[name] = noneBefore;
     this->mapSectionValueToName[noneBefore] = name;
-    this->mapSectionNameToValue[projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + "NONE"] = noneBefore + 1;
-    this->mapSectionValueToName[noneBefore + 1] = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + "NONE";
+    this->mapSectionNameToValue[emptyMapsecName] = noneBefore + 1;
+    this->mapSectionValueToName[noneBefore + 1] = emptyMapsecName;
     return noneBefore;
 }
 
