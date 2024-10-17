@@ -25,6 +25,7 @@ SOURCES += src/core/block.cpp \
     src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
+    src/core/filedialog.cpp \
     src/core/heallocation.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
@@ -51,6 +52,7 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/colorinputwidget.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
@@ -60,6 +62,7 @@ SOURCES += src/core/block.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/gridsettings.cpp \
     src/ui/newmapconnectiondialog.cpp \
     src/ui/overlay.cpp \
     src/ui/prefab.cpp \
@@ -122,6 +125,7 @@ HEADERS  += include/core/block.h \
     include/core/bitpacker.h \
     include/core/blockdata.h \
     include/core/events.h \
+    include/core/filedialog.h \
     include/core/heallocation.h \
     include/core/history.h \
     include/core/imageexport.h \
@@ -158,6 +162,7 @@ HEADERS  += include/core/block.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/gridsettings.h \
     include/ui/newmapconnectiondialog.h \
     include/ui/prefabframe.h \
     include/ui/projectsettingseditor.h \
@@ -176,6 +181,7 @@ HEADERS  += include/core/block.h \
     include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
+    include/ui/colorinputwidget.h \
     include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \
     include/ui/movablerect.h \
@@ -220,7 +226,9 @@ HEADERS  += include/core/block.h \
     include/ui/wildmonchart.h
 
 FORMS    += forms/mainwindow.ui \
+    forms/colorinputwidget.ui \
     forms/connectionslistitem.ui \
+    forms/gridsettingsdialog.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \

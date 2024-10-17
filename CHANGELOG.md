@@ -11,6 +11,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
 - Add charts to the `Wild Pokémon` tab that show species and level distributions.
+- Add options for customizing the map grid under `View -> Grid Settings`.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
 
@@ -22,6 +23,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The max encounter rate is now read from the project, rather than assuming the default value from RSE.
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
 - The triple-layer metatiles setting can now be set automatically using a project constant.
+- `Export Map Stitch Image` now shows a preview of the full image, not just the current map.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -46,6 +48,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the map list mishandling value gaps when sorting by Area.
 - Fix a freeze on startup if project values are defined with mismatched parentheses.
 - Fix stitched map images sometimes rendering garbage
+- Fix the `Reset` button on `Export Map Timelapse Image` not resetting the Timelapse settings.
+- Stop sliders in the Palette Editor from creating a bunch of edit history when used.
+- Fix scrolling on some containers locking up when the mouse stops over a spin box or combo box.
+- Fix some file dialogs returning to an incorrect window when closed.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

@@ -21,6 +21,8 @@
         <file>icons/lock_edit.ico</file>
         <file>icons/unlock_edit.ico</file>
         <file>icons/help.ico</file>
+        <file>icons/link_broken.ico</file>
+        <file>icons/link.ico</file>
         <file>icons/map_edited.ico</file>
         <file>icons/map_opened.ico</file>
         <file>icons/map.ico</file>

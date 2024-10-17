@@ -1,4 +1,5 @@
 #include "noscrollspinbox.h"
+#include <QWheelEvent>
 
 unsigned actionId = 0xffff;
 
@@ -12,8 +13,11 @@ NoScrollSpinBox::NoScrollSpinBox(QWidget *parent)
 void NoScrollSpinBox::wheelEvent(QWheelEvent *event)
 {
     // Only allow scrolling to modify contents when it explicitly has focus.
-    if (hasFocus())
+    if (hasFocus()) {
         QSpinBox::wheelEvent(event);
+    } else {
+        event->ignore();
+    }
 }
 
 void NoScrollSpinBox::focusOutEvent(QFocusEvent *event) {

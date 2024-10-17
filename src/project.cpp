@@ -7,6 +7,7 @@
 #include "tile.h"
 #include "tileset.h"
 #include "map.h"
+#include "filedialog.h"
 
 #include "orderedjson.h"
 
@@ -89,7 +90,7 @@ void Project::initSignals() {
 
 void Project::set_root(QString dir) {
     this->root = dir;
-    this->importExportPath = dir;
+    FileDialog::setDirectory(dir);
     this->parser.set_root(dir);
 }
 
@@ -2978,11 +2979,6 @@ int Project::getMaxObjectEvents()
 QString Project::getDynamicMapDefineName() {
     const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
     return prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
-}
-
-void Project::setImportExportPath(QString filename)
-{
-    this->importExportPath = QFileInfo(filename).absolutePath();
 }
 
 // If the provided filepath is an absolute path to an existing file, return filepath.

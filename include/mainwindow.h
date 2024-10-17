@@ -27,6 +27,7 @@
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
+#include "gridsettings.h"
 #include "customscriptseditor.h"
 #include "wildmonchart.h"
 #include "updatepromoter.h"
@@ -326,6 +327,8 @@ private slots:
     void on_actionProject_Settings_triggered();
     void on_actionCustom_Scripts_triggered();
     void reloadScriptEngine();
+    void on_actionShow_Grid_triggered();
+    void on_actionGrid_Settings_triggered();
 
 public:
     Ui::MainWindow *ui;
@@ -340,6 +343,7 @@ private:
     QPointer<NewMapPopup> newMapPrompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
+    QPointer<GridSettingsDialog> gridSettingsDialog = nullptr;
     QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
 
     FilterChildrenProxyModel *groupListProxyModel;
