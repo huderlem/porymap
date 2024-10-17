@@ -154,6 +154,9 @@ void ScriptUtility::setMainTab(int index) {
     // Can't select tab if it's disabled
     if (!window->ui->mainTabBar->isTabEnabled(index))
         return;
+    // don't change tab when not editing a map
+    if (!window->editor || !window->editor->map)
+        return;
     window->on_mainTabBar_tabBarClicked(index);
 }
 
@@ -201,13 +204,13 @@ QList<QString> ScriptUtility::getCustomScripts() {
 }
 
 QList<int> ScriptUtility::getMetatileLayerOrder() {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return QList<int>();
-    return window->editor->map->metatileLayerOrder;
+    return window->editor->layout->metatileLayerOrder;
 }
 
 void ScriptUtility::setMetatileLayerOrder(QList<int> order) {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return;
 
     const int numLayers = 3;
@@ -226,20 +229,20 @@ void ScriptUtility::setMetatileLayerOrder(QList<int> order) {
     }
     if (invalid) return;
 
-    window->editor->map->metatileLayerOrder = order;
+    window->editor->layout->metatileLayerOrder = order;
     window->refreshAfterPalettePreviewChange();
 }
 
 QList<float> ScriptUtility::getMetatileLayerOpacity() {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return QList<float>();
-    return window->editor->map->metatileLayerOpacity;
+    return window->editor->layout->metatileLayerOpacity;
 }
 
 void ScriptUtility::setMetatileLayerOpacity(QList<float> order) {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return;
-    window->editor->map->metatileLayerOpacity = order;
+    window->editor->layout->metatileLayerOpacity = order;
     window->refreshAfterPalettePreviewChange();
 }
 

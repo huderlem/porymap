@@ -3,6 +3,7 @@
 #include "editor.h"
 #include "encountertablemodel.h"
 #include "encountertabledelegates.h"
+#include "eventfilters.h"
 
 
 
@@ -11,18 +12,11 @@ static WildMonInfo encounterClipboard;
 MonTabWidget::MonTabWidget(Editor *editor, QWidget *parent) : QTabWidget(parent) {
     this->editor = editor;
     populate();
-    this->tabBar()->installEventFilter(this);
+    this->tabBar()->installEventFilter(new WheelFilter(this));
 }
 
 MonTabWidget::~MonTabWidget() {
 
-}
-
-bool MonTabWidget::eventFilter(QObject *, QEvent *event) {
-    if (event->type() == QEvent::Wheel) {
-        return true;
-    }
-    return false;
 }
 
 void MonTabWidget::populate() {
