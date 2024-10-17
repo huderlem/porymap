@@ -1370,9 +1370,13 @@ void MainWindow::mapListAddGroup() {
     QLineEdit *newNameEdit = new QLineEdit(&dialog);
     newNameEdit->setClearButtonEnabled(true);
 
-    static const QRegularExpression re_validChars("[_A-Za-z0-9]*$");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
-    newNameEdit->setValidator(validator);
+    static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
+    newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
+
+    connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
+        if (!this->editor->project->groupNames.contains(newNameEdit->text()))
+            dialog.accept();
+    });
 
     QFormLayout form(&dialog);
 
@@ -1397,10 +1401,10 @@ void MainWindow::mapListAddLayout() {
     QLineEdit *newNameEdit = new QLineEdit(&dialog);
     newNameEdit->setClearButtonEnabled(true);
 
-    static const QRegularExpression re_validChars("[_A-Za-z0-9]*$");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
-    newNameEdit->setValidator(validator);
+    static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
+    newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
 
+    // TODO: Support arbitrary LAYOUT_ ID names (Note from GriffinR: This is already handled in an unopened PR)
     QLabel *newId = new QLabel("LAYOUT_", &dialog);
     connect(newNameEdit, &QLineEdit::textChanged, [&](QString text){
         newId->setText(Layout::layoutConstantFromName(text.remove("_Layout")));
@@ -1499,7 +1503,7 @@ void MainWindow::mapListAddLayout() {
             layoutSettings.tileset_secondary_label = secondaryCombo->currentText();
         }
         Layout *newLayout = this->editor->project->createNewLayout(layoutSettings);
-        QStandardItem *item = this->layoutTreeModel->insertLayoutItem(newLayout->id);
+        this->layoutTreeModel->insertLayoutItem(newLayout->id);
         setLayout(newLayout->id);
     }
 }
@@ -1511,13 +1515,18 @@ void MainWindow::mapListAddArea() {
     QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
+    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
     QLineEdit *newNameEdit = new QLineEdit(&dialog);
-    newNameEdit->setText(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix));
-    newNameEdit->setClearButtonEnabled(false);
+    QLineEdit *newNameDisplay = new QLineEdit(&dialog);
+    newNameDisplay->setText(prefix);
+    newNameDisplay->setEnabled(false);
+    connect(newNameEdit, &QLineEdit::textEdited, [newNameDisplay, prefix] (const QString &text) {
+        // As the user types a name, update the label to show the name with the prefix.
+        newNameDisplay->setText(prefix + text);
+    });
 
-    QRegularExpression re_validChars(QString("%1[_A-Za-z0-9]+$").arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix)));
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
-    newNameEdit->setValidator(validator);
+    static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
+    newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
 
     connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
         if (!this->editor->project->mapSectionNameToValue.contains(newNameEdit->text()))
@@ -1527,12 +1536,12 @@ void MainWindow::mapListAddArea() {
     QFormLayout form(&dialog);
 
     form.addRow("New Map Section Name", newNameEdit);
+    form.addRow("Constant Name", newNameDisplay);
     form.addRow(&newItemButtonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
-        QString newFieldName = newNameEdit->text();
-        if (newFieldName.isEmpty()) return;
-        this->mapAreaModel->insertAreaItem(newFieldName);
+        if (newNameEdit->text().isEmpty()) return;
+        this->mapAreaModel->insertAreaItem(newNameDisplay->text());
     }
 }
 
@@ -1540,13 +1549,13 @@ void MainWindow::mapListAddItem() {
     if (!this->editor || !this->editor->project) return;
 
     switch (this->ui->mapListContainer->currentIndex()) {
-    case 0:
+    case MapListTab::Groups:
         this->mapListAddGroup();
         break;
-    case 1:
+    case MapListTab::Areas:
         this->mapListAddArea();
         break;
-    case 2:
+    case MapListTab::Layouts:
         this->mapListAddLayout();
         break;
     }
@@ -1596,14 +1605,14 @@ void MainWindow::mapListRemoveItem() {
     if (!this->editor || !this->editor->project) return;
 
     switch (this->ui->mapListContainer->currentIndex()) {
-    case 0:
+    case MapListTab::Groups:
         this->mapListRemoveGroup();
         break;
-    case 1:
+    case MapListTab::Areas:
         // Disabled
         // this->mapListRemoveArea();
         break;
-    case 2:
+    case MapListTab::Layouts:
         // Disabled
         // this->mapListRemoveLayout();
         break;
@@ -2913,10 +2922,8 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     } else {
         this->editor->project->getTileset(secondaryTilesetLabel, true);
     }
-    if (updated) {
-        this->editor->layout->clearBorderCache();
+    if (updated)
         redrawMapScene();
-    }
 }
 
 void MainWindow::onMapRulerStatusChanged(const QString &status) {
@@ -3232,6 +3239,7 @@ void MainWindow::do_CollapseAll() {
     }
 }
 
+// TODO: Save this state in porymapConfig
 void MainWindow::do_HideShow() {
     switch (ui->mapListContainer->currentIndex()) {
     case MapListTab::Groups:
@@ -3265,6 +3273,7 @@ void MainWindow::on_toolButton_CollapseAll_Groups_clicked() {
     }
 }
 
+// TODO: Save this state in porymapConfig
 void MainWindow::on_toolButton_EnableDisable_EditGroups_clicked() {
     this->ui->mapList->clearSelection();
     if (this->ui->toolButton_EnableDisable_EditGroups->isChecked()) {
@@ -3607,6 +3616,7 @@ bool MainWindow::closeProject() {
         return true;
 
     // Check loaded maps for unsaved changes
+    // TODO: This needs to check for unsaved changes in layouts too.
     bool unsavedChanges = false;
     for (auto map : editor->project->mapCache.values()) {
         if (map && map->hasUnsavedChanges()) {

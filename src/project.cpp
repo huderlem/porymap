@@ -412,10 +412,6 @@ QString Project::readMapLayoutId(QString map_name) {
     return ParseUtil::jsonToQString(mapObj["layout"]);
 }
 
-QString Project::readMapLayoutName(QString mapName) {
-    return this->layoutIdsToNames[readMapLayoutId(mapName)];
-}
-
 QString Project::readMapLocation(QString map_name) {
     if (mapCache.contains(map_name)) {
         return mapCache.value(map_name)->location;
@@ -537,6 +533,8 @@ bool Project::loadMapLayout(Map* map) {
 void Project::clearMapLayouts() {
     qDeleteAll(mapLayouts);
     mapLayouts.clear();
+    qDeleteAll(mapLayoutsMaster);
+    mapLayoutsMaster.clear();
     mapLayoutsTable.clear();
     layoutIdsToNames.clear();
 }
@@ -763,7 +761,7 @@ void Project::saveMapSections() {
 
     longestLength += 1;
 
-    // mapSectionValueToName
+    // TODO: Maybe print as an enum now that we can?
     for (int value : this->mapSectionValueToName.keys()) {
         QString line = QString("#define %1  0x%2\n")
             .arg(this->mapSectionValueToName[value], -1 * longestLength)
@@ -771,6 +769,8 @@ void Project::saveMapSections() {
         text += line;
     }
 
+    // TODO: We should maybe consider another way to update MAPSEC values in this file, in case we break anything by relocating it to the bottom of the file.
+    //       (or alternatively keep separate strings for text before/after the MAPSEC values)
     text += "\n" + this->extraFileText[projectConfig.getFilePath(ProjectFilePath::constants_region_map_sections)] + "\n";
 
     text += QString("#endif // GUARD_REGIONMAPSEC_H\n");
@@ -2307,10 +2307,12 @@ bool Project::readRegionMapSections() {
             continue;
         }
         // include guards
+        // TODO: Assuming guard name is the same across projects (it isn't)
         else if (currentLine.contains("GUARD_REGIONMAPSEC_H")) {
             continue;
         }
-        // defines captured (not considering comments)
+        // defines captured
+        // TODO: Regex to consider comments/extra space
         else if (currentLine.contains("#define " + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix))) {
             continue;
         }
@@ -2324,18 +2326,28 @@ bool Project::readRegionMapSections() {
     return true;
 }
 
-int Project::appendMapsec(QString name) {
-    // This function assumes a valid and unique name.
-    // Will return the new index.
-    const QString emptyMapsecName = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix)
-                                    + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty);
+QString Project::getEmptyMapsecName() {
+    return projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty);
+}
 
-    int noneBefore = this->mapSectionNameToValue[emptyMapsecName];
-    this->mapSectionNameToValue[name] = noneBefore;
-    this->mapSectionValueToName[noneBefore] = name;
-    this->mapSectionNameToValue[emptyMapsecName] = noneBefore + 1;
-    this->mapSectionValueToName[noneBefore + 1] = emptyMapsecName;
-    return noneBefore;
+// This function assumes a valid and unique name.
+// Will return the new index.
+// TODO: We're not currently tracking map/layout agonstic changes like this as unsaved, so there's no warning if you close the project after doing this.
+int Project::appendMapsec(QString name) {
+    const QString emptyMapsecName = getEmptyMapsecName();
+    int newMapsecValue = mapSectionValueToName.isEmpty() ? 0 : mapSectionValueToName.lastKey();
+
+    // If the user has the 'empty' MAPSEC value defined last in the list we'll shift it so that it stays last in the list.
+    if (this->mapSectionNameToValue.contains(emptyMapsecName) && this->mapSectionNameToValue.value(emptyMapsecName) == newMapsecValue) {
+        this->mapSectionNameToValue.insert(emptyMapsecName, newMapsecValue + 1);
+        this->mapSectionValueToName.insert(newMapsecValue + 1, emptyMapsecName);
+    }
+
+    // TODO: Update 'define_map_section_count'?
+
+    this->mapSectionNameToValue[name] = newMapsecValue;
+    this->mapSectionValueToName[newMapsecValue] = name;
+    return newMapsecValue;
 }
 
 // Read the constants to preserve any "unused" heal locations when writing the file later

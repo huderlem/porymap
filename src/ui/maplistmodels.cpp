@@ -19,10 +19,9 @@ void MapTree::removeSelected() {
 
 QWidget *GroupNameDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
     QLineEdit *editor = new QLineEdit(parent);
-    static const QRegularExpression expression("[A-Za-z0-9_]+");
+    static const QRegularExpression expression("[A-Za-z_]+[\\w]*");
     editor->setPlaceholderText("gMapGroup_");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression, parent);
-    editor->setValidator(validator);
+    editor->setValidator(new QRegularExpressionValidator(expression, parent));
     editor->setFrame(false);
     return editor;
 }
@@ -401,7 +400,12 @@ QStandardItem *MapAreaModel::insertAreaItem(QString areaName) {
     int newAreaIndex = this->project->appendMapsec(areaName);
     QStandardItem *item = createAreaItem(areaName, newAreaIndex);
     this->root->insertRow(newAreaIndex, item);
-    this->areaItems["MAPSEC_NONE"]->setData(newAreaIndex + 1, MapListUserRoles::GroupRole);
+
+    // MAPSEC_NONE may have shifted to accomodate the new item, update it in the list.
+    const QString emptyMapsecName = Project::getEmptyMapsecName();
+    if (this->areaItems.contains(emptyMapsecName))
+        this->areaItems[emptyMapsecName]->setData(this->project->mapSectionNameToValue.value(emptyMapsecName), MapListUserRoles::GroupRole);
+
     return item;
 }
 
@@ -427,6 +431,7 @@ void MapAreaModel::initialize() {
     this->mapItems.clear();
     this->setSortRole(MapListUserRoles::GroupRole);
 
+    // TODO: Ignore 'define_map_section_count' and/or 'define_map_section_empty'?
     for (int i : this->project->mapSectionNameToValue) {
         QString mapsecName = project->mapSectionValueToName.value(i);
         QStandardItem *areaItem = createAreaItem(mapsecName, i);

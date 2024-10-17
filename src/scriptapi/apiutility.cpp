@@ -154,9 +154,6 @@ void ScriptUtility::setMainTab(int index) {
     // Can't select tab if it's disabled
     if (!window->ui->mainTabBar->isTabEnabled(index))
         return;
-    // don't change tab when not editing a map
-    if (!window->editor || !window->editor->map)
-        return;
     window->on_mainTabBar_tabBarClicked(index);
 }
 

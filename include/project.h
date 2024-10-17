@@ -132,7 +132,6 @@ public:
     QString getProjectTitle();
 
     QString readMapLayoutId(QString map_name);
-    QString readMapLayoutName(QString mapName);
     QString readMapLocation(QString map_name);
 
     bool readWildMonData();
@@ -243,6 +242,7 @@ public:
     static bool mapDimensionsValid(int width, int height);
     bool calculateDefaultMapSize();
     static int getMaxObjectEvents();
+    static QString getEmptyMapsecName();
 
 private:
     void updateLayout(Layout *);
