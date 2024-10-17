@@ -1319,7 +1319,7 @@ bool Editor::setLayout(QString layoutId) {
     return true;
 }
 
-void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
+void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *) {
     if (!this->getEditingLayout()) {
         return;
     }
@@ -1332,7 +1332,7 @@ void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *
     }
 }
 
-void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *item) {
+void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *) {
     if (!this->getEditingLayout()) {
         return;
     }

@@ -373,8 +373,6 @@ private:
 
     bool tilesetNeedsRedraw = false;
 
-    bool setDefaultView();
-    bool setRecentView();
     bool setLayout(QString layoutId);
     bool setMap(QString, bool scroll = false);
     void unsetMap();
@@ -398,12 +396,6 @@ private:
     QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
 
     bool setInitialMap();
-    bool setInitialLayout();
-    QString getDefaultMap();
-    QString getDefaultLayout();
-
-    void setRecentMapConfig(QString map_name);
-    void setRecentLayoutConfig(QString layoutId);
     void saveGlobalConfigs();
 
     void refreshRecentProjectsMenu();

@@ -278,13 +278,7 @@ uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_
     return qMin(max, qMax(min, result));
 }
 
-const QMap<MapSortOrder, QString> mapSortOrderMap = {
-    {MapSortOrder::SortByGroup, "group"},
-    {MapSortOrder::SortByLayout, "layout"},
-    {MapSortOrder::SortByArea, "area"},
-};
-
-const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
+const QMap<QString, MapSortOrder> mapSortOrderMap = {
     {"group", MapSortOrder::SortByGroup},
     {"layout", MapSortOrder::SortByLayout},
     {"area", MapSortOrder::SortByArea},
@@ -316,8 +310,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->prettyCursors = getConfigBool(key, value);
     } else if (key == "map_sort_order") {
         QString sortOrder = value.toLower();
-        if (mapSortOrderReverseMap.contains(sortOrder)) {
-            this->mapSortOrder = mapSortOrderReverseMap.value(sortOrder);
+        if (mapSortOrderMap.contains(sortOrder)) {
+            this->mapSortOrder = mapSortOrderMap.value(sortOrder);
         } else {
             this->mapSortOrder = MapSortOrder::SortByGroup;
             logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
@@ -438,7 +432,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_manually_closed", this->projectManuallyClosed ? "1" : "0");
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
-    map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
+    map.insert("map_sort_order", mapSortOrderMap.key(this->mapSortOrder));
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
@@ -740,8 +734,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "enable_map_allow_flags") {
         this->mapAllowFlagsEnabled = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
-    } else if (key == "recent_map") {
-        userConfig.recentMap = value;
+    } else if (key == "recent_map_or_layout") {
+        userConfig.recentMapOrLayout = value;
     } else if (key == "use_encounter_json") {
         userConfig.useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
@@ -1035,10 +1029,8 @@ QString UserConfig::getConfigFilepath() {
 }
 
 void UserConfig::parseConfigKeyValue(QString key, QString value) {
-    if (key == "recent_map") {
-        this->recentMap = value;
-    } else if (key == "recent_layout") {
-        this->recentLayout = value;
+    if (key == "recent_map_or_layout") {
+        this->recentMapOrLayout = value;
     } else if (key == "use_encounter_json") {
         this->useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
@@ -1054,8 +1046,7 @@ void UserConfig::setUnreadKeys() {
 
 QMap<QString, QString> UserConfig::getKeyValueMap() {
     QMap<QString, QString> map;
-    map.insert("recent_map", this->recentMap);
-    map.insert("recent_layout", this->recentLayout);
+    map.insert("recent_map_or_layout", this->recentMapOrLayout);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("custom_scripts", this->outputCustomScripts());
     return map;

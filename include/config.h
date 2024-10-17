@@ -406,8 +406,7 @@ public:
         reset();
     }
     virtual void reset() override {
-        this->recentMap = QString();
-        this->recentLayout = QString();
+        this->recentMapOrLayout = QString();
         this->useEncounterJson = true;
         this->customScripts.clear();
         this->readKeys.clear();
@@ -419,8 +418,7 @@ public:
     QList<bool> getCustomScriptsEnabled();
 
     QString projectDir;
-    QString recentMap;
-    QString recentLayout;
+    QString recentMapOrLayout;
     bool useEncounterJson;
 
 protected:

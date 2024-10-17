@@ -696,83 +696,29 @@ bool MainWindow::isProjectOpen() {
     return editor && editor->project;
 }
 
-bool MainWindow::setDefaultView() {
-    if (porymapConfig.mapSortOrder == MapSortOrder::SortByLayout) {
-        return setLayout(getDefaultLayout());
-    } else {
-        return setMap(getDefaultMap(), true);
-    }
-}
-
-bool MainWindow::setRecentView() {
-    if (porymapConfig.mapSortOrder == MapSortOrder::SortByLayout) {
-        return setLayout(userConfig.recentLayout);
-    } else {
-        return setMap(userConfig.recentMap, true);
-    }
-}
-
-QString MainWindow::getDefaultMap() {
-    if (editor && editor->project) {
-        QList<QStringList> names = editor->project->groupedMapNames;
-        if (!names.isEmpty()) {
-            QString recentMap = userConfig.recentMap;
-            if (!recentMap.isNull() && recentMap.length() > 0) {
-                for (int i = 0; i < names.length(); i++) {
-                    if (names.value(i).contains(recentMap)) {
-                        return recentMap;
-                    }
-                }
-            }
-            // Failing that, just get the first map in the list.
-            for (int i = 0; i < names.length(); i++) {
-                QStringList list = names.value(i);
-                if (list.length()) {
-                    return list.value(0);
-                }
-            }
-        }
-    }
-    return QString();
-}
-
 bool MainWindow::setInitialMap() {
-    QStringList names;
-    if (editor && editor->project)
-        names = editor->project->mapNames;
-
-    // Try to set most recently-opened map, if it's still in the list.
-    QString recentMap = userConfig.recentMap;
-    if (!recentMap.isEmpty() && names.contains(recentMap) && setMap(recentMap, true))
-        return true;
-
-    // Failing that, try loading maps in the map list sequentially.
-    for (auto name : names) {
-        if (name != recentMap && setMap(name, true))
+    const QString recent = userConfig.recentMapOrLayout;
+    if (editor->project->mapNames.contains(recent)) {
+        // User recently had a map open that still exists.
+        if (setMap(recent, true))
+            return true;
+    } else if (editor->project->mapLayoutsTable.contains(recent)) {
+        // User recently had a layout open that still exists.
+        if (setLayout(recent))
             return true;
     }
 
-    logError("Failed to load any maps.");
-    return false;
-}
-
-bool MainWindow::setInitialLayout() {
-    QStringList names;
-    if (editor && editor->project)
-        names = editor->project->mapLayoutsTable;
-
-    // Try to set most recently-opened layout, if it's still in the list.
-    QString recentLayout = userConfig.recentLayout;
-    if (!recentLayout.isEmpty() && names.contains(recentLayout) && setLayout(recentLayout))
-        return true;
-
-    // Failing that, try loading maps in the map list sequentially.
-    for (auto name : names) {
-        if (name != recentLayout && setLayout(name))
+    // Failed to open recent map/layout, or no recent map/layout. Try opening maps then layouts sequentially.
+    for (const auto &name : editor->project->mapNames) {
+        if (name != recent && setMap(name, true))
+            return true;
+    }
+    for (const auto &id : editor->project->mapLayoutsTable) {
+        if (id != recent && setLayout(id))
             return true;
     }
 
-    logError("Failed to load any layouts.");
+    logError("Failed to load any maps or layouts.");
     return false;
 }
 
@@ -824,25 +770,13 @@ void MainWindow::openSubWindow(QWidget * window) {
     }
 }
 
-QString MainWindow::getDefaultLayout() {
-    if (editor && editor->project) {
-        QString recentLayout = userConfig.recentLayout;
-        if (!recentLayout.isEmpty() && editor->project->mapLayoutsTable.contains(recentLayout)) {
-            return recentLayout;
-        } else if (!editor->project->mapLayoutsTable.isEmpty()) {
-            return editor->project->mapLayoutsTable.first();
-        }
-    }
-    return QString();
-}
-
 QString MainWindow::getExistingDirectory(QString dir) {
     return FileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly);
 }
 
 void MainWindow::on_action_Open_Project_triggered()
 {
-    QString dir = getExistingDirectory(!userConfig.recentMap.isEmpty() ? userConfig.recentMap : ".");
+    QString dir = getExistingDirectory(!projectConfig.projectDir.isEmpty() ? userConfig.projectDir : ".");
     if (!dir.isEmpty())
         openProject(dir);
 }
@@ -904,8 +838,13 @@ bool MainWindow::userSetMap(QString map_name, bool scrollTreeView) {
 
 bool MainWindow::setMap(QString map_name, bool scroll) {
     // if map name is empty, clear & disable map ui
-    if (map_name.isEmpty() || map_name == DYNAMIC_MAP_NAME) {
+    if (map_name.isEmpty()) {
         unsetMap();
+        return false;
+    }
+
+    if (map_name == DYNAMIC_MAP_NAME) {
+        logInfo(QString("Cannot set map to '%1'").arg(DYNAMIC_MAP_NAME));
         return false;
     }
 
@@ -944,7 +883,7 @@ bool MainWindow::setMap(QString map_name, bool scroll) {
     connect(editor->layout, &Layout::layoutChanged, this, &MainWindow::onLayoutChanged, Qt::UniqueConnection);
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing, Qt::UniqueConnection);
 
-    userConfig.recentMap = map_name;
+    userConfig.recentMapOrLayout = map_name;
 
     Scripting::cb_MapOpened(map_name);
     prefab.updatePrefabUi(editor->layout);
@@ -974,7 +913,7 @@ bool MainWindow::setLayout(QString layoutId) {
 
     updateTilesetEditor();
 
-    setRecentLayoutConfig(layoutId);
+    userConfig.recentMapOrLayout = layoutId;
 
     return true;
 }
@@ -1048,16 +987,6 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
         // Can still warp to this map, but can't select the specified event
         logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::eventGroupToString(event_group)).arg(event_id).arg(map_name));
     }
-}
-
-void MainWindow::setRecentMapConfig(QString mapName) {
-    userConfig.recentMap = mapName;
-    userConfig.recentLayout = "";
-}
-
-void MainWindow::setRecentLayoutConfig(QString layoutId) {
-    userConfig.recentLayout = layoutId;
-    userConfig.recentMap = "";
 }
 
 void MainWindow::displayMapProperties() {
