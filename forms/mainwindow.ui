@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1287</width>
-    <height>903</height>
+    <height>936</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QWidget" name="mapListContainer" native="true">
+      <widget class="QTabWidget" name="mapListContainer">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -42,168 +42,513 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>3</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_11">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="leftMargin">
-           <number>3</number>
-          </property>
-          <property name="topMargin">
-           <number>3</number>
-          </property>
-          <property name="bottomMargin">
-           <number>3</number>
-          </property>
-          <item>
-           <widget class="QToolButton" name="toolButton_MapSortOrder">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sort map list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../resources/images.qrc">
-              <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonIconOnly</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-            <property name="arrowType">
-             <enum>Qt::NoArrow</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="toolButton_ExpandAll">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../resources/images.qrc">
-              <normaloff>:/icons/expand_all.ico</normaloff>:/icons/expand_all.ico</iconset>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="toolButton_CollapseAll">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all map list folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../resources/images.qrc">
-              <normaloff>:/icons/collapse_all.ico</normaloff>:/icons/collapse_all.ico</iconset>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>12</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_filterBox">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="placeholderText">
-             <string>Filter maps...</string>
-            </property>
-            <property name="clearButtonEnabled">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QTreeView" name="mapList">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::SingleSelection</enum>
-          </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectItems</enum>
-          </property>
-          <attribute name="headerVisible">
-           <bool>false</bool>
-          </attribute>
-         </widget>
-        </item>
-       </layout>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="mapListContainerPage1">
+        <attribute name="title">
+         <string>Groups</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QToolButton" name="toolButton_HideShow_Groups">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle hide all empty map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/folder_eye_open.ico</normaloff>
+               <normalon>:/icons/folder_eye_closed.ico</normalon>:/icons/folder_eye_open.ico</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_ExpandAll_Groups">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/expand_all.ico</normaloff>:/icons/expand_all.ico</iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_CollapseAll_Groups">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all map list folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/collapse_all.ico</normaloff>:/icons/collapse_all.ico</iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_EnableDisable_EditGroups">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle editability of group folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/lock_edit.ico</normaloff>
+               <normalon>:/icons/unlock_edit.ico</normalon>:/icons/lock_edit.ico</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_8">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Preferred</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>12</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEdit_filterBox">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>Filter...</string>
+             </property>
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="MapTree" name="mapList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectItems</enum>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="mapListContainerPage2">
+        <attribute name="title">
+         <string>Areas</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_Areas">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_1111">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QToolButton" name="toolButton_HideShow_Areas">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle hide all empty mapsection folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/folder_eye_open.ico</normaloff>
+               <normalon>:/icons/folder_eye_closed.ico</normalon>:/icons/folder_eye_open.ico</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_ExpandAll_Areas">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/expand_all.ico</normaloff>:/icons/expand_all.ico</iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_CollapseAll_Areas">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all map list folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/collapse_all.ico</normaloff>:/icons/collapse_all.ico</iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_9">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Preferred</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>12</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEdit_filterBox_Areas">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>Filter...</string>
+             </property>
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="MapTree" name="areaList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectItems</enum>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="mapListContainerPage3">
+        <attribute name="title">
+         <string>Layouts</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_Layouts">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_111">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QToolButton" name="toolButton_HideShow_Layouts">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle hide all unused layouts&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/folder_eye_open.ico</normaloff>
+               <normalon>:/icons/folder_eye_closed.ico</normalon>:/icons/folder_eye_open.ico</iconset>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_ExpandAll_Layouts">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all layout folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/expand_all.ico</normaloff>:/icons/expand_all.ico</iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="toolButton_CollapseAll_Layouts">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all layout folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../resources/images.qrc">
+               <normaloff>:/icons/collapse_all.ico</normaloff>:/icons/collapse_all.ico</iconset>
+             </property>
+             <property name="popupMode">
+              <enum>QToolButton::InstantPopup</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_7">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Preferred</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>12</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEdit_filterBox_Layouts">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>Filter...</string>
+             </property>
+             <property name="clearButtonEnabled">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="MapTree" name="layoutList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectItems</enum>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
       <widget class="QFrame" name="frame_Main">
        <property name="sizePolicy">
@@ -658,6 +1003,9 @@
                      <string>Metatiles</string>
                     </attribute>
                     <layout class="QGridLayout" name="gridLayout_3">
+                     <property name="sizeConstraint">
+                      <enum>QLayout::SetNoConstraint</enum>
+                     </property>
                      <property name="leftMargin">
                       <number>3</number>
                      </property>
@@ -689,7 +1037,7 @@
                        </property>
                       </widget>
                      </item>
-                     <item row="1" column="0">
+                     <item row="2" column="0">
                       <widget class="QFrame" name="frame_Metatiles">
                        <property name="frameShape">
                         <enum>QFrame::NoFrame</enum>
@@ -769,8 +1117,8 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>423</width>
-                                 <height>79</height>
+                                 <width>420</width>
+                                 <height>77</height>
                                 </rect>
                                </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -888,8 +1236,8 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>423</width>
-                                 <height>79</height>
+                                 <width>420</width>
+                                 <height>78</height>
                                 </rect>
                                </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -990,10 +1338,10 @@
                             </property>
                             <property name="geometry">
                              <rect>
-                              <x>8</x>
+                              <x>0</x>
                               <y>0</y>
-                              <width>411</width>
-                              <height>446</height>
+                              <width>409</width>
+                              <height>440</height>
                              </rect>
                             </property>
                             <property name="sizePolicy">
@@ -1087,7 +1435,7 @@
                        </layout>
                       </widget>
                      </item>
-                     <item row="0" column="0">
+                     <item row="1" column="0">
                       <widget class="QFrame" name="frame_Tilesets">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1102,14 +1450,14 @@
                         <enum>QFrame::Raised</enum>
                        </property>
                        <layout class="QFormLayout" name="formLayout">
-                        <item row="0" column="0">
+                        <item row="1" column="0">
                          <widget class="QLabel" name="label_PrimaryTileset">
                           <property name="text">
                            <string>Primary Tileset</string>
                           </property>
                          </widget>
                         </item>
-                        <item row="0" column="1">
+                        <item row="1" column="1">
                          <widget class="NoScrollComboBox" name="comboBox_PrimaryTileset">
                           <property name="focusPolicy">
                            <enum>Qt::StrongFocus</enum>
@@ -1122,14 +1470,14 @@
                           </property>
                          </widget>
                         </item>
-                        <item row="1" column="0">
+                        <item row="2" column="0">
                          <widget class="QLabel" name="label_SecondaryTileset">
                           <property name="text">
                            <string>Secondary Tileset</string>
                           </property>
                          </widget>
                         </item>
-                        <item row="1" column="1">
+                        <item row="2" column="1">
                          <widget class="NoScrollComboBox" name="comboBox_SecondaryTileset">
                           <property name="focusPolicy">
                            <enum>Qt::StrongFocus</enum>
@@ -1141,6 +1489,34 @@
                            <bool>true</bool>
                           </property>
                          </widget>
+                        </item>
+                        <item row="0" column="0">
+                         <widget class="QFrame" name="frame_LayoutSelection">
+                          <property name="frameShape">
+                           <enum>QFrame::NoFrame</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Raised</enum>
+                          </property>
+                          <layout class="QFormLayout" name="formLayout_3">
+                           <property name="topMargin">
+                            <number>2</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>2</number>
+                           </property>
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="label_16">
+                             <property name="text">
+                              <string>Layout</string>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="NoScrollComboBox" name="comboBox_LayoutSelector"/>
                         </item>
                        </layout>
                       </widget>
@@ -1193,8 +1569,8 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>427</width>
-                          <height>594</height>
+                          <width>424</width>
+                          <height>627</height>
                          </rect>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_7">
@@ -1413,8 +1789,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>382</width>
-                             <height>699</height>
+                             <width>379</width>
+                             <height>732</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -3481,6 +3857,11 @@
    <class>MapView</class>
    <extends>QWidget</extends>
    <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MapTree</class>
+   <extends>QTreeView</extends>
+   <header>maplistmodels.h</header>
   </customwidget>
   <customwidget>
    <class>NoScrollGraphicsView</class>
