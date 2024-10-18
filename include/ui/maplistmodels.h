@@ -53,7 +53,17 @@ private:
 
 class QRegularExpressionValidator;
 
-class MapGroupModel : public QStandardItemModel {
+class MapListModel : public QStandardItemModel {
+    Q_OBJECT
+
+public:
+    MapListModel(QObject *parent = nullptr) : QStandardItemModel(parent) {};
+    ~MapListModel() { }
+
+    virtual QModelIndex indexOf(QString id) const = 0;
+};
+
+class MapGroupModel : public MapListModel {
     Q_OBJECT
 
 public:
@@ -80,7 +90,7 @@ public:
     void removeGroup(int groupIndex);
 
     QStandardItem *getItem(const QModelIndex &index) const;
-    QModelIndex indexOfMap(QString mapName);
+    virtual QModelIndex indexOf(QString mapName) const override;
 
     void initialize();
 
@@ -103,7 +113,7 @@ signals:
 
 
 
-class MapAreaModel : public QStandardItemModel {
+class MapAreaModel : public MapListModel {
     Q_OBJECT
 
 public:
@@ -123,7 +133,7 @@ public:
     void removeArea(int groupIndex);
 
     QStandardItem *getItem(const QModelIndex &index) const;
-    QModelIndex indexOfMap(QString mapName);
+    virtual QModelIndex indexOf(QString mapName) const override;
 
     void initialize();
 
@@ -143,7 +153,7 @@ signals:
 
 
 
-class LayoutTreeModel : public QStandardItemModel {
+class LayoutTreeModel : public MapListModel {
     Q_OBJECT
 
 public:
@@ -162,7 +172,7 @@ public:
     QStandardItem *insertMapItem(QString mapName, QString layoutId);
 
     QStandardItem *getItem(const QModelIndex &index) const;
-    QModelIndex indexOfLayout(QString layoutName);
+    virtual QModelIndex indexOf(QString layoutName) const override;
 
     void initialize();
 

@@ -75,6 +75,7 @@ SOURCES += src/core/block.cpp \
     src/ui/eventfilters.cpp \
     src/ui/filterchildrenproxymodel.cpp \
     src/ui/maplistmodels.cpp \
+    src/ui/maplisttoolbar.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/layoutpixmapitem.cpp \
@@ -174,6 +175,7 @@ HEADERS  += include/core/block.h \
     include/ui/eventfilters.h \
     include/ui/filterchildrenproxymodel.h \
     include/ui/maplistmodels.h \
+    include/ui/maplisttoolbar.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/layoutpixmapitem.h \
@@ -229,6 +231,7 @@ FORMS    += forms/mainwindow.ui \
     forms/colorinputwidget.ui \
     forms/connectionslistitem.ui \
     forms/gridsettingsdialog.ui \
+    forms/maplisttoolbar.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \

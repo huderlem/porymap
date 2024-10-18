@@ -1,0 +1,121 @@
+#include "maplisttoolbar.h"
+#include "ui_maplisttoolbar.h"
+#include "editor.h"
+
+#include <QToolTip>
+
+MapListToolBar::MapListToolBar(QWidget *parent)
+    : QFrame(parent)
+    , ui(new Ui::MapListToolBar)
+{
+    ui->setupUi(this);
+
+    connect(ui->button_ToggleEmptyFolders, &QAbstractButton::clicked, this, &MapListToolBar::toggleEmptyFolders);
+    connect(ui->button_AddFolder, &QAbstractButton::clicked, this, &MapListToolBar::addFolderClicked); // TODO: Tool tip
+    connect(ui->button_ExpandAll, &QAbstractButton::clicked, this, &MapListToolBar::expandList);
+    connect(ui->button_CollapseAll, &QAbstractButton::clicked, this, &MapListToolBar::collapseList);
+    connect(ui->button_ToggleEdit, &QAbstractButton::clicked, this, &MapListToolBar::toggleEditsAllowed);
+    connect(ui->lineEdit_filterBox, &QLineEdit::textChanged, this, &MapListToolBar::applyFilter);
+}
+
+MapListToolBar::~MapListToolBar()
+{
+    delete ui;
+}
+
+void MapListToolBar::setList(MapTree *list) {
+    m_list = list;
+
+    // Sync list with current button states
+    setEditsAllowed(ui->button_ToggleEdit->isChecked());
+    // TODO: Empty folders
+}
+
+void MapListToolBar::setEditsAllowedButtonHidden(bool hidden) {
+    ui->button_ToggleEdit->setVisible(!hidden);
+}
+
+void MapListToolBar::setEditsAllowed(bool allowed) {
+    if (!m_list)
+        return;
+
+    if (allowed) {
+        m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        m_list->setDragEnabled(true);
+        m_list->setAcceptDrops(true);
+        m_list->setDropIndicatorShown(true);
+        m_list->setDragDropMode(QAbstractItemView::InternalMove);
+        m_list->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+    } else {
+        m_list->setSelectionMode(QAbstractItemView::NoSelection);
+        m_list->setDragEnabled(false);
+        m_list->setAcceptDrops(false);
+        m_list->setDropIndicatorShown(false);
+        m_list->setDragDropMode(QAbstractItemView::NoDragDrop);
+        m_list->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    }
+}
+
+// TODO: Sync the UI in each of these
+
+void MapListToolBar::toggleEmptyFolders() {
+    if (!m_list)
+        return;
+
+    auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
+    if (!model)
+        return;
+
+    bool hidden = model->toggleHideEmpty();
+    model->setFilterRegularExpression(ui->lineEdit_filterBox->text());
+
+    // Update tool tip to reflect what will happen if the button is pressed.
+    const QString toolTip = QString("%1 empty folders in the list.").arg(hidden ? "Show" : "Hide");
+    ui->button_ToggleEmptyFolders->setToolTip(toolTip);
+
+    // Display message to let user know what just happened (if there are no empty folders visible it's not obvious).
+    const QString message = QString("%1 empty folders!").arg(hidden ? "Hiding" : "Showing");
+    QToolTip::showText(ui->button_ToggleEmptyFolders->mapToGlobal(QPoint(0, 0)), message);
+}
+
+void MapListToolBar::expandList() {
+    if (m_list)
+        m_list->expandToDepth(0);
+}
+
+void MapListToolBar::collapseList() {
+    if (m_list) {
+        m_list->collapseAll();
+    }
+}
+
+// TODO: Save this state in porymapConfig?
+// TODO: This isn't actually toggling anything, it's just updating based on the button
+void MapListToolBar::toggleEditsAllowed() {
+    if (m_list) {
+        m_list->clearSelection();
+    }
+    setEditsAllowed(ui->button_ToggleEdit->isChecked());
+}
+
+void MapListToolBar::applyFilter(const QString &filterText) {
+    if (!m_list || m_filterLocked)
+        return;
+
+    const QSignalBlocker b(ui->lineEdit_filterBox);
+    ui->lineEdit_filterBox->setText(filterText);
+
+    auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
+    if (model) model->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
+
+    if (filterText.isEmpty()) {
+        m_list->collapseAll();
+        emit filterCleared(m_list);
+    } else {
+        m_list->expandToDepth(0);
+    }
+}
+
+void MapListToolBar::clearFilter() {
+    applyFilter("");
+}

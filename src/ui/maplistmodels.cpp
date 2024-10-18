@@ -44,7 +44,7 @@ void GroupNameDelegate::updateEditorGeometry(QWidget *editor, const QStyleOption
 
 
 
-MapGroupModel::MapGroupModel(Project *project, QObject *parent) : QStandardItemModel(parent) {
+MapGroupModel::MapGroupModel(Project *project, QObject *parent) : MapListModel(parent) {
     this->project = project;
     this->root = this->invisibleRootItem();
 
@@ -283,7 +283,7 @@ QStandardItem *MapGroupModel::getItem(const QModelIndex &index) const {
     return this->root;
 }
 
-QModelIndex MapGroupModel::indexOfMap(QString mapName) {
+QModelIndex MapGroupModel::indexOf(QString mapName) const {
     if (this->mapItems.contains(mapName)) {
         return this->mapItems[mapName]->index();
     }
@@ -366,7 +366,7 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
 
 
 
-MapAreaModel::MapAreaModel(Project *project, QObject *parent) : QStandardItemModel(parent) {
+MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(parent) {
     this->project = project;
     this->root = this->invisibleRootItem();
 
@@ -461,7 +461,7 @@ QStandardItem *MapAreaModel::getItem(const QModelIndex &index) const {
     return this->root;
 }
 
-QModelIndex MapAreaModel::indexOfMap(QString mapName) {
+QModelIndex MapAreaModel::indexOf(QString mapName) const {
     if (this->mapItems.contains(mapName)) {
         return this->mapItems[mapName]->index();
     }
@@ -531,7 +531,7 @@ QVariant MapAreaModel::data(const QModelIndex &index, int role) const {
 
 
 
-LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : QStandardItemModel(parent) {
+LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListModel(parent) {
     this->project = project;
     this->root = this->invisibleRootItem();
 
@@ -609,7 +609,7 @@ QStandardItem *LayoutTreeModel::getItem(const QModelIndex &index) const {
     return this->root;
 }
 
-QModelIndex LayoutTreeModel::indexOfLayout(QString layoutName) {
+QModelIndex LayoutTreeModel::indexOf(QString layoutName) const {
     if (this->layoutItems.contains(layoutName)) {
         return this->layoutItems[layoutName]->index();
     }

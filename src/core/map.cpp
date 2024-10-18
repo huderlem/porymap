@@ -257,7 +257,7 @@ void Map::clean() {
 }
 
 bool Map::hasUnsavedChanges() {
-    return !editHistory.isClean() || !this->layout->editHistory.isClean() || hasUnsavedDataChanges || !isPersistedToFile;
+    return !editHistory.isClean() || this->layout->hasUnsavedChanges() || hasUnsavedDataChanges || !isPersistedToFile;
 }
 
 void Map::pruneEditHistory() {
