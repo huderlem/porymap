@@ -3081,6 +3081,11 @@ bool MainWindow::askToFixRegionMapEditor() {
     return false;
 }
 
+void MainWindow::clearOverlay() {
+    if (ui->graphicsView_Map)
+        ui->graphicsView_Map->clearOverlayMap();
+}
+
 // Attempt to close any open sub-windows of the main window, giving each a chance to abort the process.
 // Each of these windows is a widget with WA_DeleteOnClose set, so manually deleting them isn't necessary.
 // Because they're tracked with QPointers nullifying them shouldn't be necessary either, but it seems the
