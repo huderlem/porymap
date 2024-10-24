@@ -49,6 +49,7 @@ private:
     void restoreWindowState();
     void initShortcuts();
     QObjectList shortcutableObjects() const;
+    void openManual();
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
