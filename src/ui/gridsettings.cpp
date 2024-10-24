@@ -117,6 +117,7 @@ void GridSettingsDialog::init() {
     connect(ui->button_LinkDimensions, &QAbstractButton::toggled, [this](bool on) { m_dimensionsLinked = on; });
     connect(ui->button_LinkOffsets, &QAbstractButton::toggled, [this](bool on) { m_offsetsLinked = on; });
     connect(ui->colorInput, &ColorInputWidget::colorChanged, this, &GridSettingsDialog::onColorChanged);
+    connect(this, &GridSettingsDialog::rejected, [this] { setSettings(m_originalSettings); });
 
     updateInput();
 }
@@ -218,11 +219,10 @@ void GridSettingsDialog::dialogButtonClicked(QAbstractButton *button) {
     auto role = ui->buttonBox->buttonRole(button);
     if (role == QDialogButtonBox::AcceptRole) {
         // "OK"
-        close();
+        accept();
     } else if (role == QDialogButtonBox::RejectRole) {
         // "Cancel"
-        setSettings(m_originalSettings);
-        close();
+        reject();
     } else if (role == QDialogButtonBox::ResetRole) {
         // "Restore Defaults"
         setSettings(m_defaultSettings);
