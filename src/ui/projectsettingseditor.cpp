@@ -37,6 +37,8 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
 }
 
 void ProjectSettingsEditor::connectSignals() {
+    connect(ui->button_HelpFiles, &QAbstractButton::clicked, this, &ProjectSettingsEditor::openFilesHelp);
+    connect(ui->button_HelpIdentifiers, &QAbstractButton::clicked, this, &ProjectSettingsEditor::openIdentifiersHelp);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
@@ -656,6 +658,16 @@ void ProjectSettingsEditor::dialogButtonClicked(QAbstractButton *button) {
         // "Restore Defaults" button
         this->promptRestoreDefaults();
     }
+}
+
+void ProjectSettingsEditor::openFilesHelp() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/project-files.html#files");
+    QDesktopServices::openUrl(url);
+}
+
+void ProjectSettingsEditor::openIdentifiersHelp() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/project-files.html#identifiers");
+    QDesktopServices::openUrl(url);
 }
 
 // Close event triggered by a project reload. User doesn't need any prompts, just close the window.

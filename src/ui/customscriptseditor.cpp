@@ -23,6 +23,7 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     for (int i = 0; i < paths.length(); i++)
         this->displayScript(paths.at(i), enabled.at(i));
 
+    connect(ui->button_Help, &QAbstractButton::clicked, this, &CustomScriptsEditor::openManual);
     connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);
     connect(ui->button_LoadScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::loadScript);
     connect(ui->button_RefreshScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::userRefreshScripts);
@@ -227,6 +228,11 @@ void CustomScriptsEditor::openScript(QListWidgetItem * item) {
 void CustomScriptsEditor::openSelectedScripts() {
     for (auto item : ui->list->selectedItems())
         this->openScript(item);
+}
+
+void CustomScriptsEditor::openManual() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/scripting-capabilities.html");
+    QDesktopServices::openUrl(url);
 }
 
 // When the user refreshes the scripts we show a little tooltip as feedback.

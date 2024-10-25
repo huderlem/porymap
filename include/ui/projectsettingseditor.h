@@ -65,6 +65,8 @@ private:
     void updateMaskOverlapWarning(QLabel * warning, QList<UIntSpinBox*> masks);
     QStringList getWarpBehaviorsList();
     void setWarpBehaviorsList(QStringList list);
+    void openFilesHelp();
+    void openIdentifiersHelp();
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
