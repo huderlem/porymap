@@ -18,6 +18,7 @@ public:
     Tileset() = default;
     Tileset(const Tileset &other);
     Tileset &operator=(const Tileset &other);
+    ~Tileset();
 
 public:
     QString name;
@@ -33,7 +34,6 @@ public:
     QStringList palettePaths;
 
     QList<QImage> tiles;
-    QList<Metatile*> metatiles;
     QHash<int, QString> metatileLabels;
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
@@ -59,6 +59,19 @@ public:
     bool appendToHeaders(QString root, QString friendlyName, bool usingAsm);
     bool appendToGraphics(QString root, QString friendlyName, bool usingAsm);
     bool appendToMetatiles(QString root, QString friendlyName, bool usingAsm);
+
+    void setMetatiles(const QList<Metatile*> &metatiles);
+    void addMetatile(Metatile* metatile);
+
+    QList<Metatile*> metatiles() const { return m_metatiles; }
+    Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
+
+    void clearMetatiles();
+    void resizeMetatiles(unsigned int newNumMetatiles);
+    int numMetatiles() const { return m_metatiles.length(); }
+
+private:
+    QList<Metatile*> m_metatiles;
 };
 
 #endif // TILESET_H

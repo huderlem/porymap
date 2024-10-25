@@ -32,7 +32,6 @@ TilesetEditor::~TilesetEditor()
     delete tileSelector;
     delete metatileLayersItem;
     delete paletteEditor;
-    delete metatile;
     delete primaryTileset;
     delete secondaryTileset;
     delete metatilesScene;
@@ -41,6 +40,7 @@ TilesetEditor::~TilesetEditor()
     delete selectedTileScene;
     delete metatileLayersScene;
     delete copiedMetatile;
+    this->metatileHistory.clear();
 }
 
 void TilesetEditor::update(Layout *layout, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
@@ -781,8 +781,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     secondarySpinBox->setMinimum(1);
     primarySpinBox->setMaximum(Project::getNumMetatilesPrimary());
     secondarySpinBox->setMaximum(Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary());
-    primarySpinBox->setValue(this->primaryTileset->metatiles.length());
-    secondarySpinBox->setValue(this->secondaryTileset->metatiles.length());
+    primarySpinBox->setValue(this->primaryTileset->numMetatiles());
+    secondarySpinBox->setValue(this->secondaryTileset->numMetatiles());
     form.addRow(new QLabel("Primary Tileset"), primarySpinBox);
     form.addRow(new QLabel("Secondary Tileset"), secondarySpinBox);
 
@@ -792,22 +792,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
-        int numPrimaryMetatiles = primarySpinBox->value();
-        int numSecondaryMetatiles = secondarySpinBox->value();
-        int numTiles = projectConfig.getNumTilesInMetatile();
-        while (this->primaryTileset->metatiles.length() > numPrimaryMetatiles) {
-            delete this->primaryTileset->metatiles.takeLast();
-        }
-        while (this->primaryTileset->metatiles.length() < numPrimaryMetatiles) {
-            this->primaryTileset->metatiles.append(new Metatile(numTiles));
-        }
-        while (this->secondaryTileset->metatiles.length() > numSecondaryMetatiles) {
-            delete this->secondaryTileset->metatiles.takeLast();
-        }
-        while (this->secondaryTileset->metatiles.length() < numSecondaryMetatiles) {
-            this->secondaryTileset->metatiles.append(new Metatile(numTiles));
-        }
-
+        this->primaryTileset->resizeMetatiles(primarySpinBox->value());
+        this->secondaryTileset->resizeMetatiles(secondarySpinBox->value());
         this->metatileSelector->updateSelectedMetatile();
         this->refresh();
         this->hasUnsavedChanges = true;
@@ -1008,20 +994,20 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     //       Revisit this when tiles and num metatiles are added to tileset editory history.
     int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
     for (int i = 0; i < metatiles.length(); i++) {
-        if (i >= tileset->metatiles.length()) {
+        if (i >= tileset->numMetatiles()) {
             break;
         }
 
         uint16_t metatileId = static_cast<uint16_t>(metatileIdBase + i);
         QString prevLabel = Tileset::getOwnedMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
-        Metatile *prevMetatile = new Metatile(*tileset->metatiles.at(i));
+        Metatile *prevMetatile = new Metatile(*tileset->metatileAt(i));
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileId,
                                                               prevMetatile, new Metatile(*metatiles.at(i)),
                                                               prevLabel, prevLabel);
         metatileHistory.push(commit);
     }
 
-    tileset->metatiles = metatiles;
+    tileset->setMetatiles(metatiles);
     this->refresh();
     this->hasUnsavedChanges = true;
 }
@@ -1125,9 +1111,9 @@ void TilesetEditor::countTileUsage() {
 
     // check primary tilesets that are used with this secondary tileset for
     // reference to secondary tiles in primary metatiles
-    for (Tileset *tileset : primaryTilesets) {
-        for (Metatile *metatile : tileset->metatiles) {
-            for (Tile tile : metatile->tiles) {
+    for (const auto &tileset : primaryTilesets) {
+        for (const auto &metatile : tileset->metatiles()) {
+            for (const auto &tile : metatile->tiles) {
                 if (tile.tileId >= Project::getNumTilesPrimary())
                     this->tileSelector->usedTiles[tile.tileId]++;
             }
@@ -1136,8 +1122,8 @@ void TilesetEditor::countTileUsage() {
 
     // do the opposite for primary tiles in secondary metatiles
     for (Tileset *tileset : secondaryTilesets) {
-        for (Metatile *metatile : tileset->metatiles) {
-            for (Tile tile : metatile->tiles) {
+        for (const auto &metatile : tileset->metatiles()) {
+            for (const auto &tile : metatile->tiles) {
                 if (tile.tileId < Project::getNumTilesPrimary())
                     this->tileSelector->usedTiles[tile.tileId]++;
             }
@@ -1145,15 +1131,15 @@ void TilesetEditor::countTileUsage() {
     }
 
     // check this primary tileset metatiles
-    for (Metatile *metatile : this->primaryTileset->metatiles) {
-        for (Tile tile : metatile->tiles) {
+    for (const auto &metatile : this->primaryTileset->metatiles()) {
+        for (const auto &tile : metatile->tiles) {
             this->tileSelector->usedTiles[tile.tileId]++;
         }
     }
 
     // and the secondary metatiles
-    for (Metatile *metatile : this->secondaryTileset->metatiles) {
-        for (Tile tile : metatile->tiles) {
+    for (const auto &metatile : this->secondaryTileset->metatiles()) {
+        for (const auto &tile : metatile->tiles) {
             this->tileSelector->usedTiles[tile.tileId]++;
         }
     }

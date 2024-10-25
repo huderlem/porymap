@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
+    <width>582</width>
     <height>355</height>
    </rect>
   </property>
@@ -33,21 +33,30 @@
     <item>
      <widget class="QFrame" name="window">
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::Shape::StyledPanel</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+       <enum>QFrame::Shadow::Raised</enum>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QFrame" name="header">
          <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+          <enum>QFrame::Shape::StyledPanel</enum>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
           <item>
            <widget class="QPushButton" name="button_CreateNewScript">
             <property name="toolTip">
@@ -91,9 +100,9 @@
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer_header">
+           <spacer name="horizontalSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -103,34 +112,32 @@
             </property>
            </spacer>
           </item>
+          <item>
+           <spacer name="horizontalSpacer_header">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="button_Help">
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources/images.qrc">
+              <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_Manual">
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://huderlem.github.io/porymap/manual/scripting-capabilities.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0069d9;&quot;&gt;Help&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="openExternalLinks">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>5</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item>
         <widget class="QLabel" name="label_ListHeader">
@@ -142,32 +149,32 @@
        <item>
         <widget class="QListWidget" name="list">
          <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
          </property>
          <property name="showDropIndicator" stdset="0">
           <bool>false</bool>
          </property>
          <property name="dragDropMode">
-          <enum>QAbstractItemView::DragOnly</enum>
+          <enum>QAbstractItemView::DragDropMode::DragOnly</enum>
          </property>
          <property name="defaultDropAction">
-          <enum>Qt::IgnoreAction</enum>
+          <enum>Qt::DropAction::IgnoreAction</enum>
          </property>
          <property name="selectionMode">
-          <enum>QAbstractItemView::ExtendedSelection</enum>
+          <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
          </property>
          <property name="textElideMode">
-          <enum>Qt::ElideLeft</enum>
+          <enum>Qt::TextElideMode::ElideLeft</enum>
          </property>
          <property name="movement">
-          <enum>QListView::Free</enum>
+          <enum>QListView::Movement::Free</enum>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QDialogButtonBox" name="buttonBox">
          <property name="standardButtons">
-          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+          <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
          </property>
         </widget>
        </item>

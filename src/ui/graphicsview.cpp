@@ -25,8 +25,9 @@ void GraphicsView::moveEvent(QMoveEvent *event) {
 }
 
 void MapView::drawForeground(QPainter *painter, const QRectF&) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->renderItems(painter);
+    for (auto i = this->overlayMap.constBegin(); i != this->overlayMap.constEnd(); i++) {
+        i.value()->renderItems(painter);
+    }
 
     if (!editor) return;
 
@@ -56,9 +57,8 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
 }
 
 void MapView::clearOverlayMap() {
-    foreach (Overlay * overlay, this->overlayMap) {
-        overlay->clearItems();
-        delete overlay;
+    for (auto i = this->overlayMap.constBegin(); i != this->overlayMap.constEnd(); i++) {
+        delete i.value();
     }
     this->overlayMap.clear();
 }

@@ -1774,7 +1774,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
                 }
                 mt->tiles.append(tile);
             }
-            newSet.metatiles.append(mt);
+            newSet.addMetatile(mt);
         }
         for(int i = 0; i < 16; ++i) {
             QList<QRgb> currentPal;
@@ -3562,6 +3562,11 @@ bool MainWindow::askToFixRegionMapEditor() {
     }
     // User accepted error
     return false;
+}
+
+void MainWindow::clearOverlay() {
+    if (ui->graphicsView_Map)
+        ui->graphicsView_Map->clearOverlayMap();
 }
 
 // Attempt to close any open sub-windows of the main window, giving each a chance to abort the process.

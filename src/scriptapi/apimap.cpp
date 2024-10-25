@@ -533,13 +533,13 @@ QJSValue MainWindow::getSecondaryTilesetPalettesPreview() {
 int MainWindow::getNumPrimaryTilesetMetatiles() {
     if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return 0;
-    return this->editor->layout->tileset_primary->metatiles.length();
+    return this->editor->layout->tileset_primary->numMetatiles();
 }
 
 int MainWindow::getNumSecondaryTilesetMetatiles() {
     if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return 0;
-    return this->editor->layout->tileset_secondary->metatiles.length();
+    return this->editor->layout->tileset_secondary->numMetatiles();
 }
 
 int MainWindow::getNumPrimaryTilesetTiles() {
