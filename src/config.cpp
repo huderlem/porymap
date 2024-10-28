@@ -278,12 +278,6 @@ uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_
     return qMin(max, qMax(min, result));
 }
 
-const QMap<QString, MapSortOrder> mapSortOrderMap = {
-    {"group", MapSortOrder::SortByGroup},
-    {"layout", MapSortOrder::SortByLayout},
-    {"area", MapSortOrder::SortByArea},
-};
-
 PorymapConfig porymapConfig;
 
 QString PorymapConfig::getConfigFilepath() {
@@ -308,14 +302,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->reopenOnLaunch = getConfigBool(key, value);
     } else if (key == "pretty_cursors") {
         this->prettyCursors = getConfigBool(key, value);
-    } else if (key == "map_sort_order") {
-        QString sortOrder = value.toLower();
-        if (mapSortOrderMap.contains(sortOrder)) {
-            this->mapSortOrder = mapSortOrderMap.value(sortOrder);
-        } else {
-            this->mapSortOrder = MapSortOrder::SortByGroup;
-            logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
-        }
+    } else if (key == "map_list_tab") {
+        this->mapListTab = getConfigInteger(key, value, 0, 2, 0);
     } else if (key == "main_window_geometry") {
         this->mainWindowGeometry = bytesFromString(value);
     } else if (key == "main_window_state") {
@@ -432,7 +420,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_manually_closed", this->projectManuallyClosed ? "1" : "0");
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
-    map.insert("map_sort_order", mapSortOrderMap.key(this->mapSortOrder));
+    map.insert("map_list_tab", QString::number(this->mapListTab));
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));

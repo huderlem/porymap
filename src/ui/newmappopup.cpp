@@ -102,17 +102,17 @@ void NewMapPopup::init() {
 }
 
 // Creating new map by right-clicking in the map list
-void NewMapPopup::init(MapSortOrder type, QVariant data) {
+void NewMapPopup::init(int tabIndex, QVariant data) {
     initUi();
-    switch (type)
+    switch (tabIndex)
     {
-    case MapSortOrder::SortByGroup:
+    case MapListTab::Groups:
         settings.group = project->groupNames.at(data.toInt());
         break;
-    case MapSortOrder::SortByArea:
+    case MapListTab::Areas:
         settings.location = data.toString();
         break;
-    case MapSortOrder::SortByLayout:
+    case MapListTab::Layouts:
         this->ui->checkBox_UseExistingLayout->setCheckState(Qt::Checked);
         useLayout(data.toString());
         break;

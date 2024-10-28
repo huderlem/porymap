@@ -371,7 +371,7 @@ void MainWindow::initMiscHeapObjects() {
 }
 
 void MainWindow::initMapList() {
-    ui->mapListContainer->setCurrentIndex(static_cast<int>(porymapConfig.mapSortOrder));
+    ui->mapListContainer->setCurrentIndex(porymapConfig.mapListTab);
 
     WheelFilter *wheelFilter = new WheelFilter(this);
     ui->mainTabBar->installEventFilter(wheelFilter);
@@ -430,6 +430,8 @@ void MainWindow::initMapList() {
     connect(ui->mapListToolBar_Groups,  &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddGroup);
     connect(ui->mapListToolBar_Areas,   &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddArea);
     connect(ui->mapListToolBar_Layouts, &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddLayout);
+
+    connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::saveMapListTab);
 }
 
 void MainWindow::updateWindowTitle() {
@@ -1209,7 +1211,6 @@ bool MainWindow::setProjectUI() {
     ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
 
     // map models
-    // !TODO: delete these on close
     this->mapGroupModel = new MapGroupModel(editor->project);
     this->groupListProxyModel = new FilterChildrenProxyModel();
     groupListProxyModel->setSourceModel(this->mapGroupModel);
@@ -1308,32 +1309,30 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     int dataRole;
     FilterChildrenProxyModel *proxy;
     QTreeView *list;
-    void (MainWindow::*addFunction)(QAction *);
     QString actionText;
 
-    switch (porymapConfig.mapSortOrder) {
-    case MapSortOrder::SortByGroup:
+    int currentTab = ui->mapListContainer->currentIndex();
+
+    switch (currentTab) {
+    case MapListTab::Groups:
         model = this->mapGroupModel;
         dataRole = MapListUserRoles::GroupRole;
         proxy = this->groupListProxyModel;
         list = this->ui->mapList;
-        addFunction = &MainWindow::onAddNewMapToGroupClick;
         actionText = "Add New Map to Group";
         break;
-    case MapSortOrder::SortByArea:
+    case MapListTab::Areas:
         model = this->mapAreaModel;
         dataRole = Qt::UserRole;
         proxy = this->areaListProxyModel;
         list = this->ui->areaList;
-        addFunction = &MainWindow::onAddNewMapToAreaClick;
         actionText = "Add New Map to Area";
         break;
-    case MapSortOrder::SortByLayout:
+    case MapListTab::Layouts:
         model = this->layoutTreeModel;
         dataRole = Qt::UserRole;
         proxy = this->layoutListProxyModel;
         list = this->ui->layoutList;
-        addFunction = &MainWindow::onAddNewMapToLayoutClick;
         actionText = "Add New Map with Layout";
         break;
     }
@@ -1358,7 +1357,14 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     QMenu menu(this);
     QActionGroup actions(&menu);
     actions.addAction(menu.addAction(actionText))->setData(itemData);
-    (this->*addFunction)(menu.exec(QCursor::pos()));
+
+    auto triggeredAction = menu.exec(QCursor::pos());
+    if (!triggeredAction)
+        return;
+
+    // At the moment all the actions do the same thing (add new map/layout).
+    openNewMapPopupWindow();
+    this->newMapPrompt->init(currentTab, triggeredAction->data());
 }
 
 void MainWindow::mapListAddGroup() {
@@ -1596,28 +1602,6 @@ void MainWindow::mapListRemoveArea() {
 // TODO: Connect to right-click on layout
 void MainWindow::mapListRemoveLayout() {
     // TODO: consider this in the future
-}
-
-
-void MainWindow::onAddNewMapToGroupClick(QAction* triggeredAction) {
-    if (!triggeredAction) return;
-
-    openNewMapPopupWindow();
-    this->newMapPrompt->init(MapSortOrder::SortByGroup, triggeredAction->data());
-}
-
-void MainWindow::onAddNewMapToAreaClick(QAction* triggeredAction) {
-    if (!triggeredAction) return;
-
-    openNewMapPopupWindow();
-    this->newMapPrompt->init(MapSortOrder::SortByArea, triggeredAction->data());
-}
-
-void MainWindow::onAddNewMapToLayoutClick(QAction* triggeredAction) {
-    if (!triggeredAction) return;
-
-    openNewMapPopupWindow();
-    this->newMapPrompt->init(MapSortOrder::SortByLayout, triggeredAction->data());
 }
 
 void MainWindow::onNewMapCreated() {
@@ -1862,19 +1846,8 @@ void MainWindow::currentMetatilesSelectionChanged() {
         scrollMetatileSelectorToSelection();
 }
 
-// TODO: Redundant. Remove
-void MainWindow::on_mapListContainer_currentChanged(int index) {
-    switch (index) {
-    case MapListTab::Groups:
-        porymapConfig.mapSortOrder = MapSortOrder::SortByGroup;
-        break;
-    case MapListTab::Areas:
-        porymapConfig.mapSortOrder = MapSortOrder::SortByArea;
-        break;
-    case MapListTab::Layouts:
-        porymapConfig.mapSortOrder = MapSortOrder::SortByLayout;
-        break;
-    }
+void MainWindow::saveMapListTab(int index) {
+    porymapConfig.mapListTab = index;
 }
 
 void MainWindow::openMapListItem(const QModelIndex &index) {

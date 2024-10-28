@@ -242,11 +242,7 @@ private slots:
     void on_toolButton_Move_clicked();
     void on_toolButton_Shift_clicked();
 
-    void on_mapListContainer_currentChanged(int index);
     void onOpenMapListContextMenu(const QPoint &point);
-    void onAddNewMapToGroupClick(QAction* triggeredAction);
-    void onAddNewMapToAreaClick(QAction* triggeredAction);
-    void onAddNewMapToLayoutClick(QAction* triggeredAction);
     void currentMetatilesSelectionChanged();
 
     void on_action_Export_Map_Image_triggered();
@@ -393,6 +389,7 @@ private:
     void mapListRemoveArea();
     void mapListRemoveLayout();
     void openMapListItem(const QModelIndex &index);
+    void saveMapListTab(int index);
 
     void displayMapProperties();
     void checkToolButtons();

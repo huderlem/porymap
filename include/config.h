@@ -22,12 +22,6 @@ static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_
 
 #define CONFIG_BACKWARDS_COMPATABILITY
 
-enum MapSortOrder {
-    SortByGroup   =  0,
-    SortByArea    =  1,
-    SortByLayout  =  2,
-};
-
 class KeyValueConfigBase
 {
 public:
@@ -56,7 +50,7 @@ public:
         this->recentProjects.clear();
         this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
-        this->mapSortOrder = MapSortOrder::SortByGroup;
+        this->mapListTab = 0;
         this->prettyCursors = true;
         this->mirrorConnectingMaps = true;
         this->showDiveEmergeMaps = false;
@@ -107,7 +101,7 @@ public:
 
     bool reopenOnLaunch;
     bool projectManuallyClosed;
-    MapSortOrder mapSortOrder;
+    int mapListTab;
     bool prettyCursors;
     bool mirrorConnectingMaps;
     bool showDiveEmergeMaps;
