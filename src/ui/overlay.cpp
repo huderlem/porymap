@@ -16,8 +16,8 @@ void OverlayPath::render(QPainter *painter) {
     painter->drawPath(this->path);
 }
 
-void OverlayImage::render(QPainter *painter) {
-    painter->drawImage(this->x, this->y, this->image);
+void OverlayPixmap::render(QPainter *painter) {
+    painter->drawPixmap(this->x, this->y, this->pixmap);
 }
 
 void Overlay::renderItems(QPainter *painter) {
@@ -244,7 +244,7 @@ bool Overlay::addImage(int x, int y, QString filepath, bool useCache, int width,
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
 
-    this->items.append(new OverlayImage(x, y, image));
+    this->items.append(new OverlayPixmap(x, y, QPixmap::fromImage(image)));
     return true;
 }
 
@@ -253,6 +253,6 @@ bool Overlay::addImage(int x, int y, QImage image) {
         logError(QString("Failed to load custom image"));
         return false;
     }
-    this->items.append(new OverlayImage(x, y, image));
+    this->items.append(new OverlayPixmap(x, y, QPixmap::fromImage(image)));
     return true;
 }
