@@ -1634,24 +1634,31 @@ void MainWindow::onNewMapCreated() {
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
-    setProjectUI(); // need to maybe repopulate layout combo
-
     // Add new Map / Layout to the mapList models
     this->mapGroupModel->insertMapItem(newMapName, editor->project->groupNames[newMapGroup]);
     this->mapAreaModel->insertMapItem(newMapName, newMap->location, newMapGroup);
     this->layoutTreeModel->insertMapItem(newMapName, newMap->layout->id);
 
-    setMap(newMapName);
-
     // Refresh any combo box that displays map names and persists between maps
     // (other combo boxes like for warp destinations are repopulated when the map changes).
-    int index = this->editor->project->mapNames.indexOf(newMapName);
-    if (index >= 0) {
-        const QSignalBlocker blocker1(ui->comboBox_DiveMap);
-        const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
-        ui->comboBox_DiveMap->insertItem(index, newMapName);
-        ui->comboBox_EmergeMap->insertItem(index, newMapName);
+    int mapIndex = this->editor->project->mapNames.indexOf(newMapName);
+    if (mapIndex >= 0) {
+        const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
+        const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
+        ui->comboBox_DiveMap->insertItem(mapIndex, newMapName);
+        ui->comboBox_EmergeMap->insertItem(mapIndex, newMapName);
     }
+
+    // Refresh layout combo box (if a new one was created)
+    if (!existingLayout) {
+        int layoutIndex = this->editor->project->mapLayoutsTable.indexOf(newMap->layout->id);
+        if (layoutIndex >= 0) {
+            const QSignalBlocker b_Layouts(ui->comboBox_LayoutSelector);
+            ui->comboBox_LayoutSelector->insertItem(layoutIndex, newMap->layout->id);
+        }
+    }
+
+    setMap(newMapName);
 
     if (newMap->needsHealLocation) {
         addNewEvent(Event::Type::HealLocation);
@@ -1786,8 +1793,6 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             this->ui->comboBox_SecondaryTileset->insertItem(index, createTilesetDialog->fullSymbolName);
         }
         insertTilesetLabel(&editor->project->tilesetLabelsOrdered, createTilesetDialog->fullSymbolName);
-
-        setProjectUI(); // need to reload tileset combos
 
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");
