@@ -839,6 +839,7 @@ bool MainWindow::setMap(QString map_name) {
         return false;
     }
 
+    // TODO: Redundant?
     if (editor->map && !editor->map->name.isNull()) {
         ui->mapList->setExpanded(groupListProxyModel->mapFromSource(mapGroupModel->indexOf(map_name)), false);
     }
@@ -851,11 +852,10 @@ bool MainWindow::setMap(QString map_name) {
     updateWindowTitle();
     resetMapListFilters();
 
-    connect(editor->map, &Map::mapNeedsRedrawing, this, &MainWindow::onMapNeedsRedrawing, Qt::UniqueConnection);
     connect(editor->map, &Map::modified, this, &MainWindow::markMapEdited, Qt::UniqueConnection);
 
     connect(editor->layout, &Layout::layoutChanged, this, &MainWindow::onLayoutChanged, Qt::UniqueConnection);
-    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing, Qt::UniqueConnection);
+    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
     userConfig.recentMapOrLayout = map_name;
 
@@ -911,7 +911,7 @@ bool MainWindow::setLayout(QString layoutId) {
     updateWindowTitle();
     resetMapListFilters();
 
-    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::onLayoutNeedsRedrawing, Qt::UniqueConnection);
+    connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
     updateTilesetEditor();
 
@@ -921,17 +921,9 @@ bool MainWindow::setLayout(QString layoutId) {
 }
 
 void MainWindow::redrawMapScene() {
-    if (!editor->displayMap())
-        return;
-
-    this->refreshMapScene();
-}
-
-void MainWindow::redrawLayoutScene() {
-    if (!editor->displayLayout())
-        return;
-
-    this->refreshMapScene();
+    editor->displayMap();
+    editor->displayLayout();
+    refreshMapScene();
 }
 
 void MainWindow::refreshMapScene() {
@@ -2837,31 +2829,22 @@ void MainWindow::onLayoutChanged(Layout *) {
     updateMapList();
 }
 
-void MainWindow::onMapNeedsRedrawing() {
-    redrawMapScene();
-}
-
-void MainWindow::onLayoutNeedsRedrawing() {
-    redrawLayoutScene();
-}
-
 void MainWindow::onMapLoaded(Map *map) {
     connect(map, &Map::modified, [this, map] { this->markSpecificMapEdited(map); });
 }
 
-// TODO: editor->layout below? and redrawLayoutScene?
 void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     // If saved tilesets are currently in-use, update them and redraw
     // Otherwise overwrite the cache for the saved tileset
     bool updated = false;
-    if (primaryTilesetLabel == this->editor->map->layout->tileset_primary_label) {
+    if (primaryTilesetLabel == this->editor->layout->tileset_primary_label) {
         this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
         Scripting::cb_TilesetUpdated(primaryTilesetLabel);
         updated = true;
     } else {
         this->editor->project->getTileset(primaryTilesetLabel, true);
     }
-    if (secondaryTilesetLabel == this->editor->map->layout->tileset_secondary_label)  {
+    if (secondaryTilesetLabel == this->editor->layout->tileset_secondary_label)  {
         this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
         Scripting::cb_TilesetUpdated(secondaryTilesetLabel);
         updated = true;
@@ -3012,7 +2995,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
 {
     if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
         editor->updatePrimaryTileset(tilesetLabel);
-        redrawLayoutScene();
+        redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
@@ -3024,7 +3007,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
 {
     if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
         editor->updateSecondaryTileset(tilesetLabel);
-        redrawLayoutScene();
+        redrawMapScene();
         on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
@@ -3289,7 +3272,7 @@ void MainWindow::reloadScriptEngine() {
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.projectDir);
     if (editor && editor->map)
-        Scripting::cb_MapOpened(editor->map->name);
+        Scripting::cb_MapOpened(editor->map->name); // TODO: API should have equivalent for layout
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()

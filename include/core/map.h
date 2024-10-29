@@ -114,7 +114,6 @@ private:
 signals:
     void modified();
     void mapDimensionsChanged(const QSize &size);
-    void mapNeedsRedrawing();
     void openScriptRequested(QString label);
     void connectionAdded(MapConnection*);
     void connectionRemoved(MapConnection*);

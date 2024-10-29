@@ -486,6 +486,7 @@ int EventPaste::id() const {
     ************************************************************************
  ******************************************************************************/
 
+// TODO: Undo/redo for script edits to layout dimensions doesn't render correctly.
 ScriptEditLayout::ScriptEditLayout(Layout *layout,
         QSize oldLayoutDimensions, QSize newLayoutDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,

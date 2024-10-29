@@ -185,8 +185,6 @@ private slots:
 
     void onLayoutChanged(Layout *layout);
     void onOpenConnectedMap(MapConnection*);
-    void onMapNeedsRedrawing();
-    void onLayoutNeedsRedrawing();
     void onTilesetsSaved(QString, QString);
     void openNewMapPopupWindow();
     void onNewMapCreated();
@@ -355,7 +353,6 @@ private:
     bool userSetLayout(QString layoutId);
     bool userSetMap(QString);
     void redrawMapScene();
-    void redrawLayoutScene();
     void refreshMapScene();
     void setLayoutOnlyMode(bool layoutOnly);
 

@@ -231,7 +231,7 @@ void MainWindow::setDimensions(int width, int height) {
         return;
     this->editor->layout->setDimensions(width, height);
     this->tryCommitMapChanges(true);
-    this->onMapNeedsRedrawing();
+    this->redrawMapScene();
 }
 
 void MainWindow::setWidth(int width) {
@@ -241,7 +241,7 @@ void MainWindow::setWidth(int width) {
         return;
     this->editor->layout->setDimensions(width, this->editor->layout->getHeight());
     this->tryCommitMapChanges(true);
-    this->onMapNeedsRedrawing();
+    this->redrawMapScene();
 }
 
 void MainWindow::setHeight(int height) {
@@ -251,7 +251,7 @@ void MainWindow::setHeight(int height) {
         return;
     this->editor->layout->setDimensions(this->editor->layout->getWidth(), height);
     this->tryCommitMapChanges(true);
-    this->onMapNeedsRedrawing();
+    this->redrawMapScene();
 }
 
 //=====================
@@ -301,7 +301,7 @@ void MainWindow::setBorderDimensions(int width, int height) {
         return;
     this->editor->layout->setBorderDimensions(width, height);
     this->tryCommitMapChanges(true);
-    this->onMapNeedsRedrawing();
+    this->redrawMapScene();
 }
 
 void MainWindow::setBorderWidth(int width) {
@@ -311,7 +311,7 @@ void MainWindow::setBorderWidth(int width) {
         return;
     this->editor->layout->setBorderDimensions(width, this->editor->layout->getBorderHeight());
     this->tryCommitMapChanges(true);
-    this->onMapNeedsRedrawing();
+    this->redrawMapScene();
 }
 
 void MainWindow::setBorderHeight(int height) {
@@ -321,7 +321,7 @@ void MainWindow::setBorderHeight(int height) {
         return;
     this->editor->layout->setBorderDimensions(this->editor->layout->getBorderWidth(), height);
     this->tryCommitMapChanges(true);
-    this->onMapNeedsRedrawing();
+    this->redrawMapScene();
 }
 
 //======================

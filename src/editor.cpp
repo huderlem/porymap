@@ -1280,6 +1280,7 @@ bool Editor::setMap(QString map_name) {
         if (!displayMap()) {
             return false;
         }
+        displayWildMonTables();
 
         connect(map, &Map::openScriptRequested, this, &Editor::openScript);
         connect(map, &Map::connectionAdded, this, &Editor::displayConnection);
@@ -1551,10 +1552,11 @@ void Editor::clearMap() {
 }
 
 bool Editor::displayMap() {
+    if (!this->map)
+        return false;
 
     displayMapEvents();
     displayMapConnections();
-    displayWildMonTables();
     maskNonVisibleConnectionTiles();
 
     if (events_group) {
@@ -1564,6 +1566,9 @@ bool Editor::displayMap() {
 }
 
 bool Editor::displayLayout() {
+    if (!this->layout)
+        return false;
+
     if (!scene) {
         scene = new QGraphicsScene;
         MapSceneEventFilter *filter = new MapSceneEventFilter(scene);
@@ -1826,10 +1831,8 @@ void Editor::clearMapConnections() {
 void Editor::displayMapConnections() {
     clearMapConnections();
 
-    if (map) {
-        for (auto connection : map->getConnections())
-            displayConnection(connection);
-    }
+    for (auto connection : map->getConnections())
+        displayConnection(connection);
 
     if (!connection_items.isEmpty())
         setSelectedConnectionItem(connection_items.first());
