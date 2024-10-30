@@ -484,7 +484,7 @@ bool Project::loadMapLayout(Map* map) {
         return false;
     }
 
-    if (map->hasUnsavedChanges() || map->layout->hasUnsavedChanges()) {
+    if (map->hasUnsavedChanges()) {
         return true;
     } else {
         return loadLayout(map->layout);
@@ -1463,6 +1463,7 @@ void Project::saveAllDataStructures() {
     saveMapConstantsHeader();
     saveWildMonData();
     saveConfig();
+    this->hasUnsavedDataChanges = false;
 }
 
 void Project::saveConfig() {
@@ -2293,7 +2294,6 @@ QString Project::getEmptyMapsecName() {
 
 // This function assumes a valid and unique name.
 // Will return the new index.
-// TODO: We're not currently tracking map/layout agonstic changes like this as unsaved, so there's no warning if you close the project after doing this.
 int Project::appendMapsec(QString name) {
     const QString emptyMapsecName = getEmptyMapsecName();
     int newMapsecValue = mapSectionValueToName.isEmpty() ? 0 : mapSectionValueToName.lastKey();
@@ -2308,6 +2308,7 @@ int Project::appendMapsec(QString name) {
 
     this->mapSectionNameToValue[name] = newMapsecValue;
     this->mapSectionValueToName[newMapsecValue] = name;
+    this->hasUnsavedDataChanges = true;
     return newMapsecValue;
 }
 
@@ -2992,4 +2993,24 @@ void Project::applyParsedLimits() {
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
     projectConfig.collisionSheetHeight = qMin(projectConfig.collisionSheetHeight, Block::getMaxElevation() + 1);
     projectConfig.collisionSheetWidth = qMin(projectConfig.collisionSheetWidth, Block::getMaxCollision() + 1);
+}
+
+bool Project::hasUnsavedChanges() {
+    if (this->hasUnsavedDataChanges)
+        return true;
+
+    // Check layouts for unsaved changes
+    for (auto i = this->mapLayouts.constBegin(); i != this->mapLayouts.constEnd(); i++) {
+        auto map = i.value();
+        if (map && map->hasUnsavedChanges())
+            return true;
+    }
+
+    // Check loaded maps for unsaved changes
+    for (auto i = this->mapCache.constBegin(); i != this->mapCache.constEnd(); i++) {
+        auto layout = i.value();
+        if (layout && layout->hasUnsavedChanges())
+            return true;
+    }
+    return false;
 }

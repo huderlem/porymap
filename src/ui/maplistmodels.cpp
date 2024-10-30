@@ -214,6 +214,7 @@ void MapGroupModel::updateProject() {
     this->project->mapGroups = mapGroups;
     this->project->groupedMapNames = groupedMapNames;
     this->project->mapNames = mapNames;
+    this->project->hasUnsavedDataChanges = true;
 }
 
 QStandardItem *MapGroupModel::createGroupItem(QString groupName, int groupIndex, QStandardItem *group) {

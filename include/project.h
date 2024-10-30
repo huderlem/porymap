@@ -144,6 +144,9 @@ public:
 
     int appendMapsec(QString name);
 
+    bool hasUnsavedChanges();
+    bool hasUnsavedDataChanges = false;
+
     QSet<QString> getTopLevelMapFields();
     bool loadMapData(Map*);
     bool readMapLayouts();

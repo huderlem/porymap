@@ -418,6 +418,6 @@ QPixmap Layout::getLayoutItemPixmap() {
     return this->layoutItem ? this->layoutItem->pixmap() : QPixmap();
 }
 
-bool Layout::hasUnsavedChanges() {
+bool Layout::hasUnsavedChanges() const {
     return !this->editHistory.isClean();
 }

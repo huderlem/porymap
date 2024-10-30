@@ -1427,6 +1427,8 @@ void MainWindow::mapListAddGroup() {
 
 // TODO: Pull this all out into a custom window. Connect that to an action in the main menu as well.
 // (or, re-use the new map dialog with some tweaks)
+// TODO: This needs to take the same default settings you would get for a new map (tilesets, dimensions, etc.)
+//       and initialize it with the same fill settings (default metatile/collision/elevation, default border)
 void MainWindow::mapListAddLayout() {
     if (!editor || !editor->project) return;
 
@@ -1458,7 +1460,6 @@ void MainWindow::mapListAddLayout() {
     errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
     QString errorMessage;
 
-    // TODO: Select default tilesets
     QComboBox *primaryCombo = new QComboBox(&dialog);
     primaryCombo->addItems(this->editor->project->primaryTilesetLabels);
     QComboBox *secondaryCombo = new QComboBox(&dialog);
@@ -1642,6 +1643,7 @@ void MainWindow::onNewMapCreated() {
 
     logInfo(QString("Created a new map named %1.").arg(newMapName));
 
+    // TODO: Creating a new map shouldn't be automatically saved
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
@@ -3496,17 +3498,7 @@ bool MainWindow::closeProject() {
     if (!isProjectOpen())
         return true;
 
-    // Check loaded maps for unsaved changes
-    // TODO: This needs to check for unsaved changes in layouts too.
-    bool unsavedChanges = false;
-    for (auto map : editor->project->mapCache.values()) {
-        if (map && map->hasUnsavedChanges()) {
-            unsavedChanges = true;
-            break;
-        }
-    }
-
-    if (unsavedChanges) {
+    if (this->editor->project->hasUnsavedChanges()) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this, "porymap", "The project has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);

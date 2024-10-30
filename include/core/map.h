@@ -101,7 +101,7 @@ public:
     QUndoStack editHistory;
     void modify();
     void clean();
-    bool hasUnsavedChanges();
+    bool hasUnsavedChanges() const;
     void pruneEditHistory();
 
 private:
