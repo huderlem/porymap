@@ -153,10 +153,11 @@ void MainWindow::initExtraShortcuts() {
     shortcutDuplicate_Events->setObjectName("shortcutDuplicate_Events");
     shortcutDuplicate_Events->setWhatsThis("Duplicate Selected Event(s)");
 
-    auto *shortcutDelete_Object = new Shortcut(
+    // TODO: Reimplement this using keyPressEvent on the relevant widgets. Otherwise it steals the key event from anything else trying to use delete.
+    /*auto *shortcutDelete_Object = new Shortcut(
             {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(onDeleteKeyPressed()));
     shortcutDelete_Object->setObjectName("shortcutDelete_Object");
-    shortcutDelete_Object->setWhatsThis("Delete Selected Item(s)");
+    shortcutDelete_Object->setWhatsThis("Delete Selected Item(s)");*/
 
     auto *shortcutToggle_Border = new Shortcut(QKeySequence(), ui->checkBox_ToggleBorder, SLOT(toggle()));
     shortcutToggle_Border->setObjectName("shortcutToggle_Border");
@@ -874,11 +875,6 @@ bool MainWindow::setMap(QString map_name) {
         return false;
     }
 
-    // TODO: Redundant?
-    if (editor->map && !editor->map->name.isNull()) {
-        ui->mapList->setExpanded(groupListProxyModel->mapFromSource(mapGroupModel->indexOf(map_name)), false);
-    }
-
     setLayoutOnlyMode(false);
     this->lastSelectedEvent.clear();
 
@@ -1301,11 +1297,7 @@ void MainWindow::scrollMapList(MapTree *list, QString itemName) {
     if (!list || itemName.isEmpty())
         return;
     auto model = static_cast<FilterChildrenProxyModel*>(list->model());
-    if (!model)
-        return;
     auto sourceModel = static_cast<MapListModel*>(model->sourceModel());
-    if (!sourceModel)
-        return;
     QModelIndex sourceIndex = sourceModel->indexOf(itemName);
     if (!sourceIndex.isValid())
         return;
@@ -1332,66 +1324,53 @@ void MainWindow::scrollMapListToCurrentLayout(MapTree *list) {
 }
 
 void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
-    QStandardItemModel *model;
-    int dataRole;
-    FilterChildrenProxyModel *proxy;
-    QTreeView *list;
-    QString actionText;
-
-    int currentTab = ui->mapListContainer->currentIndex();
-
-    switch (currentTab) {
-    case MapListTab::Groups:
-        model = this->mapGroupModel;
-        dataRole = MapListUserRoles::GroupRole;
-        proxy = this->groupListProxyModel;
-        list = this->ui->mapList;
-        actionText = "Add New Map to Group";
-        break;
-    case MapListTab::Areas:
-        model = this->mapAreaModel;
-        dataRole = Qt::UserRole;
-        proxy = this->areaListProxyModel;
-        list = this->ui->areaList;
-        actionText = "Add New Map to Area";
-        break;
-    case MapListTab::Layouts:
-        model = this->layoutTreeModel;
-        dataRole = Qt::UserRole;
-        proxy = this->layoutListProxyModel;
-        list = this->ui->layoutList;
-        actionText = "Add New Map with Layout";
-        break;
-    }
-
-    QModelIndex index = proxy->mapToSource(list->indexAt(point));
-    if (!index.isValid()) {
-        return;
-    }
-
-    QStandardItem *selectedItem = model->itemFromIndex(index);
-
-    if (selectedItem->parent()) {
-        // TODO: Right-click delete on maps?
-        return;
-    }
-
-    QVariant itemData = selectedItem->data(dataRole);
-    if (!itemData.isValid()) {
-        return;
-    }
+    // Get selected item from list
+    auto list = getCurrentMapList();
+    if (!list) return;
+    auto model = static_cast<FilterChildrenProxyModel*>(list->model());
+    QModelIndex index = model->mapToSource(list->indexAt(point));
+    if (!index.isValid()) return;
+    auto sourceModel = static_cast<MapListModel*>(model->sourceModel());
+    QStandardItem *selectedItem = sourceModel->itemFromIndex(index);
+    const QString itemType = selectedItem->data(MapListUserRoles::TypeRole).toString();
+    const QString itemName = selectedItem->data(Qt::UserRole).toString();
 
     QMenu menu(this);
-    QActionGroup actions(&menu);
-    actions.addAction(menu.addAction(actionText))->setData(itemData);
+    QAction* addToFolderAction = nullptr;
+    QAction* deleteFolderAction = nullptr;
+    if (itemType == "map_name") {
+        // Right-clicking on a map.
+        // TODO: Add action to delete map once deleting maps is supported
+    } else if (itemType == "map_group") {
+        // Right-clicking on a map group folder
+        addToFolderAction = menu.addAction("Add New Map to Group");
+        deleteFolderAction = menu.addAction("Delete Map Group");
+    } else if (itemType == "map_section") {
+        // Right-clicking on an MAPSEC folder
+        addToFolderAction = menu.addAction("Add New Map to Area");
+    } else if (itemType == "map_layout") {
+        // Right-clicking on a map layout
+        addToFolderAction = menu.addAction("Add New Map with Layout");
+    }
 
-    auto triggeredAction = menu.exec(QCursor::pos());
-    if (!triggeredAction)
-        return;
+    if (addToFolderAction) {
+        connect(addToFolderAction, &QAction::triggered, [this, itemName] {
+            openNewMapPopupWindow();
+            this->newMapPrompt->init(ui->mapListContainer->currentIndex(), itemName);
+        });
+    }
+    if (deleteFolderAction) {
+        connect(deleteFolderAction, &QAction::triggered, [sourceModel, index] {
+            sourceModel->removeFolder(index.row());
+        });
+        if (selectedItem->hasChildren()){
+            // TODO: No support for deleting maps, so you may only delete folders if they don't contain any maps.
+            deleteFolderAction->setEnabled(false);
+        }
+    }
 
-    // At the moment all the actions do the same thing (add new map/layout).
-    openNewMapPopupWindow();
-    this->newMapPrompt->init(currentTab, triggeredAction->data());
+    if (menu.actions().length() != 0)
+        menu.exec(QCursor::pos());
 }
 
 void MainWindow::mapListAddGroup() {
@@ -1587,49 +1566,6 @@ void MainWindow::mapListAddArea() {
         if (newNameEdit->text().isEmpty()) return;
         this->mapAreaModel->insertAreaItem(newNameDisplay->text());
     }
-}
-
-// TODO: Connect to right-click on map group folder in list
-void MainWindow::mapListRemoveGroup() {
-    QItemSelectionModel *selectionModel = this->ui->mapList->selectionModel();
-    if (selectionModel->hasSelection()) {
-        QModelIndexList selectedIndexes = selectionModel->selectedRows();
-        for (QModelIndex proxyIndex : selectedIndexes) {
-            QModelIndex index = this->groupListProxyModel->mapToSource(proxyIndex);
-            QStandardItem *item = this->mapGroupModel->getItem(index)->child(index.row(), index.column());
-            if (!item) continue;
-            QString type = item->data(MapListUserRoles::TypeRole).toString();
-            if (type == "map_group" && !item->hasChildren()) {
-                QString groupName = item->data(Qt::UserRole).toString();
-                // delete empty group
-                this->mapGroupModel->removeGroup(index.row());
-            }
-        }
-    }
-}
-
-// TODO: Decide what to do about this. Currently unused.
-void MainWindow::mapListRemoveArea() {
-    QItemSelectionModel *selectionModel = this->ui->areaList->selectionModel();
-    if (selectionModel->hasSelection()) {
-        QModelIndexList selectedIndexes = selectionModel->selectedRows();
-        for (QModelIndex proxyIndex : selectedIndexes) {
-            QModelIndex index = this->areaListProxyModel->mapToSource(proxyIndex);
-            QStandardItem *item = this->mapAreaModel->getItem(index)->child(index.row(), index.column());
-            if (!item) continue;
-            QString type = item->data(MapListUserRoles::TypeRole).toString();
-            if (type == "map_section" && !item->hasChildren()) {
-                QString groupName = item->data(Qt::UserRole).toString();
-                // delete empty section
-                this->mapAreaModel->removeArea(index.row());
-            }
-        }
-    }
-}
-
-// TODO: Connect to right-click on layout
-void MainWindow::mapListRemoveLayout() {
-    // TODO: consider this in the future
 }
 
 void MainWindow::onNewMapCreated() {
@@ -3184,6 +3120,13 @@ MapListToolBar* MainWindow::getCurrentMapListToolBar() {
     case MapListTab::Layouts: return ui->mapListToolBar_Layouts;
     default: return nullptr;
     }
+}
+
+MapTree* MainWindow::getCurrentMapList() {
+    auto toolbar = getCurrentMapListToolBar();
+    if (toolbar)
+        return toolbar->list();
+    return nullptr;
 }
 
 // Clear the search filters on all the map lists.

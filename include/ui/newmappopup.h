@@ -24,7 +24,7 @@ public:
     QString layoutId;
     void init();
     void initUi();
-    void init(int tabIndex, QVariant data);
+    void init(int tabIndex, QString data);
     void init(Layout *);
     static void setDefaultSettings(Project *project);
 

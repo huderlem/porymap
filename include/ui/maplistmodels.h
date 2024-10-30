@@ -26,7 +26,11 @@ public:
     MapTree(QWidget *parent) : QTreeView(parent) {
         this->setDropIndicatorShown(true);
         this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        this->setFocusPolicy(Qt::StrongFocus);
     }
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *event) override;
 
 public slots:
     void removeSelected();
@@ -61,6 +65,9 @@ public:
     ~MapListModel() { }
 
     virtual QModelIndex indexOf(QString id) const = 0;
+    virtual void removeFolder(int index) = 0;
+    virtual void removeItem(const QModelIndex &index);
+    virtual QStandardItem *getItem(const QModelIndex &index) const = 0;
 };
 
 class MapGroupModel : public MapListModel {
@@ -87,9 +94,9 @@ public:
 
     QStandardItem *insertGroupItem(QString groupName);
     QStandardItem *insertMapItem(QString mapName, QString groupName);
-    void removeGroup(int groupIndex);
+    virtual void removeFolder(int index) override;
 
-    QStandardItem *getItem(const QModelIndex &index) const;
+    virtual QStandardItem *getItem(const QModelIndex &index) const override;
     virtual QModelIndex indexOf(QString mapName) const override;
 
     void initialize();
@@ -130,9 +137,9 @@ public:
 
     QStandardItem *insertAreaItem(QString areaName);
     QStandardItem *insertMapItem(QString mapName, QString areaName, int groupIndex);
-    void removeArea(int groupIndex);
+    virtual void removeFolder(int index) override;
 
-    QStandardItem *getItem(const QModelIndex &index) const;
+    virtual QStandardItem *getItem(const QModelIndex &index) const override;
     virtual QModelIndex indexOf(QString mapName) const override;
 
     void initialize();
@@ -170,8 +177,9 @@ public:
 
     QStandardItem *insertLayoutItem(QString layoutId);
     QStandardItem *insertMapItem(QString mapName, QString layoutId);
+    virtual void removeFolder(int index) override;
 
-    QStandardItem *getItem(const QModelIndex &index) const;
+    virtual QStandardItem *getItem(const QModelIndex &index) const override;
     virtual QModelIndex indexOf(QString layoutName) const override;
 
     void initialize();

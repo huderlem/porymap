@@ -383,9 +383,6 @@ private:
     void mapListAddGroup();
     void mapListAddLayout();
     void mapListAddArea();
-    void mapListRemoveGroup();
-    void mapListRemoveArea();
-    void mapListRemoveLayout();
     void openMapListItem(const QModelIndex &index);
     void saveMapListTab(int index);
 
@@ -424,6 +421,7 @@ private:
     void redrawMetatileSelection();
     void scrollMetatileSelectorToSelection();
     MapListToolBar* getCurrentMapListToolBar();
+    MapTree* getCurrentMapList();
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);

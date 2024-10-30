@@ -15,6 +15,45 @@ void MapTree::removeSelected() {
     }
 }
 
+void MapTree::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
+        // Delete selected items in the tree
+        auto selectionModel = this->selectionModel();
+        if (!selectionModel->hasSelection())
+            return;
+
+        auto model = static_cast<FilterChildrenProxyModel*>(this->model());
+        auto sourceModel = static_cast<MapListModel*>(model->sourceModel());
+
+        QModelIndexList selectedIndexes = selectionModel->selectedRows();
+        QList<QPersistentModelIndex> persistentIndexes;
+        for (const auto &index : selectedIndexes) {
+            persistentIndexes.append(model->mapToSource(index));
+        }
+        for (const auto &index : persistentIndexes) {
+            sourceModel->removeItem(index);
+        }
+    } else {
+        QWidget::keyPressEvent(event);
+    }
+}
+
+void MapListModel::removeItem(const QModelIndex &index) {
+    QStandardItem *item = this->getItem(index)->child(index.row(), index.column());
+    if (!item)
+        return;
+
+    const QString type = item->data(MapListUserRoles::TypeRole).toString();
+    if (type == "map_name") {
+        // TODO: No support for deleting maps
+    } else {
+        // TODO: Because there's no support for deleting maps we can only delete empty folders
+        if (!item->hasChildren()) {
+            this->removeFolder(index.row());
+        }
+    }
+}
+
 
 
 QWidget *GroupNameDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
@@ -244,8 +283,8 @@ QStandardItem *MapGroupModel::insertGroupItem(QString groupName) {
     return group;
 }
 
-void MapGroupModel::removeGroup(int groupIndex) {
-    this->removeRow(groupIndex);
+void MapGroupModel::removeFolder(int index) {
+    this->removeRow(index);
     this->updateProject();
 }
 
@@ -365,6 +404,8 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
     }
 }
 
+// TODO: Deleting MAPSEC support? Currently it has no limits on drag/drop etc, so editing is disabled (so delete key from the map list is ignored)
+//       and it has no delete action in the context menu.
 
 
 MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(parent) {
@@ -422,9 +463,9 @@ QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, in
     return map;
 }
 
-void MapAreaModel::removeArea(int areaIndex) {
-    this->removeRow(areaIndex);
-    this->project->mapSectionNameToValue.remove(this->project->mapSectionValueToName.take(areaIndex));
+void MapAreaModel::removeFolder(int index) {
+    this->removeRow(index);
+    this->project->mapSectionNameToValue.remove(this->project->mapSectionValueToName.take(index));
 }
 
 void MapAreaModel::initialize() {
@@ -582,6 +623,11 @@ QStandardItem *LayoutTreeModel::insertMapItem(QString mapName, QString layoutId)
     layout->appendRow(map);
     return map;
 }
+
+void LayoutTreeModel::removeFolder(int) {
+    // TODO: Deleting layouts not supported
+}
+
 
 void LayoutTreeModel::initialize() {
     this->layoutItems.clear();

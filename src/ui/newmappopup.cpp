@@ -102,19 +102,19 @@ void NewMapPopup::init() {
 }
 
 // Creating new map by right-clicking in the map list
-void NewMapPopup::init(int tabIndex, QVariant data) {
+void NewMapPopup::init(int tabIndex, QString fieldName) {
     initUi();
     switch (tabIndex)
     {
     case MapListTab::Groups:
-        settings.group = project->groupNames.at(data.toInt());
+        settings.group = fieldName;
         break;
     case MapListTab::Areas:
-        settings.location = data.toString();
+        settings.location = fieldName;
         break;
     case MapListTab::Layouts:
         this->ui->checkBox_UseExistingLayout->setCheckState(Qt::Checked);
-        useLayout(data.toString());
+        useLayout(fieldName);
         break;
     }
     init();

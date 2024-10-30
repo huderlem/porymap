@@ -3001,15 +3001,15 @@ bool Project::hasUnsavedChanges() {
 
     // Check layouts for unsaved changes
     for (auto i = this->mapLayouts.constBegin(); i != this->mapLayouts.constEnd(); i++) {
-        auto map = i.value();
-        if (map && map->hasUnsavedChanges())
+        auto layout = i.value();
+        if (layout && layout->hasUnsavedChanges())
             return true;
     }
 
     // Check loaded maps for unsaved changes
     for (auto i = this->mapCache.constBegin(); i != this->mapCache.constEnd(); i++) {
-        auto layout = i.value();
-        if (layout && layout->hasUnsavedChanges())
+        auto map = i.value();
+        if (map && map->hasUnsavedChanges())
             return true;
     }
     return false;
