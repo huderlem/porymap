@@ -88,8 +88,6 @@ public:
 
     void set_root(QString);
 
-    void initSignals();
-
     void clearMapCache();
     void clearTilesetCache();
     void clearMapLayouts();
@@ -267,8 +265,7 @@ private:
     static int max_object_events;
 
 signals:
-    void reloadProject();
-    void uncheckMonitorFilesAction();
+    void fileChanged(QString filepath);
     void mapLoaded(Map *map);
 };
 

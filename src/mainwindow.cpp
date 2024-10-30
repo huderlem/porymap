@@ -602,13 +602,8 @@ bool MainWindow::openProject(QString dir, bool initial) {
     // Create the project
     auto project = new Project(editor);
     project->set_root(dir);
-    QObject::connect(project, &Project::reloadProject, this, &MainWindow::on_action_Reload_Project_triggered);
+    QObject::connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
     QObject::connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
-    QObject::connect(project, &Project::uncheckMonitorFilesAction, [this]() {
-        porymapConfig.monitorFiles = false;
-        if (this->preferenceEditor)
-            this->preferenceEditor->updateFields();
-    });
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
@@ -759,6 +754,46 @@ void MainWindow::openSubWindow(QWidget * window) {
         window->raise();
         window->activateWindow();
     }
+}
+
+void MainWindow::showFileWatcherWarning(QString filepath) {
+    if (!porymapConfig.monitorFiles || !isProjectOpen())
+        return;
+
+    Project *project = this->editor->project;
+    if (project->modifiedFileTimestamps.contains(filepath)) {
+        if (QDateTime::currentMSecsSinceEpoch() < project->modifiedFileTimestamps[filepath]) {
+            return;
+        }
+        project->modifiedFileTimestamps.remove(filepath);
+    }
+
+    static bool showing = false;
+    if (showing) return;
+
+    QMessageBox notice(this);
+    notice.setText("File Changed");
+    notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
+                              .arg(filepath.remove(project->root + "/")));
+    notice.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+    notice.setDefaultButton(QMessageBox::No);
+    notice.setIcon(QMessageBox::Question);
+
+    QCheckBox showAgainCheck("Do not ask again.");
+    notice.setCheckBox(&showAgainCheck);
+
+    showing = true;
+    int choice = notice.exec();
+    if (choice == QMessageBox::Yes) {
+        on_action_Reload_Project_triggered();
+    } else if (choice == QMessageBox::No) {
+        if (showAgainCheck.isChecked()) {
+            porymapConfig.monitorFiles = false;
+            if (this->preferenceEditor)
+                this->preferenceEditor->updateFields();
+        }
+    }
+    showing = false;
 }
 
 QString MainWindow::getExistingDirectory(QString dir) {

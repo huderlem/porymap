@@ -38,7 +38,7 @@ int Project::max_object_events = 64;
 Project::Project(QObject *parent) :
     QObject(parent)
 {
-    initSignals();
+    QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::fileChanged);
 }
 
 Project::~Project()
@@ -47,45 +47,6 @@ Project::~Project()
     clearTilesetCache();
     clearMapLayouts();
     clearEventGraphics();
-}
-
-void Project::initSignals() {
-    // detect changes to specific filepaths being monitored
-    QObject::connect(&fileWatcher, &QFileSystemWatcher::fileChanged, [this](QString changed){
-        if (!porymapConfig.monitorFiles) return;
-        if (modifiedFileTimestamps.contains(changed)) {
-            if (QDateTime::currentMSecsSinceEpoch() < modifiedFileTimestamps[changed]) {
-                return;
-            }
-            modifiedFileTimestamps.remove(changed);
-        }
-
-        static bool showing = false;
-        if (showing) return;
-
-        QMessageBox notice(this->parentWidget());
-        notice.setText("File Changed");
-        notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
-                                  .arg(changed.remove(this->root + "/")));
-        notice.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
-        notice.setDefaultButton(QMessageBox::No);
-        notice.setIcon(QMessageBox::Question);
-
-        QCheckBox showAgainCheck("Do not ask again.");
-        notice.setCheckBox(&showAgainCheck);
-
-        showing = true;
-        int choice = notice.exec();
-        if (choice == QMessageBox::Yes) {
-            emit reloadProject();
-        } else if (choice == QMessageBox::No) {
-            if (showAgainCheck.isChecked()) {
-                porymapConfig.monitorFiles = false;
-                emit uncheckMonitorFilesAction();
-            }
-        }
-        showing = false;
-    });
 }
 
 void Project::set_root(QString dir) {
