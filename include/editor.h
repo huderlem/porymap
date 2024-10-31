@@ -96,7 +96,6 @@ public:
     void renderDivingConnections();
     void addConnection(MapConnection* connection);
     void removeConnection(MapConnection* connection);
-    void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
     void configureEncounterJSON(QWidget *);
@@ -187,6 +186,7 @@ public:
 
     bool selectingEvent = false;
 
+    void deleteSelectedEvents();
     void shouldReselectEvents();
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);

@@ -73,7 +73,8 @@ public:
 private:
     QMap<int, Overlay*> overlayMap;
 protected:
-    void drawForeground(QPainter *painter, const QRectF &rect);
+    virtual void drawForeground(QPainter *painter, const QRectF &rect) override;
+    virtual void keyPressEvent(QKeyEvent*) override;
 };
 
 #endif // GRAPHICSVIEW_H

@@ -811,6 +811,9 @@ void Editor::displayConnection(MapConnection *connection) {
     connect(listItem, &ConnectionsListItem::openMapClicked, this, &Editor::openConnectedMap);
     connect(pixmapItem, &ConnectionPixmapItem::connectionItemDoubleClicked, this, &Editor::openConnectedMap);
 
+    // Pressing the delete key on a selected connection's pixmap deletes it
+    connect(pixmapItem, &ConnectionPixmapItem::deleteRequested, this, &Editor::removeConnection);
+
     // Sync the selection highlight between the list UI and the pixmap
     connect(pixmapItem, &ConnectionPixmapItem::selectionChanged, [=](bool selected) {
         listItem->setSelected(selected);
@@ -867,11 +870,6 @@ void Editor::removeConnection(MapConnection *connection) {
     if (!connection)
         return;
     this->map->editHistory.push(new MapConnectionRemove(this->map, connection));
-}
-
-void Editor::removeSelectedConnection() {
-    if (selected_connection_item)
-        removeConnection(selected_connection_item->connection);
 }
 
 void Editor::removeConnectionPixmap(MapConnection *connection) {
@@ -1257,42 +1255,42 @@ void Editor::unsetMap() {
 }
 
 bool Editor::setMap(QString map_name) {
-    if (map_name.isEmpty()) {
+    if (!project || map_name.isEmpty()) {
         return false;
     }
 
     unsetMap();
 
-    if (project) {
-        Map *loadedMap = project->loadMap(map_name);
-        if (!loadedMap) {
-            return false;
-        }
-
-        this->map = loadedMap;
-
-        setLayout(map->layout->id);
-
-        editGroup.addStack(&map->editHistory);
-        editGroup.setActiveStack(&map->editHistory);
-
-        selected_events->clear();
-        if (!displayMap()) {
-            return false;
-        }
-        displayWildMonTables();
-
-        connect(map, &Map::openScriptRequested, this, &Editor::openScript);
-        connect(map, &Map::connectionAdded, this, &Editor::displayConnection);
-        connect(map, &Map::connectionRemoved, this, &Editor::removeConnectionPixmap);
-        updateSelectedEvents();
+    Map *loadedMap = project->loadMap(map_name);
+    if (!loadedMap) {
+        return false;
     }
+
+    this->map = loadedMap;
+
+    setLayout(map->layout->id);
+
+    editGroup.addStack(&map->editHistory);
+    editGroup.setActiveStack(&map->editHistory);
+
+    selected_events->clear();
+    if (!displayMap()) {
+        return false;
+    }
+    displayWildMonTables();
+
+    connect(map, &Map::openScriptRequested, this, &Editor::openScript);
+    connect(map, &Map::connectionAdded, this, &Editor::displayConnection);
+    connect(map, &Map::connectionRemoved, this, &Editor::removeConnectionPixmap);
+    updateSelectedEvents();
 
     return true;
 }
 
 bool Editor::setLayout(QString layoutId) {
-    if (layoutId.isEmpty()) return false;
+    if (!project || layoutId.isEmpty()) {
+        return false;
+    }
 
     this->layout = this->project->loadLayout(layoutId);
 
@@ -2222,6 +2220,50 @@ bool Editor::eventLimitReached(Event::Type event_type) {
             return map->events.value(Event::Group::Object).length() >= project->getMaxObjectEvents();
     }
     return false;
+}
+
+void Editor::deleteSelectedEvents() {
+    if (!this->selected_events || this->selected_events->length() == 0 || !this->map || this->editMode != EditMode::Events)
+        return;
+
+    DraggablePixmapItem *nextSelectedEvent = nullptr;
+    QList<Event *> selectedEvents;
+    int numDeleted = 0;
+    for (DraggablePixmapItem *item : *this->selected_events) {
+        Event::Group event_group = item->event->getEventGroup();
+        if (event_group != Event::Group::Heal) {
+            numDeleted++;
+            item->event->setPixmapItem(item);
+            selectedEvents.append(item->event);
+        }
+        else { // don't allow deletion of heal locations
+            logWarn(QString("Cannot delete event of type '%1'").arg(Event::eventTypeToString(item->event->getEventType())));
+        }
+    }
+    if (numDeleted) {
+        // Get the index for the event that should be selected after this event has been deleted.
+        // Select event at next smallest index when deleting a single event.
+        // If deleting multiple events, just let editor work out next selected.
+        if (numDeleted == 1) {
+            Event::Group event_group = selectedEvents[0]->getEventGroup();
+            int index = this->map->events.value(event_group).indexOf(selectedEvents[0]);
+            if (index != this->map->events.value(event_group).size() - 1)
+                index++;
+            else
+                index--;
+            Event *event = nullptr;
+            if (index >= 0)
+                event = this->map->events.value(event_group).at(index);
+            for (QGraphicsItem *child : this->events_group->childItems()) {
+                DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
+                if (event_item->event == event) {
+                    nextSelectedEvent = event_item;
+                    break;
+                }
+            }
+        }
+        this->map->editHistory.push(new EventDelete(this, this->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
+    }
 }
 
 void Editor::openMapScripts() const {

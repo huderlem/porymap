@@ -24,6 +24,14 @@ void GraphicsView::moveEvent(QMoveEvent *event) {
         label_MapRulerStatus->move(mapToGlobal(QPoint(6, 6)));
 }
 
+void MapView::keyPressEvent(QKeyEvent *event) {
+    if (editor && (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)) {
+        editor->deleteSelectedEvents();
+    } else {
+        QGraphicsView::keyPressEvent(event);
+    }
+}
+
 void MapView::drawForeground(QPainter *painter, const QRectF&) {
     for (auto i = this->overlayMap.constBegin(); i != this->overlayMap.constEnd(); i++) {
         i.value()->renderItems(painter);

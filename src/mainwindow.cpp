@@ -153,12 +153,6 @@ void MainWindow::initExtraShortcuts() {
     shortcutDuplicate_Events->setObjectName("shortcutDuplicate_Events");
     shortcutDuplicate_Events->setWhatsThis("Duplicate Selected Event(s)");
 
-    // TODO: Reimplement this using keyPressEvent on the relevant widgets. Otherwise it steals the key event from anything else trying to use delete.
-    /*auto *shortcutDelete_Object = new Shortcut(
-            {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(onDeleteKeyPressed()));
-    shortcutDelete_Object->setObjectName("shortcutDelete_Object");
-    shortcutDelete_Object->setWhatsThis("Delete Selected Item(s)");*/
-
     auto *shortcutToggle_Border = new Shortcut(QKeySequence(), ui->checkBox_ToggleBorder, SLOT(toggle()));
     shortcutToggle_Border->setObjectName("shortcutToggle_Border");
     shortcutToggle_Border->setWhatsThis("Toggle Border");
@@ -320,6 +314,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::wildMonTableEdited, [this] { this->markMapEdited(); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
+    connect(ui->toolButton_deleteObject, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
 
     this->loadUserSettings();
 
@@ -857,13 +852,7 @@ bool MainWindow::userSetMap(QString map_name) {
 }
 
 bool MainWindow::setMap(QString map_name) {
-    // if map name is empty, clear & disable map ui
-    if (map_name.isEmpty()) {
-        unsetMap();
-        return false;
-    }
-
-    if (map_name == DYNAMIC_MAP_NAME) {
+    if (map_name.isEmpty() || map_name == DYNAMIC_MAP_NAME) {
         logInfo(QString("Cannot set map to '%1'").arg(DYNAMIC_MAP_NAME));
         return false;
     }
@@ -2583,60 +2572,6 @@ void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int valu
     this->editor->collisionOpacity = static_cast<qreal>(value) / 100;
     porymapConfig.collisionOpacity = value;
     this->editor->collision_item->draw(true);
-}
-
-void MainWindow::onDeleteKeyPressed() {
-    auto tab = ui->mainTabBar->currentIndex();
-    if (tab == MainTab::Events) {
-        on_toolButton_deleteObject_clicked();
-    } else if (tab == MainTab::Connections) {
-        if (editor) editor->removeSelectedConnection();
-    }
-}
-
-void MainWindow::on_toolButton_deleteObject_clicked() {
-    if (editor && editor->selected_events) {
-        if (editor->selected_events->length()) {
-            DraggablePixmapItem *nextSelectedEvent = nullptr;
-            QList<Event *> selectedEvents;
-            int numDeleted = 0;
-            for (DraggablePixmapItem *item : *editor->selected_events) {
-                Event::Group event_group = item->event->getEventGroup();
-                if (event_group != Event::Group::Heal) {
-                    numDeleted++;
-                    item->event->setPixmapItem(item);
-                    selectedEvents.append(item->event);
-                }
-                else { // don't allow deletion of heal locations
-                    logWarn(QString("Cannot delete event of type '%1'").arg(Event::eventTypeToString(item->event->getEventType())));
-                }
-            }
-            if (numDeleted) {
-                // Get the index for the event that should be selected after this event has been deleted.
-                // Select event at next smallest index when deleting a single event.
-                // If deleting multiple events, just let editor work out next selected.
-                if (numDeleted == 1) {
-                    Event::Group event_group = selectedEvents[0]->getEventGroup();
-                    int index = editor->map->events.value(event_group).indexOf(selectedEvents[0]);
-                    if (index != editor->map->events.value(event_group).size() - 1)
-                        index++;
-                    else
-                        index--;
-                    Event *event = nullptr;
-                    if (index >= 0)
-                        event = editor->map->events.value(event_group).at(index);
-                    for (QGraphicsItem *child : editor->events_group->childItems()) {
-                        DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
-                        if (event_item->event == event) {
-                            nextSelectedEvent = event_item;
-                            break;
-                        }
-                    }
-                }
-                editor->map->editHistory.push(new EventDelete(editor, editor->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
-            }
-        }
-    }
 }
 
 void MainWindow::on_toolButton_Paint_clicked()

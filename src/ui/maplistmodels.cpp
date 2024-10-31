@@ -404,8 +404,6 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
     }
 }
 
-// TODO: Deleting MAPSEC support? Currently it has no limits on drag/drop etc, so editing is disabled (so delete key from the map list is ignored)
-//       and it has no delete action in the context menu.
 
 
 MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(parent) {
