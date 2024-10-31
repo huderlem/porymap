@@ -414,8 +414,8 @@ void MainWindow::initMapList() {
     connect(ui->layoutList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
 
     // Only the groups list allows reorganizing folder contents, editing folder names, etc.
-    ui->mapListToolBar_Areas->setEditsAllowedButtonHidden(true);
-    ui->mapListToolBar_Layouts->setEditsAllowedButtonHidden(true);
+    ui->mapListToolBar_Areas->setEditsAllowedButtonVisible(false);
+    ui->mapListToolBar_Layouts->setEditsAllowedButtonVisible(false);
 
     // When map list search filter is cleared we want the current map/layout in the editor to be visible in the list.
     connect(ui->mapListToolBar_Groups,  &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);

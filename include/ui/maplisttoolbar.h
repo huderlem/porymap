@@ -22,12 +22,15 @@ public:
     MapTree* list() const { return m_list; }
     void setList(MapTree *list);
 
-    void setEditsAllowedButtonHidden(bool hidden);
+    void setEditsAllowedButtonVisible(bool visible);
+    void setEditsAllowed(bool allowed);
+    void toggleEditsAllowed();
 
+    void setEmptyFoldersVisible(bool visible);
     void toggleEmptyFolders();
+
     void expandList();
     void collapseList();
-    void toggleEditsAllowed();
 
     void applyFilter(const QString &filterText);
     void clearFilter();
@@ -42,8 +45,8 @@ private:
     Ui::MapListToolBar *ui;
     QPointer<MapTree> m_list;
     bool m_filterLocked = false;
-
-    void setEditsAllowed(bool allowed);
+    bool m_editsAllowed = false;
+    bool m_emptyFoldersVisible = true;
 };
 
 #endif // MAPLISTTOOLBAR_H

@@ -9,7 +9,7 @@ class FilterChildrenProxyModel : public QSortFilterProxyModel
 
 public:
     explicit FilterChildrenProxyModel(QObject *parent = nullptr);
-    bool toggleHideEmpty() { return this->hideEmpty = !this->hideEmpty; }
+    void setHideEmpty(bool hidden) { this->hideEmpty = hidden; }
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex & source_parent) const;
 private:

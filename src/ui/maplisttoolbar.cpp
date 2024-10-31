@@ -4,18 +4,32 @@
 
 #include <QToolTip>
 
+/*
+    TODO: The button states for each tool bar (just the two toggleable buttons, hide empty folders and allow editing)
+          should be saved in the config. This will be cleaner/easier once the config is JSON, so holding off on that for now.
+*/
+
 MapListToolBar::MapListToolBar(QWidget *parent)
     : QFrame(parent)
     , ui(new Ui::MapListToolBar)
 {
     ui->setupUi(this);
 
-    connect(ui->button_ToggleEmptyFolders, &QAbstractButton::clicked, this, &MapListToolBar::toggleEmptyFolders);
+    ui->button_ToggleEmptyFolders->setChecked(!m_emptyFoldersVisible);
+    ui->button_ToggleEdit->setChecked(m_editsAllowed);
+
     connect(ui->button_AddFolder, &QAbstractButton::clicked, this, &MapListToolBar::addFolderClicked); // TODO: Tool tip
     connect(ui->button_ExpandAll, &QAbstractButton::clicked, this, &MapListToolBar::expandList);
     connect(ui->button_CollapseAll, &QAbstractButton::clicked, this, &MapListToolBar::collapseList);
     connect(ui->button_ToggleEdit, &QAbstractButton::clicked, this, &MapListToolBar::toggleEditsAllowed);
     connect(ui->lineEdit_filterBox, &QLineEdit::textChanged, this, &MapListToolBar::applyFilter);
+    connect(ui->button_ToggleEmptyFolders, &QAbstractButton::clicked, [this] {
+        toggleEmptyFolders();
+
+        // Display message to let user know what just happened (if there are no empty folders visible it's not obvious).
+        const QString message = QString("%1 empty folders!").arg(m_emptyFoldersVisible ? "Showing" : "Hiding");
+        QToolTip::showText(ui->button_ToggleEmptyFolders->mapToGlobal(QPoint(0, 0)), message);
+    });
 }
 
 MapListToolBar::~MapListToolBar()
@@ -26,16 +40,28 @@ MapListToolBar::~MapListToolBar()
 void MapListToolBar::setList(MapTree *list) {
     m_list = list;
 
-    // Sync list with current button states
-    setEditsAllowed(ui->button_ToggleEdit->isChecked());
-    // TODO: Empty folders
+    // Sync list with current settings
+    setEditsAllowed(m_editsAllowed);
+    setEmptyFoldersVisible(m_emptyFoldersVisible);
 }
 
-void MapListToolBar::setEditsAllowedButtonHidden(bool hidden) {
-    ui->button_ToggleEdit->setVisible(!hidden);
+void MapListToolBar::setEditsAllowedButtonVisible(bool visible) {
+    ui->button_ToggleEdit->setVisible(visible);
+}
+
+void MapListToolBar::toggleEditsAllowed() {
+    if (m_list) {
+        m_list->clearSelection();
+    }
+    setEditsAllowed(!m_editsAllowed);
 }
 
 void MapListToolBar::setEditsAllowed(bool allowed) {
+     m_editsAllowed = allowed;
+
+     const QSignalBlocker b(ui->button_ToggleEdit);
+     ui->button_ToggleEdit->setChecked(allowed);
+
     if (!m_list)
         return;
 
@@ -56,26 +82,27 @@ void MapListToolBar::setEditsAllowed(bool allowed) {
     }
 }
 
-// TODO: Sync the UI in each of these
-
 void MapListToolBar::toggleEmptyFolders() {
-    if (!m_list)
-        return;
+    setEmptyFoldersVisible(!m_emptyFoldersVisible);
+}
 
-    auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
-    if (!model)
-        return;
+void MapListToolBar::setEmptyFoldersVisible(bool visible) {
+    m_emptyFoldersVisible = visible;
 
-    bool hidden = model->toggleHideEmpty();
-    model->setFilterRegularExpression(ui->lineEdit_filterBox->text());
+    if (m_list) {
+        auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
+        if (model) {
+            model->setHideEmpty(!visible);
+            model->setFilterRegularExpression(ui->lineEdit_filterBox->text());
+        }
+    }
 
     // Update tool tip to reflect what will happen if the button is pressed.
-    const QString toolTip = QString("%1 empty folders in the list.").arg(hidden ? "Show" : "Hide");
+    const QString toolTip = QString("%1 empty folders in the list.").arg(visible ? "Hide" : "Show");
     ui->button_ToggleEmptyFolders->setToolTip(toolTip);
 
-    // Display message to let user know what just happened (if there are no empty folders visible it's not obvious).
-    const QString message = QString("%1 empty folders!").arg(hidden ? "Hiding" : "Showing");
-    QToolTip::showText(ui->button_ToggleEmptyFolders->mapToGlobal(QPoint(0, 0)), message);
+    const QSignalBlocker b(ui->button_ToggleEmptyFolders);
+    ui->button_ToggleEmptyFolders->setChecked(!visible);
 }
 
 void MapListToolBar::expandList() {
@@ -87,15 +114,6 @@ void MapListToolBar::collapseList() {
     if (m_list) {
         m_list->collapseAll();
     }
-}
-
-// TODO: Save this state in porymapConfig?
-// TODO: This isn't actually toggling anything, it's just updating based on the button
-void MapListToolBar::toggleEditsAllowed() {
-    if (m_list) {
-        m_list->clearSelection();
-    }
-    setEditsAllowed(ui->button_ToggleEdit->isChecked());
 }
 
 void MapListToolBar::applyFilter(const QString &filterText) {
