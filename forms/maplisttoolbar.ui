@@ -31,8 +31,11 @@
    </property>
    <item>
     <widget class="QToolButton" name="button_AddFolder">
+     <property name="toolTip">
+      <string>Add a new folder to the list.</string>
+     </property>
      <property name="text">
-      <string>Add a folder to the list.</string>
+      <string/>
      </property>
      <property name="icon">
       <iconset resource="../resources/images.qrc">
@@ -110,7 +113,7 @@
    <item>
     <widget class="QToolButton" name="button_ToggleEdit">
      <property name="toolTip">
-      <string>Toggle editability of folders in the list.</string>
+      <string>If enabled, folders may be renamed and items in the list may be rearranged.</string>
      </property>
      <property name="text">
       <string/>

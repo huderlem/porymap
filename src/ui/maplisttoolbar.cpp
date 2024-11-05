@@ -117,20 +117,22 @@ void MapListToolBar::collapseList() {
 }
 
 void MapListToolBar::applyFilter(const QString &filterText) {
-    if (!m_list || m_filterLocked)
+    if (m_filterLocked)
         return;
 
     const QSignalBlocker b(ui->lineEdit_filterBox);
     ui->lineEdit_filterBox->setText(filterText);
 
-    auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
-    if (model) model->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
+    if (m_list) {
+        auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
+        if (model) model->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
 
-    if (filterText.isEmpty()) {
-        m_list->collapseAll();
-        emit filterCleared(m_list);
-    } else {
-        m_list->expandToDepth(0);
+        if (filterText.isEmpty()) {
+            m_list->collapseAll();
+            emit filterCleared(m_list);
+        } else {
+            m_list->expandToDepth(0);
+        }
     }
 }
 

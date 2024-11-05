@@ -369,8 +369,6 @@ private:
     bool closeProject();
     void showProjectOpenFailure();
 
-    QStandardItem* createMapItem(QString mapName, int groupNum, int inGroupNum);
-
     bool setInitialMap();
     void saveGlobalConfigs();
 

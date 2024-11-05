@@ -131,7 +131,7 @@ QMimeData *MapGroupModel::mimeData(const QModelIndexList &indexes) const {
     return mimeData;
 }
 
-bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parentIndex) {
+bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int, const QModelIndex &parentIndex) {
     if (action == Qt::IgnoreAction)
         return true;
 
@@ -154,7 +154,6 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         QByteArray encodedData = data->data("application/porymap.mapgroupmodel.group");
         QDataStream stream(&encodedData, QIODevice::ReadOnly);
         QString groupName;
-        int rowCount = 1;
 
         while (!stream.atEnd()) {
             stream >> groupName;
@@ -402,6 +401,7 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
     if (QStandardItemModel::setData(index, value, role)) {
         this->updateProject();
     }
+    return true;
 }
 
 
@@ -425,7 +425,7 @@ QStandardItem *MapAreaModel::createAreaItem(QString mapsecName, int areaIndex) {
     return area;
 }
 
-QStandardItem *MapAreaModel::createMapItem(QString mapName, int groupIndex, int mapIndex) {
+QStandardItem *MapAreaModel::createMapItem(QString mapName, int, int) {
     QStandardItem *map = new QStandardItem;
     map->setText(mapName);
     map->setEditable(false);
@@ -603,6 +603,7 @@ QStandardItem *LayoutTreeModel::createMapItem(QString mapName) {
 QStandardItem *LayoutTreeModel::insertLayoutItem(QString layoutId) {
     QStandardItem *layoutItem = this->createLayoutItem(layoutId);
     this->root->appendRow(layoutItem);
+    return layoutItem;
 }
 
 QStandardItem *LayoutTreeModel::insertMapItem(QString mapName, QString layoutId) {

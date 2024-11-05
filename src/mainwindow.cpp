@@ -465,7 +465,6 @@ void MainWindow::updateWindowTitle() {
     } else {
         ui->mainTabBar->setTabIcon(MainTab::Map, QIcon(QStringLiteral(":/icons/map.ico")));
     }
-    updateMapList(); // TODO: Why is this function responsible for this
 }
 
 void MainWindow::markMapEdited() {
@@ -479,6 +478,7 @@ void MainWindow::markSpecificMapEdited(Map* map) {
 
     if (editor && editor->map == map)
         updateWindowTitle();
+    updateMapList();
 }
 
 void MainWindow::loadUserSettings() {
@@ -870,6 +870,7 @@ bool MainWindow::setMap(QString map_name) {
     refreshMapScene();
     displayMapProperties();
     updateWindowTitle();
+    updateMapList();
     resetMapListFilters();
 
     connect(editor->map, &Map::modified, this, &MainWindow::markMapEdited, Qt::UniqueConnection);
@@ -918,8 +919,9 @@ bool MainWindow::setLayout(QString layoutId) {
 
     unsetMap();
 
-    // TODO: Using the 'id' instead of the layout name here is inconsistent with how we treat maps.
-    logInfo(QString("Setting layout to '%1'").arg(layoutId));
+    // Prefer logging the name of the layout as displayed in the map list.
+    const QString layoutName = this->editor->project ? this->editor->project->layoutIdsToNames.value(layoutId, layoutId) : layoutId;
+    logInfo(QString("Setting layout to '%1'").arg(layoutName));
 
     if (!this->editor->setLayout(layoutId)) {
         return false;
@@ -929,6 +931,7 @@ bool MainWindow::setLayout(QString layoutId) {
 
     refreshMapScene();
     updateWindowTitle();
+    updateMapList();
     resetMapListFilters();
 
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
@@ -1241,8 +1244,6 @@ bool MainWindow::setProjectUI() {
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
     ui->layoutList->setModel(layoutListProxyModel);
 
-    //on_toolButton_EnableDisable_EditGroups_clicked();//TODO
-
     return true;
 }
 
@@ -1366,7 +1367,6 @@ void MainWindow::mapListAddGroup() {
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowModality(Qt::ApplicationModal);
     QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    connect(&newItemButtonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     QLineEdit *newNameEdit = new QLineEdit(&dialog);
@@ -1375,15 +1375,24 @@ void MainWindow::mapListAddGroup() {
     static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
     newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
 
+    QLabel *errorMessageLabel = new QLabel(&dialog);
+    errorMessageLabel->setVisible(false);
+    errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
+
     connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
-        if (!this->editor->project->groupNames.contains(newNameEdit->text()))
+        const QString mapGroupName = newNameEdit->text();
+        if (this->editor->project->groupNames.contains(mapGroupName)) {
+            errorMessageLabel->setText(QString("A map group with the name '%1' already exists").arg(mapGroupName));
+            errorMessageLabel->setVisible(true);
+        } else {
             dialog.accept();
-        // TODO: Else display error?
+        }
     });
 
     QFormLayout form(&dialog);
 
     form.addRow("New Group Name", newNameEdit);
+    form.addRow("", errorMessageLabel);
     form.addRow(&newItemButtonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
@@ -1426,7 +1435,6 @@ void MainWindow::mapListAddLayout() {
     QLabel *errorMessageLabel = new QLabel(&dialog);
     errorMessageLabel->setVisible(false);
     errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
-    QString errorMessage;
 
     QComboBox *primaryCombo = new QComboBox(&dialog);
     primaryCombo->addItems(this->editor->project->primaryTilesetLabels);
@@ -1463,28 +1471,25 @@ void MainWindow::mapListAddLayout() {
 
     connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
         // verify some things
-        bool issue = false;
+        QString errorMessage;
         QString tryLayoutName = newNameEdit->text();
         // name not empty
         if (tryLayoutName.isEmpty()) {
             errorMessage = "Name cannot be empty";
-            issue = true;
         }
         // unique layout name & id
         else if (this->editor->project->mapLayoutsTable.contains(newId->text())
               || this->editor->project->layoutIdsToNames.find(tryLayoutName) != this->editor->project->layoutIdsToNames.end()) {
             errorMessage = "Layout Name / ID is not unique";
-            issue = true;
         }
         // from id is existing value
         else if (useExistingCheck->isChecked()) {
             if (!this->editor->project->mapLayoutsTable.contains(useExistingCombo->currentText())) {
                 errorMessage = "Existing layout ID is not valid";
-                issue = true;
             }
         }
 
-        if (issue) {
+        if (!errorMessage.isEmpty()) {
             // show error
             errorMessageLabel->setText(errorMessage);
             errorMessageLabel->setVisible(true);
@@ -1532,16 +1537,24 @@ void MainWindow::mapListAddArea() {
         newNameDisplay->setText(prefix + text);
     });
 
+    QLabel *errorMessageLabel = new QLabel(&dialog);
+    errorMessageLabel->setVisible(false);
+    errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
+
     static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
     newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
 
     connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
-        if (!this->editor->project->mapSectionNameToValue.contains(newNameDisplay->text()))
+        const QString newAreaName = newNameDisplay->text();
+        if (this->editor->project->mapSectionNameToValue.contains(newAreaName)){
+            errorMessageLabel->setText(QString("An area with the name '%1' already exists").arg(newAreaName));
+            errorMessageLabel->setVisible(true);
+        } else {
             dialog.accept();
-        // TODO: Else display error?
+        }
     });
 
-    QLabel *newNameEditLabel = new QLabel("New Map Section Name", &dialog);
+    QLabel *newNameEditLabel = new QLabel("New Area Name", &dialog);
     QLabel *newNameDisplayLabel = new QLabel("Constant Name", &dialog);
     newNameDisplayLabel->setEnabled(false);
 
@@ -1549,6 +1562,7 @@ void MainWindow::mapListAddArea() {
 
     form.addRow(newNameEditLabel, newNameEdit);
     form.addRow(newNameDisplayLabel, newNameDisplay);
+    form.addRow("", errorMessageLabel);
     form.addRow(&newItemButtonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
@@ -1855,11 +1869,13 @@ void MainWindow::updateMapList() {
 void MainWindow::on_action_Save_Project_triggered() {
     editor->saveProject();
     updateWindowTitle();
+    updateMapList();
 }
 
 void MainWindow::on_action_Save_triggered() {
     editor->save();
     updateWindowTitle();
+    updateMapList();
 }
 
 void MainWindow::duplicate() {

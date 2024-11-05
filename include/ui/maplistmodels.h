@@ -150,7 +150,6 @@ private:
 
     QMap<QString, QStandardItem *> areaItems;
     QMap<QString, QStandardItem *> mapItems;
-    // TODO: if reordering, will the item be the same?
 
     QString openMap;
 
