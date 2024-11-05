@@ -153,7 +153,7 @@ private:
 /// ClearEntries
 class ClearEntries : public QUndoCommand {
 public:
-    ClearEntries(RegionMap *map, tsl::ordered_map<QString, MapSectionEntry>, QUndoCommand *parent = nullptr);
+    ClearEntries(RegionMap *map, QMap<QString, MapSectionEntry>, QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
@@ -163,7 +163,7 @@ public:
 
 private:
     RegionMap *map;
-    tsl::ordered_map<QString, MapSectionEntry> entries;
+    QMap<QString, MapSectionEntry> entries;
 };
 
 #endif // REGIONMAPEDITCOMMANDS_H

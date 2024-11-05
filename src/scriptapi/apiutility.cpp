@@ -282,7 +282,7 @@ QList<QString> ScriptUtility::getSongNames() {
 QList<QString> ScriptUtility::getLocationNames() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();
-    return window->editor->project->mapSectionNameToValue.keys();
+    return window->editor->project->mapSectionIdNames;
 }
 
 QList<QString> ScriptUtility::getWeatherNames() {

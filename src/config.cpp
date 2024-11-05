@@ -110,7 +110,6 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "UNDEFINED"}},
     {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
     {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
-    {ProjectIdentifier::define_map_section_count,      {"define_map_section_count",      "COUNT"}},
     {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
     // Regex
     {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
@@ -167,7 +166,6 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::constants_obj_event_movement,     { "constants_obj_event_movement",    "include/constants/event_object_movement.h"}},
     {ProjectFilePath::constants_obj_events,             { "constants_obj_events",            "include/constants/event_objects.h"}},
     {ProjectFilePath::constants_event_bg,               { "constants_event_bg",              "include/constants/event_bg.h"}},
-    {ProjectFilePath::constants_region_map_sections,    { "constants_region_map_sections",   "include/constants/region_map_sections.h"}},
     {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
     {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
     {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},

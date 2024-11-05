@@ -34,7 +34,7 @@ void NewMapPopup::initUi() {
     ui->comboBox_NewMap_Group->addItems(project->groupNames);
     ui->comboBox_NewMap_Song->addItems(project->songNames);
     ui->comboBox_NewMap_Type->addItems(project->mapTypes);
-    ui->comboBox_NewMap_Location->addItems(project->mapSectionNameToValue.keys());
+    ui->comboBox_NewMap_Location->addItems(project->mapSectionIdNames);
 
     const QSignalBlocker b(ui->comboBox_Layout);
     ui->comboBox_Layout->addItems(project->mapLayoutsTable);
@@ -186,7 +186,7 @@ void NewMapPopup::setDefaultSettings(Project *project) {
     settings.primaryTilesetLabel = project->getDefaultPrimaryTilesetLabel();
     settings.secondaryTilesetLabel = project->getDefaultSecondaryTilesetLabel();
     settings.type = project->mapTypes.value(0, "0");
-    settings.location = project->mapSectionNameToValue.keys().value(0, "0");
+    settings.location = project->mapSectionIdNames.value(0, "0");
     settings.song = project->defaultSong;
     settings.canFlyTo = false;
     settings.showLocationName = true;

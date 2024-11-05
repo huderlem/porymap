@@ -413,13 +413,12 @@ MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(par
     initialize();
 }
 
-QStandardItem *MapAreaModel::createAreaItem(QString mapsecName, int areaIndex) {
+QStandardItem *MapAreaModel::createAreaItem(QString mapsecName) {
     QStandardItem *area = new QStandardItem;
     area->setText(mapsecName);
     area->setEditable(false);
     area->setData(mapsecName, Qt::UserRole);
     area->setData("map_section", MapListUserRoles::TypeRole);
-    area->setData(areaIndex, MapListUserRoles::GroupRole);
     // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
     this->areaItems.insert(mapsecName, area);
     return area;
@@ -437,20 +436,14 @@ QStandardItem *MapAreaModel::createMapItem(QString mapName, int, int) {
 }
 
 QStandardItem *MapAreaModel::insertAreaItem(QString areaName) {
-    int newAreaIndex = this->project->appendMapsec(areaName);
-    QStandardItem *item = createAreaItem(areaName, newAreaIndex);
-    this->root->insertRow(newAreaIndex, item);
-
-    // MAPSEC_NONE may have shifted to accomodate the new item, update it in the list.
-    const QString emptyMapsecName = Project::getEmptyMapsecName();
-    if (this->areaItems.contains(emptyMapsecName))
-        this->areaItems[emptyMapsecName]->setData(this->project->mapSectionNameToValue.value(emptyMapsecName), MapListUserRoles::GroupRole);
-
+    this->project->addNewMapsec(areaName);
+    QStandardItem *item = createAreaItem(areaName);
+    this->root->appendRow(item);
+    this->sort(0, Qt::AscendingOrder);
     return item;
 }
 
 QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, int groupIndex) {
-    // int areaIndex = this->project->mapSectionNameToValue[areaName];
     QStandardItem *area = this->areaItems[areaName];
     if (!area) {
         return nullptr;
@@ -461,21 +454,18 @@ QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, in
     return map;
 }
 
+// Note: Not actually supported in the interface at the moment.
 void MapAreaModel::removeFolder(int index) {
     this->removeRow(index);
-    this->project->mapSectionNameToValue.remove(this->project->mapSectionValueToName.take(index));
+    this->project->mapSectionIdNames.removeAt(index);
 }
 
 void MapAreaModel::initialize() {
     this->areaItems.clear();
     this->mapItems.clear();
-    this->setSortRole(MapListUserRoles::GroupRole);
 
-    // TODO: Ignore 'define_map_section_count' and/or 'define_map_section_empty'?
-    for (int i : this->project->mapSectionNameToValue) {
-        QString mapsecName = project->mapSectionValueToName.value(i);
-        QStandardItem *areaItem = createAreaItem(mapsecName, i);
-        this->root->appendRow(areaItem);
+    for (const auto &idName : this->project->mapSectionIdNames) {
+        this->root->appendRow(createAreaItem(idName));
     }
 
     for (int i = 0; i < this->project->groupNames.length(); i++) {
@@ -560,9 +550,7 @@ QVariant MapAreaModel::data(const QModelIndex &index, int role) const {
         QString type = item->data(MapListUserRoles::TypeRole).toString();
 
         if (type == "map_section") {
-            return QString("[0x%1] %2")
-                .arg(QString("%1").arg(item->data(MapListUserRoles::GroupRole).toInt(), 2, 16, QLatin1Char('0')).toUpper())
-                .arg(item->data(Qt::UserRole).toString());
+            return item->data(Qt::UserRole).toString();
         }
     }
 
@@ -603,6 +591,7 @@ QStandardItem *LayoutTreeModel::createMapItem(QString mapName) {
 QStandardItem *LayoutTreeModel::insertLayoutItem(QString layoutId) {
     QStandardItem *layoutItem = this->createLayoutItem(layoutId);
     this->root->appendRow(layoutItem);
+    this->sort(0, Qt::AscendingOrder);
     return layoutItem;
 }
 
@@ -644,6 +633,7 @@ void LayoutTreeModel::initialize() {
             this->layoutItems[layoutId]->appendRow(map);
         }
     }
+    this->sort(0, Qt::AscendingOrder);
 }
 
 QStandardItem *LayoutTreeModel::getItem(const QModelIndex &index) const {

@@ -132,7 +132,7 @@ public:
 public:
     void setMap(QString mapName) { this->openMap = mapName; }
 
-    QStandardItem *createAreaItem(QString areaName, int areaIndex);
+    QStandardItem *createAreaItem(QString areaName);
     QStandardItem *createMapItem(QString mapName, int areaIndex, int mapIndex);
 
     QStandardItem *insertAreaItem(QString areaName);

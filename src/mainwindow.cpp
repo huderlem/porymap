@@ -1177,7 +1177,7 @@ bool MainWindow::setProjectUI() {
     ui->comboBox_Song->clear();
     ui->comboBox_Song->addItems(project->songNames);
     ui->comboBox_Location->clear();
-    ui->comboBox_Location->addItems(project->mapSectionValueToName.values());
+    ui->comboBox_Location->addItems(project->mapSectionIdNames);
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_SecondaryTileset->clear();
@@ -1546,7 +1546,7 @@ void MainWindow::mapListAddArea() {
 
     connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
         const QString newAreaName = newNameDisplay->text();
-        if (this->editor->project->mapSectionNameToValue.contains(newAreaName)){
+        if (this->editor->project->mapSectionIdNames.contains(newAreaName)){
             errorMessageLabel->setText(QString("An area with the name '%1' already exists").arg(newAreaName));
             errorMessageLabel->setVisible(true);
         } else {

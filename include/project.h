@@ -49,9 +49,6 @@ public:
     QMap<QString, QString> layoutIdsToNames;
     QMap<QString, Layout*> mapLayouts;
     QMap<QString, Layout*> mapLayoutsMaster;
-    QMap<QString, QString> mapSecToMapHoverName;
-    QMap<QString, int> mapSectionNameToValue;
-    QMap<int, QString> mapSectionValueToName;
     QMap<QString, EventGraphics*> eventGraphicsMap;
     QMap<QString, int> gfxDefines;
     QString defaultSong;
@@ -68,6 +65,8 @@ public:
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
     QStringList globalScriptLabels;
+    QStringList mapSectionIdNames;
+    QMap<QString, MapSectionEntry> regionMapEntries;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
     QMap<QString, uint16_t> unusedMetatileLabels;
     QMap<QString, uint32_t> metatileBehaviorMap;
@@ -82,9 +81,7 @@ public:
     int pokemonMaxLevel;
     int maxEncounterRate;
     bool wildEncountersLoaded;
-
-    // For files that are read and could contain extra text
-    QMap<QString, QString> extraFileText;
+    bool saveEmptyMapsec;
 
     void set_root(QString);
 
@@ -142,7 +139,7 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
-    int appendMapsec(QString name);
+    void addNewMapsec(QString name);
 
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
@@ -172,7 +169,7 @@ public:
     void saveConfig();
     void saveMapLayouts();
     void saveMapGroups();
-    void saveMapSections();
+    void saveRegionMapSections();
     void saveWildMonData();
     void saveMapConstantsHeader();
     void saveHealLocations(Map*);

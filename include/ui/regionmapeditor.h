@@ -57,7 +57,6 @@ private:
     tsl::ordered_map<QString, RegionMap *> region_maps;
 
     QString configFilepath;
-    QString mapSectionFilepath;
 
     poryjson::Json rmConfigJson;
 
@@ -96,7 +95,7 @@ private:
     void saveConfig();
     bool loadRegionMapEntries();
     bool saveRegionMapEntries();
-    tsl::ordered_map<QString, MapSectionEntry> region_map_entries;
+    QMap<QString, MapSectionEntry> region_map_entries;
 
     bool buildConfigDialog();
     poryjson::Json configRegionMapDialog();
