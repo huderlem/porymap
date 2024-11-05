@@ -506,13 +506,20 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    logInfo("Restoring main window geometry from previous session.");
     QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
-    this->restoreGeometry(geometry.value("main_window_geometry"));
-    this->restoreState(geometry.value("main_window_state"));
-    this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
-    this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
-    this->ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
+    const QByteArray mainWindowGeometry = geometry.value("main_window_geometry");
+    if (mainWindowGeometry.isEmpty()) {
+        // If there's no saved geometry for the main window (i.e., first show) then we show it maximized.
+        // This simplifies the problem of picking a good window size depending on the screen.
+        setWindowState(Qt::WindowMaximized | Qt::WindowActive);
+    } else {
+        logInfo("Restoring main window geometry from previous session.");
+        restoreGeometry(mainWindowGeometry);
+        restoreState(geometry.value("main_window_state"));
+        ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
+        ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
+        ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
+    }
 }
 
 void MainWindow::setTheme(QString theme) {
