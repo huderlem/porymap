@@ -598,8 +598,9 @@ bool MainWindow::openProject(QString dir, bool initial) {
     // Create the project
     auto project = new Project(editor);
     project->set_root(dir);
-    QObject::connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
-    QObject::connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
+    connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
+    connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
+    connect(project, &Project::mapSectionIdNamesChanged, this, &MainWindow::refreshLocationsComboBox);
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
@@ -1163,7 +1164,6 @@ bool MainWindow::setProjectUI() {
 
     // Block signals to the comboboxes while they are being modified
     const QSignalBlocker blocker1(ui->comboBox_Song);
-    const QSignalBlocker blocker2(ui->comboBox_Location);
     const QSignalBlocker blocker3(ui->comboBox_PrimaryTileset);
     const QSignalBlocker blocker4(ui->comboBox_SecondaryTileset);
     const QSignalBlocker blocker5(ui->comboBox_Weather);
@@ -1176,8 +1176,6 @@ bool MainWindow::setProjectUI() {
     // Set up project comboboxes
     ui->comboBox_Song->clear();
     ui->comboBox_Song->addItems(project->songNames);
-    ui->comboBox_Location->clear();
-    ui->comboBox_Location->addItems(project->mapSectionIdNames);
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_SecondaryTileset->clear();
@@ -1198,6 +1196,7 @@ bool MainWindow::setProjectUI() {
     ui->comboBox_EmergeMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->setClearButtonEnabled(true);
     ui->comboBox_EmergeMap->setFocusedScrollingEnabled(false);
+    refreshLocationsComboBox();
 
     // Show/hide parts of the UI that are dependent on the user's project settings
 
@@ -1245,6 +1244,17 @@ bool MainWindow::setProjectUI() {
     ui->layoutList->setModel(layoutListProxyModel);
 
     return true;
+}
+
+void MainWindow::refreshLocationsComboBox() {
+    QStringList locations = this->editor->project->mapSectionIdNames;
+    locations.sort();
+
+    const QSignalBlocker b(ui->comboBox_Location);
+    ui->comboBox_Location->clear();
+    ui->comboBox_Location->addItems(locations);
+    if (this->editor->map)
+        ui->comboBox_Location->setCurrentText(this->editor->map->location);
 }
 
 void MainWindow::clearProjectUI() {
@@ -1328,19 +1338,30 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     QMenu menu(this);
     QAction* addToFolderAction = nullptr;
     QAction* deleteFolderAction = nullptr;
+    QAction* openItemAction = nullptr;
     if (itemType == "map_name") {
         // Right-clicking on a map.
-        // TODO: Add action to delete map once deleting maps is supported
+        openItemAction = menu.addAction("Open Map");
+        //menu.addSeparator();
+        //connect(menu.addAction("Delete Map"), &QAction::triggered, [this, index] { deleteMapListItem(index); }); // TODO: No support for deleting maps
     } else if (itemType == "map_group") {
         // Right-clicking on a map group folder
         addToFolderAction = menu.addAction("Add New Map to Group");
+        menu.addSeparator();
         deleteFolderAction = menu.addAction("Delete Map Group");
     } else if (itemType == "map_section") {
         // Right-clicking on an MAPSEC folder
         addToFolderAction = menu.addAction("Add New Map to Area");
+        menu.addSeparator();
+        deleteFolderAction = menu.addAction("Delete Area");
+        if (itemName == this->editor->project->getEmptyMapsecName())
+            deleteFolderAction->setEnabled(false); // Disallow deleting the default name
     } else if (itemType == "map_layout") {
         // Right-clicking on a map layout
+        openItemAction = menu.addAction("Open Layout");
         addToFolderAction = menu.addAction("Add New Map with Layout");
+        //menu.addSeparator();
+        //deleteFolderAction = menu.addAction("Delete Layout"); // TODO: No support for deleting layouts
     }
 
     if (addToFolderAction) {
@@ -1351,12 +1372,15 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     }
     if (deleteFolderAction) {
         connect(deleteFolderAction, &QAction::triggered, [sourceModel, index] {
-            sourceModel->removeFolder(index.row());
+            sourceModel->removeItemAt(index);
         });
         if (selectedItem->hasChildren()){
             // TODO: No support for deleting maps, so you may only delete folders if they don't contain any maps.
             deleteFolderAction->setEnabled(false);
         }
+    }
+    if (openItemAction) {
+        connect(openItemAction, &QAction::triggered, [this, index] { openMapListItem(index); });
     }
 
     if (menu.actions().length() != 0)

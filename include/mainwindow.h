@@ -417,6 +417,7 @@ private:
     void scrollMetatileSelectorToSelection();
     MapListToolBar* getCurrentMapListToolBar();
     MapTree* getCurrentMapList();
+    void refreshLocationsComboBox();
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);

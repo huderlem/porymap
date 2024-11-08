@@ -65,9 +65,11 @@ public:
     ~MapListModel() { }
 
     virtual QModelIndex indexOf(QString id) const = 0;
-    virtual void removeFolder(int index) = 0;
-    virtual void removeItem(const QModelIndex &index);
+    virtual void removeItemAt(const QModelIndex &index);
     virtual QStandardItem *getItem(const QModelIndex &index) const = 0;
+
+protected:
+    virtual void removeItem(QStandardItem *item) = 0;
 };
 
 class MapGroupModel : public MapListModel {
@@ -94,12 +96,14 @@ public:
 
     QStandardItem *insertGroupItem(QString groupName);
     QStandardItem *insertMapItem(QString mapName, QString groupName);
-    virtual void removeFolder(int index) override;
 
     virtual QStandardItem *getItem(const QModelIndex &index) const override;
     virtual QModelIndex indexOf(QString mapName) const override;
 
     void initialize();
+
+protected:
+    virtual void removeItem(QStandardItem *item) override;
 
 private:
     friend class MapTree;
@@ -137,12 +141,14 @@ public:
 
     QStandardItem *insertAreaItem(QString areaName);
     QStandardItem *insertMapItem(QString mapName, QString areaName, int groupIndex);
-    virtual void removeFolder(int index) override;
 
     virtual QStandardItem *getItem(const QModelIndex &index) const override;
     virtual QModelIndex indexOf(QString mapName) const override;
 
     void initialize();
+
+protected:
+    virtual void removeItem(QStandardItem *item) override;
 
 private:
     Project *project;
@@ -176,12 +182,14 @@ public:
 
     QStandardItem *insertLayoutItem(QString layoutId);
     QStandardItem *insertMapItem(QString mapName, QString layoutId);
-    virtual void removeFolder(int index) override;
 
     virtual QStandardItem *getItem(const QModelIndex &index) const override;
     virtual QModelIndex indexOf(QString layoutName) const override;
 
     void initialize();
+
+protected:
+    virtual void removeItem(QStandardItem *item) override;
 
 private:
     Project *project;

@@ -139,7 +139,8 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
-    void addNewMapsec(QString name);
+    void addNewMapsec(const QString &name);
+    void removeMapsec(const QString &name);
 
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
@@ -266,6 +267,7 @@ private:
 
 signals:
     void fileChanged(QString filepath);
+    void mapSectionIdNamesChanged();
     void mapLoaded(Map *map);
 };
 

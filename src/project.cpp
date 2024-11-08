@@ -2319,7 +2319,7 @@ QString Project::getEmptyMapsecName() {
 }
 
 // This function assumes a valid and unique name
-void Project::addNewMapsec(QString name) {
+void Project::addNewMapsec(const QString &name) {
     if (!this->mapSectionIdNames.isEmpty() && this->mapSectionIdNames.last() == getEmptyMapsecName()) {
         // If the default map section name (MAPSEC_NONE) is last in the list we'll keep it last in the list.
         this->mapSectionIdNames.insert(this->mapSectionIdNames.length() - 1, name);
@@ -2327,6 +2327,16 @@ void Project::addNewMapsec(QString name) {
         this->mapSectionIdNames.append(name);
     }
     this->hasUnsavedDataChanges = true;
+    emit mapSectionIdNamesChanged();
+}
+
+void Project::removeMapsec(const QString &name) {
+    if (!this->mapSectionIdNames.contains(name) || name == getEmptyMapsecName())
+        return;
+
+    this->mapSectionIdNames.removeOne(name);
+    this->hasUnsavedDataChanges = true;
+    emit mapSectionIdNamesChanged();
 }
 
 // Read the constants to preserve any "unused" heal locations when writing the file later

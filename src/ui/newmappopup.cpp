@@ -8,6 +8,8 @@
 #include <QSet>
 #include <QStringList>
 
+// TODO: Convert to modal dialog (among other things, this means we wouldn't need to worry about changes to the map list while this is open)
+
 struct NewMapPopup::Settings NewMapPopup::settings = {};
 
 NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :

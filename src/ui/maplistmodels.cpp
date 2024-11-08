@@ -31,14 +31,14 @@ void MapTree::keyPressEvent(QKeyEvent *event) {
             persistentIndexes.append(model->mapToSource(index));
         }
         for (const auto &index : persistentIndexes) {
-            sourceModel->removeItem(index);
+            sourceModel->removeItemAt(index);
         }
     } else {
         QWidget::keyPressEvent(event);
     }
 }
 
-void MapListModel::removeItem(const QModelIndex &index) {
+void MapListModel::removeItemAt(const QModelIndex &index) {
     QStandardItem *item = this->getItem(index)->child(index.row(), index.column());
     if (!item)
         return;
@@ -49,7 +49,7 @@ void MapListModel::removeItem(const QModelIndex &index) {
     } else {
         // TODO: Because there's no support for deleting maps we can only delete empty folders
         if (!item->hasChildren()) {
-            this->removeFolder(index.row());
+            this->removeItem(item);
         }
     }
 }
@@ -282,8 +282,8 @@ QStandardItem *MapGroupModel::insertGroupItem(QString groupName) {
     return group;
 }
 
-void MapGroupModel::removeFolder(int index) {
-    this->removeRow(index);
+void MapGroupModel::removeItem(QStandardItem *item) {
+    this->removeRow(item->row());
     this->updateProject();
 }
 
@@ -454,10 +454,9 @@ QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName, in
     return map;
 }
 
-// Note: Not actually supported in the interface at the moment.
-void MapAreaModel::removeFolder(int index) {
-    this->removeRow(index);
-    this->project->mapSectionIdNames.removeAt(index);
+void MapAreaModel::removeItem(QStandardItem *item) {
+    this->project->removeMapsec(item->data(Qt::UserRole).toString());
+    this->removeRow(item->row());
 }
 
 void MapAreaModel::initialize() {
@@ -612,7 +611,7 @@ QStandardItem *LayoutTreeModel::insertMapItem(QString mapName, QString layoutId)
     return map;
 }
 
-void LayoutTreeModel::removeFolder(int) {
+void LayoutTreeModel::removeItem(QStandardItem *) {
     // TODO: Deleting layouts not supported
 }
 
