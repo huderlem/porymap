@@ -406,9 +406,6 @@ void MainWindow::initMapList() {
     connect(ui->layoutList, &QAbstractItemView::activated, this, &MainWindow::openMapListItem);
 
     // Right-clicking on items in the map list brings up a context menu.
-    ui->mapList->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->areaList->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->layoutList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mapList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
     connect(ui->areaList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
     connect(ui->layoutList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
@@ -1316,7 +1313,6 @@ void MainWindow::scrollMapListToCurrentMap(MapTree *list) {
     }
 }
 
-// TODO: Initial scrolling doesn't center the layout on launch if it's not the current tab.
 void MainWindow::scrollMapListToCurrentLayout(MapTree *list) {
     if (this->editor->layout) {
         scrollMapList(list, this->editor->layout->id);

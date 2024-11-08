@@ -27,6 +27,7 @@ public:
         this->setDropIndicatorShown(true);
         this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
         this->setFocusPolicy(Qt::StrongFocus);
+        this->setContextMenuPolicy(Qt::CustomContextMenu);
     }
 
 protected:

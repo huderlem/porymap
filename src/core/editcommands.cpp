@@ -486,7 +486,6 @@ int EventPaste::id() const {
     ************************************************************************
  ******************************************************************************/
 
-// TODO: Undo/redo for script edits to layout dimensions doesn't render correctly.
 ScriptEditLayout::ScriptEditLayout(Layout *layout,
         QSize oldLayoutDimensions, QSize newLayoutDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
@@ -538,7 +537,7 @@ void ScriptEditLayout::redo() {
     layout->lastCommitBlocks.border = newBorder;
     layout->lastCommitBlocks.borderDimensions = QSize(newBorderWidth, newBorderHeight);
 
-    renderBlocks(layout);
+    renderBlocks(layout, true);
     layout->borderItem->draw();
 }
 
@@ -564,7 +563,7 @@ void ScriptEditLayout::undo() {
     layout->lastCommitBlocks.border = oldBorder;
     layout->lastCommitBlocks.borderDimensions = QSize(oldBorderWidth, oldBorderHeight);
 
-    renderBlocks(layout);
+    renderBlocks(layout, true);
     layout->borderItem->draw();
 
     QUndoCommand::undo();

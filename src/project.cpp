@@ -2266,11 +2266,16 @@ bool Project::readRegionMapSections() {
     fileWatcher.addPath(filepath);
 
     QJsonArray mapSections = doc.object()["map_sections"].toArray();
-    for (const auto &mapSection : mapSections) {
-        // For each map section, "id" is the only required field. This is the field we use
-        // to display the location names in various drop-downs.
-        QJsonObject mapSectionObj = mapSection.toObject();
-        const QString idName = ParseUtil::jsonToQString(mapSectionObj["id"]);
+    for (int i = 0; i < mapSections.size(); i++) {
+        QJsonObject mapSectionObj = mapSections.at(i).toObject();
+
+        // For each map section, "id" is the only required field. This is the field we use to display the location names in various drop-downs.
+        const QString idField = "id";
+        if (!mapSectionObj.contains(idField)) {
+            logWarn(QString("Ignoring data for map section %1. Missing required field \"%2\"").arg(i).arg(idField));
+            continue;
+        }
+        const QString idName = ParseUtil::jsonToQString(mapSectionObj[idField]);
         if (!idName.startsWith(requiredPrefix)) {
             logWarn(QString("Ignoring data for map section '%1'. IDs must start with the prefix '%2'").arg(idName).arg(requiredPrefix));
             continue;
