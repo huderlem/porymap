@@ -851,7 +851,7 @@ bool MainWindow::userSetMap(QString map_name) {
 
 bool MainWindow::setMap(QString map_name) {
     if (map_name.isEmpty() || map_name == DYNAMIC_MAP_NAME) {
-        logInfo(QString("Cannot set map to '%1'").arg(DYNAMIC_MAP_NAME));
+        logInfo(QString("Cannot set map to '%1'").arg(map_name));
         return false;
     }
 
@@ -1346,7 +1346,7 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         menu.addSeparator();
         deleteFolderAction = menu.addAction("Delete Map Group");
     } else if (itemType == "map_section") {
-        // Right-clicking on an MAPSEC folder
+        // Right-clicking on a MAPSEC folder
         addToFolderAction = menu.addAction("Add New Map to Area");
         menu.addSeparator();
         deleteFolderAction = menu.addAction("Delete Area");
@@ -1541,7 +1541,6 @@ void MainWindow::mapListAddLayout() {
 }
 
 void MainWindow::mapListAddArea() {
-    // Note: there is no checking here for the limits on map section count
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowModality(Qt::ApplicationModal);
     QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
@@ -2824,7 +2823,7 @@ void MainWindow::on_actionExport_Stitched_Map_Image_triggered() {
     if (!this->editor->map) {
         QMessageBox warning(this);
         warning.setText("Notice");
-        warning.setInformativeText("Map stich images are not possible without a map selected.");
+        warning.setInformativeText("Map stitch images are not possible without a map selected.");
         warning.setStandardButtons(QMessageBox::Ok);
         warning.setDefaultButton(QMessageBox::Cancel);
         warning.setIcon(QMessageBox::Warning);
