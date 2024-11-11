@@ -29,7 +29,6 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
     this->ui->setupUi(this);
     this->project = project;
     this->configFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
-    this->mapSectionFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
     this->initShortcuts();
     this->restoreWindowState();
 }
@@ -110,67 +109,13 @@ void RegionMapEditor::applyUserShortcuts() {
 }
 
 bool RegionMapEditor::loadRegionMapEntries() {
-    this->region_map_entries.clear();
-
-    ParseUtil parser;
-    QJsonDocument sectionsDoc;
-    if (!parser.tryParseJsonFile(&sectionsDoc, this->mapSectionFilepath)) {
-        logError(QString("Failed to read map data from %1").arg(this->mapSectionFilepath));
-        return false;
-    }
-
-    // for some unknown reason, the OrderedJson class would not parse this properly
-    // perhaps updating nlohmann/json here would fix it, but that also requires using C++17
-    QJsonObject object = sectionsDoc.object();
-
-    for (auto entryRef : object["map_sections"].toArray()) {
-        QJsonObject entryObject = entryRef.toObject();
-        QString entryMapSection = ParseUtil::jsonToQString(entryObject["map_section"]);
-        MapSectionEntry entry;
-        entry.name = ParseUtil::jsonToQString(entryObject["name"]);
-        entry.x = ParseUtil::jsonToInt(entryObject["x"]);
-        entry.y = ParseUtil::jsonToInt(entryObject["y"]);
-        entry.width = ParseUtil::jsonToInt(entryObject["width"]);
-        entry.height = ParseUtil::jsonToInt(entryObject["height"]);
-        entry.valid = true;
-        this->region_map_entries[entryMapSection] = entry;
-    }
-
+    this->region_map_entries = this->project->regionMapEntries;
     return true;
 }
 
 bool RegionMapEditor::saveRegionMapEntries() {
-    QFile sectionsFile(this->mapSectionFilepath);
-    if (!sectionsFile.open(QIODevice::WriteOnly)) {
-        logError(QString("Could not open %1 for writing").arg(this->mapSectionFilepath));
-        return false;
-    }
-
-    OrderedJson::object object;
-    OrderedJson::array mapSectionArray;
-
-    for (auto pair : this->region_map_entries) {
-        QString section = pair.first;
-        MapSectionEntry entry = pair.second;
-
-        OrderedJson::object entryObject;
-        entryObject["map_section"] = section;
-        entryObject["name"] = entry.name;
-        entryObject["x"] = entry.x;
-        entryObject["y"] = entry.y;
-        entryObject["width"] = entry.width;
-        entryObject["height"] = entry.height;
-
-        mapSectionArray.append(entryObject);
-    }
-
-    object["map_sections"] = mapSectionArray;
-
-    OrderedJson sectionsJson(object);
-    OrderedJsonDoc jsonDoc(&sectionsJson);
-    jsonDoc.dump(&sectionsFile);
-    sectionsFile.close();
-
+    this->project->regionMapEntries = this->region_map_entries;
+    this->project->saveRegionMapSections();
     return true;
 }
 
@@ -708,7 +653,7 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 
     this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
     this->ui->comboBox_RM_ConnectedMap->clear();
-    this->ui->comboBox_RM_ConnectedMap->addItems(this->project->mapSectionValueToName.values());
+    this->ui->comboBox_RM_ConnectedMap->addItems(this->project->mapSectionIdNames);
     this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 
     this->ui->frame_RM_Options->setEnabled(true);
@@ -775,7 +720,7 @@ void RegionMapEditor::displayRegionMapEntryOptions() {
     if (!this->region_map->layoutEnabled()) return;
 
     this->ui->comboBox_RM_Entry_MapSection->clear();
-    this->ui->comboBox_RM_Entry_MapSection->addItems(this->project->mapSectionValueToName.values());
+    this->ui->comboBox_RM_Entry_MapSection->addItems(this->project->mapSectionIdNames);
     this->ui->spinBox_RM_Entry_x->setMaximum(128);
     this->ui->spinBox_RM_Entry_y->setMaximum(128);
     this->ui->spinBox_RM_Entry_width->setMinimum(1);
@@ -787,17 +732,13 @@ void RegionMapEditor::displayRegionMapEntryOptions() {
 void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     if (!this->region_map->layoutEnabled()) return;
 
-    bool isSpecialSection = (section == this->region_map->default_map_section
-                          || section == this->region_map->count_map_section);
-
-    bool enabled = (!isSpecialSection && this->region_map_entries.contains(section));
-
+    bool enabled = (section != this->region_map->default_map_section) && this->region_map_entries.contains(section);
     this->ui->lineEdit_RM_MapName->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_x->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_y->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_height->setEnabled(enabled);
-    this->ui->pushButton_entryActivate->setEnabled(!isSpecialSection);
+    this->ui->pushButton_entryActivate->setEnabled(section != this->region_map->default_map_section);
     this->ui->pushButton_entryActivate->setText(enabled ? "Remove" : "Add");
 
     this->ui->lineEdit_RM_MapName->blockSignals(true);
@@ -902,14 +843,8 @@ void RegionMapEditor::onRegionMapEntryDragged(int new_x, int new_y) {
 }
 
 void RegionMapEditor::onRegionMapLayoutSelectedTileChanged(int index) {
-    QString message = QString();
     this->currIndex = index;
     this->region_map_layout_item->highlightedTile = index;
-    if (this->region_map->squareHasMap(index)) {
-        message = QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
-                      this->region_map->squareMapSection(index))).remove("{NAME_END}");
-    }
-    this->ui->statusbar->showMessage(message);
 
     updateRegionMapLayoutOptions(index);
     this->region_map_layout_item->draw();
@@ -922,8 +857,7 @@ void RegionMapEditor::onRegionMapLayoutHoveredTileChanged(int index) {
     if (x >= 0 && y >= 0) {
         message = QString("(%1, %2)").arg(x).arg(y);
         if (this->region_map->squareHasMap(index)) {
-            message += QString("\t %1").arg(this->project->mapSecToMapHoverName.value(
-                           this->region_map->squareMapSection(index))).remove("{NAME_END}");
+            message += QString("\t %1").arg(this->region_map->squareMapSection(index));
         }
     }
     this->ui->statusbar->showMessage(message);
@@ -1094,7 +1028,7 @@ void RegionMapEditor::on_spinBox_RM_LayoutWidth_valueChanged(int value) {
         int newHeight = this->region_map->layoutHeight();
         QMap<QString, QList<LayoutSquare>> newLayouts = this->region_map->getAllLayouts();
 
-        ResizeLayout *commit = new ResizeLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
+        ResizeRMLayout *commit = new ResizeRMLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
         this->region_map->editHistory.push(commit);
     }
 }
@@ -1111,7 +1045,7 @@ void RegionMapEditor::on_spinBox_RM_LayoutHeight_valueChanged(int value) {
         int newHeight = this->region_map->layoutHeight();
         QMap<QString, QList<LayoutSquare>> newLayouts = this->region_map->getAllLayouts();
 
-        ResizeLayout *commit = new ResizeLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
+        ResizeRMLayout *commit = new ResizeRMLayout(this->region_map, oldWidth, oldHeight, newWidth, newHeight, oldLayouts, newLayouts);
         this->region_map->editHistory.push(commit);
     }
 }
@@ -1203,10 +1137,10 @@ void RegionMapEditor::on_action_Swap_triggered() {
     QFormLayout form(&popup);
 
     QComboBox *oldSecBox = new QComboBox();
-    oldSecBox->addItems(this->project->mapSectionValueToName.values());
+    oldSecBox->addItems(this->project->mapSectionIdNames);
     form.addRow(new QLabel("Map Section 1:"), oldSecBox);
     QComboBox *newSecBox = new QComboBox();
-    newSecBox->addItems(this->project->mapSectionValueToName.values());
+    newSecBox->addItems(this->project->mapSectionIdNames);
     form.addRow(new QLabel("Map Section 2:"), newSecBox);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
@@ -1242,10 +1176,10 @@ void RegionMapEditor::on_action_Replace_triggered() {
     QFormLayout form(&popup);
 
     QComboBox *oldSecBox = new QComboBox();
-    oldSecBox->addItems(this->project->mapSectionValueToName.values());
+    oldSecBox->addItems(this->project->mapSectionIdNames);
     form.addRow(new QLabel("Old Map Section:"), oldSecBox);
     QComboBox *newSecBox = new QComboBox();
-    newSecBox->addItems(this->project->mapSectionValueToName.values());
+    newSecBox->addItems(this->project->mapSectionIdNames);
     form.addRow(new QLabel("New Map Section:"), newSecBox);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);

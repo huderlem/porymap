@@ -5,6 +5,7 @@
 #include <QGraphicsPixmapItem>
 #include <QPainter>
 #include <QPointer>
+#include <QKeyEvent>
 
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
@@ -36,14 +37,17 @@ private:
     static const int mHeight = 16;
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override;
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void keyPressEvent(QKeyEvent*) override;
+    virtual void focusInEvent(QFocusEvent*) override;
 
 signals:
     void connectionItemDoubleClicked(MapConnection*);
     void selectionChanged(bool selected);
+    void deleteRequested(MapConnection*);
 };
 
 #endif // CONNECTIONPIXMAPITEM_H

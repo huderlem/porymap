@@ -1,4 +1,4 @@
-#include "mappixmapitem.h"
+#include "layoutpixmapitem.h"
 #include "metatile.h"
 #include "log.h"
 #include "scripting.h"
@@ -7,8 +7,8 @@
 
 #define SWAP(a, b) do { if (a != b) { a ^= b; b ^= a; a ^= b; } } while (0)
 
-void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
-    if (map) {
+void LayoutPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
+    if (layout) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
@@ -20,7 +20,7 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
                 pos = this->adjustCoords(pos);
             } else {
                 this->prevStraightPathState = false;
-                this->lockedAxis = MapPixmapItem::Axis::None;
+                this->lockedAxis = LayoutPixmapItem::Axis::None;
             }
 
             // Paint onto the map.
@@ -43,8 +43,8 @@ void MapPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
-    if (map) {
+void LayoutPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
+    if (layout) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
@@ -56,7 +56,7 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
                 pos = this->adjustCoords(pos);
             } else {
                 this->prevStraightPathState = false;
-                this->lockedAxis = MapPixmapItem::Axis::None;
+                this->lockedAxis = LayoutPixmapItem::Axis::None;
             }
 
             if (event->type() == QEvent::GraphicsSceneMousePress) {
@@ -76,32 +76,32 @@ void MapPixmapItem::shift(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
-    Blockdata oldMetatiles = map->layout->blockdata;
+void LayoutPixmapItem::shift(int xDelta, int yDelta, bool fromScriptCall) {
+    Blockdata oldMetatiles = this->layout->blockdata;
 
-    for (int i = 0; i < map->getWidth(); i++)
-    for (int j = 0; j < map->getHeight(); j++) {
+    for (int i = 0; i < this->layout->getWidth(); i++)
+    for (int j = 0; j < this->layout->getHeight(); j++) {
         int destX = i + xDelta;
         int destY = j + yDelta;
         if (destX < 0)
-            do { destX += map->getWidth(); } while (destX < 0);
+            do { destX += this->layout->getWidth(); } while (destX < 0);
         if (destY < 0)
-            do { destY += map->getHeight(); } while (destY < 0);
-        destX %= map->getWidth();
-        destY %= map->getHeight();
+            do { destY += this->layout->getHeight(); } while (destY < 0);
+        destX %= this->layout->getWidth();
+        destY %= this->layout->getHeight();
 
-        int blockIndex = j * map->getWidth() + i;
+        int blockIndex = j * this->layout->getWidth() + i;
         Block srcBlock = oldMetatiles.at(blockIndex);
-        map->setBlock(destX, destY, srcBlock);
+        this->layout->setBlock(destX, destY, srcBlock);
     }
 
-    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
-        map->editHistory.push(new ShiftMetatiles(map, oldMetatiles, map->layout->blockdata, actionId_));
+    if (!fromScriptCall && this->layout->blockdata != oldMetatiles) {
+        this->layout->editHistory.push(new ShiftMetatiles(this->layout, oldMetatiles, this->layout->blockdata, actionId_));
         Scripting::cb_MapShifted(xDelta, yDelta);
     }
 }
 
-void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
+void LayoutPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
     int initialX = fromScriptCall ? x : this->paint_tile_initial_x;
     int initialY = fromScriptCall ? y : this->paint_tile_initial_y;
@@ -117,14 +117,14 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
     y = initialY + (yDiff / selection.dimensions.y()) * selection.dimensions.y();
 
     // for edit history
-    Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
+    Blockdata oldMetatiles = !fromScriptCall ? this->layout->blockdata : Blockdata();
 
-    for (int i = 0; i < selection.dimensions.x() && i + x < map->getWidth(); i++)
-    for (int j = 0; j < selection.dimensions.y() && j + y < map->getHeight(); j++) {
+    for (int i = 0; i < selection.dimensions.x() && i + x < this->layout->getWidth(); i++)
+    for (int j = 0; j < selection.dimensions.y() && j + y < this->layout->getHeight(); j++) {
         int actualX = i + x;
         int actualY = j + y;
         Block block;
-        if (map->getBlock(actualX, actualY, &block)) {
+        if (this->layout->getBlock(actualX, actualY, &block)) {
             int index = j * selection.dimensions.x() + i;
             MetatileSelectionItem item = selection.metatileItems.at(index);
             if (!item.enabled)
@@ -135,19 +135,19 @@ void MapPixmapItem::paintNormal(int x, int y, bool fromScriptCall) {
                 block.setCollision(collisionItem.collision);
                 block.setElevation(collisionItem.elevation);
             }
-            map->setBlock(actualX, actualY, block, !fromScriptCall);
+            this->layout->setBlock(actualX, actualY, block, !fromScriptCall);
         }
     }
 
-    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
-        map->editHistory.push(new PaintMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
+    if (!fromScriptCall && this->layout->blockdata != oldMetatiles) {
+        this->layout->editHistory.push(new PaintMetatile(this->layout, oldMetatiles, this->layout->blockdata, actionId_));
     }
 }
 
 // These are tile offsets from the top-left tile in the 3x3 smart path selection.
 // Each entry is for one possibility from the marching squares value for a tile.
 // (Marching Squares: https://en.wikipedia.org/wiki/Marching_squares)
-QList<int> MapPixmapItem::smartPathTable = QList<int>({
+QList<int> LayoutPixmapItem::smartPathTable = QList<int>({
     4, // 0000
     4, // 0001
     4, // 0010
@@ -189,7 +189,7 @@ bool isValidSmartPathSelection(MetatileSelection selection) {
     return true;
 }
 
-void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
+void LayoutPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
     if (!isValidSmartPathSelection(selection))
         return;
@@ -206,30 +206,30 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
     }
 
     // for edit history
-    Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
+    Blockdata oldMetatiles = !fromScriptCall ? this->layout->blockdata : Blockdata();
 
     // Fill the region with the open tile.
     for (int i = 0; i <= 1; i++)
     for (int j = 0; j <= 1; j++) {
-        if (!map->isWithinBounds(x + i, y + j))
+        if (!this->layout->isWithinBounds(x + i, y + j))
             continue;
         int actualX = i + x;
         int actualY = j + y;
         Block block;
-        if (map->getBlock(actualX, actualY, &block)) {
+        if (this->layout->getBlock(actualX, actualY, &block)) {
             block.setMetatileId(openMetatileId);
             if (setCollisions) {
                 block.setCollision(openCollision);
                 block.setElevation(openElevation);
             }
-            map->setBlock(actualX, actualY, block, !fromScriptCall);
+            this->layout->setBlock(actualX, actualY, block, !fromScriptCall);
         }
     }
 
     // Go back and resolve the edge tiles
     for (int i = -1; i <= 2; i++)
     for (int j = -1; j <= 2; j++) {
-        if (!map->isWithinBounds(x + i, y + j))
+        if (!this->layout->isWithinBounds(x + i, y + j))
             continue;
         // Ignore the corners, which can't possible be affected by the smart path.
         if ((i == -1 && j == -1) || (i == 2 && j == -1) ||
@@ -240,7 +240,7 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
         int actualX = i + x;
         int actualY = j + y;
         Block block;
-        if (!map->getBlock(actualX, actualY, &block) || !isSmartPathTile(selection.metatileItems, block.metatileId())) {
+        if (!this->layout->getBlock(actualX, actualY, &block) || !isSmartPathTile(selection.metatileItems, block.metatileId())) {
             continue;
         }
 
@@ -251,13 +251,13 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
         Block left;
 
         // Get marching squares value, to determine which tile to use.
-        if (map->getBlock(actualX, actualY - 1, &top) && isSmartPathTile(selection.metatileItems, top.metatileId()))
+        if (this->layout->getBlock(actualX, actualY - 1, &top) && isSmartPathTile(selection.metatileItems, top.metatileId()))
             id += 1;
-        if (map->getBlock(actualX + 1, actualY, &right) && isSmartPathTile(selection.metatileItems, right.metatileId()))
+        if (this->layout->getBlock(actualX + 1, actualY, &right) && isSmartPathTile(selection.metatileItems, right.metatileId()))
             id += 2;
-        if (map->getBlock(actualX, actualY + 1, &bottom) && isSmartPathTile(selection.metatileItems, bottom.metatileId()))
+        if (this->layout->getBlock(actualX, actualY + 1, &bottom) && isSmartPathTile(selection.metatileItems, bottom.metatileId()))
             id += 4;
-        if (map->getBlock(actualX - 1, actualY, &left) && isSmartPathTile(selection.metatileItems, left.metatileId()))
+        if (this->layout->getBlock(actualX - 1, actualY, &left) && isSmartPathTile(selection.metatileItems, left.metatileId()))
             id += 8;
 
         block.setMetatileId(selection.metatileItems.at(smartPathTable[id]).metatileId);
@@ -266,19 +266,19 @@ void MapPixmapItem::paintSmartPath(int x, int y, bool fromScriptCall) {
             block.setCollision(collisionItem.collision);
             block.setElevation(collisionItem.elevation);
         }
-        map->setBlock(actualX, actualY, block, !fromScriptCall);
+        this->layout->setBlock(actualX, actualY, block, !fromScriptCall);
     }
 
-    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
-        map->editHistory.push(new PaintMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
+    if (!fromScriptCall && this->layout->blockdata != oldMetatiles) {
+        this->layout->editHistory.push(new PaintMetatile(this->layout, oldMetatiles, this->layout->blockdata, actionId_));
     }
 }
 
-void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
+void LayoutPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
     /* Return if an axis is already locked, or if the mouse has been released. The mouse release check is necessary
-     * because MapPixmapItem::mouseReleaseEvent seems to get called before this function, which would unlock the axis
+     * because LayoutPixmapItem::mouseReleaseEvent seems to get called before this function, which would unlock the axis
      * and then get immediately re-locked here until the next ctrl-click. */
-    if (this->lockedAxis != MapPixmapItem::Axis::None || event->type() == QEvent::GraphicsSceneMouseRelease)
+    if (this->lockedAxis != LayoutPixmapItem::Axis::None || event->type() == QEvent::GraphicsSceneMouseRelease)
         return;
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
@@ -293,31 +293,31 @@ void MapPixmapItem::lockNondominantAxis(QGraphicsSceneMouseEvent *event) {
     int yDiff = pos.y() - this->straight_path_initial_y;
     if (xDiff || yDiff) {
         if (abs(xDiff) < abs(yDiff)) {
-            this->lockedAxis = MapPixmapItem::Axis::X;
+            this->lockedAxis = LayoutPixmapItem::Axis::X;
         } else {
-            this->lockedAxis = MapPixmapItem::Axis::Y;
+            this->lockedAxis = LayoutPixmapItem::Axis::Y;
         }
     }
 }
 
 // Adjust the cooresponding coordinate when it is locked
-QPoint MapPixmapItem::adjustCoords(QPoint pos) {
-    if (this->lockedAxis == MapPixmapItem::Axis::X) {
+QPoint LayoutPixmapItem::adjustCoords(QPoint pos) {
+    if (this->lockedAxis == LayoutPixmapItem::Axis::X) {
         pos.setX(this->straight_path_initial_x);
-    } else if (this->lockedAxis == MapPixmapItem::Axis::Y) {
+    } else if (this->lockedAxis == LayoutPixmapItem::Axis::Y) {
         pos.setY(this->straight_path_initial_y);
     }
     return pos;
 }
 
-void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
+void LayoutPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
-    // Snap point to within map bounds.
+    // Snap point to within layout bounds.
     if (pos.x() < 0) pos.setX(0);
-    if (pos.x() >= map->getWidth()) pos.setX(map->getWidth() - 1);
+    if (pos.x() >= this->layout->getWidth()) pos.setX(this->layout->getWidth() - 1);
     if (pos.y() < 0) pos.setY(0);
-    if (pos.y() >= map->getHeight()) pos.setY(map->getHeight() - 1);
+    if (pos.y() >= this->layout->getHeight()) pos.setY(this->layout->getHeight() - 1);
 
     // Update/apply copied metatiles.
     if (event->type() == QEvent::GraphicsSceneMousePress) {
@@ -325,7 +325,7 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
         selection.clear();
         selection.append(QPoint(pos.x(), pos.y()));
         Block block;
-        if (map->getBlock(pos.x(), pos.y(), &block)) {
+        if (this->layout->getBlock(pos.x(), pos.y(), &block)) {
             this->metatileSelector->selectFromMap(block.metatileId(), block.collision(), block.elevation());
         }
     } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
@@ -348,11 +348,11 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
             int x = point.x();
             int y = point.y();
             Block block;
-            if (map->getBlock(x, y, &block)) {
+            if (this->layout->getBlock(x, y, &block)) {
                 metatiles.append(block.metatileId());
             }
-            int blockIndex = y * map->getWidth() + x;
-            block = map->layout->blockdata.at(blockIndex);
+            int blockIndex = y * this->layout->getWidth() + x;
+            block = this->layout->blockdata.at(blockIndex);
             auto collision = block.collision();
             auto elevation = block.elevation();
             collisions.append(QPair<uint16_t, uint16_t>(collision, elevation));
@@ -362,8 +362,8 @@ void MapPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
-    if (map) {
+void LayoutPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
+    if (this->layout) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
@@ -371,7 +371,7 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
             Block block;
             MetatileSelection selection = this->metatileSelector->getMetatileSelection();
             int metatileId = selection.metatileItems.first().metatileId;
-            if (selection.metatileItems.count() > 1 || (map->getBlock(pos.x(), pos.y(), &block) && block.metatileId() != metatileId)) {
+            if (selection.metatileItems.count() > 1 || (this->layout->getBlock(pos.x(), pos.y(), &block) && block.metatileId() != metatileId)) {
                 bool smartPathsEnabled = event->modifiers() & Qt::ShiftModifier;
                 if ((this->settings->smartPathsEnabled || smartPathsEnabled) && selection.dimensions.x() == 3 && selection.dimensions.y() == 3)
                     this->floodFillSmartPath(pos.x(), pos.y());
@@ -382,8 +382,8 @@ void MapPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
-    if (map) {
+void LayoutPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
+    if (this->layout) {
         if (event->type() == QEvent::GraphicsSceneMouseRelease) {
             actionId_++;
         } else {
@@ -393,18 +393,18 @@ void MapPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::magicFill(int x, int y, uint16_t metatileId, bool fromScriptCall) {
+void LayoutPixmapItem::magicFill(int x, int y, uint16_t metatileId, bool fromScriptCall) {
     QPoint selectionDimensions(1, 1);
     QList<MetatileSelectionItem> selectedMetatiles = QList<MetatileSelectionItem>({MetatileSelectionItem{ true, metatileId }});
     this->magicFill(x, y, selectionDimensions, selectedMetatiles, QList<CollisionSelectionItem>(), fromScriptCall);
 }
 
-void MapPixmapItem::magicFill(int x, int y, bool fromScriptCall) {
+void LayoutPixmapItem::magicFill(int x, int y, bool fromScriptCall) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
     this->magicFill(x, y, selection.dimensions, selection.metatileItems, selection.collisionItems, fromScriptCall);
 }
 
-void MapPixmapItem::magicFill(
+void LayoutPixmapItem::magicFill(
         int initialX,
         int initialY,
         QPoint selectionDimensions,
@@ -412,18 +412,18 @@ void MapPixmapItem::magicFill(
         QList<CollisionSelectionItem> selectedCollisions,
         bool fromScriptCall) {
     Block block;
-    if (map->getBlock(initialX, initialY, &block)) {
+    if (this->layout->getBlock(initialX, initialY, &block)) {
         if (selectedMetatiles.length() == 1 && selectedMetatiles.at(0).metatileId == block.metatileId()) {
             return;
         }
 
-        Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
+        Blockdata oldMetatiles = !fromScriptCall ? this->layout->blockdata : Blockdata();
 
         bool setCollisions = selectedCollisions.length() == selectedMetatiles.length();
         uint16_t metatileId = block.metatileId();
-        for (int y = 0; y < map->getHeight(); y++) {
-            for (int x = 0; x < map->getWidth(); x++) {
-                if (map->getBlock(x, y, &block) && block.metatileId() == metatileId) {
+        for (int y = 0; y < this->layout->getHeight(); y++) {
+            for (int x = 0; x < this->layout->getWidth(); x++) {
+                if (this->layout->getBlock(x, y, &block) && block.metatileId() == metatileId) {
                     int xDiff = x - initialX;
                     int yDiff = y - initialY;
                     int i = xDiff % selectionDimensions.x();
@@ -438,30 +438,30 @@ void MapPixmapItem::magicFill(
                             block.setCollision(item.collision);
                             block.setElevation(item.elevation);
                         }
-                        map->setBlock(x, y, block, !fromScriptCall);
+                        this->layout->setBlock(x, y, block, !fromScriptCall);
                     }
                 }
             }
         }
 
-        if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
-            map->editHistory.push(new MagicFillMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
+        if (!fromScriptCall && this->layout->blockdata != oldMetatiles) {
+            this->layout->editHistory.push(new MagicFillMetatile(this->layout, oldMetatiles, this->layout->blockdata, actionId_));
         }
     }
 }
 
-void MapPixmapItem::floodFill(int initialX, int initialY, bool fromScriptCall) {
+void LayoutPixmapItem::floodFill(int initialX, int initialY, bool fromScriptCall) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
     this->floodFill(initialX, initialY, selection.dimensions, selection.metatileItems, selection.collisionItems, fromScriptCall);
 }
 
-void MapPixmapItem::floodFill(int initialX, int initialY, uint16_t metatileId, bool fromScriptCall) {
+void LayoutPixmapItem::floodFill(int initialX, int initialY, uint16_t metatileId, bool fromScriptCall) {
     QPoint selectionDimensions(1, 1);
     QList<MetatileSelectionItem> selectedMetatiles = QList<MetatileSelectionItem>({MetatileSelectionItem{true, metatileId}});
     this->floodFill(initialX, initialY, selectionDimensions, selectedMetatiles, QList<CollisionSelectionItem>(), fromScriptCall);
 }
 
-void MapPixmapItem::floodFill(
+void LayoutPixmapItem::floodFill(
         int initialX,
         int initialY,
         QPoint selectionDimensions,
@@ -469,7 +469,7 @@ void MapPixmapItem::floodFill(
         QList<CollisionSelectionItem> selectedCollisions,
         bool fromScriptCall) {
     bool setCollisions = selectedCollisions.length() == selectedMetatiles.length();
-    Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
+    Blockdata oldMetatiles = !fromScriptCall ? this->layout->blockdata : Blockdata();
 
     QSet<int> visited;
     QList<QPoint> todo;
@@ -479,11 +479,11 @@ void MapPixmapItem::floodFill(
         int x = point.x();
         int y = point.y();
         Block block;
-        if (!map->getBlock(x, y, &block)) {
+        if (!this->layout->getBlock(x, y, &block)) {
             continue;
         }
 
-        visited.insert(x + y * map->getWidth());
+        visited.insert(x + y * this->layout->getWidth());
         int xDiff = x - initialX;
         int yDiff = y - initialY;
         int i = xDiff % selectionDimensions.x();
@@ -500,32 +500,32 @@ void MapPixmapItem::floodFill(
                 block.setCollision(item.collision);
                 block.setElevation(item.elevation);
             }
-            map->setBlock(x, y, block, !fromScriptCall);
+            this->layout->setBlock(x, y, block, !fromScriptCall);
         }
-        if (!visited.contains(x + 1 + y * map->getWidth()) && map->getBlock(x + 1, y, &block) && block.metatileId() == old_metatileId) {
+        if (!visited.contains(x + 1 + y * this->layout->getWidth()) && this->layout->getBlock(x + 1, y, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x + 1, y));
-            visited.insert(x + 1 + y * map->getWidth());
+            visited.insert(x + 1 + y * this->layout->getWidth());
         }
-        if (!visited.contains(x - 1 + y * map->getWidth()) && map->getBlock(x - 1, y, &block) && block.metatileId() == old_metatileId) {
+        if (!visited.contains(x - 1 + y * this->layout->getWidth()) && this->layout->getBlock(x - 1, y, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x - 1, y));
-            visited.insert(x - 1 + y * map->getWidth());
+            visited.insert(x - 1 + y * this->layout->getWidth());
         }
-        if (!visited.contains(x + (y + 1) * map->getWidth()) && map->getBlock(x, y + 1, &block) && block.metatileId() == old_metatileId) {
+        if (!visited.contains(x + (y + 1) * this->layout->getWidth()) && this->layout->getBlock(x, y + 1, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x, y + 1));
-            visited.insert(x + (y + 1) * map->getWidth());
+            visited.insert(x + (y + 1) * this->layout->getWidth());
         }
-        if (!visited.contains(x + (y - 1) * map->getWidth()) && map->getBlock(x, y - 1, &block) && block.metatileId() == old_metatileId) {
+        if (!visited.contains(x + (y - 1) * this->layout->getWidth()) && this->layout->getBlock(x, y - 1, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x, y - 1));
-            visited.insert(x + (y - 1) * map->getWidth());
+            visited.insert(x + (y - 1) * this->layout->getWidth());
         }
     }
 
-    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
-        map->editHistory.push(new BucketFillMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
+    if (!fromScriptCall && this->layout->blockdata != oldMetatiles) {
+        this->layout->editHistory.push(new BucketFillMetatile(this->layout, oldMetatiles, this->layout->blockdata, actionId_));
     }
 }
 
-void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScriptCall) {
+void LayoutPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScriptCall) {
     MetatileSelection selection = this->metatileSelector->getMetatileSelection();
     if (!isValidSmartPathSelection(selection))
         return;
@@ -542,7 +542,7 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
         setCollisions = true;
     }
 
-    Blockdata oldMetatiles = !fromScriptCall ? map->layout->blockdata : Blockdata();
+    Blockdata oldMetatiles = !fromScriptCall ? this->layout->blockdata : Blockdata();
 
     // Flood fill the region with the open tile.
     QList<QPoint> todo;
@@ -552,7 +552,7 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
         int x = point.x();
         int y = point.y();
         Block block;
-        if (!map->getBlock(x, y, &block)) {
+        if (!this->layout->getBlock(x, y, &block)) {
             continue;
         }
 
@@ -566,17 +566,17 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
             block.setCollision(openCollision);
             block.setElevation(openElevation);
         }
-        map->setBlock(x, y, block, !fromScriptCall);
-        if (map->getBlock(x + 1, y, &block) && block.metatileId() == old_metatileId) {
+        this->layout->setBlock(x, y, block, !fromScriptCall);
+        if (this->layout->getBlock(x + 1, y, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x + 1, y));
         }
-        if (map->getBlock(x - 1, y, &block) && block.metatileId() == old_metatileId) {
+        if (this->layout->getBlock(x - 1, y, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x - 1, y));
         }
-        if (map->getBlock(x, y + 1, &block) && block.metatileId() == old_metatileId) {
+        if (this->layout->getBlock(x, y + 1, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x, y + 1));
         }
-        if (map->getBlock(x, y - 1, &block) && block.metatileId() == old_metatileId) {
+        if (this->layout->getBlock(x, y - 1, &block) && block.metatileId() == old_metatileId) {
             todo.append(QPoint(x, y - 1));
         }
     }
@@ -590,11 +590,11 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
         int x = point.x();
         int y = point.y();
         Block block;
-        if (!map->getBlock(x, y, &block)) {
+        if (!this->layout->getBlock(x, y, &block)) {
             continue;
         }
 
-        visited.insert(x + y * map->getWidth());
+        visited.insert(x + y * this->layout->getWidth());
         int id = 0;
         Block top;
         Block right;
@@ -602,13 +602,13 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
         Block left;
 
         // Get marching squares value, to determine which tile to use.
-        if (map->getBlock(x, y - 1, &top) && isSmartPathTile(selection.metatileItems, top.metatileId()))
+        if (this->layout->getBlock(x, y - 1, &top) && isSmartPathTile(selection.metatileItems, top.metatileId()))
             id += 1;
-        if (map->getBlock(x + 1, y, &right) && isSmartPathTile(selection.metatileItems, right.metatileId()))
+        if (this->layout->getBlock(x + 1, y, &right) && isSmartPathTile(selection.metatileItems, right.metatileId()))
             id += 2;
-        if (map->getBlock(x, y + 1, &bottom) && isSmartPathTile(selection.metatileItems, bottom.metatileId()))
+        if (this->layout->getBlock(x, y + 1, &bottom) && isSmartPathTile(selection.metatileItems, bottom.metatileId()))
             id += 4;
-        if (map->getBlock(x - 1, y, &left) && isSmartPathTile(selection.metatileItems, left.metatileId()))
+        if (this->layout->getBlock(x - 1, y, &left) && isSmartPathTile(selection.metatileItems, left.metatileId()))
             id += 8;
 
         block.setMetatileId(selection.metatileItems.at(smartPathTable[id]).metatileId);
@@ -617,41 +617,41 @@ void MapPixmapItem::floodFillSmartPath(int initialX, int initialY, bool fromScri
             block.setCollision(item.collision);
             block.setElevation(item.elevation);
         }
-        map->setBlock(x, y, block, !fromScriptCall);
+        this->layout->setBlock(x, y, block, !fromScriptCall);
 
         // Visit neighbors if they are smart-path tiles, and don't revisit any.
-        if (!visited.contains(x + 1 + y * map->getWidth()) && map->getBlock(x + 1, y, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
+        if (!visited.contains(x + 1 + y * this->layout->getWidth()) && this->layout->getBlock(x + 1, y, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
             todo.append(QPoint(x + 1, y));
-            visited.insert(x + 1 + y * map->getWidth());
+            visited.insert(x + 1 + y * this->layout->getWidth());
         }
-        if (!visited.contains(x - 1 + y * map->getWidth()) && map->getBlock(x - 1, y, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
+        if (!visited.contains(x - 1 + y * this->layout->getWidth()) && this->layout->getBlock(x - 1, y, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
             todo.append(QPoint(x - 1, y));
-            visited.insert(x - 1 + y * map->getWidth());
+            visited.insert(x - 1 + y * this->layout->getWidth());
         }
-        if (!visited.contains(x + (y + 1) * map->getWidth()) && map->getBlock(x, y + 1, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
+        if (!visited.contains(x + (y + 1) * this->layout->getWidth()) && this->layout->getBlock(x, y + 1, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
             todo.append(QPoint(x, y + 1));
-            visited.insert(x + (y + 1) * map->getWidth());
+            visited.insert(x + (y + 1) * this->layout->getWidth());
         }
-        if (!visited.contains(x + (y - 1) * map->getWidth()) && map->getBlock(x, y - 1, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
+        if (!visited.contains(x + (y - 1) * this->layout->getWidth()) && this->layout->getBlock(x, y - 1, &block) && isSmartPathTile(selection.metatileItems, block.metatileId())) {
             todo.append(QPoint(x, y - 1));
-            visited.insert(x + (y - 1) * map->getWidth());
+            visited.insert(x + (y - 1) * this->layout->getWidth());
         }
     }
 
-    if (!fromScriptCall && map->layout->blockdata != oldMetatiles) {
-        map->editHistory.push(new BucketFillMetatile(map, oldMetatiles, map->layout->blockdata, actionId_));
+    if (!fromScriptCall && this->layout->blockdata != oldMetatiles) {
+        this->layout->editHistory.push(new BucketFillMetatile(this->layout, oldMetatiles, this->layout->blockdata, actionId_));
     }
 }
 
-void MapPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
+void LayoutPixmapItem::pick(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     Block block;
-    if (map->getBlock(pos.x(), pos.y(), &block)) {
+    if (this->layout->getBlock(pos.x(), pos.y(), &block)) {
         this->metatileSelector->selectFromMap(block.metatileId(), block.collision(), block.elevation());
     }
 }
 
-void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
+void LayoutPixmapItem::select(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (event->type() == QEvent::GraphicsSceneMousePress) {
         selection_origin = QPoint(pos.x(), pos.y());
@@ -681,43 +681,47 @@ void MapPixmapItem::select(QGraphicsSceneMouseEvent *event) {
     }
 }
 
-void MapPixmapItem::draw(bool ignoreCache) {
-    if (map) {
-        map->setMapItem(this);
-        setPixmap(map->render(ignoreCache));
+void LayoutPixmapItem::draw(bool ignoreCache) {
+    if (this->layout) {
+        layout->setLayoutItem(this);
+        setPixmap(this->layout->render(ignoreCache));
     }
 }
 
-void MapPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+void LayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (pos != this->metatilePos) {
         this->metatilePos = pos;
         emit this->hoveredMapMetatileChanged(pos);
     }
-    if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
+    if (this->settings->betterCursors && this->editsEnabled) {
         setCursor(this->settings->mapCursor);
     }
 }
-void MapPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
+
+void LayoutPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
     this->has_mouse = true;
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     emit this->hoveredMapMetatileChanged(pos);
 }
-void MapPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+
+void LayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredMapMetatileCleared();
-    if (this->settings->betterCursors && this->paintingMode != MapPixmapItem::PaintMode::Disabled) {
+    if (this->settings->betterCursors && this->editsEnabled) {
         unsetCursor();
     }
     this->has_mouse = false;
 }
-void MapPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+
+void LayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     this->paint_tile_initial_x = this->straight_path_initial_x = pos.x();
     this->paint_tile_initial_y = this->straight_path_initial_y = pos.y();
     emit startPaint(event, this);
     emit mouseEvent(event, this);
 }
-void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+
+void LayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (pos != this->metatilePos) {
         this->metatilePos = pos;
@@ -725,8 +729,9 @@ void MapPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
     emit mouseEvent(event, this);
 }
-void MapPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    this->lockedAxis = MapPixmapItem::Axis::None;
+
+void LayoutPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    this->lockedAxis = LayoutPixmapItem::Axis::None;
     emit endPaint(event, this);
     emit mouseEvent(event, this);
 }

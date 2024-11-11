@@ -34,11 +34,12 @@ private:
     unsigned actionId = 0;
 
 protected:
-    void mousePressEvent(QMouseEvent*) override;
+    virtual void mousePressEvent(QMouseEvent*) override;
+    virtual void focusInEvent(QFocusEvent*) override;
+    virtual void keyPressEvent(QKeyEvent*) override;
 
 signals:
     void selected();
-    void removed(MapConnection*);
     void openMapClicked(MapConnection*);
 
 private slots:

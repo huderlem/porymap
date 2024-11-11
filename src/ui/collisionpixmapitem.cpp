@@ -8,7 +8,7 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         this->previousPos = pos;
         emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
     }
-    if (this->settings->betterCursors && this->paintingMode == MapPixmapItem::PaintMode::Metatiles) {
+    if (this->settings->betterCursors && this->getEditsEnabled()) {
         setCursor(this->settings->mapCursor);
     }
 }
@@ -21,7 +21,7 @@ void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
 
 void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     emit this->hoveredMapMovementPermissionCleared();
-    if (this->settings->betterCursors && this->paintingMode == MapPixmapItem::PaintMode::Metatiles){
+    if (this->settings->betterCursors && this->getEditsEnabled()){
         unsetCursor();
     }
     this->has_mouse = false;
@@ -49,9 +49,9 @@ void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void CollisionPixmapItem::draw(bool ignoreCache) {
-    if (map) {
-        map->setCollisionItem(this);
-        setPixmap(map->renderCollision(ignoreCache));
+    if (this->layout) {
+        this->layout->setCollisionItem(this);
+        setPixmap(this->layout->renderCollision(ignoreCache));
         setOpacity(*this->opacity);
     }
 }
@@ -59,8 +59,8 @@ void CollisionPixmapItem::draw(bool ignoreCache) {
 void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         actionId_++;
-    } else if (map) {
-        Blockdata oldCollision = map->layout->blockdata;
+    } else if (this->layout) {
+        Blockdata oldCollision = this->layout->blockdata;
 
         QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
@@ -70,18 +70,18 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
             pos = this->adjustCoords(pos);
         } else {
             this->prevStraightPathState = false;
-            this->lockedAxis = MapPixmapItem::Axis::None;
+            this->lockedAxis = LayoutPixmapItem::Axis::None;
         }
 
         Block block;
-        if (map->getBlock(pos.x(), pos.y(), &block)) {
+        if (this->layout->getBlock(pos.x(), pos.y(), &block)) {
             block.setCollision(this->selectedCollision->value());
             block.setElevation(this->selectedElevation->value());
-            map->setBlock(pos.x(), pos.y(), block, true);
+            this->layout->setBlock(pos.x(), pos.y(), block, true);
         }
 
-        if (map->layout->blockdata != oldCollision) {
-            map->editHistory.push(new PaintCollision(map, oldCollision, map->layout->blockdata, actionId_));
+        if (this->layout->blockdata != oldCollision) {
+            this->layout->editHistory.push(new PaintCollision(this->layout, oldCollision, this->layout->blockdata, actionId_));
         }
     }
 }
@@ -89,16 +89,16 @@ void CollisionPixmapItem::paint(QGraphicsSceneMouseEvent *event) {
 void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         this->actionId_++;
-    } else if (map) {
-        Blockdata oldCollision = map->layout->blockdata;
+    } else if (this->layout) {
+        Blockdata oldCollision = this->layout->blockdata;
 
         QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
         uint16_t collision = this->selectedCollision->value();
         uint16_t elevation = this->selectedElevation->value();
-        map->floodFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
+        this->layout->floodFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
-        if (map->layout->blockdata != oldCollision) {
-            map->editHistory.push(new BucketFillCollision(map, oldCollision, map->layout->blockdata));
+        if (this->layout->blockdata != oldCollision) {
+            this->layout->editHistory.push(new BucketFillCollision(this->layout, oldCollision, this->layout->blockdata));
         }
     }
 }
@@ -106,15 +106,15 @@ void CollisionPixmapItem::floodFill(QGraphicsSceneMouseEvent *event) {
 void CollisionPixmapItem::magicFill(QGraphicsSceneMouseEvent *event) {
     if (event->type() == QEvent::GraphicsSceneMouseRelease) {
         this->actionId_++;
-    } else if (map) {
-        Blockdata oldCollision = map->layout->blockdata;
+    } else if (this->layout) {
+        Blockdata oldCollision = this->layout->blockdata;
         QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
         uint16_t collision = this->selectedCollision->value();
         uint16_t elevation = this->selectedElevation->value();
-        map->magicFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
+        this->layout->magicFillCollisionElevation(pos.x(), pos.y(), collision, elevation);
 
-        if (map->layout->blockdata != oldCollision) {
-            map->editHistory.push(new MagicFillCollision(map, oldCollision, map->layout->blockdata));
+        if (this->layout->blockdata != oldCollision) {
+            this->layout->editHistory.push(new MagicFillCollision(this->layout, oldCollision, this->layout->blockdata));
         }
     }
 }
@@ -129,15 +129,15 @@ void CollisionPixmapItem::updateMovementPermissionSelection(QGraphicsSceneMouseE
 
     // Snap point to within map bounds.
     if (pos.x() < 0) pos.setX(0);
-    if (pos.x() >= map->getWidth()) pos.setX(map->getWidth() - 1);
+    if (pos.x() >= this->layout->getWidth()) pos.setX(this->layout->getWidth() - 1);
     if (pos.y() < 0) pos.setY(0);
-    if (pos.y() >= map->getHeight()) pos.setY(map->getHeight() - 1);
+    if (pos.y() >= this->layout->getHeight()) pos.setY(this->layout->getHeight() - 1);
     this->updateSelection(pos);
 }
 
 void CollisionPixmapItem::updateSelection(QPoint pos) {
     Block block;
-    if (map->getBlock(pos.x(), pos.y(), &block)) {
+    if (this->layout->getBlock(pos.x(), pos.y(), &block)) {
         this->selectedCollision->setValue(block.collision());
         this->selectedElevation->setValue(block.elevation());
     }

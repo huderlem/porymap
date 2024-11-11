@@ -13,15 +13,15 @@
 #include <QCloseEvent>
 #include <QImageReader>
 
-TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
+TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::TilesetEditor),
     project(project),
-    map(map),
+    layout(layout),
     hasUnsavedChanges(false)
 {
     this->setAttribute(Qt::WA_DeleteOnClose);
-    this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
+    this->setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
     this->initUi();
 }
 
@@ -43,14 +43,14 @@ TilesetEditor::~TilesetEditor()
     this->metatileHistory.clear();
 }
 
-void TilesetEditor::update(Map *map, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
-    this->updateMap(map);
+void TilesetEditor::update(Layout *layout, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->updateLayout(layout);
     this->updateTilesets(primaryTilesetLabel, secondaryTilesetLabel);
 }
 
-void TilesetEditor::updateMap(Map *map) {
-    this->map = map;
-    this->metatileSelector->map = map;
+void TilesetEditor::updateLayout(Layout *layout) {
+    this->layout = layout;
+    this->metatileSelector->layout = layout;
 }
 
 void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
@@ -180,7 +180,7 @@ void TilesetEditor::setMetatileLabelValidator() {
 
 void TilesetEditor::initMetatileSelector()
 {
-    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->map);
+    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->layout);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,
             this, &TilesetEditor::onHoveredMetatileChanged);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,
@@ -387,7 +387,7 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     // The Tileset Editor (if open) needs to reflect these changes when the metatile is next displayed.
     if (this->metatileReloadQueue.contains(metatileId)) {
         this->metatileReloadQueue.remove(metatileId);
-        Metatile *updatedMetatile = Tileset::getMetatile(metatileId, this->map->layout->tileset_primary, this->map->layout->tileset_secondary);
+        Metatile *updatedMetatile = Tileset::getMetatile(metatileId, this->layout->tileset_primary, this->layout->tileset_secondary);
         if (updatedMetatile) *this->metatile = *updatedMetatile;
     }
 

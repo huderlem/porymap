@@ -22,12 +22,6 @@ static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_
 
 #define CONFIG_BACKWARDS_COMPATABILITY
 
-enum MapSortOrder {
-    Group   =  0,
-    Area    =  1,
-    Layout  =  2,
-};
-
 class KeyValueConfigBase
 {
 public:
@@ -56,7 +50,7 @@ public:
         this->recentProjects.clear();
         this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
-        this->mapSortOrder = MapSortOrder::Group;
+        this->mapListTab = 0;
         this->prettyCursors = true;
         this->mirrorConnectingMaps = true;
         this->showDiveEmergeMaps = false;
@@ -107,7 +101,7 @@ public:
 
     bool reopenOnLaunch;
     bool projectManuallyClosed;
-    MapSortOrder mapSortOrder;
+    int mapListTab;
     bool prettyCursors;
     bool mirrorConnectingMaps;
     bool showDiveEmergeMaps;
@@ -219,7 +213,6 @@ enum ProjectIdentifier {
     define_map_empty,
     define_map_section_prefix,
     define_map_section_empty,
-    define_map_section_count,
     define_species_prefix,
     regex_behaviors,
     regex_obj_event_gfx,
@@ -275,7 +268,6 @@ enum ProjectFilePath {
     constants_obj_event_movement,
     constants_obj_events,
     constants_event_bg,
-    constants_region_map_sections,
     constants_metatile_labels,
     constants_metatile_behaviors,
     constants_species,
@@ -406,7 +398,7 @@ public:
         reset();
     }
     virtual void reset() override {
-        this->recentMap = QString();
+        this->recentMapOrLayout = QString();
         this->useEncounterJson = true;
         this->customScripts.clear();
         this->readKeys.clear();
@@ -418,7 +410,7 @@ public:
     QList<bool> getCustomScriptsEnabled();
 
     QString projectDir;
-    QString recentMap;
+    QString recentMapOrLayout;
     bool useEncounterJson;
 
 protected:

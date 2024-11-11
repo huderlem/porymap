@@ -57,8 +57,8 @@ public:
     bool loadLayout(poryjson::Json);
     bool loadEntries();
 
-    void setEntries(tsl::ordered_map<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
-    void setEntries(tsl::ordered_map<QString, MapSectionEntry> entries) { *(this->region_map_entries) = entries; }
+    void setEntries(QMap<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
+    void setEntries(const QMap<QString, MapSectionEntry> &entries) { *(this->region_map_entries) = entries; }
     void clearEntries() { this->region_map_entries->clear(); }
     MapSectionEntry getEntry(QString section);
     void setEntry(QString section, MapSectionEntry entry);
@@ -114,8 +114,6 @@ public:
     void setLayer(QString layer) { this->current_layer = layer; }
     QString getLayer() { return this->current_layer; }
 
-    QString fixCase(QString);
-
     int padLeft() { return this->offset_left; }
     int padTop() { return this->offset_top; }
     int padRight() { return this->tilemap_width - this->layout_width - this->offset_left; }
@@ -149,14 +147,12 @@ public:
 
     const QString section_prefix;
     const QString default_map_section;
-    const QString count_map_section;
 
 signals:
     void mapNeedsDisplaying();
 
 private:
-    // TODO: defaults needed?
-    tsl::ordered_map<QString, MapSectionEntry> *region_map_entries = nullptr;
+    QMap<QString, MapSectionEntry> *region_map_entries = nullptr;
 
     QString alias = "";
 
