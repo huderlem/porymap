@@ -840,43 +840,6 @@ void Project::saveWildMonData() {
     wildEncountersFile.close();
 }
 
-void Project::saveMapConstantsHeader() {
-    QString text = QString("#ifndef GUARD_CONSTANTS_MAP_GROUPS_H\n");
-    text += QString("#define GUARD_CONSTANTS_MAP_GROUPS_H\n");
-    text += QString("\n//\n// DO NOT MODIFY THIS FILE! It is auto-generated from %1\n//\n\n")
-                    .arg(projectConfig.getFilePath(ProjectFilePath::json_map_groups));
-
-    int groupNum = 0;
-    for (QStringList mapNames : groupedMapNames) {
-        text += "// " + groupNames.at(groupNum) + "\n";
-        int maxLength = 0;
-        for (QString mapName : mapNames) {
-            QString mapConstantName = mapNamesToMapConstants.value(mapName);
-            if (mapConstantName.length() > maxLength)
-                maxLength = mapConstantName.length();
-        }
-        int groupIndex = 0;
-        for (QString mapName : mapNames) {
-            QString mapConstantName = mapNamesToMapConstants.value(mapName);
-            text += QString("#define %1%2(%3 | (%4 << 8))\n")
-                    .arg(mapConstantName)
-                    .arg(QString(" ").repeated(maxLength - mapConstantName.length() + 1))
-                    .arg(groupIndex)
-                    .arg(groupNum);
-            groupIndex++;
-        }
-        text += QString("\n");
-        groupNum++;
-    }
-
-    text += QString("#define MAP_GROUPS_COUNT %1\n\n").arg(groupNum);
-    text += QString("#endif // GUARD_CONSTANTS_MAP_GROUPS_H\n");
-
-    QString mapGroupFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::constants_map_groups);
-    ignoreWatchedFileTemporarily(mapGroupFilepath);
-    saveTextFile(mapGroupFilepath, text);
-}
-
 void Project::saveHealLocations(Map *map) {
     this->saveHealLocationsData(map);
     this->saveHealLocationsConstants();
@@ -1469,7 +1432,6 @@ void Project::saveAllDataStructures() {
     saveMapLayouts();
     saveMapGroups();
     saveRegionMapSections();
-    saveMapConstantsHeader();
     saveWildMonData();
     saveConfig();
     this->hasUnsavedDataChanges = false;

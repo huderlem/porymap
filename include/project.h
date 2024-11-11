@@ -172,7 +172,6 @@ public:
     void saveMapGroups();
     void saveRegionMapSections();
     void saveWildMonData();
-    void saveMapConstantsHeader();
     void saveHealLocations(Map*);
     void saveTilesets(Tileset*, Tileset*);
     void saveTilesetMetatileLabels(Tileset*, Tileset*);
