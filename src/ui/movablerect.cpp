@@ -151,13 +151,24 @@ void ResizableRect::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         break;
     }
 
-    // lower bounds limits
-    if (resizedRect.width() < 16)
-        resizedRect.setWidth(16);
-    if (resizedRect.height() < 16)
-        resizedRect.setHeight(16);
+    // lower bounds limits, smallest possible size is 16x16 square
+    if (resizedRect.width() < 16) {
+        if (dx < 0) { // right sided adjustment made
+            resizedRect.setWidth(16);
+        } else { // left sided adjustment slightly more complicated
+            int dxMax = this->clickedRect.right() - this->clickedRect.left() - 16;
+            resizedRect.adjust(dxMax - dx, 0, 0, 0);
+        }
+    }
+    if (resizedRect.height() < 16) {
+        if (dy < 0) { // bottom
+            resizedRect.setHeight(16);
+        } else { // top
+            int dyMax = this->clickedRect.bottom() - this->clickedRect.top() - 16;
+            resizedRect.adjust(0, dyMax - dy, 0, 0);
+        }
+    }
 
-    // TODO: upper bound limits
-
-    this->updatePosFromRect(resizedRect);
+    // Upper bounds: clip resized to limit rect
+    this->updatePosFromRect(resizedRect & this->limit);
 }

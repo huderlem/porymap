@@ -55,6 +55,7 @@ public:
     }
 
     void updatePosFromRect(QRect newPos);
+    void setLimit(QRect limit) { this->limit = limit; }
 
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
@@ -70,6 +71,8 @@ private:
     ResizableRect::Edge clickedEdge = ResizableRect::Edge::None;
     QPointF clickedPos = QPointF();
     QRect clickedRect;
+
+    QRect limit = QRect();
 
     int lineWidth = 8;
 

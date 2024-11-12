@@ -22,13 +22,13 @@ void CheckeredBgScene::drawBackground(QPainter *painter, const QRectF &rect) {
     for (int x = xMin, xTile = 0; x <= xMax; x += this->gridSize, xTile++) {
         for (int y = yMin, yTile = 0; y <= yMax; y += this->gridSize, yTile++) {
             if (!((xTile ^ yTile) & 1)) { // tile numbers have same parity (evenness)
-                if (this->validRect.contains(x, y)) // check if inside validRect
+                if (this->validRect.contains(x, y))
                     paintColor = QColor(132, 217, 165); // green light color
                 else
                     paintColor = 0xbcbcbc; // normal light color
             }
             else {
-                if (this->validRect.contains(x, y)) // check if inside validRect
+                if (this->validRect.contains(x, y))
                     paintColor = QColor(76, 178, 121); // green dark color
                 else
                     paintColor = 0x969696; // normal dark color
@@ -142,6 +142,7 @@ void ResizeLayoutPopup::setupLayoutView() {
     static bool layoutSizeRectVisible = true;
 
     this->outline = new ResizableRect(this, &layoutSizeRectVisible, this->editor->layout->getWidth(), this->editor->layout->getHeight(), qRgb(255, 0, 255));
+    this->outline->setLimit(cover->rect().toAlignedRect());
     connect(outline, &ResizableRect::rectUpdated, [=](QRect rect){
         this->scene->setValidRect(rect);
         this->ui->spinBox_width->setValue(rect.width() / 16);
