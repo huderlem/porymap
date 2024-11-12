@@ -99,7 +99,7 @@ SOURCES += src/core/block.cpp \
     src/ui/tileseteditortileselector.cpp \
     src/ui/tilemaptileselector.cpp \
     src/ui/regionmapeditor.cpp \
-    src/ui/newmappopup.cpp \
+    src/ui/newmapdialog.cpp \
     src/ui/mapimageexporter.cpp \
     src/ui/newtilesetdialog.cpp \
     src/ui/flowlayout.cpp \
@@ -202,7 +202,7 @@ HEADERS  += include/core/block.h \
     include/ui/tileseteditortileselector.h \
     include/ui/tilemaptileselector.h \
     include/ui/regionmapeditor.h \
-    include/ui/newmappopup.h \
+    include/ui/newmapdialog.h \
     include/ui/mapimageexporter.h \
     include/ui/newtilesetdialog.h \
     include/ui/overlay.h \
@@ -238,7 +238,7 @@ FORMS    += forms/mainwindow.ui \
     forms/tileseteditor.ui \
     forms/paletteeditor.ui \
     forms/regionmapeditor.ui \
-    forms/newmappopup.ui \
+    forms/newmapdialog.ui \
     forms/aboutporymap.ui \
     forms/newtilesetdialog.ui \
     forms/mapimageexporter.ui \

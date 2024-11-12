@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NewMapPopup</class>
- <widget class="QMainWindow" name="NewMapPopup">
+ <class>NewMapDialog</class>
+ <widget class="QDialog" name="NewMapDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

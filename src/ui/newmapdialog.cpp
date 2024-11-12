@@ -1,7 +1,7 @@
-#include "newmappopup.h"
+#include "newmapdialog.h"
 #include "maplayout.h"
 #include "mainwindow.h"
-#include "ui_newmappopup.h"
+#include "ui_newmapdialog.h"
 #include "config.h"
 
 #include <QMap>
@@ -10,11 +10,11 @@
 
 // TODO: Convert to modal dialog (among other things, this means we wouldn't need to worry about changes to the map list while this is open)
 
-struct NewMapPopup::Settings NewMapPopup::settings = {};
+struct NewMapDialog::Settings NewMapDialog::settings = {};
 
-NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
-    QMainWindow(parent),
-    ui(new Ui::NewMapPopup)
+NewMapDialog::NewMapDialog(QWidget *parent, Project *project) :
+    QDialog(parent),
+    ui(new Ui::NewMapDialog)
 {
     this->setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
@@ -23,13 +23,13 @@ NewMapPopup::NewMapPopup(QWidget *parent, Project *project) :
     this->importedMap = false;
 }
 
-NewMapPopup::~NewMapPopup()
+NewMapDialog::~NewMapDialog()
 {
     saveSettings();
     delete ui;
 }
 
-void NewMapPopup::initUi() {
+void NewMapDialog::initUi() {
     // Populate combo boxes
     ui->comboBox_NewMap_Primary_Tileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_NewMap_Secondary_Tileset->addItems(project->secondaryTilesetLabels);
@@ -76,7 +76,7 @@ void NewMapPopup::initUi() {
     this->updateGeometry();
 }
 
-void NewMapPopup::init() {
+void NewMapDialog::init() {
     // Restore previous settings
     ui->lineEdit_NewMap_Name->setText(project->getNewMapName());
     ui->comboBox_NewMap_Group->setTextItem(settings.group);
@@ -104,7 +104,7 @@ void NewMapPopup::init() {
 }
 
 // Creating new map by right-clicking in the map list
-void NewMapPopup::init(int tabIndex, QString fieldName) {
+void NewMapDialog::init(int tabIndex, QString fieldName) {
     initUi();
     switch (tabIndex)
     {
@@ -123,7 +123,7 @@ void NewMapPopup::init(int tabIndex, QString fieldName) {
 }
 
 // Creating new map from AdvanceMap import
-void NewMapPopup::init(Layout *mapLayout) {
+void NewMapDialog::init(Layout *mapLayout) {
     initUi();
     this->importedMap = true;
     useLayoutSettings(mapLayout);
@@ -138,7 +138,7 @@ void NewMapPopup::init(Layout *mapLayout) {
     init();
 }
 
-bool NewMapPopup::checkNewMapDimensions() {
+bool NewMapDialog::checkNewMapDimensions() {
     int numMetatiles = project->getMapDataSize(ui->spinBox_NewMap_Width->value(), ui->spinBox_NewMap_Height->value());
     int maxMetatiles = project->getMaxMapDataSize();
 
@@ -162,7 +162,7 @@ bool NewMapPopup::checkNewMapDimensions() {
     }
 }
 
-bool NewMapPopup::checkNewMapGroup() {
+bool NewMapDialog::checkNewMapGroup() {
     group = project->groupNames.indexOf(this->ui->comboBox_NewMap_Group->currentText());
 
     if (group < 0) {
@@ -179,7 +179,7 @@ bool NewMapPopup::checkNewMapGroup() {
     }
 }
 
-void NewMapPopup::setDefaultSettings(Project *project) {
+void NewMapDialog::setDefaultSettings(Project *project) {
     settings.group = project->groupNames.at(0);
     settings.width = project->getDefaultMapSize();
     settings.height = project->getDefaultMapSize();
@@ -198,7 +198,7 @@ void NewMapPopup::setDefaultSettings(Project *project) {
     settings.floorNumber = 0;
 }
 
-void NewMapPopup::saveSettings() {
+void NewMapDialog::saveSettings() {
     settings.group = ui->comboBox_NewMap_Group->currentText();
     settings.width = ui->spinBox_NewMap_Width->value();
     settings.height = ui->spinBox_NewMap_Height->value();
@@ -217,7 +217,7 @@ void NewMapPopup::saveSettings() {
     settings.floorNumber = ui->spinBox_NewMap_Floor_Number->value();
 }
 
-void NewMapPopup::useLayoutSettings(Layout *layout) {
+void NewMapDialog::useLayoutSettings(Layout *layout) {
     if (!layout) return;
 
     settings.width = layout->width;
@@ -239,7 +239,7 @@ void NewMapPopup::useLayoutSettings(Layout *layout) {
     ui->comboBox_NewMap_Secondary_Tileset->setCurrentIndex(ui->comboBox_NewMap_Secondary_Tileset->findText(layout->tileset_secondary_label));
 }
 
-void NewMapPopup::useLayout(QString layoutId) {
+void NewMapDialog::useLayout(QString layoutId) {
     this->existingLayout = true;
     this->layoutId = layoutId;
 
@@ -248,7 +248,7 @@ void NewMapPopup::useLayout(QString layoutId) {
     useLayoutSettings(project->mapLayouts.value(this->layoutId));
 }
 
-void NewMapPopup::on_checkBox_UseExistingLayout_stateChanged(int state) {
+void NewMapDialog::on_checkBox_UseExistingLayout_stateChanged(int state) {
     bool layoutEditsEnabled = (state == Qt::Unchecked);
     
     this->ui->comboBox_Layout->setEnabled(!layoutEditsEnabled);
@@ -267,13 +267,13 @@ void NewMapPopup::on_checkBox_UseExistingLayout_stateChanged(int state) {
     }
 }
 
-void NewMapPopup::on_comboBox_Layout_currentTextChanged(const QString &text) {
+void NewMapDialog::on_comboBox_Layout_currentTextChanged(const QString &text) {
     if (this->project->mapLayoutsTable.contains(text)) {
         useLayout(text);
     }
 }
 
-void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
+void NewMapDialog::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
     if (project->mapNames.contains(text)) {
         this->ui->lineEdit_NewMap_Name->setStyleSheet("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
     } else {
@@ -281,7 +281,7 @@ void NewMapPopup::on_lineEdit_NewMap_Name_textChanged(const QString &text) {
     }
 }
 
-void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
+void NewMapDialog::on_pushButton_NewMap_Accept_clicked() {
     if (!checkNewMapDimensions() || !checkNewMapGroup()) {
         // ignore when map dimensions or map group are invalid
         return;

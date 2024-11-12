@@ -1363,8 +1363,8 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
 
     if (addToFolderAction) {
         connect(addToFolderAction, &QAction::triggered, [this, itemName] {
-            openNewMapPopupWindow();
-            this->newMapPrompt->init(ui->mapListContainer->currentIndex(), itemName);
+            openNewMapDialog();
+            this->newMapDialog->init(ui->mapListContainer->currentIndex(), itemName);
         });
     }
     if (deleteFolderAction) {
@@ -1592,11 +1592,11 @@ void MainWindow::mapListAddArea() {
 }
 
 void MainWindow::onNewMapCreated() {
-    QString newMapName = this->newMapPrompt->map->name();
-    int newMapGroup = this->newMapPrompt->group;
-    Map *newMap = this->newMapPrompt->map;
-    bool existingLayout = this->newMapPrompt->existingLayout;
-    bool importedMap = this->newMapPrompt->importedMap;
+    QString newMapName = this->newMapDialog->map->name();
+    int newMapGroup = this->newMapDialog->group;
+    Map *newMap = this->newMapDialog->map;
+    bool existingLayout = this->newMapDialog->existingLayout;
+    bool importedMap = this->newMapDialog->importedMap;
 
     newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap, existingLayout, importedMap);
 
@@ -1638,27 +1638,27 @@ void MainWindow::onNewMapCreated() {
         editor->save();
     }
 
-    disconnect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
+    disconnect(this->newMapDialog, &NewMapDialog::applied, this, &MainWindow::onNewMapCreated);
     delete newMap;
 }
 
-void MainWindow::openNewMapPopupWindow() {
+void MainWindow::openNewMapDialog() {
     if (!this->newMapDefaultsSet) {
-        NewMapPopup::setDefaultSettings(this->editor->project);
+        NewMapDialog::setDefaultSettings(this->editor->project);
         this->newMapDefaultsSet = true;
     }
-    if (!this->newMapPrompt) {
-        this->newMapPrompt = new NewMapPopup(this, this->editor->project);
-        connect(this->newMapPrompt, &NewMapPopup::applied, this, &MainWindow::onNewMapCreated);
+    if (!this->newMapDialog) {
+        this->newMapDialog = new NewMapDialog(this, this->editor->project);
+        connect(this->newMapDialog, &NewMapDialog::applied, this, &MainWindow::onNewMapCreated);
     }
 
-    openSubWindow(this->newMapPrompt);
+    openSubWindow(this->newMapDialog);
 }
 
 void MainWindow::on_action_NewMap_triggered() {
-    openNewMapPopupWindow();
-    this->newMapPrompt->initUi();
-    this->newMapPrompt->init();
+    openNewMapDialog();
+    this->newMapDialog->initUi();
+    this->newMapDialog->init();
 }
 
 // Insert label for newly-created tileset into sorted list of existing labels
@@ -2864,8 +2864,8 @@ void MainWindow::importMapFromAdvanceMap1_92()
         return;
     }
 
-    openNewMapPopupWindow();
-    this->newMapPrompt->init(mapLayout);
+    openNewMapDialog();
+    this->newMapDialog->init(mapLayout);
 }
 
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
@@ -3379,9 +3379,9 @@ bool MainWindow::closeSupplementaryWindows() {
         return false;
     this->mapImageExporter = nullptr;
 
-    if (this->newMapPrompt && !this->newMapPrompt->close())
+    if (this->newMapDialog && !this->newMapDialog->close())
         return false;
-    this->newMapPrompt = nullptr;
+    this->newMapDialog = nullptr;
 
     if (this->shortcutsEditor && !this->shortcutsEditor->close())
         return false;

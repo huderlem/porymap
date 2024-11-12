@@ -1,22 +1,22 @@
-#ifndef NEWMAPPOPUP_H
-#define NEWMAPPOPUP_H
+#ifndef NEWMAPDIALOG_H
+#define NEWMAPDIALOG_H
 
-#include <QMainWindow>
+#include <QDialog>
 #include <QString>
 #include "editor.h"
 #include "project.h"
 #include "map.h"
 
 namespace Ui {
-class NewMapPopup;
+class NewMapDialog;
 }
 
-class NewMapPopup : public QMainWindow
+class NewMapDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit NewMapPopup(QWidget *parent = nullptr, Project *project = nullptr);
-    ~NewMapPopup();
+    explicit NewMapDialog(QWidget *parent = nullptr, Project *project = nullptr);
+    ~NewMapDialog();
     Map *map;
     int group;
     bool existingLayout;
@@ -32,7 +32,7 @@ signals:
     void applied();
 
 private:
-    Ui::NewMapPopup *ui;
+    Ui::NewMapDialog *ui;
     Project *project;
     bool checkNewMapDimensions();
     bool checkNewMapGroup();
@@ -67,4 +67,4 @@ private slots:
     void on_lineEdit_NewMap_Name_textChanged(const QString &);
 };
 
-#endif // NEWMAPPOPUP_H
+#endif // NEWMAPDIALOG_H

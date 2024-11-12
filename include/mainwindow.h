@@ -22,7 +22,7 @@
 #include "mapimageexporter.h"
 #include "filterchildrenproxymodel.h"
 #include "maplistmodels.h"
-#include "newmappopup.h"
+#include "newmapdialog.h"
 #include "newtilesetdialog.h"
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
@@ -186,7 +186,7 @@ private slots:
     void onLayoutChanged(Layout *layout);
     void onOpenConnectedMap(MapConnection*);
     void onTilesetsSaved(QString, QString);
-    void openNewMapPopupWindow();
+    void openNewMapDialog();
     void onNewMapCreated();
     void onMapLoaded(Map *map);
     void importMapFromAdvanceMap1_92();
@@ -313,7 +313,7 @@ private:
     QPointer<RegionMapEditor> regionMapEditor = nullptr;
     QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
     QPointer<MapImageExporter> mapImageExporter = nullptr;
-    QPointer<NewMapPopup> newMapPrompt = nullptr;
+    QPointer<NewMapDialog> newMapDialog = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<GridSettingsDialog> gridSettingsDialog = nullptr;
