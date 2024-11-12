@@ -108,7 +108,7 @@ void EventFrame::connectSignals(MainWindow *) {
     connect(this->spinner_x, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         int delta = value - event->getX();
         if (delta) {
-            this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, delta, 0, this->spinner_x->getActionId()));
+            this->event->getMap()->commit(new EventMove(QList<Event *>() << this->event, delta, 0, this->spinner_x->getActionId()));
         }
     });
 
@@ -118,7 +118,7 @@ void EventFrame::connectSignals(MainWindow *) {
     connect(this->spinner_y, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         int delta = value - event->getY();
         if (delta) {
-            this->event->getMap()->editHistory.push(new EventMove(QList<Event *>() << this->event, 0, delta, this->spinner_y->getActionId()));
+            this->event->getMap()->commit(new EventMove(QList<Event *>() << this->event, 0, delta, this->spinner_y->getActionId()));
         }
     });
     connect(this->event->getPixmapItem(), &DraggablePixmapItem::yChanged, this->spinner_y, &NoScrollSpinBox::setValue);

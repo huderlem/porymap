@@ -44,7 +44,7 @@ void Event::setPixmapItem(DraggablePixmapItem *item) {
 }
 
 int Event::getEventIndex() {
-    return this->map->events.value(this->getEventGroup()).indexOf(this);
+    return this->map->getIndexOfEvent(this);
 }
 
 void Event::setDefaultValues(Project *) {
@@ -424,7 +424,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
 void CloneObjectEvent::setDefaultValues(Project *project) {
     this->setGfx(project->gfxDefines.keys().value(0, "0"));
     this->setTargetID(1);
-    if (this->getMap()) this->setTargetMap(this->getMap()->name);
+    if (this->getMap()) this->setTargetMap(this->getMap()->name());
 }
 
 const QSet<QString> expectedCloneObjectFields = {
@@ -445,7 +445,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
     // Try to get the targeted object to clone
     int eventIndex = this->targetID - 1;
     Map *clonedMap = project->getMap(this->targetMap);
-    Event *clonedEvent = clonedMap ? clonedMap->events[Event::Group::Object].value(eventIndex, nullptr) : nullptr;
+    Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, eventIndex) : nullptr;
 
     if (clonedEvent && clonedEvent->getEventType() == Event::Type::Object) {
         // Get graphics data from cloned object
@@ -534,7 +534,7 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
 }
 
 void WarpEvent::setDefaultValues(Project *) {
-    if (this->getMap()) this->setDestinationMap(this->getMap()->name);
+    if (this->getMap()) this->setDestinationMap(this->getMap()->name());
     this->setDestinationWarpID("0");
     this->setElevation(0);
 }
@@ -952,13 +952,13 @@ void HealLocationEvent::setDefaultValues(Project *) {
     if (!this->getMap())
         return;
     bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
-    const QString mapConstant = Map::mapConstantFromName(this->getMap()->name, false);
+    const QString mapConstant = Map::mapConstantFromName(this->getMap()->name(), false);
     const QString prefix = projectConfig.getIdentifier(respawnEnabled ? ProjectIdentifier::define_spawn_prefix
                                                                       : ProjectIdentifier::define_heal_locations_prefix);
     this->setLocationName(mapConstant);
     this->setIdName(prefix + mapConstant);
     if (respawnEnabled) {
-        this->setRespawnMap(this->getMap()->name);
+        this->setRespawnMap(this->getMap()->name());
         this->setRespawnNPC(1);
     }
 }

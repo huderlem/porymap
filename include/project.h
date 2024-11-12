@@ -247,8 +247,6 @@ private:
 
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
-    void setNewMapEvents(Map *map);
-    void setNewMapConnections(Map *map);
 
     void saveHealLocationsData(Map *map);
     void saveHealLocationsConstants();

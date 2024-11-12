@@ -442,7 +442,7 @@ void MainWindow::updateWindowTitle() {
     if (editor->map) {
         setWindowTitle(QString("%1%2 - %3")
             .arg(editor->map->hasUnsavedChanges() ? "* " : "")
-            .arg(editor->map->name)
+            .arg(editor->map->name())
             .arg(projectName)
         );
     } else {
@@ -471,7 +471,7 @@ void MainWindow::markMapEdited() {
 void MainWindow::markSpecificMapEdited(Map* map) {
     if (!map)
         return;
-    map->hasUnsavedDataChanges = true;
+    map->setHasUnsavedDataChanges(true);
 
     if (editor && editor->map == map)
         updateWindowTitle();
@@ -827,7 +827,7 @@ void MainWindow::unsetMap() {
 // setMap, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a map to open.
 bool MainWindow::userSetMap(QString map_name) {
-    if (editor->map && editor->map->name == map_name)
+    if (editor->map && editor->map->name() == map_name)
         return true; // Already set
 
     if (map_name == DYNAMIC_MAP_NAME) {
@@ -988,20 +988,19 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
 
     // Select the target event.
     int index = event_id - Event::getIndexOffset(event_group);
-    QList<Event*> events = editor->map->events[event_group];
-    if (index < events.length() && index >= 0) {
-        Event *event = events.at(index);
+    Event* event = editor->map->getEvent(event_group, index);
+    if (event) {
         for (DraggablePixmapItem *item : editor->getObjects()) {
             if (item->event == event) {
                 editor->selected_events->clear();
                 editor->selected_events->append(item);
                 editor->updateSelectedEvents();
+                return;
             }
         }
-    } else {
-        // Can still warp to this map, but can't select the specified event
-        logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::eventGroupToString(event_group)).arg(event_id).arg(map_name));
     }
+    // Can still warp to this map, but can't select the specified event
+    logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::eventGroupToString(event_group)).arg(event_id).arg(map_name));
 }
 
 void MainWindow::displayMapProperties() {
@@ -1033,35 +1032,37 @@ void MainWindow::displayMapProperties() {
     ui->frame_3->setEnabled(true);
     Map *map = editor->map;
 
-    ui->comboBox_PrimaryTileset->setCurrentText(map->layout->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(map->layout->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->setCurrentText(map->layout()->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setCurrentText(map->layout()->tileset_secondary_label);
 
-    ui->comboBox_Song->setCurrentText(map->song);
-    ui->comboBox_Location->setCurrentText(map->location);
-    ui->checkBox_Visibility->setChecked(map->requiresFlash);
-    ui->comboBox_Weather->setCurrentText(map->weather);
-    ui->comboBox_Type->setCurrentText(map->type);
-    ui->comboBox_BattleScene->setCurrentText(map->battle_scene);
-    ui->checkBox_ShowLocation->setChecked(map->show_location);
-    ui->checkBox_AllowRunning->setChecked(map->allowRunning);
-    ui->checkBox_AllowBiking->setChecked(map->allowBiking);
-    ui->checkBox_AllowEscaping->setChecked(map->allowEscaping);
-    ui->spinBox_FloorNumber->setValue(map->floorNumber);
+    ui->comboBox_Song->setCurrentText(map->song());
+    ui->comboBox_Location->setCurrentText(map->location());
+    ui->checkBox_Visibility->setChecked(map->requiresFlash());
+    ui->comboBox_Weather->setCurrentText(map->weather());
+    ui->comboBox_Type->setCurrentText(map->type());
+    ui->comboBox_BattleScene->setCurrentText(map->battleScene());
+    ui->checkBox_ShowLocation->setChecked(map->showsLocation());
+    ui->checkBox_AllowRunning->setChecked(map->allowsRunning());
+    ui->checkBox_AllowBiking->setChecked(map->allowsBiking());
+    ui->checkBox_AllowEscaping->setChecked(map->allowsEscaping());
+    ui->spinBox_FloorNumber->setValue(map->floorNumber());
 
     // Custom fields table.
+/* // TODO: Re-enable
     ui->tableWidget_CustomHeaderFields->blockSignals(true);
     ui->tableWidget_CustomHeaderFields->setRowCount(0);
     for (auto it = map->customHeaders.begin(); it != map->customHeaders.end(); it++)
         CustomAttributesTable::addAttribute(ui->tableWidget_CustomHeaderFields, it.key(), it.value());
     ui->tableWidget_CustomHeaderFields->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableWidget_CustomHeaderFields->blockSignals(false);
+*/
 }
 
 void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &text) {
     if (editor && editor->project && editor->map) {
         if (editor->project->mapLayouts.contains(text)) {
             editor->map->setLayout(editor->project->loadLayout(text));
-            setMap(editor->map->name);
+            setMap(editor->map->name());
             markMapEdited();
         }
     }
@@ -1070,7 +1071,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
 void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
 {
     if (editor && editor->map) {
-        editor->map->song = song;
+        editor->map->setSong(song);
         markMapEdited();
     }
 }
@@ -1078,7 +1079,7 @@ void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
 void MainWindow::on_comboBox_Location_currentTextChanged(const QString &location)
 {
     if (editor && editor->map) {
-        editor->map->location = location;
+        editor->map->setLocation(location);
         markMapEdited();
     }
 }
@@ -1086,7 +1087,7 @@ void MainWindow::on_comboBox_Location_currentTextChanged(const QString &location
 void MainWindow::on_comboBox_Weather_currentTextChanged(const QString &weather)
 {
     if (editor && editor->map) {
-        editor->map->weather = weather;
+        editor->map->setWeather(weather);
         markMapEdited();
     }
 }
@@ -1094,7 +1095,7 @@ void MainWindow::on_comboBox_Weather_currentTextChanged(const QString &weather)
 void MainWindow::on_comboBox_Type_currentTextChanged(const QString &type)
 {
     if (editor && editor->map) {
-        editor->map->type = type;
+        editor->map->setType(type);
         markMapEdited();
     }
 }
@@ -1102,7 +1103,7 @@ void MainWindow::on_comboBox_Type_currentTextChanged(const QString &type)
 void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battle_scene)
 {
     if (editor && editor->map) {
-        editor->map->battle_scene = battle_scene;
+        editor->map->setBattleScene(battle_scene);
         markMapEdited();
     }
 }
@@ -1110,7 +1111,7 @@ void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battl
 void MainWindow::on_checkBox_Visibility_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        editor->map->requiresFlash = (selected == Qt::Checked);
+        editor->map->setRequiresFlash(selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -1118,7 +1119,7 @@ void MainWindow::on_checkBox_Visibility_stateChanged(int selected)
 void MainWindow::on_checkBox_ShowLocation_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        editor->map->show_location = (selected == Qt::Checked);
+        editor->map->setShowsLocation(selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -1126,7 +1127,7 @@ void MainWindow::on_checkBox_ShowLocation_stateChanged(int selected)
 void MainWindow::on_checkBox_AllowRunning_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        editor->map->allowRunning = (selected == Qt::Checked);
+        editor->map->setAllowsRunning(selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -1134,7 +1135,7 @@ void MainWindow::on_checkBox_AllowRunning_stateChanged(int selected)
 void MainWindow::on_checkBox_AllowBiking_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        editor->map->allowBiking = (selected == Qt::Checked);
+        editor->map->setAllowsBiking(selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -1142,7 +1143,7 @@ void MainWindow::on_checkBox_AllowBiking_stateChanged(int selected)
 void MainWindow::on_checkBox_AllowEscaping_stateChanged(int selected)
 {
     if (editor && editor->map) {
-        editor->map->allowEscaping = (selected == Qt::Checked);
+        editor->map->setAllowsEscaping(selected == Qt::Checked);
         markMapEdited();
     }
 }
@@ -1150,7 +1151,7 @@ void MainWindow::on_checkBox_AllowEscaping_stateChanged(int selected)
 void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset)
 {
     if (editor && editor->map) {
-        editor->map->floorNumber = offset;
+        editor->map->setFloorNumber(offset);
         markMapEdited();
     }
 }
@@ -1251,7 +1252,7 @@ void MainWindow::refreshLocationsComboBox() {
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(locations);
     if (this->editor->map)
-        ui->comboBox_Location->setCurrentText(this->editor->map->location);
+        ui->comboBox_Location->setCurrentText(this->editor->map->location());
 }
 
 void MainWindow::clearProjectUI() {
@@ -1309,7 +1310,7 @@ void MainWindow::scrollMapList(MapTree *list, QString itemName) {
 
 void MainWindow::scrollMapListToCurrentMap(MapTree *list) {
     if (this->editor->map) {
-        scrollMapList(list, this->editor->map->name);
+        scrollMapList(list, this->editor->map->name());
     }
 }
 
@@ -1591,7 +1592,7 @@ void MainWindow::mapListAddArea() {
 }
 
 void MainWindow::onNewMapCreated() {
-    QString newMapName = this->newMapPrompt->map->name;
+    QString newMapName = this->newMapPrompt->map->name();
     int newMapGroup = this->newMapPrompt->group;
     Map *newMap = this->newMapPrompt->map;
     bool existingLayout = this->newMapPrompt->existingLayout;
@@ -1607,8 +1608,8 @@ void MainWindow::onNewMapCreated() {
 
     // Add new Map / Layout to the mapList models
     this->mapGroupModel->insertMapItem(newMapName, editor->project->groupNames[newMapGroup]);
-    this->mapAreaModel->insertMapItem(newMapName, newMap->location, newMapGroup);
-    this->layoutTreeModel->insertMapItem(newMapName, newMap->layout->id);
+    this->mapAreaModel->insertMapItem(newMapName, newMap->location(), newMapGroup);
+    this->layoutTreeModel->insertMapItem(newMapName, newMap->layout()->id);
 
     // Refresh any combo box that displays map names and persists between maps
     // (other combo boxes like for warp destinations are repopulated when the map changes).
@@ -1622,16 +1623,16 @@ void MainWindow::onNewMapCreated() {
 
     // Refresh layout combo box (if a new one was created)
     if (!existingLayout) {
-        int layoutIndex = this->editor->project->mapLayoutsTable.indexOf(newMap->layout->id);
+        int layoutIndex = this->editor->project->mapLayoutsTable.indexOf(newMap->layout()->id);
         if (layoutIndex >= 0) {
             const QSignalBlocker b_Layouts(ui->comboBox_LayoutSelector);
-            ui->comboBox_LayoutSelector->insertItem(layoutIndex, newMap->layout->id);
+            ui->comboBox_LayoutSelector->insertItem(layoutIndex, newMap->layout()->id);
         }
     }
 
     setMap(newMapName);
 
-    if (newMap->needsHealLocation) {
+    if (newMap->needsHealLocation()) {
         addNewEvent(Event::Type::HealLocation);
         editor->project->saveHealLocations(newMap);
         editor->save();
@@ -1862,9 +1863,9 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
 
 void MainWindow::updateMapList() {
     if (this->editor->map) {
-        this->mapGroupModel->setMap(this->editor->map->name);
+        this->mapGroupModel->setMap(this->editor->map->name());
         this->groupListProxyModel->layoutChanged();
-        this->mapAreaModel->setMap(this->editor->map->name);
+        this->mapAreaModel->setMap(this->editor->map->name());
         this->areaListProxyModel->layoutChanged();
     } else {
         this->mapGroupModel->setMap(QString());
@@ -2107,7 +2108,7 @@ void MainWindow::paste() {
                 }
 
                 if (!newEvents.empty()) {
-                    editor->map->editHistory.push(new EventPaste(this->editor, editor->map, newEvents));
+                    editor->map->commit(new EventPaste(this->editor, editor->map, newEvents));
                     updateObjects();
                 }
 
@@ -2329,7 +2330,7 @@ void MainWindow::addNewEvent(Event::Type type) {
 
 void MainWindow::tryAddEventTab(QWidget * tab) {
     auto group = getEventGroupFromTabWidget(tab);
-    if (editor->map->events.value(group).length())
+    if (editor->map->getNumEvents(group))
         ui->tabWidget_EventType->addTab(tab, QString("%1s").arg(Event::eventGroupToString(group)));
 }
 
@@ -2363,7 +2364,7 @@ void MainWindow::updateSelectedObjects() {
     else {
         QList<Event *> all_events;
         if (editor->map) {
-            all_events = editor->map->getAllEvents();
+            all_events = editor->map->getEvents();
         }
         if (all_events.length()) {
             DraggablePixmapItem *selectedEvent = all_events.first()->getPixmapItem();
@@ -2397,7 +2398,7 @@ void MainWindow::updateSelectedObjects() {
 
             QSignalBlocker b(this->ui->spinner_ObjectID);
             this->ui->spinner_ObjectID->setMinimum(event_offs);
-            this->ui->spinner_ObjectID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_ObjectID->setMaximum(current->getMap()->getNumEvents(eventGroup) + event_offs - 1);
             this->ui->spinner_ObjectID->setValue(current->getEventIndex() + event_offs);
             break;
         }
@@ -2408,7 +2409,7 @@ void MainWindow::updateSelectedObjects() {
 
             QSignalBlocker b(this->ui->spinner_WarpID);
             this->ui->spinner_WarpID->setMinimum(event_offs);
-            this->ui->spinner_WarpID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_WarpID->setMaximum(current->getMap()->getNumEvents(eventGroup) + event_offs - 1);
             this->ui->spinner_WarpID->setValue(current->getEventIndex() + event_offs);
             break;
         }
@@ -2419,7 +2420,7 @@ void MainWindow::updateSelectedObjects() {
 
             QSignalBlocker b(this->ui->spinner_TriggerID);
             this->ui->spinner_TriggerID->setMinimum(event_offs);
-            this->ui->spinner_TriggerID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_TriggerID->setMaximum(current->getMap()->getNumEvents(eventGroup) + event_offs - 1);
             this->ui->spinner_TriggerID->setValue(current->getEventIndex() + event_offs);
             break;
         }
@@ -2430,7 +2431,7 @@ void MainWindow::updateSelectedObjects() {
 
             QSignalBlocker b(this->ui->spinner_BgID);
             this->ui->spinner_BgID->setMinimum(event_offs);
-            this->ui->spinner_BgID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_BgID->setMaximum(current->getMap()->getNumEvents(eventGroup) + event_offs - 1);
             this->ui->spinner_BgID->setValue(current->getEventIndex() + event_offs);
             break;
         }
@@ -2441,7 +2442,7 @@ void MainWindow::updateSelectedObjects() {
 
             QSignalBlocker b(this->ui->spinner_HealID);
             this->ui->spinner_HealID->setMinimum(event_offs);
-            this->ui->spinner_HealID->setMaximum(current->getMap()->events.value(eventGroup).length() + event_offs - 1);
+            this->ui->spinner_HealID->setMaximum(current->getMap()->getNumEvents(eventGroup) + event_offs - 1);
             this->ui->spinner_HealID->setValue(current->getEventIndex() + event_offs);
             break;
         }
@@ -2534,8 +2535,8 @@ void MainWindow::eventTabChanged(int index) {
         }
 
         if (!isProgrammaticEventTabChange) {
-            if (!selectedEvent && editor->map->events.value(group).count()) {
-                Event *event = editor->map->events.value(group).at(0);
+            if (!selectedEvent && editor->map->getNumEvents(group)) {
+                Event *event = editor->map->getEvent(group, 0);
                 for (QGraphicsItem *child : editor->events_group->childItems()) {
                     DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
                     if (item->event == event) {
@@ -3222,7 +3223,7 @@ void MainWindow::reloadScriptEngine() {
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.projectDir);
     if (editor && editor->map)
-        Scripting::cb_MapOpened(editor->map->name); // TODO: API should have equivalent for layout
+        Scripting::cb_MapOpened(editor->map->name()); // TODO: API should have equivalent for layout
 }
 
 void MainWindow::on_pushButton_AddCustomHeaderField_clicked()

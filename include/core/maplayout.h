@@ -84,10 +84,10 @@ public:
     Layout *copy();
     void copyFrom(Layout *other);
 
-    int getWidth();
-    int getHeight();
-    int getBorderWidth();
-    int getBorderHeight();
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+    int getBorderWidth() const { return border_width; }
+    int getBorderHeight() const { return border_height; }
 
     bool isWithinBounds(int x, int y);
     bool isWithinBorderBounds(int x, int y);

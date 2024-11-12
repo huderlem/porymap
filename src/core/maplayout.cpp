@@ -45,22 +45,6 @@ QString Layout::layoutConstantFromName(QString mapName) {
     return constantName;
 }
 
-int Layout::getWidth() {
-    return width;
-}
-
-int Layout::getHeight() {
-    return height;
-}
-
-int Layout::getBorderWidth() {
-    return border_width;
-}
-
-int Layout::getBorderHeight() {
-    return border_height;
-}
-
 bool Layout::isWithinBounds(int x, int y) {
     return (x >= 0 && x < this->getWidth() && y >= 0 && y < this->getHeight());
 }

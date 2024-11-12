@@ -129,11 +129,11 @@ void NewMapPopup::init(Layout *mapLayout) {
     useLayoutSettings(mapLayout);
 
     this->map = new Map();
-    this->map->layout = new Layout();
-    this->map->layout->blockdata = mapLayout->blockdata;
+    this->map->setLayout(new Layout());
+    this->map->layout()->blockdata = mapLayout->blockdata;
 
     if (!mapLayout->border.isEmpty()) {
-        this->map->layout->border = mapLayout->border;
+        this->map->layout()->border = mapLayout->border;
     }
     init();
 }
@@ -299,22 +299,22 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
         newMapName = project->getNewMapName();
     }
 
-    newMap->name = newMapName;
-    newMap->type = this->ui->comboBox_NewMap_Type->currentText();
-    newMap->location = this->ui->comboBox_NewMap_Location->currentText();
-    newMap->song = this->ui->comboBox_NewMap_Song->currentText();
-    newMap->requiresFlash = false;
-    newMap->weather = this->project->weatherNames.value(0, "0");
-    newMap->show_location = this->ui->checkBox_NewMap_Show_Location->isChecked();
-    newMap->battle_scene = this->project->mapBattleScenes.value(0, "0");
+    newMap->setName(newMapName);
+    newMap->setType(this->ui->comboBox_NewMap_Type->currentText());
+    newMap->setLocation(this->ui->comboBox_NewMap_Location->currentText());
+    newMap->setSong(this->ui->comboBox_NewMap_Song->currentText());
+    newMap->setRequiresFlash(false);
+    newMap->setWeather(this->project->weatherNames.value(0, "0"));
+    newMap->setShowsLocation(this->ui->checkBox_NewMap_Show_Location->isChecked());
+    newMap->setBattleScene(this->project->mapBattleScenes.value(0, "0"));
 
     if (this->existingLayout) {
         layout = this->project->mapLayouts.value(this->layoutId);
-        newMap->needsLayoutDir = false;
+        newMap->setNeedsLayoutDir(false);
     } else {
         layout = new Layout;
         layout->id = Layout::layoutConstantFromName(newMapName);
-        layout->name = QString("%1_Layout").arg(newMap->name);
+        layout->name = QString("%1_Layout").arg(newMap->name());
         layout->width = this->ui->spinBox_NewMap_Width->value();
         layout->height = this->ui->spinBox_NewMap_Height->value();
         if (projectConfig.useCustomBorderSize) {
@@ -332,26 +332,25 @@ void NewMapPopup::on_pushButton_NewMap_Accept_clicked() {
     }
 
     if (this->importedMap) {
-        layout->blockdata = map->layout->blockdata;
-        if (!map->layout->border.isEmpty())
-            layout->border = map->layout->border;
+        layout->blockdata = map->layout()->blockdata;
+        if (!map->layout()->border.isEmpty())
+            layout->border = map->layout()->border;
     }
 
     if (this->ui->checkBox_NewMap_Flyable->isChecked()) {
-        newMap->needsHealLocation = true;
+        newMap->setNeedsHealLocation(true);
     }
 
     if (projectConfig.mapAllowFlagsEnabled) {
-        newMap->allowRunning = this->ui->checkBox_NewMap_Allow_Running->isChecked();
-        newMap->allowBiking = this->ui->checkBox_NewMap_Allow_Biking->isChecked();
-        newMap->allowEscaping = this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked();
+        newMap->setAllowsRunning(this->ui->checkBox_NewMap_Allow_Running->isChecked());
+        newMap->setAllowsBiking(this->ui->checkBox_NewMap_Allow_Biking->isChecked());
+        newMap->setAllowsEscaping(this->ui->checkBox_NewMap_Allow_Escape_Rope->isChecked());
     }
     if (projectConfig.floorNumberEnabled) {
-        newMap->floorNumber = this->ui->spinBox_NewMap_Floor_Number->value();
+        newMap->setFloorNumber(this->ui->spinBox_NewMap_Floor_Number->value());
     }
 
-    newMap->layout = layout;
-    newMap->layoutId = layout->id;
+    newMap->setLayout(layout);
     if (this->existingLayout) {
         project->loadMapLayout(newMap);
     }

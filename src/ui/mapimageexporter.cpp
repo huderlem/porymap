@@ -53,7 +53,7 @@ MapImageExporter::MapImageExporter(QWidget *parent_, Editor *editor_, ImageExpor
 
     if (this->map) {
         this->ui->comboBox_MapSelection->addItems(editor->project->mapNames);
-        this->ui->comboBox_MapSelection->setCurrentText(map->name);
+        this->ui->comboBox_MapSelection->setCurrentText(map->name());
         this->ui->comboBox_MapSelection->setEnabled(false);// TODO: allow selecting map from drop-down
     }
 
@@ -85,18 +85,19 @@ void MapImageExporter::saveImage() {
     if (this->preview.isNull())
         return;
 
-    QString title = getTitle(this->mode);
+    const QString title = getTitle(this->mode);
+    const QString itemName = this->map ? this->map->name() : this->layout->name;
     QString defaultFilename;
     switch (this->mode)
     {
         case ImageExporterMode::Normal:
-            defaultFilename = this->map? this->map->name : this->layout->name;
+            defaultFilename = itemName;
             break;
         case ImageExporterMode::Stitch:
-            defaultFilename = QString("Stitch_From_%1").arg(this->map? this->map->name : this->layout->name);
+            defaultFilename = QString("Stitch_From_%1").arg(itemName);
             break;
         case ImageExporterMode::Timelapse:
-            defaultFilename = QString("Timelapse_%1").arg(this->map? this->map->name : this->layout->name);
+            defaultFilename = QString("Timelapse_%1").arg(itemName);
             break;
     }
 
@@ -121,7 +122,7 @@ void MapImageExporter::saveImage() {
                 timelapseImg.setDefaultTransparentColor(QColor(0, 0, 0));
 
                 // lambda to avoid redundancy
-                auto generateTimelapseFromHistory = [this, &timelapseImg](QString progressText, QUndoStack &historyStack){
+                auto generateTimelapseFromHistory = [this, &timelapseImg](QString progressText, QUndoStack *historyStack){
                     QProgressDialog progress(progressText, "Cancel", 0, 1, this);
                     progress.setAutoClose(true);
                     progress.setWindowModality(Qt::WindowModal);
@@ -137,9 +138,9 @@ void MapImageExporter::saveImage() {
                     }
                     // Rewind to the specified start of the map edit history.
                     int i = 0;
-                    while (historyStack.canUndo()) {
+                    while (historyStack->canUndo()) {
                         progress.setValue(i);
-                        historyStack.undo();
+                        historyStack->undo();
                         int width = this->layout->getWidth() * 16;
                         int height = this->layout->getHeight() * 16;
                         if (this->settings.showBorder) {
@@ -161,16 +162,16 @@ void MapImageExporter::saveImage() {
                     while (i > 0) {
                         if (progress.wasCanceled()) {
                             progress.close();
-                            while (i > 0 && historyStack.canRedo()) {
+                            while (i > 0 && historyStack->canRedo()) {
                                 i--;
-                                historyStack.redo();
+                                historyStack->redo();
                             }
                             return;
                         }
-                        while (historyStack.canRedo() &&
-                               !historyItemAppliesToFrame(historyStack.command(historyStack.index()))) {
+                        while (historyStack->canRedo() &&
+                               !historyItemAppliesToFrame(historyStack->command(historyStack->index()))) {
                             i--;
-                            historyStack.redo();
+                            historyStack->redo();
                         }
                         progress.setValue(progress.maximum() - i);
                         QPixmap pixmap = this->getFormattedMapPixmap(this->map);
@@ -186,11 +187,11 @@ void MapImageExporter::saveImage() {
                         for (int j = 0; j < this->settings.timelapseSkipAmount; j++) {
                             if (i > 0) {
                                 i--;
-                                historyStack.redo();
-                                while (historyStack.canRedo() &&
-                                       !historyItemAppliesToFrame(historyStack.command(historyStack.index()))) {
+                                historyStack->redo();
+                                while (historyStack->canRedo() &&
+                                       !historyItemAppliesToFrame(historyStack->command(historyStack->index()))) {
                                     i--;
-                                    historyStack.redo();
+                                    historyStack->redo();
                                 }
                             }
                         }
@@ -202,10 +203,10 @@ void MapImageExporter::saveImage() {
                 };
 
                 if (this->layout)
-                    generateTimelapseFromHistory("Building layout timelapse...", this->layout->editHistory);
+                    generateTimelapseFromHistory("Building layout timelapse...", &this->layout->editHistory);
 
                 if (this->map)
-                    generateTimelapseFromHistory("Building map timelapse...", this->map->editHistory);
+                    generateTimelapseFromHistory("Building map timelapse...", this->map->editHistory());
 
                 timelapseImg.save(filepath);
                 break;
@@ -279,9 +280,9 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
         progress->setValue(visited.size());
 
         StitchedMap cur = unvisited.takeFirst();
-        if (visited.contains(cur.map->name))
+        if (visited.contains(cur.map->name()))
             continue;
-        visited.insert(cur.map->name);
+        visited.insert(cur.map->name());
         stitchedMaps.append(cur);
 
         for (MapConnection *connection : cur.map->getConnections()) {
@@ -420,22 +421,11 @@ void MapImageExporter::scalePreview() {
     }
 }
 
-// THIS
 QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
-    QPixmap pixmap;
+    Layout *layout = this->map ? this->map->layout() : this->layout;
+    layout->render(true);
 
-    Layout *layout;
-
-    // draw background layer / base image
-    if (!this->map) {
-        layout = this->layout;
-        layout->render(true);
-        pixmap = layout->pixmap;
-    } else {
-        layout = map->layout;
-        map->layout->render(true);
-        pixmap = map->layout->pixmap;
-    }
+    QPixmap pixmap = layout->pixmap;
 
     if (this->settings.showCollision) {
         QPainter collisionPainter(&pixmap);
@@ -494,7 +484,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
         if (!ignoreBorder && this->settings.showBorder) {
             pixelOffset = this->mode == ImageExporterMode::Normal ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
         }
-        const QList<Event *> events = map->getAllEvents();
+        const QList<Event *> events = map->getEvents();
         for (const auto &event : events) {
             Event::Group group = event->getEventGroup();
             if ((this->settings.showObjects && group == Event::Group::Object)

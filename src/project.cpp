@@ -195,11 +195,11 @@ QSet<QString> Project::getTopLevelMapFields() {
 }
 
 bool Project::loadMapData(Map* map) {
-    if (!map->isPersistedToFile) {
+    if (!map->isPersistedToFile()) {
         return true;
     }
 
-    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map->name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
+    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map->name()).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
     QJsonDocument mapDoc;
     if (!parser.tryParseJsonFile(&mapDoc, mapFilepath)) {
         logError(QString("Failed to read map data from %1").arg(mapFilepath));
@@ -208,28 +208,28 @@ bool Project::loadMapData(Map* map) {
 
     QJsonObject mapObj = mapDoc.object();
 
-    map->song          = ParseUtil::jsonToQString(mapObj["music"]);
-    map->layoutId      = ParseUtil::jsonToQString(mapObj["layout"]);
-    map->location      = ParseUtil::jsonToQString(mapObj["region_map_section"]);
-    map->requiresFlash = ParseUtil::jsonToBool(mapObj["requires_flash"]);
-    map->weather       = ParseUtil::jsonToQString(mapObj["weather"]);
-    map->type          = ParseUtil::jsonToQString(mapObj["map_type"]);
-    map->show_location = ParseUtil::jsonToBool(mapObj["show_map_name"]);
-    map->battle_scene  = ParseUtil::jsonToQString(mapObj["battle_scene"]);
+    map->setSong(ParseUtil::jsonToQString(mapObj["music"]));
+    map->setLayoutId(ParseUtil::jsonToQString(mapObj["layout"]));
+    map->setLocation(ParseUtil::jsonToQString(mapObj["region_map_section"]));
+    map->setRequiresFlash(ParseUtil::jsonToBool(mapObj["requires_flash"]));
+    map->setWeather(ParseUtil::jsonToQString(mapObj["weather"]));
+    map->setType(ParseUtil::jsonToQString(mapObj["map_type"]));
+    map->setShowsLocation(ParseUtil::jsonToBool(mapObj["show_map_name"]));
+    map->setBattleScene(ParseUtil::jsonToQString(mapObj["battle_scene"]));
 
     if (projectConfig.mapAllowFlagsEnabled) {
-        map->allowBiking   = ParseUtil::jsonToBool(mapObj["allow_cycling"]);
-        map->allowEscaping = ParseUtil::jsonToBool(mapObj["allow_escaping"]);
-        map->allowRunning  = ParseUtil::jsonToBool(mapObj["allow_running"]);
+        map->setAllowsBiking(ParseUtil::jsonToBool(mapObj["allow_cycling"]));
+        map->setAllowsEscaping(ParseUtil::jsonToBool(mapObj["allow_escaping"]));
+        map->setAllowsRunning(ParseUtil::jsonToBool(mapObj["allow_running"]));
     }
     if (projectConfig.floorNumberEnabled) {
-        map->floorNumber = ParseUtil::jsonToInt(mapObj["floor_number"]);
+        map->setFloorNumber(ParseUtil::jsonToInt(mapObj["floor_number"]));
     }
-    map->sharedEventsMap  = ParseUtil::jsonToQString(mapObj["shared_events_map"]);
-    map->sharedScriptsMap = ParseUtil::jsonToQString(mapObj["shared_scripts_map"]);
+    map->setSharedEventsMap(ParseUtil::jsonToQString(mapObj["shared_events_map"]));
+    map->setSharedScriptsMap(ParseUtil::jsonToQString(mapObj["shared_scripts_map"]));
 
     // Events
-    map->events[Event::Group::Object].clear();
+    map->resetEvents();
     QJsonArray objectEventsArr = mapObj["object_events"].toArray();
     for (int i = 0; i < objectEventsArr.size(); i++) {
         QJsonObject event = objectEventsArr[i].toObject();
@@ -248,11 +248,10 @@ bool Project::loadMapData(Map* map) {
                 delete clone;
             }
         } else {
-            logError(QString("Map %1 object_event %2 has invalid type '%3'. Must be 'object' or 'clone'.").arg(map->name).arg(i).arg(type));
+            logError(QString("Map %1 object_event %2 has invalid type '%3'. Must be 'object' or 'clone'.").arg(map->name()).arg(i).arg(type));
         }
     }
 
-    map->events[Event::Group::Warp].clear();
     QJsonArray warpEventsArr = mapObj["warp_events"].toArray();
     for (int i = 0; i < warpEventsArr.size(); i++) {
         QJsonObject event = warpEventsArr[i].toObject();
@@ -265,7 +264,6 @@ bool Project::loadMapData(Map* map) {
         }
     }
 
-    map->events[Event::Group::Coord].clear();
     QJsonArray coordEventsArr = mapObj["coord_events"].toArray();
     for (int i = 0; i < coordEventsArr.size(); i++) {
         QJsonObject event = coordEventsArr[i].toObject();
@@ -279,11 +277,10 @@ bool Project::loadMapData(Map* map) {
             coord->loadFromJson(event, this);
             map->addEvent(coord);
         } else {
-            logError(QString("Map %1 coord_event %2 has invalid type '%3'. Must be 'trigger' or 'weather'.").arg(map->name).arg(i).arg(type));
+            logError(QString("Map %1 coord_event %2 has invalid type '%3'. Must be 'trigger' or 'weather'.").arg(map->name()).arg(i).arg(type));
         }
     }
 
-    map->events[Event::Group::Bg].clear();
     QJsonArray bgEventsArr = mapObj["bg_events"].toArray();
     for (int i = 0; i < bgEventsArr.size(); i++) {
         QJsonObject event = bgEventsArr[i].toObject();
@@ -301,12 +298,12 @@ bool Project::loadMapData(Map* map) {
             bg->loadFromJson(event, this);
             map->addEvent(bg);
         } else {
-            logError(QString("Map %1 bg_event %2 has invalid type '%3'. Must be 'sign', 'hidden_item', or 'secret_base'.").arg(map->name).arg(i).arg(type));
+            logError(QString("Map %1 bg_event %2 has invalid type '%3'. Must be 'sign', 'hidden_item', or 'secret_base'.").arg(map->name()).arg(i).arg(type));
         }
     }
 
-    map->events[Event::Group::Heal].clear();
-    
+
+/* TODO: Re-enable
     const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
     for (auto it = healLocations.begin(); it != healLocations.end(); it++) {
         HealLocation loc = *it;
@@ -328,6 +325,7 @@ bool Project::loadMapData(Map* map) {
             map->ownedEvents.append(heal);
         }
     }
+*/
 
     map->deleteConnections();
     QJsonArray connectionsArr = mapObj["connections"].toArray();
@@ -347,19 +345,21 @@ bool Project::loadMapData(Map* map) {
     }
 
     // Check for custom fields
+/* // TODO: Re-enable
     QSet<QString> baseFields = this->getTopLevelMapFields();
     for (QString key : mapObj.keys()) {
         if (!baseFields.contains(key)) {
             map->customHeaders.insert(key, mapObj[key]);
         }
     }
+*/
 
     return true;
 }
 
 QString Project::readMapLayoutId(QString map_name) {
     if (mapCache.contains(map_name)) {
-        return mapCache.value(map_name)->layoutId;
+        return mapCache.value(map_name)->layoutId();
     }
 
     QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map_name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
@@ -375,7 +375,7 @@ QString Project::readMapLayoutId(QString map_name) {
 
 QString Project::readMapLocation(QString map_name) {
     if (mapCache.contains(map_name)) {
-        return mapCache.value(map_name)->location;
+        return mapCache.value(map_name)->location();
     }
 
     QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map_name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
@@ -473,21 +473,21 @@ Layout *Project::loadLayout(QString layoutId) {
 }
 
 bool Project::loadMapLayout(Map* map) {
-    if (!map->isPersistedToFile) {
+    if (!map->isPersistedToFile()) {
         return true;
     }
 
-    if (mapLayouts.contains(map->layoutId)) {
-        map->layout = mapLayouts[map->layoutId];
+    if (mapLayouts.contains(map->layoutId())) {
+        map->setLayout(mapLayouts[map->layoutId()]);
     } else {
-        logError(QString("Error: Map '%1' has an unknown layout '%2'").arg(map->name).arg(map->layoutId));
+        logError(QString("Error: Map '%1' has an unknown layout '%2'").arg(map->name()).arg(map->layoutId()));
         return false;
     }
 
     if (map->hasUnsavedChanges()) {
         return true;
     } else {
-        return loadLayout(map->layout);
+        return loadLayout(map->layout());
     }
 }
 
@@ -848,12 +848,14 @@ void Project::saveHealLocations(Map *map) {
 // Saves heal location maps/coords/respawn data in root + /src/data/heal_locations.h
 void Project::saveHealLocationsData(Map *map) {
     // Update heal locations from map
+/* TODO: Re-enable
     if (map->events[Event::Group::Heal].length() > 0) {
         for (Event *healEvent : map->events[Event::Group::Heal]) {
             HealLocation hl = HealLocation::fromEvent(healEvent);
             this->healLocations[hl.index - 1] = hl;
         }
     }
+*/
 
     // Find any duplicate constant names
     QMap<QString, int> healLocationsDupes;
@@ -1262,14 +1264,14 @@ void Project::saveAllMaps() {
 void Project::saveMap(Map *map) {
     // Create/Modify a few collateral files for brand new maps.
     QString basePath = projectConfig.getFilePath(ProjectFilePath::data_map_folders);
-    QString mapDataDir = root + "/" + basePath + map->name;
-    if (!map->isPersistedToFile) {
+    QString mapDataDir = root + "/" + basePath + map->name();
+    if (!map->isPersistedToFile()) {
         if (!QDir::root().mkdir(mapDataDir)) {
             logError(QString("Error: failed to create directory for new map: '%1'").arg(mapDataDir));
         }
 
         // Create file data/maps/<map_name>/scripts.inc
-        QString text = this->getScriptDefaultString(projectConfig.usePoryScript, map->name);
+        QString text = this->getScriptDefaultString(projectConfig.usePoryScript, map->name());
         saveTextFile(mapDataDir + "/scripts" + this->getScriptFileExtension(projectConfig.usePoryScript), text);
 
         if (projectConfig.createMapTextFileEnabled) {
@@ -1278,14 +1280,14 @@ void Project::saveMap(Map *map) {
         }
 
         // Simply append to data/event_scripts.s.
-        text = QString("\n\t.include \"%1%2/scripts.inc\"\n").arg(basePath, map->name);
+        text = QString("\n\t.include \"%1%2/scripts.inc\"\n").arg(basePath, map->name());
         if (projectConfig.createMapTextFileEnabled) {
-            text += QString("\t.include \"%1%2/text.inc\"\n").arg(basePath, map->name);
+            text += QString("\t.include \"%1%2/text.inc\"\n").arg(basePath, map->name());
         }
         appendTextFile(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts), text);
 
-        if (map->needsLayoutDir) {
-            QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), map->name);
+        if (map->needsLayoutDir()) {
+            QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), map->name());
             if (!QDir::root().mkdir(newLayoutDir)) {
                 logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
             }
@@ -1302,24 +1304,24 @@ void Project::saveMap(Map *map) {
 
     OrderedJson::object mapObj;
     // Header values.
-    mapObj["id"] = map->constantName;
-    mapObj["name"] = map->name;
-    mapObj["layout"] = map->layout->id;
-    mapObj["music"] = map->song;
-    mapObj["region_map_section"] = map->location;
-    mapObj["requires_flash"] = map->requiresFlash;
-    mapObj["weather"] = map->weather;
-    mapObj["map_type"] = map->type;
+    mapObj["id"] = map->constantName();
+    mapObj["name"] = map->name();
+    mapObj["layout"] = map->layout()->id;
+    mapObj["music"] = map->song();
+    mapObj["region_map_section"] = map->location();
+    mapObj["requires_flash"] = map->requiresFlash();
+    mapObj["weather"] = map->weather();
+    mapObj["map_type"] = map->type();
     if (projectConfig.mapAllowFlagsEnabled) {
-        mapObj["allow_cycling"] = map->allowBiking;
-        mapObj["allow_escaping"] = map->allowEscaping;
-        mapObj["allow_running"] = map->allowRunning;
+        mapObj["allow_cycling"] = map->allowsBiking();
+        mapObj["allow_escaping"] = map->allowsEscaping();
+        mapObj["allow_running"] = map->allowsRunning();
     }
-    mapObj["show_map_name"] = map->show_location;
+    mapObj["show_map_name"] = map->showsLocation();
     if (projectConfig.floorNumberEnabled) {
-        mapObj["floor_number"] = map->floorNumber;
+        mapObj["floor_number"] = map->floorNumber();
     }
-    mapObj["battle_scene"] = map->battle_scene;
+    mapObj["battle_scene"] = map->battleScene();
 
     // Connections
     auto connections = map->getConnections();
@@ -1341,67 +1343,59 @@ void Project::saveMap(Map *map) {
         mapObj["connections"] = QJsonValue::Null;
     }
 
-    if (map->sharedEventsMap.isEmpty()) {
+    if (map->sharedEventsMap().isEmpty()) {
         // Object events
         OrderedJson::array objectEventsArr;
-        for (int i = 0; i < map->events[Event::Group::Object].length(); i++) {
-            Event *event = map->events[Event::Group::Object].value(i);
-            OrderedJson::object jsonObj = event->buildEventJson(this);
-            objectEventsArr.push_back(jsonObj);
+        for (const auto &event : map->getEvents(Event::Group::Object)){
+            objectEventsArr.push_back(event->buildEventJson(this));
         }
         mapObj["object_events"] = objectEventsArr;
 
 
         // Warp events
         OrderedJson::array warpEventsArr;
-        for (int i = 0; i < map->events[Event::Group::Warp].length(); i++) {
-            Event *event = map->events[Event::Group::Warp].value(i);
-            OrderedJson::object warpObj = event->buildEventJson(this);
-            warpEventsArr.append(warpObj);
+        for (const auto &event : map->getEvents(Event::Group::Warp)) {
+            warpEventsArr.push_back(event->buildEventJson(this));
         }
         mapObj["warp_events"] = warpEventsArr;
 
         // Coord events
         OrderedJson::array coordEventsArr;
-        for (int i = 0; i < map->events[Event::Group::Coord].length(); i++) {
-            Event *event = map->events[Event::Group::Coord].value(i);
-            OrderedJson::object triggerObj = event->buildEventJson(this);
-            coordEventsArr.append(triggerObj);
+        for (const auto &event : map->getEvents(Event::Group::Coord)) {
+            coordEventsArr.push_back(event->buildEventJson(this));
         }
         mapObj["coord_events"] = coordEventsArr;
 
         // Bg Events
         OrderedJson::array bgEventsArr;
-        for (int i = 0; i < map->events[Event::Group::Bg].length(); i++) {
-            Event *event = map->events[Event::Group::Bg].value(i);
-            OrderedJson::object bgObj = event->buildEventJson(this);
-            bgEventsArr.append(bgObj);
+        for (const auto &event : map->getEvents(Event::Group::Bg)) {
+            bgEventsArr.push_back(event->buildEventJson(this));
         }
         mapObj["bg_events"] = bgEventsArr;
     } else {
-        mapObj["shared_events_map"] = map->sharedEventsMap;
+        mapObj["shared_events_map"] = map->sharedEventsMap();
     }
 
-    if (!map->sharedScriptsMap.isEmpty()) {
-        mapObj["shared_scripts_map"] = map->sharedScriptsMap;
+    if (!map->sharedScriptsMap().isEmpty()) {
+        mapObj["shared_scripts_map"] = map->sharedScriptsMap();
     }
 
     // Custom header fields.
+/* // TODO: Re-enable
     for (QString key : map->customHeaders.keys()) {
         mapObj[key] = OrderedJson::fromQJsonValue(map->customHeaders[key]);
     }
+*/
 
     OrderedJson mapJson(mapObj);
     OrderedJsonDoc jsonDoc(&mapJson);
     jsonDoc.dump(&mapFile);
     mapFile.close();
 
-    saveLayout(map->layout);
+    saveLayout(map->layout());
     saveHealLocations(map);
 
-    map->isPersistedToFile = true;
-    map->hasUnsavedDataChanges = false;
-    map->editHistory.setClean();
+    map->setClean();
 }
 
 void Project::saveLayout(Layout *layout) {
@@ -1910,25 +1904,24 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     this->mapGroups.insert(mapName, groupNum);
     this->groupedMapNames[groupNum].append(mapName);
 
-    newMap->isPersistedToFile = false;
+    newMap->setIsPersistedToFile(false);
     newMap->setName(mapName);
 
-    this->mapConstantsToMapNames.insert(newMap->constantName, newMap->name);
-    this->mapNamesToMapConstants.insert(newMap->name, newMap->constantName);
+    this->mapConstantsToMapNames.insert(newMap->constantName(), newMap->name());
+    this->mapNamesToMapConstants.insert(newMap->name(), newMap->constantName());
     if (!existingLayout) {
-        this->mapLayouts.insert(newMap->layoutId, newMap->layout);
-        this->mapLayoutsTable.append(newMap->layoutId);
-        this->layoutIdsToNames.insert(newMap->layout->id, newMap->layout->name);
+        this->mapLayouts.insert(newMap->layoutId(), newMap->layout());
+        this->mapLayoutsTable.append(newMap->layoutId());
+        this->layoutIdsToNames.insert(newMap->layout()->id, newMap->layout()->name);
         if (!importedMap) {
-            setNewLayoutBlockdata(newMap->layout);
+            setNewLayoutBlockdata(newMap->layout());
         }
-        if (newMap->layout->border.isEmpty()) {
-            setNewLayoutBorder(newMap->layout);
+        if (newMap->layout()->border.isEmpty()) {
+            setNewLayoutBorder(newMap->layout());
         }
     }
 
-    loadLayoutTilesets(newMap->layout);
-    setNewMapEvents(newMap);
+    loadLayoutTilesets(newMap->layout());
 
     return newMap;
 }
@@ -2852,14 +2845,6 @@ bool Project::readSpeciesIconPaths() {
     if (missingIcons) logInfo("Pokémon icon filepaths can be specified under 'Options->Project Settings'");
 
     return true;
-}
-
-void Project::setNewMapEvents(Map *map) {
-    map->events[Event::Group::Object].clear();
-    map->events[Event::Group::Warp].clear();
-    map->events[Event::Group::Heal].clear();
-    map->events[Event::Group::Coord].clear();
-    map->events[Event::Group::Bg].clear();
 }
 
 int Project::getNumTilesPrimary()

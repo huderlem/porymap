@@ -811,10 +811,12 @@ QJSValue MainWindow::getTilePixels(int tileId) {
 // Editing map header
 //=====================
 
+// TODO: Replace UI setting here with calls to appropriate set functions. Update UI with signals from Map
+
 QString MainWindow::getSong() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->song;
+    return this->editor->map->song();
 }
 
 void MainWindow::setSong(QString song) {
@@ -830,7 +832,7 @@ void MainWindow::setSong(QString song) {
 QString MainWindow::getLocation() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->location;
+    return this->editor->map->location();
 }
 
 void MainWindow::setLocation(QString location) {
@@ -846,7 +848,7 @@ void MainWindow::setLocation(QString location) {
 bool MainWindow::getRequiresFlash() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->requiresFlash;
+    return this->editor->map->requiresFlash();
 }
 
 void MainWindow::setRequiresFlash(bool require) {
@@ -858,7 +860,7 @@ void MainWindow::setRequiresFlash(bool require) {
 QString MainWindow::getWeather() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->weather;
+    return this->editor->map->weather();
 }
 
 void MainWindow::setWeather(QString weather) {
@@ -874,7 +876,7 @@ void MainWindow::setWeather(QString weather) {
 QString MainWindow::getType() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->type;
+    return this->editor->map->type();
 }
 
 void MainWindow::setType(QString type) {
@@ -890,7 +892,7 @@ void MainWindow::setType(QString type) {
 QString MainWindow::getBattleScene() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->battle_scene;
+    return this->editor->map->battleScene();
 }
 
 void MainWindow::setBattleScene(QString battleScene) {
@@ -906,7 +908,7 @@ void MainWindow::setBattleScene(QString battleScene) {
 bool MainWindow::getShowLocationName() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->show_location;
+    return this->editor->map->showsLocation();
 }
 
 void MainWindow::setShowLocationName(bool show) {
@@ -918,7 +920,7 @@ void MainWindow::setShowLocationName(bool show) {
 bool MainWindow::getAllowRunning() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowRunning;
+    return this->editor->map->allowsRunning();
 }
 
 void MainWindow::setAllowRunning(bool allow) {
@@ -930,7 +932,7 @@ void MainWindow::setAllowRunning(bool allow) {
 bool MainWindow::getAllowBiking() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowBiking;
+    return this->editor->map->allowsBiking();
 }
 
 void MainWindow::setAllowBiking(bool allow) {
@@ -942,7 +944,7 @@ void MainWindow::setAllowBiking(bool allow) {
 bool MainWindow::getAllowEscaping() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowEscaping;
+    return this->editor->map->allowsEscaping();
 }
 
 void MainWindow::setAllowEscaping(bool allow) {
@@ -954,7 +956,7 @@ void MainWindow::setAllowEscaping(bool allow) {
 int MainWindow::getFloorNumber() {
     if (!this->editor || !this->editor->map)
         return 0;
-    return this->editor->map->floorNumber;
+    return this->editor->map->floorNumber();
 }
 
 void MainWindow::setFloorNumber(int floorNumber) {
