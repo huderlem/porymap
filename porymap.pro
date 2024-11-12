@@ -35,6 +35,7 @@ DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/core/advancemapparser.cpp \
     src/core/block.cpp \
+    src/ui/resizelayoutpopup.cpp \
     src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
@@ -257,7 +258,8 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/uintspinbox.h \
     include/ui/updatepromoter.h \
     include/ui/wildmonchart.h \
-    include/ui/wildmonsearch.h
+    include/ui/wildmonsearch.h \
+    include/ui/resizelayoutpopup.h
 
 FORMS    += forms/mainwindow.ui \
     forms/colorinputwidget.ui \
@@ -290,7 +292,8 @@ FORMS    += forms/mainwindow.ui \
     forms/customattributesdialog.ui \
     forms/updatepromoter.ui \
     forms/wildmonchart.ui \
-    forms/wildmonsearch.ui
+    forms/wildmonsearch.ui \
+    forms/resizelayoutpopup.ui
 
 RESOURCES += \
     resources/images.qrc \
