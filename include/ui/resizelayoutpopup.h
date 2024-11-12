@@ -6,6 +6,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsLineItem>
 #include <QGraphicsRectItem>
+#include <QDialogButtonBox>
 
 class ResizableRect;
 class Editor;
@@ -90,6 +91,7 @@ protected:
 private slots:
     void on_spinBox_width_valueChanged(int value);
     void on_spinBox_height_valueChanged(int value);
+    void on_buttonBox_clicked(QAbstractButton *button);
 
 private:
     QWidget *parent = nullptr;
