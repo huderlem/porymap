@@ -253,8 +253,8 @@ void MainWindow::initCustomUI() {
     }
 
     // Create map header data widget
-    this->mapHeader = new MapHeaderForm();
-    ui->layout_HeaderData->addWidget(this->mapHeader);
+    this->mapHeaderForm = new MapHeaderForm();
+    ui->layout_HeaderData->addWidget(this->mapHeaderForm);
 }
 
 void MainWindow::initExtraSignals() {
@@ -617,7 +617,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     project->set_root(dir);
     connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
     connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
-    connect(project, &Project::mapSectionIdNamesChanged, this->mapHeader, &MapHeaderForm::refreshLocationsComboBox);
+    connect(project, &Project::mapSectionIdNamesChanged, this->mapHeaderForm, &MapHeaderForm::setLocations);
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
@@ -1017,23 +1017,19 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
 }
 
 void MainWindow::displayMapProperties() {
-    // Block signals to the comboboxes while they are being modified
-    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
-    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
-
-    this->mapHeader->clearDisplay();
+    this->mapHeaderForm->clear();
     if (!editor || !editor->map || !editor->project) {
         ui->frame_HeaderData->setEnabled(false);
         return;
     }
-
     ui->frame_HeaderData->setEnabled(true);
-    Map *map = editor->map;
+    this->mapHeaderForm->setHeader(editor->map->header());
 
-    ui->comboBox_PrimaryTileset->setCurrentText(map->layout()->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(map->layout()->tileset_secondary_label);
+    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
+    ui->comboBox_PrimaryTileset->setCurrentText(editor->map->layout()->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setCurrentText(editor->map->layout()->tileset_secondary_label);
 
-    this->mapHeader->setMap(map);
 
     // Custom fields table.
 /* // TODO: Re-enable
@@ -1060,26 +1056,28 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
 bool MainWindow::setProjectUI() {
     Project *project = editor->project;
 
-    this->mapHeader->setProject(project);
-
-    // Block signals to the comboboxes while they are being modified
-    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
-    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
-    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
-    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
-    const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
+    this->mapHeaderForm->init(project);
 
     // Set up project comboboxes
+    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
+
+    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
     ui->comboBox_SecondaryTileset->clear();
     ui->comboBox_SecondaryTileset->addItems(project->secondaryTilesetLabels);
+
+    const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
     ui->comboBox_LayoutSelector->clear();
     ui->comboBox_LayoutSelector->addItems(project->mapLayoutsTable);
+
+    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
     ui->comboBox_DiveMap->clear();
     ui->comboBox_DiveMap->addItems(project->mapNames);
     ui->comboBox_DiveMap->setClearButtonEnabled(true);
     ui->comboBox_DiveMap->setFocusedScrollingEnabled(false);
+
+    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
     ui->comboBox_EmergeMap->clear();
     ui->comboBox_EmergeMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->setClearButtonEnabled(true);
@@ -1122,20 +1120,23 @@ bool MainWindow::setProjectUI() {
 }
 
 void MainWindow::clearProjectUI() {
-    // Block signals to the comboboxes while they are being modified
+    // Clear project comboboxes
     const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
-    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
-    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
-    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
-    const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
-
     ui->comboBox_PrimaryTileset->clear();
+
+    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
     ui->comboBox_SecondaryTileset->clear();
+
+    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
     ui->comboBox_DiveMap->clear();
+
+    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
     ui->comboBox_EmergeMap->clear();
+
+    const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
     ui->comboBox_LayoutSelector->clear();
 
-    this->mapHeader->clear();
+    this->mapHeaderForm->clear();
 
     // Clear map models
     delete this->mapGroupModel;
@@ -1466,7 +1467,7 @@ void MainWindow::onNewMapCreated() {
 
     // Add new Map / Layout to the mapList models
     this->mapGroupModel->insertMapItem(newMapName, editor->project->groupNames[newMapGroup]);
-    this->mapAreaModel->insertMapItem(newMapName, newMap->location(), newMapGroup);
+    this->mapAreaModel->insertMapItem(newMapName, newMap->header()->location(), newMapGroup);
     this->layoutTreeModel->insertMapItem(newMapName, newMap->layout()->id);
 
     // Refresh any combo box that displays map names and persists between maps

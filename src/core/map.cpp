@@ -16,6 +16,9 @@ Map::Map(QObject *parent) : QObject(parent)
     m_scriptsLoaded = false;
     m_editHistory = new QUndoStack(this);
     resetEvents();
+
+    m_header = new MapHeader(this);
+    connect(m_header, &MapHeader::modified, this, &Map::modified);
 }
 
 Map::~Map() {
@@ -309,48 +312,3 @@ void Map::pruneEditHistory() {
             command->setObsolete(true);
     }
 }
-
-void Map::setSong(const QString &song) {
-    m_song = song;
-}
-
-void Map::setLocation(const QString &location) {
-    m_location = location;
-}
-
-void Map::setRequiresFlash(bool requiresFlash) {
-    m_requiresFlash = requiresFlash;
-}
-
-void Map::setWeather(const QString &weather) {
-    m_weather = weather;
-}
-
-void Map::setType(const QString &type) {
-    m_type = type;
-}
-
-void Map::setShowsLocationName(bool showsLocationName) {
-    m_showsLocationName = showsLocationName;
-}
-
-void Map::setAllowsRunning(bool allowsRunning) {
-    m_allowsRunning = allowsRunning;
-}
-
-void Map::setAllowsBiking(bool allowsBiking) {
-    m_allowsBiking = allowsBiking;
-}
-
-void Map::setAllowsEscaping(bool allowsEscaping) {
-    m_allowsEscaping = allowsEscaping;
-}
-
-void Map::setFloorNumber(int floorNumber) {
-    m_floorNumber = floorNumber;
-}
-
-void Map::setBattleScene(const QString &battleScene) {
-    m_battleScene = battleScene;
-}
-

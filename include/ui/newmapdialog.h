@@ -7,6 +7,7 @@
 #include "project.h"
 #include "map.h"
 #include "mapheaderform.h"
+#include "newlayoutform.h"
 #include "lib/collapsiblesection.h"
 
 namespace Ui {
@@ -25,7 +26,6 @@ public:
     bool importedMap;
     QString layoutId;
     void init();
-    //void initUi();//TODO
     void init(int tabIndex, QString data);
     void init(Layout *);
     static void setDefaultSettings(Project *project);
@@ -37,11 +37,9 @@ private:
     Ui::NewMapDialog *ui;
     Project *project;
     CollapsibleSection *headerSection;
-    MapHeaderForm *headerData;
+    MapHeaderForm *headerForm;
 
-    bool validateMapDimensions();
     bool validateMapGroup();
-    bool validateTilesets();
     bool validateID();
     bool validateName();
 
@@ -51,33 +49,18 @@ private:
 
     struct Settings {
         QString group;
-        int width;
-        int height;
-        int borderWidth;
-        int borderHeight;
-        QString primaryTilesetLabel;
-        QString secondaryTilesetLabel;
-        QString song;
-        QString location;
-        bool requiresFlash;
-        QString weather;
-        QString type;
-        QString battleScene;
-        bool showLocationName;
-        bool allowRunning;
-        bool allowBiking;
-        bool allowEscaping;
-        int floorNumber;
         bool canFlyTo;
+        NewLayoutForm::Settings layout;
+        MapHeader header;
     };
     static struct Settings settings;
 
 private slots:
-    //void on_checkBox_UseExistingLayout_stateChanged(int state);
+    //void on_checkBox_UseExistingLayout_stateChanged(int state); //TODO
     //void on_comboBox_Layout_currentTextChanged(const QString &text);
     void on_pushButton_Accept_clicked();
     void on_lineEdit_Name_textChanged(const QString &);
-    void on_lineEdit_ID_textChanged(const QString &);
+    void on_lineEdit_MapID_textChanged(const QString &);
 };
 
 #endif // NEWMAPDIALOG_H

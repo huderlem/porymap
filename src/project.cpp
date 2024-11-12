@@ -155,6 +155,9 @@ Map* Project::loadMap(QString mapName) {
         return nullptr;
     }
 
+    // If the map's MAPSEC value in the header changes, update our global array to keep it in sync.
+    connect(map->header(), &MapHeader::locationChanged, [this, map] { this->mapNameToMapSectionName.insert(map->name(), map->header()->location()); });
+
     mapCache.insert(mapName, map);
     emit mapLoaded(map);
     return map;
@@ -217,22 +220,22 @@ bool Project::loadMapData(Map* map) {
     this->mapNamesToMapConstants.insert(map->name(), map->constantName());
     this->mapConstantsToMapNames.insert(map->constantName(), map->name());
 
-    map->setSong(ParseUtil::jsonToQString(mapObj["music"]));
+    map->header()->setSong(ParseUtil::jsonToQString(mapObj["music"]));
     map->setLayoutId(ParseUtil::jsonToQString(mapObj["layout"]));
-    map->setLocation(ParseUtil::jsonToQString(mapObj["region_map_section"]));
-    map->setRequiresFlash(ParseUtil::jsonToBool(mapObj["requires_flash"]));
-    map->setWeather(ParseUtil::jsonToQString(mapObj["weather"]));
-    map->setType(ParseUtil::jsonToQString(mapObj["map_type"]));
-    map->setShowsLocationName(ParseUtil::jsonToBool(mapObj["show_map_name"]));
-    map->setBattleScene(ParseUtil::jsonToQString(mapObj["battle_scene"]));
+    map->header()->setLocation(ParseUtil::jsonToQString(mapObj["region_map_section"]));
+    map->header()->setRequiresFlash(ParseUtil::jsonToBool(mapObj["requires_flash"]));
+    map->header()->setWeather(ParseUtil::jsonToQString(mapObj["weather"]));
+    map->header()->setType(ParseUtil::jsonToQString(mapObj["map_type"]));
+    map->header()->setShowsLocationName(ParseUtil::jsonToBool(mapObj["show_map_name"]));
+    map->header()->setBattleScene(ParseUtil::jsonToQString(mapObj["battle_scene"]));
 
     if (projectConfig.mapAllowFlagsEnabled) {
-        map->setAllowsBiking(ParseUtil::jsonToBool(mapObj["allow_cycling"]));
-        map->setAllowsEscaping(ParseUtil::jsonToBool(mapObj["allow_escaping"]));
-        map->setAllowsRunning(ParseUtil::jsonToBool(mapObj["allow_running"]));
+        map->header()->setAllowsBiking(ParseUtil::jsonToBool(mapObj["allow_cycling"]));
+        map->header()->setAllowsEscaping(ParseUtil::jsonToBool(mapObj["allow_escaping"]));
+        map->header()->setAllowsRunning(ParseUtil::jsonToBool(mapObj["allow_running"]));
     }
     if (projectConfig.floorNumberEnabled) {
-        map->setFloorNumber(ParseUtil::jsonToInt(mapObj["floor_number"]));
+        map->header()->setFloorNumber(ParseUtil::jsonToInt(mapObj["floor_number"]));
     }
     map->setSharedEventsMap(ParseUtil::jsonToQString(mapObj["shared_events_map"]));
     map->setSharedScriptsMap(ParseUtil::jsonToQString(mapObj["shared_scripts_map"]));
@@ -1284,21 +1287,21 @@ void Project::saveMap(Map *map) {
     mapObj["id"] = map->constantName();
     mapObj["name"] = map->name();
     mapObj["layout"] = map->layout()->id;
-    mapObj["music"] = map->song();
-    mapObj["region_map_section"] = map->location();
-    mapObj["requires_flash"] = map->requiresFlash();
-    mapObj["weather"] = map->weather();
-    mapObj["map_type"] = map->type();
+    mapObj["music"] = map->header()->song();
+    mapObj["region_map_section"] = map->header()->location();
+    mapObj["requires_flash"] = map->header()->requiresFlash();
+    mapObj["weather"] = map->header()->weather();
+    mapObj["map_type"] = map->header()->type();
     if (projectConfig.mapAllowFlagsEnabled) {
-        mapObj["allow_cycling"] = map->allowsBiking();
-        mapObj["allow_escaping"] = map->allowsEscaping();
-        mapObj["allow_running"] = map->allowsRunning();
+        mapObj["allow_cycling"] = map->header()->allowsBiking();
+        mapObj["allow_escaping"] = map->header()->allowsEscaping();
+        mapObj["allow_running"] = map->header()->allowsRunning();
     }
-    mapObj["show_map_name"] = map->showsLocationName();
+    mapObj["show_map_name"] = map->header()->showsLocationName();
     if (projectConfig.floorNumberEnabled) {
-        mapObj["floor_number"] = map->floorNumber();
+        mapObj["floor_number"] = map->header()->floorNumber();
     }
-    mapObj["battle_scene"] = map->battleScene();
+    mapObj["battle_scene"] = map->header()->battleScene();
 
     // Connections
     auto connections = map->getConnections();
@@ -2301,7 +2304,7 @@ void Project::addNewMapsec(const QString &name) {
         this->mapSectionIdNames.append(name);
     }
     this->hasUnsavedDataChanges = true;
-    emit mapSectionIdNamesChanged();
+    emit mapSectionIdNamesChanged(this->mapSectionIdNames);
 }
 
 void Project::removeMapsec(const QString &name) {
@@ -2310,7 +2313,7 @@ void Project::removeMapsec(const QString &name) {
 
     this->mapSectionIdNames.removeOne(name);
     this->hasUnsavedDataChanges = true;
-    emit mapSectionIdNamesChanged();
+    emit mapSectionIdNamesChanged(this->mapSectionIdNames);
 }
 
 // Read the constants to preserve any "unused" heal locations when writing the file later

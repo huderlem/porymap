@@ -70,7 +70,7 @@ public:
         this->showTilesetEditorLayerGrid = true;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
-        this->newMapHeaderSectionExpanded = false;
+        this->newMapHeaderSectionExpanded = true;
         this->theme = "default";
         this->wildMonChartTheme = "";
         this->textEditorOpenFolder = "";

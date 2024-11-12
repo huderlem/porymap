@@ -327,7 +327,7 @@ private:
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
 
-    MapHeaderForm *mapHeader = nullptr;
+    MapHeaderForm *mapHeaderForm = nullptr;
 
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 

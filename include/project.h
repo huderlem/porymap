@@ -263,7 +263,7 @@ private:
 
 signals:
     void fileChanged(QString filepath);
-    void mapSectionIdNamesChanged();
+    void mapSectionIdNamesChanged(const QStringList &idNames);
     void mapLoaded(Map *map);
 };
 

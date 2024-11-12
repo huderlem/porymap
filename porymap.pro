@@ -30,6 +30,7 @@ SOURCES += src/core/block.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
     src/core/mapconnection.cpp \
+    src/core/mapheader.cpp \
     src/core/maplayout.cpp \
     src/core/mapparser.cpp \
     src/core/metatile.cpp \
@@ -89,6 +90,7 @@ SOURCES += src/core/block.cpp \
     src/ui/movablerect.cpp \
     src/ui/movementpermissionsselector.cpp \
     src/ui/neweventtoolbutton.cpp \
+    src/ui/newlayoutform.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
     src/ui/montabwidget.cpp \
@@ -134,6 +136,7 @@ HEADERS  += include/core/block.h \
     include/core/imageexport.h \
     include/core/map.h \
     include/core/mapconnection.h \
+    include/core/mapheader.h \
     include/core/maplayout.h \
     include/core/mapparser.h \
     include/core/metatile.h \
@@ -193,6 +196,7 @@ HEADERS  += include/core/block.h \
     include/ui/movablerect.h \
     include/ui/movementpermissionsselector.h \
     include/ui/neweventtoolbutton.h \
+    include/ui/newlayoutform.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
     include/ui/montabwidget.h \
@@ -237,6 +241,7 @@ FORMS    += forms/mainwindow.ui \
     forms/gridsettingsdialog.ui \
     forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
+    forms/newlayoutform.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \

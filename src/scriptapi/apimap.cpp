@@ -817,7 +817,7 @@ QJSValue MainWindow::getTilePixels(int tileId) {
 QString MainWindow::getSong() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->song();
+    return this->editor->map->header()->song();
 }
 
 void MainWindow::setSong(QString song) {
@@ -827,13 +827,13 @@ void MainWindow::setSong(QString song) {
         logError(QString("Unknown song '%1'").arg(song));
         return;
     }
-    this->editor->map->setSong(song);
+    this->editor->map->header()->setSong(song);
 }
 
 QString MainWindow::getLocation() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->location();
+    return this->editor->map->header()->location();
 }
 
 void MainWindow::setLocation(QString location) {
@@ -843,25 +843,25 @@ void MainWindow::setLocation(QString location) {
         logError(QString("Unknown location '%1'").arg(location));
         return;
     }
-    this->editor->map->setLocation(location);
+    this->editor->map->header()->setLocation(location);
 }
 
 bool MainWindow::getRequiresFlash() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->requiresFlash();
+    return this->editor->map->header()->requiresFlash();
 }
 
 void MainWindow::setRequiresFlash(bool require) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setRequiresFlash(require);
+    this->editor->map->header()->setRequiresFlash(require);
 }
 
 QString MainWindow::getWeather() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->weather();
+    return this->editor->map->header()->weather();
 }
 
 void MainWindow::setWeather(QString weather) {
@@ -871,13 +871,13 @@ void MainWindow::setWeather(QString weather) {
         logError(QString("Unknown weather '%1'").arg(weather));
         return;
     }
-    this->editor->map->setWeather(weather);
+    this->editor->map->header()->setWeather(weather);
 }
 
 QString MainWindow::getType() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->type();
+    return this->editor->map->header()->type();
 }
 
 void MainWindow::setType(QString type) {
@@ -887,13 +887,13 @@ void MainWindow::setType(QString type) {
         logError(QString("Unknown map type '%1'").arg(type));
         return;
     }
-    this->editor->map->setType(type);
+    this->editor->map->header()->setType(type);
 }
 
 QString MainWindow::getBattleScene() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->battleScene();
+    return this->editor->map->header()->battleScene();
 }
 
 void MainWindow::setBattleScene(QString battleScene) {
@@ -903,66 +903,66 @@ void MainWindow::setBattleScene(QString battleScene) {
         logError(QString("Unknown battle scene '%1'").arg(battleScene));
         return;
     }
-    this->editor->map->setBattleScene(battleScene);
+    this->editor->map->header()->setBattleScene(battleScene);
 }
 
 bool MainWindow::getShowLocationName() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->showsLocationName();
+    return this->editor->map->header()->showsLocationName();
 }
 
 void MainWindow::setShowLocationName(bool show) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setShowsLocationName(show);
+    this->editor->map->header()->setShowsLocationName(show);
 }
 
 bool MainWindow::getAllowRunning() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowsRunning();
+    return this->editor->map->header()->allowsRunning();
 }
 
 void MainWindow::setAllowRunning(bool allow) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setAllowsRunning(allow);
+    this->editor->map->header()->setAllowsRunning(allow);
 }
 
 bool MainWindow::getAllowBiking() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowsBiking();
+    return this->editor->map->header()->allowsBiking();
 }
 
 void MainWindow::setAllowBiking(bool allow) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setAllowsBiking(allow);
+    this->editor->map->header()->setAllowsBiking(allow);
 }
 
 bool MainWindow::getAllowEscaping() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowsEscaping();
+    return this->editor->map->header()->allowsEscaping();
 }
 
 void MainWindow::setAllowEscaping(bool allow) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setAllowsEscaping(allow);
+    this->editor->map->header()->setAllowsEscaping(allow);
 }
 
 int MainWindow::getFloorNumber() {
     if (!this->editor || !this->editor->map)
         return 0;
-    return this->editor->map->floorNumber();
+    return this->editor->map->header()->floorNumber();
 }
 
 void MainWindow::setFloorNumber(int floorNumber) {
     if (!this->editor || !this->editor->map)
         return;
-    this->editor->map->setFloorNumber(floorNumber);
+    this->editor->map->header()->setFloorNumber(floorNumber);
 }
 

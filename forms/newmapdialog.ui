@@ -32,14 +32,27 @@
        <property name="verticalSpacing">
         <number>10</number>
        </property>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_Name">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_MapID">
          <property name="text">
-          <string>Name</string>
+          <string>Map ID</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="3">
+       <item row="13" column="0" colspan="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
         <widget class="QLabel" name="label_NameError">
          <property name="visible">
           <bool>false</bool>
@@ -55,287 +68,10 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="3">
-        <widget class="QLabel" name="label_GroupError">
-         <property name="visible">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 0, 0)</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
+       <item row="5" column="1">
+        <widget class="QComboBox" name="comboBox"/>
        </item>
-       <item row="7" column="0" colspan="4" alignment="Qt::AlignmentFlag::AlignTop">
-        <widget class="QGroupBox" name="groupBox_BorderDimensions">
-         <property name="title">
-          <string>Border Dimensions</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_BorderWidth">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Width</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="NoScrollSpinBox" name="spinBox_BorderWidth">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in metatiles) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="NoScrollSpinBox" name="spinBox_BorderHeight">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in metatiles) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_BorderHeight">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Height</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_ID">
-         <property name="text">
-          <string>ID</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0" colspan="4" alignment="Qt::AlignmentFlag::AlignTop">
-        <widget class="QGroupBox" name="groupBox_MapDimensions">
-         <property name="title">
-          <string>Map Dimensions</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_4">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_MapWidth">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Width</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="NoScrollSpinBox" name="spinBox_MapWidth">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in metatiles) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_MapHeight">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Height</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="NoScrollSpinBox" name="spinBox_MapHeight">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in metatiles) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_MapDimensionsError">
-            <property name="visible">
-             <bool>false</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">color: rgb(255, 0, 0)</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="4" column="3">
-        <widget class="NoScrollComboBox" name="comboBox_Group">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the group this map will be added to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-         <property name="insertPolicy">
-          <enum>QComboBox::InsertPolicy::NoInsert</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QLineEdit" name="lineEdit_ID">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this map. It cannot be the same as any other existing map, and it must start with the specified prefix.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="3">
-        <widget class="QLineEdit" name="lineEdit_Name">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. The name cannot be the same as any other existing map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="clearButtonEnabled">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0" colspan="4" alignment="Qt::AlignmentFlag::AlignTop">
-        <widget class="QGroupBox" name="groupBox_Tilesets">
-         <property name="title">
-          <string>Tilesets</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_PrimaryTileset">
-            <property name="text">
-             <string>Primary</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="NoScrollComboBox" name="comboBox_PrimaryTileset">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The primary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-            <property name="insertPolicy">
-             <enum>QComboBox::InsertPolicy::NoInsert</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_SecondaryTileset">
-            <property name="text">
-             <string>Secondary</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="NoScrollComboBox" name="comboBox_SecondaryTileset">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The secondary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-            <property name="insertPolicy">
-             <enum>QComboBox::InsertPolicy::NoInsert</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QLabel" name="label_TilesetsError">
-            <property name="visible">
-             <bool>false</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">color: rgb(255, 0, 0)</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="3">
-        <widget class="QLabel" name="label_IDError">
-         <property name="visible">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 0, 0)</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0" colspan="4">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_Group">
-         <property name="text">
-          <string>Group</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0" colspan="4">
+       <item row="12" column="0" colspan="2">
         <widget class="QWidget" name="widget_HeaderData" native="true">
          <layout class="QVBoxLayout" name="layout_HeaderData">
           <property name="leftMargin">
@@ -353,7 +89,83 @@
          </layout>
         </widget>
        </item>
-       <item row="10" column="3">
+       <item row="3" column="1">
+        <widget class="QLabel" name="label_MapIDError">
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_Name">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. The name cannot be the same as any other existing map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_CanFlyTo">
+         <property name="text">
+          <string>Can Fly To</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="NoScrollComboBox" name="comboBox_Group">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the group this map will be added to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="insertPolicy">
+          <enum>QComboBox::InsertPolicy::NoInsert</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_Group">
+         <property name="text">
+          <string>Map Group</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLabel" name="label_GroupError">
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_Name">
+         <property name="text">
+          <string>Map Name</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
         <widget class="QCheckBox" name="checkBox_CanFlyTo">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a Heal Location will be added to this map automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -363,12 +175,22 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="0" colspan="3">
-        <widget class="QLabel" name="label_CanFlyTo">
+       <item row="5" column="0">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Can Fly To</string>
+          <string>Layout ID</string>
          </property>
         </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineEdit_MapID">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this map. It cannot be the same as any other existing map, and it must start with the specified prefix.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <widget class="NewLayoutForm" name="newLayoutForm" native="true"/>
        </item>
       </layout>
      </widget>
@@ -394,9 +216,10 @@
    <header>noscrollcombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>NoScrollSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>noscrollspinbox.h</header>
+   <class>NewLayoutForm</class>
+   <extends>QWidget</extends>
+   <header>newlayoutform.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

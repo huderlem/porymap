@@ -1,18 +1,6 @@
 #include "mapheaderform.h"
-
-#define BLOCK_SIGNALS \
-    const QSignalBlocker b_Song(ui->comboBox_Song); \
-    const QSignalBlocker b_Location(ui->comboBox_Location); \
-    const QSignalBlocker b_RequiresFlash(ui->checkBox_RequiresFlash); \
-    const QSignalBlocker b_Weather(ui->comboBox_Weather); \
-    const QSignalBlocker b_Type(ui->comboBox_Type); \
-    const QSignalBlocker b_BattleScene(ui->comboBox_BattleScene); \
-    const QSignalBlocker b_ShowLocationName(ui->checkBox_ShowLocationName); \
-    const QSignalBlocker b_AllowRunning(ui->checkBox_AllowRunning); \
-    const QSignalBlocker b_AllowBiking(ui->checkBox_AllowBiking); \
-    const QSignalBlocker b_AllowEscaping(ui->checkBox_AllowEscaping); \
-    const QSignalBlocker b_FloorNumber(ui->spinBox_FloorNumber);
-
+#include "ui_mapheaderform.h"
+#include "project.h"
 
 MapHeaderForm::MapHeaderForm(QWidget *parent)
     : QWidget(parent)
@@ -23,6 +11,19 @@ MapHeaderForm::MapHeaderForm(QWidget *parent)
     // This value is an s8 by default, but we don't need to unnecessarily limit users.
     ui->spinBox_FloorNumber->setMinimum(INT_MIN);
     ui->spinBox_FloorNumber->setMaximum(INT_MAX);
+
+    // When the UI is updated, sync those changes to the tracked MapHeader (if there is one)
+    connect(ui->comboBox_Song,        &QComboBox::currentTextChanged, this, &MapHeaderForm::onSongUpdated);
+    connect(ui->comboBox_Location,    &QComboBox::currentTextChanged, this, &MapHeaderForm::onLocationChanged);
+    connect(ui->comboBox_Weather,     &QComboBox::currentTextChanged, this, &MapHeaderForm::onWeatherChanged);
+    connect(ui->comboBox_Type,        &QComboBox::currentTextChanged, this, &MapHeaderForm::onTypeChanged);
+    connect(ui->comboBox_BattleScene, &QComboBox::currentTextChanged, this, &MapHeaderForm::onBattleSceneChanged);
+    connect(ui->checkBox_RequiresFlash,    &QCheckBox::stateChanged, this, &MapHeaderForm::onRequiresFlashChanged);
+    connect(ui->checkBox_ShowLocationName, &QCheckBox::stateChanged, this, &MapHeaderForm::onShowLocationNameChanged);
+    connect(ui->checkBox_AllowRunning,     &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowRunningChanged);
+    connect(ui->checkBox_AllowBiking,      &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowBikingChanged);
+    connect(ui->checkBox_AllowEscaping,    &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowEscapingChanged);
+    connect(ui->spinBox_FloorNumber, &QSpinBox::valueChanged, this, &MapHeaderForm::onFloorNumberChanged);
 }
 
 MapHeaderForm::~MapHeaderForm()
@@ -30,20 +31,31 @@ MapHeaderForm::~MapHeaderForm()
     delete ui;
 }
 
-void MapHeaderForm::setProject(Project * newProject) {
+void MapHeaderForm::init(const Project * project) {
     clear();
 
-    this->project = newProject;
-    if (!this->project)
+    if (!project)
         return;
 
     // Populate combo boxes
-    BLOCK_SIGNALS
-    ui->comboBox_Song->addItems(this->project->songNames);
-    ui->comboBox_Weather->addItems(this->project->weatherNames);
-    ui->comboBox_Type->addItems(this->project->mapTypes);
-    ui->comboBox_BattleScene->addItems(this->project->mapBattleScenes);
-    refreshLocationsComboBox();
+
+    const QSignalBlocker b_Song(ui->comboBox_Song);
+    ui->comboBox_Song->clear();
+    ui->comboBox_Song->addItems(project->songNames);
+
+    const QSignalBlocker b_Weather(ui->comboBox_Weather);
+    ui->comboBox_Weather->clear();
+    ui->comboBox_Weather->addItems(project->weatherNames);
+
+    const QSignalBlocker b_Type(ui->comboBox_Type);
+    ui->comboBox_Type->clear();
+    ui->comboBox_Type->addItems(project->mapTypes);
+
+    const QSignalBlocker b_BattleScene(ui->comboBox_BattleScene);
+    ui->comboBox_BattleScene->clear();
+    ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
+
+    setLocations(project->mapSectionIdNames);
 
     // Hide config-specific settings
 
@@ -60,161 +72,199 @@ void MapHeaderForm::setProject(Project * newProject) {
     ui->label_FloorNumber->setVisible(floorNumEnabled);
 }
 
-void MapHeaderForm::setMap(Map * newMap) {
-    this->map = newMap;
-    if (!this->map) {
-        clearDisplay();
-        return;
-    }
+// This combo box is treated specially because (unlike the other combo boxes)
+// items that should be in this drop-down can be added or removed externally.
+void MapHeaderForm::setLocations(QStringList locations) {
+    locations.sort();
 
-    BLOCK_SIGNALS
-    ui->comboBox_Song->setCurrentText(this->map->song());
-    ui->comboBox_Location->setCurrentText(this->map->location());
-    ui->checkBox_RequiresFlash->setChecked(this->map->requiresFlash());
-    ui->comboBox_Weather->setCurrentText(this->map->weather());
-    ui->comboBox_Type->setCurrentText(this->map->type());
-    ui->comboBox_BattleScene->setCurrentText(this->map->battleScene());
-    ui->checkBox_ShowLocationName->setChecked(this->map->showsLocationName());
-    ui->checkBox_AllowRunning->setChecked(this->map->allowsRunning());
-    ui->checkBox_AllowBiking->setChecked(this->map->allowsBiking());
-    ui->checkBox_AllowEscaping->setChecked(this->map->allowsEscaping());
-    ui->spinBox_FloorNumber->setValue(this->map->floorNumber());
-}
-
-void MapHeaderForm::clearDisplay() {
-    BLOCK_SIGNALS
-    ui->comboBox_Song->clearEditText();
-    ui->comboBox_Location->clearEditText();
-    ui->comboBox_Weather->clearEditText();
-    ui->comboBox_Type->clearEditText();
-    ui->comboBox_BattleScene->clearEditText();
-    ui->checkBox_ShowLocationName->setChecked(false);
-    ui->checkBox_RequiresFlash->setChecked(false);
-    ui->checkBox_AllowRunning->setChecked(false);
-    ui->checkBox_AllowBiking->setChecked(false);
-    ui->checkBox_AllowEscaping->setChecked(false);
-    ui->spinBox_FloorNumber->setValue(0);
-}
-
-// Clear display and depopulate combo boxes
-void MapHeaderForm::clear() {
-    BLOCK_SIGNALS
-    ui->comboBox_Song->clear();
-    ui->comboBox_Location->clear();
-    ui->comboBox_Weather->clear();
-    ui->comboBox_Type->clear();
-    ui->comboBox_BattleScene->clear();
-    ui->checkBox_ShowLocationName->setChecked(false);
-    ui->checkBox_RequiresFlash->setChecked(false);
-    ui->checkBox_AllowRunning->setChecked(false);
-    ui->checkBox_AllowBiking->setChecked(false);
-    ui->checkBox_AllowEscaping->setChecked(false);
-    ui->spinBox_FloorNumber->setValue(0);
-}
-
-void MapHeaderForm::refreshLocationsComboBox() {
     const QSignalBlocker b(ui->comboBox_Location);
+    const QString before = ui->comboBox_Location->currentText();
     ui->comboBox_Location->clear();
-
-    if (this->project) {
-        QStringList locations = this->project->mapSectionIdNames;
-        locations.sort();
-        ui->comboBox_Location->addItems(locations);
-    }
-    if (this->map) {
-        ui->comboBox_Location->setCurrentText(this->map->location());
-    }        
+    ui->comboBox_Location->addItems(locations);
+    ui->comboBox_Location->setCurrentText(before);
 }
 
-void MapHeaderForm::on_comboBox_Song_currentTextChanged(const QString &song)
-{
-    if (this->map) {
-        this->map->setSong(song);
-        this->map->modify();
+// Assign a MapHeader that the form will keep in sync with the UI.
+void MapHeaderForm::setHeader(MapHeader *header) {
+    if (m_header == header)
+        return;
+
+    if (m_header) {
+        m_header->disconnect(this);
     }
+
+    m_header = header;
+
+    if (m_header) {
+        // If the MapHeader is changed externally (for example, with the scripting API) update the UI accordingly
+        connect(m_header, &MapHeader::songChanged, this, &MapHeaderForm::updateSong);
+        connect(m_header, &MapHeader::locationChanged, this, &MapHeaderForm::updateLocation);
+        connect(m_header, &MapHeader::requiresFlashChanged, this, &MapHeaderForm::updateRequiresFlash);
+        connect(m_header, &MapHeader::weatherChanged, this, &MapHeaderForm::updateWeather);
+        connect(m_header, &MapHeader::typeChanged, this, &MapHeaderForm::updateType);
+        connect(m_header, &MapHeader::battleSceneChanged, this, &MapHeaderForm::updateBattleScene);
+        connect(m_header, &MapHeader::showsLocationNameChanged, this, &MapHeaderForm::updateShowsLocationName);
+        connect(m_header, &MapHeader::allowsRunningChanged, this, &MapHeaderForm::updateAllowsRunning);
+        connect(m_header, &MapHeader::allowsBikingChanged, this, &MapHeaderForm::updateAllowsBiking);
+        connect(m_header, &MapHeader::allowsEscapingChanged, this, &MapHeaderForm::updateAllowsEscaping);
+        connect(m_header, &MapHeader::floorNumberChanged, this, &MapHeaderForm::updateFloorNumber);
+    }
+
+    // Immediately update the UI to reflect the assigned MapHeader
+    updateUi();
 }
 
-void MapHeaderForm::on_comboBox_Location_currentTextChanged(const QString &location)
-{
-    if (this->map) {
-        this->map->setLocation(location);
-        this->map->modify();
-
-        // Update cached location name in the project
-        // TODO: This should be handled elsewhere now, connected to the map change signal
-        if (this->project)
-            this->project->mapNameToMapSectionName.insert(this->map->name(), this->map->location());
-    }
+void MapHeaderForm::clear() {
+    m_header = nullptr;
+    updateUi();
 }
 
-void MapHeaderForm::on_comboBox_Weather_currentTextChanged(const QString &weather)
-{
-    if (this->map) {
-        this->map->setWeather(weather);
-        this->map->modify();
-    }
+void MapHeaderForm::updateUi() {
+    updateSong();
+    updateLocation();
+    updateRequiresFlash();
+    updateWeather();
+    updateType();
+    updateBattleScene();
+    updateShowsLocationName();
+    updateAllowsRunning();
+    updateAllowsBiking();
+    updateAllowsEscaping();
+    updateFloorNumber();
+
 }
 
-void MapHeaderForm::on_comboBox_Type_currentTextChanged(const QString &type)
-{
-    if (this->map) {
-        this->map->setType(type);
-        this->map->modify();
-    }
+MapHeader MapHeaderForm::headerData() const {
+    if (m_header)
+        return *m_header;
+
+    // Build header from UI
+    MapHeader header;
+    header.setSong(ui->comboBox_Song->currentText());
+    header.setLocation(ui->comboBox_Location->currentText());
+    header.setRequiresFlash(ui->checkBox_RequiresFlash->isChecked());
+    header.setWeather(ui->comboBox_Weather->currentText());
+    header.setType(ui->comboBox_Type->currentText());
+    header.setBattleScene(ui->comboBox_BattleScene->currentText());
+    header.setShowsLocationName(ui->checkBox_ShowLocationName->isChecked());
+    header.setAllowsRunning(ui->checkBox_AllowRunning->isChecked());
+    header.setAllowsBiking(ui->checkBox_AllowBiking->isChecked());
+    header.setAllowsEscaping(ui->checkBox_AllowEscaping->isChecked());
+    header.setFloorNumber(ui->spinBox_FloorNumber->value());
+    return header;
 }
 
-void MapHeaderForm::on_comboBox_BattleScene_currentTextChanged(const QString &battleScene)
-{
-    if (this->map) {
-        this->map->setBattleScene(battleScene);
-        this->map->modify();
-    }
+void MapHeaderForm::setLocationsDisabled(bool disabled) {
+    ui->label_Location->setDisabled(disabled);
+    ui->comboBox_Location->setDisabled(disabled);
 }
 
-void MapHeaderForm::on_checkBox_RequiresFlash_stateChanged(int selected)
-{
-    if (this->map) {
-        this->map->setRequiresFlash(selected == Qt::Checked);
-        this->map->modify();
-    }
+void MapHeaderForm::updateSong() {
+    const QSignalBlocker b(ui->comboBox_Song);
+    ui->comboBox_Song->setCurrentText(m_header ? m_header->song() : QString());
 }
 
-void MapHeaderForm::on_checkBox_ShowLocationName_stateChanged(int selected)
-{
-    if (this->map) {
-        this->map->setShowsLocationName(selected == Qt::Checked);
-        this->map->modify();
-    }
+void MapHeaderForm::updateLocation() {
+    const QSignalBlocker b(ui->comboBox_Location);
+    ui->comboBox_Location->setCurrentText(m_header ? m_header->location() : QString());
 }
 
-void MapHeaderForm::on_checkBox_AllowRunning_stateChanged(int selected)
-{
-    if (this->map) {
-        this->map->setAllowsRunning(selected == Qt::Checked);
-        this->map->modify();
-    }
+void MapHeaderForm::updateRequiresFlash() {
+    const QSignalBlocker b(ui->checkBox_RequiresFlash);
+    ui->checkBox_RequiresFlash->setChecked(m_header ? m_header->requiresFlash() : false);
 }
 
-void MapHeaderForm::on_checkBox_AllowBiking_stateChanged(int selected)
-{
-    if (this->map) {
-        this->map->setAllowsBiking(selected == Qt::Checked);
-        this->map->modify();
-    }
+void MapHeaderForm::updateWeather() {
+    const QSignalBlocker b(ui->comboBox_Weather);
+    ui->comboBox_Weather->setCurrentText(m_header ? m_header->weather() : QString());
 }
 
-void MapHeaderForm::on_checkBox_AllowEscaping_stateChanged(int selected)
-{
-    if (this->map) {
-        this->map->setAllowsEscaping(selected == Qt::Checked);
-        this->map->modify();
-    }
+void MapHeaderForm::updateType() {
+    const QSignalBlocker b(ui->comboBox_Type);
+    ui->comboBox_Type->setCurrentText(m_header ? m_header->type() : QString());
 }
 
-void MapHeaderForm::on_spinBox_FloorNumber_valueChanged(int offset)
+void MapHeaderForm::updateBattleScene() {
+    const QSignalBlocker b(ui->comboBox_BattleScene);
+    ui->comboBox_BattleScene->setCurrentText(m_header ? m_header->battleScene() : QString());
+}
+
+void MapHeaderForm::updateShowsLocationName() {
+    const QSignalBlocker b(ui->checkBox_ShowLocationName);
+    ui->checkBox_ShowLocationName->setChecked(m_header ? m_header->showsLocationName() : false);
+}
+
+void MapHeaderForm::updateAllowsRunning() {
+    const QSignalBlocker b(ui->checkBox_AllowRunning);
+    ui->checkBox_AllowRunning->setChecked(m_header ? m_header->allowsRunning() : false);
+}
+
+void MapHeaderForm::updateAllowsBiking() {
+    const QSignalBlocker b(ui->checkBox_AllowBiking);
+    ui->checkBox_AllowBiking->setChecked(m_header ? m_header->allowsBiking() : false);
+}
+
+void MapHeaderForm::updateAllowsEscaping() {
+    const QSignalBlocker b(ui->checkBox_AllowEscaping);
+    ui->checkBox_AllowEscaping->setChecked(m_header ? m_header->allowsEscaping() : false);
+}
+
+void MapHeaderForm::updateFloorNumber() {
+    const QSignalBlocker b(ui->spinBox_FloorNumber);
+    ui->spinBox_FloorNumber->setValue(m_header ? m_header->floorNumber() : 0);
+}
+
+void MapHeaderForm::onSongUpdated(const QString &song)
 {
-    if (this->map) {
-        this->map->setFloorNumber(offset);
-        this->map->modify();
-    }
+    if (m_header) m_header->setSong(song);
+}
+
+void MapHeaderForm::onLocationChanged(const QString &location)
+{
+    if (m_header) m_header->setLocation(location);
+}
+
+void MapHeaderForm::onWeatherChanged(const QString &weather)
+{
+    if (m_header) m_header->setWeather(weather);
+}
+
+void MapHeaderForm::onTypeChanged(const QString &type)
+{
+    if (m_header) m_header->setType(type);
+}
+
+void MapHeaderForm::onBattleSceneChanged(const QString &battleScene)
+{
+    if (m_header) m_header->setBattleScene(battleScene);
+}
+
+void MapHeaderForm::onRequiresFlashChanged(int selected)
+{
+    if (m_header) m_header->setRequiresFlash(selected == Qt::Checked);
+}
+
+void MapHeaderForm::onShowLocationNameChanged(int selected)
+{
+    if (m_header) m_header->setShowsLocationName(selected == Qt::Checked);
+}
+
+void MapHeaderForm::onAllowRunningChanged(int selected)
+{
+    if (m_header) m_header->setAllowsRunning(selected == Qt::Checked);
+}
+
+void MapHeaderForm::onAllowBikingChanged(int selected)
+{
+    if (m_header) m_header->setAllowsBiking(selected == Qt::Checked);
+}
+
+void MapHeaderForm::onAllowEscapingChanged(int selected)
+{
+    if (m_header) m_header->setAllowsEscaping(selected == Qt::Checked);
+}
+
+void MapHeaderForm::onFloorNumberChanged(int offset)
+{
+    if (m_header) m_header->setFloorNumber(offset);
 }

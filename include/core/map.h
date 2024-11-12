@@ -7,6 +7,7 @@
 #include "maplayout.h"
 #include "tileset.h"
 #include "events.h"
+#include "mapheader.h"
 
 #include <QUndoStack>
 #include <QPixmap>
@@ -56,30 +57,8 @@ public:
     int getBorderWidth() const;
     int getBorderHeight() const;
 
-    // TODO: Combine these into a separate MapHeader class?
-    void setSong(const QString &song);
-    void setLocation(const QString &location);
-    void setRequiresFlash(bool requiresFlash);
-    void setWeather(const QString &weather);
-    void setType(const QString &type);
-    void setShowsLocationName(bool showsLocationName);
-    void setAllowsRunning(bool allowsRunning);
-    void setAllowsBiking(bool allowsBiking);
-    void setAllowsEscaping(bool allowsEscaping);
-    void setFloorNumber(int floorNumber);
-    void setBattleScene(const QString &battleScene);
-
-    QString song() const { return m_song; }
-    QString location() const { return m_location; }
-    bool requiresFlash() const { return m_requiresFlash; }
-    QString weather() const { return m_weather; }
-    QString type() const { return m_type; }
-    bool showsLocationName() const { return m_showsLocationName; }
-    bool allowsRunning() const { return m_allowsRunning; }
-    bool allowsBiking() const { return m_allowsBiking; }
-    bool allowsEscaping() const { return m_allowsEscaping; }
-    int floorNumber() const { return m_floorNumber; }
-    QString battleScene() const { return m_battleScene; }
+    void setHeader(const MapHeader &header) { *m_header = header; }
+    MapHeader* header() const { return m_header; }
 
     void setSharedEventsMap(const QString &sharedEventsMap) { m_sharedEventsMap = sharedEventsMap; }
     void setSharedScriptsMap(const QString &sharedScriptsMap) { m_sharedScriptsMap = sharedScriptsMap; }
@@ -130,25 +109,13 @@ private:
     QString m_name;
     QString m_constantName;
     QString m_layoutId; // TODO: Why do we do half this->layout()->id and half this->layoutId. Should these ever be different?
-
-    QString m_song;
-    QString m_location;
-    bool m_requiresFlash;
-    QString m_weather;
-    QString m_type;
-    bool m_showsLocationName;
-    bool m_allowsRunning;
-    bool m_allowsBiking;
-    bool m_allowsEscaping;
-    int m_floorNumber = 0;
-    QString m_battleScene;
-
     QString m_sharedEventsMap = "";
     QString m_sharedScriptsMap = "";
 
     QStringList m_scriptsFileLabels;
     QMap<QString, QJsonValue> m_customAttributes;
 
+    MapHeader *m_header = nullptr;
     Layout *m_layout = nullptr;
 
     bool m_isPersistedToFile = true;
