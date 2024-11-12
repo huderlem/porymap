@@ -187,6 +187,7 @@ enum ProjectIdentifier {
     symbol_spawn_npcs,
     symbol_attribute_table,
     symbol_tilesets_prefix,
+    symbol_dynamic_map_name,
     define_obj_event_count,
     define_min_level,
     define_max_level,
@@ -323,7 +324,7 @@ public:
     QString getCustomFilePath(ProjectFilePath pathId);
     QString getCustomFilePath(const QString &pathId);
     QString getFilePath(ProjectFilePath pathId);
-    void setIdentifier(ProjectIdentifier id, const QString &text);
+    void setIdentifier(ProjectIdentifier id, QString text);
     void setIdentifier(const QString &id, const QString &text);
     QString getCustomIdentifier(ProjectIdentifier id);
     QString getCustomIdentifier(const QString &id);

@@ -850,10 +850,10 @@ bool MainWindow::userSetMap(QString map_name) {
     if (editor->map && editor->map->name() == map_name)
         return true; // Already set
 
-    if (map_name == DYNAMIC_MAP_NAME) {
+    if (map_name == editor->project->getDynamicMapName()) {
         QMessageBox msgBox(this);
         QString errorMsg = QString("The map '%1' can't be opened, it's a placeholder to indicate the specified map will be set programmatically.").arg(map_name);
-        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
+        msgBox.warning(nullptr, "Cannot Open Map", errorMsg);
         return false;
     }
 
@@ -870,14 +870,13 @@ bool MainWindow::userSetMap(QString map_name) {
 }
 
 bool MainWindow::setMap(QString map_name) {
-    if (map_name.isEmpty() || map_name == DYNAMIC_MAP_NAME) {
-        logInfo(QString("Cannot set map to '%1'").arg(map_name));
+    if (!editor || !editor->project || map_name.isEmpty() || map_name == editor->project->getDynamicMapName()) {
+        logWarn(QString("Ignored setting map to '%1'").arg(map_name));
         return false;
     }
 
     logInfo(QString("Setting map to '%1'").arg(map_name));
-
-    if (!editor || !editor->setMap(map_name)) {
+    if (!editor->setMap(map_name)) {
         logWarn(QString("Failed to set map to '%1'").arg(map_name));
         return false;
     }
@@ -996,12 +995,6 @@ void MainWindow::refreshMapScene() {
 }
 
 void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
-    // Ensure valid destination map name.
-    if (!editor->project->mapNames.contains(map_name)) {
-        logError(QString("Invalid map name '%1'").arg(map_name));
-        return;
-    }
-
     // Open the destination map.
     if (!userSetMap(map_name))
         return;
@@ -2780,15 +2773,11 @@ void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
 }
 
 void MainWindow::on_button_OpenDiveMap_clicked() {
-    const QString mapName = ui->comboBox_DiveMap->currentText();
-    if (editor->project->mapNames.contains(mapName))
-        userSetMap(mapName);
+    userSetMap(ui->comboBox_DiveMap->currentText());
 }
 
 void MainWindow::on_button_OpenEmergeMap_clicked() {
-    const QString mapName = ui->comboBox_EmergeMap->currentText();
-    if (editor->project->mapNames.contains(mapName))
-        userSetMap(mapName);
+    userSetMap(ui->comboBox_EmergeMap->currentText());
 }
 
 void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName) {

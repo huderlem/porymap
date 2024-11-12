@@ -81,6 +81,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::symbol_spawn_npcs,             {"symbol_spawn_npcs",             "u8 sWhiteoutRespawnHealerNpcIds"}},
     {ProjectIdentifier::symbol_attribute_table,        {"symbol_attribute_table",        "sMetatileAttrMasks"}},
     {ProjectIdentifier::symbol_tilesets_prefix,        {"symbol_tilesets_prefix",        "gTileset_"}},
+    {ProjectIdentifier::symbol_dynamic_map_name,       {"symbol_dynamic_map_name",       "Dynamic"}},
     // Defines
     {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
     {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
@@ -941,13 +942,25 @@ QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
 
 }
 
-void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString &text) {
-    if (!defaultIdentifiers.contains(id)) return;
-    QString copy(text);
-    if (copy.isEmpty()) {
+void ProjectConfig::setIdentifier(ProjectIdentifier id, QString text) {
+    if (!defaultIdentifiers.contains(id))
+        return;
+
+    if (text.isEmpty()) {
         this->identifiers.remove(id);
     } else {
-        this->identifiers[id] = copy;
+        const QString idName = defaultIdentifiers.value(id).first;
+        if (idName.startsWith("define_") || idName.startsWith("symbol_")) {
+            // Validate the input for the identifier, depending on the type.
+            static const QRegularExpression re("[A-Za-z_]+[\\w]*");
+            auto validator = QRegularExpressionValidator(re);
+            int temp = 0;
+            if (validator.validate(text, temp) != QValidator::Acceptable) {
+                logError(QString("The name '%1' for project identifier '%2' is invalid. It must only contain word characters, and cannot start with a digit.").arg(text).arg(idName));
+                return;
+            }
+        }
+        this->identifiers[id] = text;
     }
 }
 

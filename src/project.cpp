@@ -135,7 +135,7 @@ void Project::clearTilesetCache() {
 }
 
 Map* Project::loadMap(QString mapName) {
-    if (mapName == DYNAMIC_MAP_NAME)
+    if (mapName == getDynamicMapName())
         return nullptr;
 
     Map *map;
@@ -148,7 +148,6 @@ Map* Project::loadMap(QString mapName) {
     } else {
         map = new Map;
         map->setName(mapName);
-        map->setConstantName(this->mapNamesToMapConstants.value(mapName)); // TODO: How should we handle if !mapNamesToMapConstants.contains(mapName) here
     }
 
     if (!(loadMapData(map) && loadMapLayout(map))){
@@ -161,38 +160,36 @@ Map* Project::loadMap(QString mapName) {
     return map;
 }
 
-const QSet<QString> defaultTopLevelMapFields = {
-    "id",
-    "name",
-    "layout",
-    "music",
-    "region_map_section",
-    "requires_flash",
-    "weather",
-    "map_type",
-    "show_map_name",
-    "battle_scene",
-    "connections",
-    "object_events",
-    "warp_events",
-    "coord_events",
-    "bg_events",
-    "shared_events_map",
-    "shared_scripts_map",
-};
-
-QSet<QString> Project::getTopLevelMapFields() {
-    QSet<QString> topLevelMapFields = defaultTopLevelMapFields;
+void Project::initTopLevelMapFields() {
+    static const QSet<QString> defaultTopLevelMapFields = {
+        "id",
+        "name",
+        "layout",
+        "music",
+        "region_map_section",
+        "requires_flash",
+        "weather",
+        "map_type",
+        "show_map_name",
+        "battle_scene",
+        "connections",
+        "object_events",
+        "warp_events",
+        "coord_events",
+        "bg_events",
+        "heal_locations",
+        "shared_events_map",
+        "shared_scripts_map",
+    };
+    this->topLevelMapFields = defaultTopLevelMapFields;
     if (projectConfig.mapAllowFlagsEnabled) {
-        topLevelMapFields.insert("allow_cycling");
-        topLevelMapFields.insert("allow_escaping");
-        topLevelMapFields.insert("allow_running");
+        this->topLevelMapFields.insert("allow_cycling");
+        this->topLevelMapFields.insert("allow_escaping");
+        this->topLevelMapFields.insert("allow_running");
     }
-
     if (projectConfig.floorNumberEnabled) {
-        topLevelMapFields.insert("floor_number");
+        this->topLevelMapFields.insert("floor_number");
     }
-    return topLevelMapFields;
 }
 
 bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
@@ -214,6 +211,11 @@ bool Project::loadMapData(Map* map) {
         return false;
 
     QJsonObject mapObj = mapDoc.object();
+
+    // We should already know the map constant ID from the initial project launch, but we'll ensure it's correct here anyway.
+    map->setConstantName(ParseUtil::jsonToQString(mapObj["id"]));
+    this->mapNamesToMapConstants.insert(map->name(), map->constantName());
+    this->mapConstantsToMapNames.insert(map->constantName(), map->name());
 
     map->setSong(ParseUtil::jsonToQString(mapObj["music"]));
     map->setLayoutId(ParseUtil::jsonToQString(mapObj["layout"]));
@@ -353,9 +355,8 @@ bool Project::loadMapData(Map* map) {
 
     // Check for custom fields
 /* // TODO: Re-enable
-    QSet<QString> baseFields = this->getTopLevelMapFields();
     for (QString key : mapObj.keys()) {
-        if (!baseFields.contains(key)) {
+        if (!this->topLevelMapFields.contains(key)) {
             map->customHeaders.insert(key, mapObj[key]);
         }
     }
@@ -1822,6 +1823,8 @@ bool Project::readMapGroups() {
     this->groupedMapNames.clear();
     this->mapNames.clear();
 
+    this->initTopLevelMapFields();
+
     const QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_map_groups);
     fileWatcher.addPath(filepath);
     QJsonDocument mapGroupsDoc;
@@ -1832,14 +1835,20 @@ bool Project::readMapGroups() {
 
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
     QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
+
+    const QString dynamicMapName = getDynamicMapName();
+
+    // Process the map group lists
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
         const QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
         const QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
         this->groupedMapNames.append(QStringList());
         this->groupNames.append(groupName);
+        
+        // Process the names in this map group
         for (int j = 0; j < mapNamesJson.size(); j++) {
             const QString mapName = ParseUtil::jsonToQString(mapNamesJson.at(j));
-            if (mapName == DYNAMIC_MAP_NAME) {
+            if (mapName == dynamicMapName) {
                 logWarn(QString("Ignoring map with reserved name '%1'.").arg(mapName));
                 continue;
             }
@@ -1877,7 +1886,7 @@ bool Project::readMapGroups() {
             this->mapGroups.insert(mapName, groupIndex);
             this->mapConstantsToMapNames.insert(mapConstant, mapName);
             this->mapNamesToMapConstants.insert(mapName, mapConstant);
-            // TODO: Keep these updated
+            // TODO: Either verify that these are known IDs, or make sure nothing breaks when they're unknown.
             this->mapNameToLayoutId.insert(mapName, ParseUtil::jsonToQString(mapObj["layout"]));
             this->mapNameToMapSectionName.insert(mapName, ParseUtil::jsonToQString(mapObj["region_map_section"]));
         }
@@ -1892,10 +1901,11 @@ bool Project::readMapGroups() {
         return false;
     }
 
+    // Save special "Dynamic" constant
     const QString defineName = this->getDynamicMapDefineName();
-    this->mapConstantsToMapNames.insert(defineName, DYNAMIC_MAP_NAME);
-    this->mapNamesToMapConstants.insert(DYNAMIC_MAP_NAME, defineName);
-    this->mapNames.append(DYNAMIC_MAP_NAME);
+    this->mapConstantsToMapNames.insert(defineName, dynamicMapName);
+    this->mapNamesToMapConstants.insert(dynamicMapName, defineName);
+    this->mapNames.append(dynamicMapName);
 
     return true;
 }
@@ -2939,6 +2949,10 @@ int Project::getMaxObjectEvents()
 QString Project::getDynamicMapDefineName() {
     const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
     return prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
+}
+
+QString Project::getDynamicMapName() {
+    return projectConfig.getIdentifier(ProjectIdentifier::symbol_dynamic_map_name);
 }
 
 // If the provided filepath is an absolute path to an existing file, return filepath.

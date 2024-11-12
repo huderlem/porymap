@@ -23,7 +23,6 @@ NewMapDialog::NewMapDialog(QWidget *parent, Project *project) :
     this->importedMap = false;
 
     // Map names and IDs can only contain word characters, and cannot start with a digit.
-    // TODO: Also validate this when we read ProjectIdentifier::define_map_prefix from the config
     static const QRegularExpression re("[A-Za-z_]+[\\w]*");
     auto validator = new QRegularExpressionValidator(re, this);
     ui->lineEdit_Name->setValidator(validator);

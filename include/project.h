@@ -18,10 +18,6 @@
 #include <QVariant>
 #include <QFileSystemWatcher>
 
-// TODO: Expose to config
-// The displayed name of the special map value used by warps with multiple potential destinations
-static QString DYNAMIC_MAP_NAME = "Dynamic";
-
 class Project : public QObject
 {
     Q_OBJECT
@@ -80,6 +76,7 @@ public:
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
     QSet<QString> disabledSettingsNames;
+    QSet<QString> topLevelMapFields;
     int pokemonMinLevel;
     int pokemonMaxLevel;
     int maxEncounterRate;
@@ -145,7 +142,7 @@ public:
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
 
-    QSet<QString> getTopLevelMapFields();
+    void initTopLevelMapFields();
     bool readMapJson(const QString &mapName, QJsonDocument * out);
     bool loadMapData(Map*);
     bool readMapLayouts();
@@ -219,7 +216,6 @@ public:
 
     QString getDefaultPrimaryTilesetLabel();
     QString getDefaultSecondaryTilesetLabel();
-    QString getDynamicMapDefineName();
     void updateTilesetMetatileLabels(Tileset *tileset);
     QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
     QString findMetatileLabelsTileset(QString label);
@@ -227,6 +223,8 @@ public:
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
 
+    static QString getDynamicMapDefineName();
+    static QString getDynamicMapName();
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();
