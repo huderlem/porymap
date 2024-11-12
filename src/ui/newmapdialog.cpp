@@ -8,8 +8,6 @@
 #include <QSet>
 #include <QStringList>
 
-// TODO: Make ui->groupBox_HeaderData collapsible
-
 const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
 
 struct NewMapDialog::Settings NewMapDialog::settings = {};
@@ -31,8 +29,15 @@ NewMapDialog::NewMapDialog(QWidget *parent, Project *project) :
     ui->lineEdit_Name->setValidator(validator);
     ui->lineEdit_ID->setValidator(validator);
 
+    // Create a collapsible section that has all the map header data.
     this->headerData = new MapHeaderForm();
-    ui->layout_HeaderData->addWidget(this->headerData);
+    auto sectionLayout = new QVBoxLayout();
+    sectionLayout->addWidget(this->headerData);
+
+    this->headerSection = new CollapsibleSection("Header Data", porymapConfig.newMapHeaderSectionExpanded, 150, this);
+    this->headerSection->setContentLayout(sectionLayout);
+    ui->layout_HeaderData->addWidget(this->headerSection);
+    ui->layout_HeaderData->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding));
 
     connect(ui->spinBox_MapWidth, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
     connect(ui->spinBox_MapHeight, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
@@ -162,6 +167,7 @@ void NewMapDialog::saveSettings() {
     settings.allowEscaping = this->headerData->ui->checkBox_AllowEscaping->isChecked();
     settings.floorNumber = this->headerData->ui->spinBox_FloorNumber->value();
     settings.canFlyTo = ui->checkBox_CanFlyTo->isChecked();
+    porymapConfig.newMapHeaderSectionExpanded = this->headerSection->isExpanded();
 }
 
 void NewMapDialog::useLayoutSettings(Layout *layout) {

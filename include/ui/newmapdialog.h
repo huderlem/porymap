@@ -7,6 +7,7 @@
 #include "project.h"
 #include "map.h"
 #include "mapheaderform.h"
+#include "lib/collapsiblesection.h"
 
 namespace Ui {
 class NewMapDialog;
@@ -24,7 +25,7 @@ public:
     bool importedMap;
     QString layoutId;
     void init();
-    //void initUi();
+    //void initUi();//TODO
     void init(int tabIndex, QString data);
     void init(Layout *);
     static void setDefaultSettings(Project *project);
@@ -35,6 +36,7 @@ signals:
 private:
     Ui::NewMapDialog *ui;
     Project *project;
+    CollapsibleSection *headerSection;
     MapHeaderForm *headerData;
 
     bool validateMapDimensions();

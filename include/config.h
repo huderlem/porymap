@@ -70,6 +70,7 @@ public:
         this->showTilesetEditorLayerGrid = true;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
+        this->newMapHeaderSectionExpanded = false;
         this->theme = "default";
         this->wildMonChartTheme = "";
         this->textEditorOpenFolder = "";
@@ -121,6 +122,7 @@ public:
     bool showTilesetEditorLayerGrid;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
+    bool newMapHeaderSectionExpanded;
     QString theme;
     QString wildMonChartTheme;
     QString textEditorOpenFolder;

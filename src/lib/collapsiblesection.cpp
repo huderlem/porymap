@@ -16,13 +16,15 @@
 
     You should have received a copy of the GNU General Public License
     along with Elypson/qt-collapsible-section. If not, see <http://www.gnu.org/licenses/>.
+
+
+    PORYMAP NOTE: Modified to support having the section expanded by default, to stop the contents
+                  squashing during the collapse animation, and to add some guard rails against crashes.
 */
 
-#include <QPropertyAnimation>
-
 #include "collapsiblesection.h"
-CollapsibleSection::CollapsibleSection(const QString& title, const int animationDuration, QWidget* parent)
-    : QWidget(parent), animationDuration(animationDuration)
+CollapsibleSection::CollapsibleSection(const QString& title, const bool expanded, const int animationDuration, QWidget* parent)
+    : QWidget(parent), animationDuration(animationDuration), expanded(expanded)
 {
     toggleButton = new QToolButton(this);
     headerLine = new QFrame(this);
@@ -32,25 +34,24 @@ CollapsibleSection::CollapsibleSection(const QString& title, const int animation
 
     toggleButton->setStyleSheet("QToolButton {border: none;}");
     toggleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toggleButton->setArrowType(Qt::ArrowType::RightArrow);
     toggleButton->setText(title);
     toggleButton->setCheckable(true);
-    toggleButton->setChecked(false);
+    updateToggleButton();
 
     headerLine->setFrameShape(QFrame::HLine);
     headerLine->setFrameShadow(QFrame::Sunken);
     headerLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     contentArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-    // start out collapsed
     contentArea->setMaximumHeight(0);
     contentArea->setMinimumHeight(0);
 
-    // let the entire widget grow and shrink with its content
-    toggleAnimation->addAnimation(new QPropertyAnimation(this, "maximumHeight"));
-    toggleAnimation->addAnimation(new QPropertyAnimation(this, "minimumHeight"));
-    toggleAnimation->addAnimation(new QPropertyAnimation(contentArea, "maximumHeight"));
+    sectionAnimations.insert(new QPropertyAnimation(this, "minimumHeight"));
+    sectionAnimations.insert(new QPropertyAnimation(this, "maximumHeight"));
+    for (const auto &anim : sectionAnimations)
+        toggleAnimation->addAnimation(anim);
+    contentAnimation = new QPropertyAnimation(contentArea, "maximumHeight");
+    toggleAnimation->addAnimation(contentAnimation);
 
     mainLayout->setVerticalSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -64,22 +65,58 @@ CollapsibleSection::CollapsibleSection(const QString& title, const int animation
     connect(toggleButton, &QToolButton::toggled, this, &CollapsibleSection::toggle);
 }
 
-void CollapsibleSection::toggle(bool expanded)
+void CollapsibleSection::updateToggleButton()
 {
-    toggleButton->setArrowType(expanded ? Qt::ArrowType::DownArrow : Qt::ArrowType::RightArrow);
-    toggleAnimation->setDirection(expanded ? QAbstractAnimation::Forward : QAbstractAnimation::Backward);
-    toggleAnimation->start();
-    
-    this->isExpanded = expanded;
+    toggleButton->setChecked(this->expanded);
+    toggleButton->setArrowType(this->expanded ? Qt::ArrowType::DownArrow : Qt::ArrowType::RightArrow);
 }
 
-void CollapsibleSection::setContentLayout(QLayout& contentLayout)
+void CollapsibleSection::toggle(bool expand)
 {
+    if (toggleAnimation->state() != QAbstractAnimation::Stopped)
+        return;
+    if (this->expanded == expand)
+        return;
+    this->expanded = expand;
+
+    updateToggleButton();
+
+    if (expand) {
+        // Opening animation. Set the contents to their maximum size immediately,
+        // and they will be revealed slowly by the section animation.
+        int contentHeight = getContentHeight();
+        contentArea->setMinimumHeight(contentHeight);
+        contentArea->setMaximumHeight(contentHeight);
+        toggleAnimation->setDirection(QAbstractAnimation::Forward);
+    } else {
+        // Closing animation. Keep the contents at their current size, allowing
+        // them to be hidden slowly by the section animation, then change their size
+        // once the animation is complete so they aren't visible just below the title.
+        auto ctx = new QObject();
+        connect(toggleAnimation, &QAbstractAnimation::finished, ctx, [this, ctx]() {
+            // This is a single-shot connection. Qt6 has built-in support for this kind of thing.
+            contentArea->setMinimumHeight(0);
+            contentArea->setMaximumHeight(0);
+            ctx->deleteLater();
+        });
+        toggleAnimation->setDirection(QAbstractAnimation::Backward);
+    }
+    toggleAnimation->start();
+}
+
+void CollapsibleSection::setContentLayout(QLayout* contentLayout)
+{
+    if (contentArea->layout() == contentLayout)
+        return;
     delete contentArea->layout();
-    contentArea->setLayout(&contentLayout);
+    contentArea->setLayout(contentLayout);
     collapsedHeight = sizeHint().height() - contentArea->maximumHeight();
-    
-    updateHeights();
+
+    int contentHeight = this->expanded ? getContentHeight() : 0;
+    contentArea->setMinimumHeight(contentHeight);
+    contentArea->setMaximumHeight(contentHeight);
+
+    updateAnimationTargets();
 }
 
 void CollapsibleSection::setTitle(QString title)
@@ -87,23 +124,20 @@ void CollapsibleSection::setTitle(QString title)
     toggleButton->setText(std::move(title));
 }
 
-void CollapsibleSection::updateHeights()
+int CollapsibleSection::getContentHeight() const
 {
-    int contentHeight = contentArea->layout()->sizeHint().height();
+    return contentArea->layout() ? contentArea->layout()->sizeHint().height() : 0;
+}
 
-    for (int i = 0; i < toggleAnimation->animationCount() - 1; ++i)
-    {
-        QPropertyAnimation* SectionAnimation = static_cast<QPropertyAnimation *>(toggleAnimation->animationAt(i));
-        SectionAnimation->setDuration(animationDuration);
-        SectionAnimation->setStartValue(collapsedHeight);
-        SectionAnimation->setEndValue(collapsedHeight + contentHeight);
+void CollapsibleSection::updateAnimationTargets()
+{
+    const int contentHeight = getContentHeight();
+    for (auto anim : sectionAnimations) {
+        anim->setDuration(animationDuration);
+        anim->setStartValue(collapsedHeight);
+        anim->setEndValue(collapsedHeight + contentHeight);
     }
-
-    QPropertyAnimation* contentAnimation = static_cast<QPropertyAnimation *>(toggleAnimation->animationAt(toggleAnimation->animationCount() - 1));
     contentAnimation->setDuration(animationDuration);
     contentAnimation->setStartValue(0);
     contentAnimation->setEndValue(contentHeight);
-    
-    toggleAnimation->setDirection(isExpanded ? QAbstractAnimation::Forward : QAbstractAnimation::Backward);
-    toggleAnimation->start();
 }

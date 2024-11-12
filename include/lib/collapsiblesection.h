@@ -16,6 +16,10 @@
 
     You should have received a copy of the GNU General Public License
     along with Elypson/qt-collapsible-section. If not, see <http://www.gnu.org/licenses/>.
+
+
+    PORYMAP NOTE: Modified to support having the section expanded by default, to stop the contents
+                  squashing during the collapse animation, and to add some guard rails against crashes.
 */
 
 #ifndef COLLAPSIBLESECTION_H
@@ -24,6 +28,7 @@
 #include <QFrame>
 #include <QGridLayout>
 #include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
 #include <QScrollArea>
 #include <QToolButton>
 #include <QWidget>
@@ -31,32 +36,33 @@
 class CollapsibleSection : public QWidget
 {
     Q_OBJECT
+
+public:
+    explicit CollapsibleSection(const QString& title = "",  const bool expanded = false, const int animationDuration = 0, QWidget* parent = 0);
+
+    void setContentLayout(QLayout* contentLayout);
+    void setTitle(QString title);
+    bool isExpanded() const { return this->expanded; }
+
+public slots:
+    void toggle(bool collapsed);
     
 private:
     QGridLayout* mainLayout;
     QToolButton* toggleButton;
     QFrame* headerLine;
     QParallelAnimationGroup* toggleAnimation;
+    QSet<QPropertyAnimation*> sectionAnimations;
+    QPropertyAnimation* contentAnimation;
     QScrollArea* contentArea;
     int animationDuration;
     int collapsedHeight;
-    bool isExpanded = false;
-    
-public slots:
-    void toggle(bool collapsed);
+    bool expanded;
 
-public:
-    // initialize section
-    explicit CollapsibleSection(const QString& title = "", const int animationDuration = 0, QWidget* parent = 0);
+    void updateToggleButton();
+    void updateAnimationTargets();
+    int getContentHeight() const;
 
-    // set layout of content
-    void setContentLayout(QLayout& contentLayout);
-    
-    // set title
-    void setTitle(QString title);
-    
-    // update animations and their heights
-    void updateHeights();
 };
 
 #endif // COLLAPSIBLESECTION_H

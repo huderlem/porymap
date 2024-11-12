@@ -371,6 +371,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
         this->tilesetCheckerboardFill = getConfigBool(key, value);
+    } else if (key == "new_map_header_section_expanded") {
+        this->newMapHeaderSectionExpanded = getConfigBool(key, value);
     } else if (key == "theme") {
         this->theme = value;
     } else if (key == "wild_mon_chart_theme") {
@@ -453,6 +455,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
+    map.insert("new_map_header_section_expanded", this->newMapHeaderSectionExpanded ? "1" : "0");
     map.insert("theme", this->theme);
     map.insert("wild_mon_chart_theme", this->wildMonChartTheme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
