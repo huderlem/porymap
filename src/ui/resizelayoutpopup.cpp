@@ -84,7 +84,6 @@ ResizeLayoutPopup::ResizeLayoutPopup(QWidget *parent, Editor *editor) :
     this->setWindowModality(Qt::ApplicationModal);
 
     this->scene = new CheckeredBgScene(this);
-    //this->ui->graphicsView->setAlignment(Qt::AlignTop|Qt::AlignLeft);
     this->ui->graphicsView->setScene(this->scene);
     this->ui->graphicsView->setRenderHints(QPainter::Antialiasing);
     this->ui->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -100,12 +99,18 @@ void ResizeLayoutPopup::resetPosition() {
     this->setGeometry(QRect(parent->mapToGlobal(QPoint(0, 0)), parent->size()));
 }
 
+void ResizeLayoutPopup::on_buttonBox_clicked(QAbstractButton *button) {
+    if(button == this->ui->buttonBox->button(QDialogButtonBox::Reset) ) {
+        this->scene->clear();
+        setupLayoutView();
+    }
+}
+
 /// Custom scene contains
 ///   (1) pixmap representing the current layout / not resizable / drag-movable
 ///   (1) layout outline / resizable / not movable
 void ResizeLayoutPopup::setupLayoutView() {
     if (!this->editor || !this->editor->layout) return;
-    // TODO: this should be a more robust check probably
 
     // Border stuff
     bool bordersEnabled = projectConfig.useCustomBorderSize;
@@ -153,9 +158,9 @@ void ResizeLayoutPopup::setupLayoutView() {
     layoutPixmap->setBoundary(outline);
     this->outline->rectUpdated(outline->rect().toAlignedRect());
 
-    this->ui->graphicsView->scale(0.5, 0.5);
+    // TODO: is this an ideal size for all maps, or should this adjust based on starting dimensions?
+    this->ui->graphicsView->setTransform(QTransform::fromScale(0.5, 0.5));
     this->ui->graphicsView->centerOn(layoutPixmap);
-    // this->ui->graphicsView->fitInView(cover->rect(), Qt::KeepAspectRatio);
 }
 
 void ResizeLayoutPopup::on_spinBox_width_valueChanged(int value) {
