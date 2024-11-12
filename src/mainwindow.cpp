@@ -23,6 +23,7 @@
 #include "newmapconnectiondialog.h"
 #include "config.h"
 #include "filedialog.h"
+#include "resizelayoutpopup.h"
 #include "newmapdialog.h"
 #include "newtilesetdialog.h"
 #include "newmapgroupdialog.h"
@@ -2608,88 +2609,31 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
 void MainWindow::on_pushButton_ChangeDimensions_clicked() {
     if (!editor || !editor->layout) return;
 
-    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    dialog.setWindowTitle("Change Map Dimensions");
-    dialog.setWindowModality(Qt::NonModal);
-
-    QFormLayout form(&dialog);
-
-    QSpinBox *widthSpinBox = new QSpinBox();
-    QSpinBox *heightSpinBox = new QSpinBox();
-    QSpinBox *bwidthSpinBox = new QSpinBox();
-    QSpinBox *bheightSpinBox = new QSpinBox();
-    widthSpinBox->setMinimum(1);
-    heightSpinBox->setMinimum(1);
-    bwidthSpinBox->setMinimum(1);
-    bheightSpinBox->setMinimum(1);
-    widthSpinBox->setMaximum(editor->project->getMaxMapWidth());
-    heightSpinBox->setMaximum(editor->project->getMaxMapHeight());
-    bwidthSpinBox->setMaximum(MAX_BORDER_WIDTH);
-    bheightSpinBox->setMaximum(MAX_BORDER_HEIGHT);
-    widthSpinBox->setValue(editor->layout->getWidth());
-    heightSpinBox->setValue(editor->layout->getHeight());
-    bwidthSpinBox->setValue(editor->layout->getBorderWidth());
-    bheightSpinBox->setValue(editor->layout->getBorderHeight());
-    if (projectConfig.useCustomBorderSize) {
-        form.addRow(new QLabel("Map Width"), widthSpinBox);
-        form.addRow(new QLabel("Map Height"), heightSpinBox);
-        form.addRow(new QLabel("Border Width"), bwidthSpinBox);
-        form.addRow(new QLabel("Border Height"), bheightSpinBox);
-    } else {
-        form.addRow(new QLabel("Width"), widthSpinBox);
-        form.addRow(new QLabel("Height"), heightSpinBox);
-    }
-
-    QLabel *errorLabel = new QLabel();
-    errorLabel->setStyleSheet("QLabel { color: red }");
-    errorLabel->setVisible(false);
-
-    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel, this](){
-        // Ensure width and height are an acceptable size.
-        // The maximum number of metatiles in a map is the following:
-        //    max = (width + 15) * (height + 14)
-        // This limit can be found in fieldmap.c in pokeruby/pokeemerald/pokefirered.
-        int numMetatiles = editor->project->getMapDataSize(widthSpinBox->value(), heightSpinBox->value());
-        int maxMetatiles = editor->project->getMaxMapDataSize();
-        if (numMetatiles <= maxMetatiles) {
-            dialog.accept();
-        } else {
-            QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum layout width and height is the following: (width + 15) * (height + 14) <= %1\n"
-                    "The specified layout width and height was: (%2 + 15) * (%3 + 14) = %4")
-                        .arg(maxMetatiles)
-                        .arg(widthSpinBox->value())
-                        .arg(heightSpinBox->value())
-                        .arg(numMetatiles);
-            errorLabel->setText(errorText);
-            errorLabel->setVisible(true);
-        }
-    });
-    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    form.addRow(errorLabel);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        Layout *layout = editor->layout;
-        Blockdata oldMetatiles = layout->blockdata;
-        Blockdata oldBorder = layout->border;
-        QSize oldMapDimensions(layout->getWidth(), layout->getHeight());
+    ResizeLayoutPopup popup(this->ui->graphicsView_Map, this->editor);
+    popup.show();
+    popup.setupLayoutView();
+    if (popup.exec() == QDialog::Accepted) {
+        Layout *layout = this->editor->layout;
+        QMargins result = popup.getResult();
+        QSize borderResult = popup.getBorderResult();
+        QSize oldLayoutDimensions(layout->getWidth(), layout->getHeight());
         QSize oldBorderDimensions(layout->getBorderWidth(), layout->getBorderHeight());
-        QSize newMapDimensions(widthSpinBox->value(), heightSpinBox->value());
-        QSize newBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
-        if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
-            layout->setDimensions(newMapDimensions.width(), newMapDimensions.height(), true, true);
-            layout->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height(), true, true);
-            editor->layout->editHistory.push(new ResizeLayout(layout,
-                oldMapDimensions, newMapDimensions,
+        if (!result.isNull() || (borderResult != oldBorderDimensions)) {
+            Blockdata oldMetatiles = layout->blockdata;
+            Blockdata oldBorder = layout->border;
+
+            layout->adjustDimensions(result);
+            layout->setBorderDimensions(borderResult.width(), borderResult.height(), true, true);
+            layout->editHistory.push(new ResizeLayout(layout,
+                oldLayoutDimensions, result,
                 oldMetatiles, layout->blockdata,
-                oldBorderDimensions, newBorderDimensions,
+                oldBorderDimensions, borderResult,
                 oldBorder, layout->border
             ));
         }
     }
+
+    return;
 }
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)

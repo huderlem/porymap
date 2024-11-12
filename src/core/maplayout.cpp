@@ -176,6 +176,34 @@ void Layout::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bo
     emit layoutDimensionsChanged(QSize(getWidth(), getHeight()));
 }
 
+void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata, bool enableScriptCallback) {
+    int oldWidth = this->width;
+    int oldHeight = this->height;
+    int newWidth = this->width + margins.left() + margins.right();
+    int newHeight = this->height + margins.top() + margins.bottom();
+
+    if (setNewBlockdata) {
+        // Fill new blockdata TODO: replace old functions, scripting support, undo etc
+        Blockdata newBlockdata;
+        for (int y = 0; y < newHeight; y++)
+        for (int x = 0; x < newWidth; x++) {
+            if ((x < margins.left()) || (x >= newWidth - margins.right()) || (y < margins.top()) || (y >= newHeight - margins.bottom())) {
+                newBlockdata.append(0);
+            } else {
+                int index = (y - margins.top()) * oldWidth + (x - margins.left());
+                newBlockdata.append(this->blockdata.value(index));
+            }
+        }
+        this->blockdata = newBlockdata;
+    }
+
+    this->width = newWidth;
+    this->height = newHeight;
+
+    emit layoutChanged(this);
+    emit layoutDimensionsChanged(QSize(getWidth(), getHeight()));
+}
+
 void Layout::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {
     if (setNewBlockdata) {
         setNewBorderDimensionsBlockdata(newWidth, newHeight);
