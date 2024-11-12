@@ -37,8 +37,10 @@ public:
     ~Map();
 
 public:
-    void setName(QString mapName);
+    void setName(const QString &mapName) { m_name = mapName; }
     QString name() const { return m_name; }
+
+    void setConstantName(const QString &constantName) { m_constantName = constantName; }
     QString constantName() const { return m_constantName; }
 
     static QString mapConstantFromName(QString mapName, bool includePrefix = true);

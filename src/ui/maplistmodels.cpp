@@ -472,7 +472,7 @@ void MapAreaModel::initialize() {
         for (int j = 0; j < names.length(); j++) {
             QString mapName = names.value(j);
             QStandardItem *map = createMapItem(mapName, i, j);
-            QString mapsecName = this->project->readMapLocation(mapName);
+            QString mapsecName = this->project->mapNameToMapSectionName.value(mapName);
             if (this->areaItems.contains(mapsecName)) {
                 this->areaItems[mapsecName]->appendRow(map);
             }
@@ -627,7 +627,7 @@ void LayoutTreeModel::initialize() {
 
     for (auto mapList : this->project->groupedMapNames) {
         for (auto mapName : mapList) {
-            QString layoutId = project->readMapLayoutId(mapName);
+            QString layoutId = project->mapNameToLayoutId.value(mapName);
             QStandardItem *map = createMapItem(mapName);
             this->layoutItems[layoutId]->appendRow(map);
         }

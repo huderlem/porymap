@@ -13,6 +13,7 @@
 
 Map::Map(QObject *parent) : QObject(parent)
 {
+    m_scriptsLoaded = false;
     m_editHistory = new QUndoStack(this);
     resetEvents();
 }
@@ -21,12 +22,6 @@ Map::~Map() {
     qDeleteAll(m_ownedEvents);
     m_ownedEvents.clear();
     deleteConnections();
-}
-
-void Map::setName(QString mapName) {
-    m_name = mapName;
-    m_constantName = mapConstantFromName(mapName);
-    m_scriptsLoaded = false;
 }
 
 // Note: Map does not take ownership of layout

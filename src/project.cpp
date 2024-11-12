@@ -134,20 +134,21 @@ void Project::clearTilesetCache() {
     tilesetCache.clear();
 }
 
-Map* Project::loadMap(QString map_name) {
-    if (map_name == DYNAMIC_MAP_NAME)
+Map* Project::loadMap(QString mapName) {
+    if (mapName == DYNAMIC_MAP_NAME)
         return nullptr;
 
     Map *map;
-    if (mapCache.contains(map_name)) {
-        map = mapCache.value(map_name);
+    if (mapCache.contains(mapName)) {
+        map = mapCache.value(mapName);
         // TODO: uncomment when undo/redo history is fully implemented for all actions.
         if (true/*map->hasUnsavedChanges()*/) {
             return map;
         }
     } else {
         map = new Map;
-        map->setName(map_name);
+        map->setName(mapName);
+        map->setConstantName(this->mapNamesToMapConstants.value(mapName)); // TODO: How should we handle if !mapNamesToMapConstants.contains(mapName) here
     }
 
     if (!(loadMapData(map) && loadMapLayout(map))){
@@ -155,7 +156,7 @@ Map* Project::loadMap(QString map_name) {
         return nullptr;
     }
 
-    mapCache.insert(map_name, map);
+    mapCache.insert(mapName, map);
     emit mapLoaded(map);
     return map;
 }
@@ -194,17 +195,23 @@ QSet<QString> Project::getTopLevelMapFields() {
     return topLevelMapFields;
 }
 
+bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
+    const QString mapFilepath = QString("%1%2/map.json").arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders)).arg(mapName);
+    if (!parser.tryParseJsonFile(out, QString("%1/%2").arg(this->root).arg(mapFilepath))) {
+        logError(QString("Failed to read map data from %1").arg(mapFilepath));
+        return false;
+    }
+    return true;
+}
+
 bool Project::loadMapData(Map* map) {
     if (!map->isPersistedToFile()) {
         return true;
     }
 
-    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map->name()).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
     QJsonDocument mapDoc;
-    if (!parser.tryParseJsonFile(&mapDoc, mapFilepath)) {
-        logError(QString("Failed to read map data from %1").arg(mapFilepath));
+    if (!readMapJson(map->name(), &mapDoc))
         return false;
-    }
 
     QJsonObject mapObj = mapDoc.object();
 
@@ -333,11 +340,11 @@ bool Project::loadMapData(Map* map) {
         for (int i = 0; i < connectionsArr.size(); i++) {
             QJsonObject connectionObj = connectionsArr[i].toObject();
             const QString direction = ParseUtil::jsonToQString(connectionObj["direction"]);
-            int offset = ParseUtil::jsonToInt(connectionObj["offset"]);
+            const int offset = ParseUtil::jsonToInt(connectionObj["offset"]);
             const QString mapConstant = ParseUtil::jsonToQString(connectionObj["map"]);
-            if (mapConstantsToMapNames.contains(mapConstant)) {
+            if (this->mapConstantsToMapNames.contains(mapConstant)) {
                 // Successully read map connection
-                map->loadConnection(new MapConnection(mapConstantsToMapNames.value(mapConstant), direction, offset));
+                map->loadConnection(new MapConnection(this->mapConstantsToMapNames.value(mapConstant), direction, offset));
             } else {
                 logError(QString("Failed to find connected map for map constant '%1'").arg(mapConstant));
             }
@@ -355,38 +362,6 @@ bool Project::loadMapData(Map* map) {
 */
 
     return true;
-}
-
-QString Project::readMapLayoutId(QString map_name) {
-    if (mapCache.contains(map_name)) {
-        return mapCache.value(map_name)->layoutId();
-    }
-
-    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map_name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
-    QJsonDocument mapDoc;
-    if (!parser.tryParseJsonFile(&mapDoc, mapFilepath)) {
-        logError(QString("Failed to read map layout id from %1").arg(mapFilepath));
-        return QString();
-    }
-
-    QJsonObject mapObj = mapDoc.object();
-    return ParseUtil::jsonToQString(mapObj["layout"]);
-}
-
-QString Project::readMapLocation(QString map_name) {
-    if (mapCache.contains(map_name)) {
-        return mapCache.value(map_name)->location();
-    }
-
-    QString mapFilepath = QString("%1/%3%2/map.json").arg(root).arg(map_name).arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders));
-    QJsonDocument mapDoc;
-    if (!parser.tryParseJsonFile(&mapDoc, mapFilepath)) {
-        logError(QString("Failed to read map's region map section from %1").arg(mapFilepath));
-        return QString();
-    }
-
-    QJsonObject mapObj = mapDoc.object();
-    return ParseUtil::jsonToQString(mapObj["region_map_section"]);
 }
 
 Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
@@ -1328,7 +1303,7 @@ void Project::saveMap(Map *map) {
     if (connections.length() > 0) {
         OrderedJson::array connectionsArr;
         for (auto connection : connections) {
-            if (mapNamesToMapConstants.contains(connection->targetMapName())) {
+            if (this->mapNamesToMapConstants.contains(connection->targetMapName())) {
                 OrderedJson::object connectionObj;
                 connectionObj["map"] = this->mapNamesToMapConstants.value(connection->targetMapName());
                 connectionObj["offset"] = connection->offset();
@@ -1857,24 +1832,52 @@ bool Project::readMapGroups() {
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
     QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
-        QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
-        QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
+        const QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
+        const QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
         this->groupedMapNames.append(QStringList());
         this->groupNames.append(groupName);
         for (int j = 0; j < mapNamesJson.size(); j++) {
-            QString mapName = ParseUtil::jsonToQString(mapNamesJson.at(j));
+            const QString mapName = ParseUtil::jsonToQString(mapNamesJson.at(j));
             if (mapName == DYNAMIC_MAP_NAME) {
                 logWarn(QString("Ignoring map with reserved name '%1'.").arg(mapName));
                 continue;
             }
-            this->mapGroups.insert(mapName, groupIndex);
-            this->groupedMapNames[groupIndex].append(mapName);
-            this->mapNames.append(mapName);
+            if (this->mapNames.contains(mapName)) {
+                logWarn(QString("Ignoring repeated map name '%1'.").arg(mapName));
+                continue;
+            }
 
-            // Build the mapping and reverse mapping between map constants and map names.
-            QString mapConstant = Map::mapConstantFromName(mapName);
+            // Load the map's json file so we can get its ID constant (and two other constants we use for the map list).
+            QJsonDocument mapDoc;
+            if (!readMapJson(mapName, &mapDoc))
+                continue; // Error message has already been logged
+
+            // Read and validate the map's ID from its JSON data.
+            const QJsonObject mapObj = mapDoc.object();
+            const QString mapConstant = ParseUtil::jsonToQString(mapObj["id"]);
+            if (mapConstant.isEmpty()) {
+                logWarn(QString("Map '%1' is missing an \"id\" value and will be ignored.").arg(mapName));
+                continue;
+            }
+            const QString expectedPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
+            if (!mapConstant.startsWith(expectedPrefix)) {
+                logWarn(QString("Map '%1' has invalid \"id\" value '%2' and will be ignored. Value must begin with '%3'.").arg(mapName).arg(mapConstant).arg(expectedPrefix));
+                continue;
+            }
+            auto it = this->mapConstantsToMapNames.constFind(mapConstant);
+            if (it != this->mapConstantsToMapNames.constEnd()) {
+                logWarn(QString("Map '%1' has the same \"id\" value '%2' as map '%3' and will be ignored.").arg(mapName).arg(it.key()).arg(it.value()));
+                continue;
+            }
+
+            // Success, save the constants to the project
+            this->mapNames.append(mapName);
+            this->groupedMapNames[groupIndex].append(mapName);
+            this->mapGroups.insert(mapName, groupIndex);
             this->mapConstantsToMapNames.insert(mapConstant, mapName);
             this->mapNamesToMapConstants.insert(mapName, mapConstant);
+            this->mapNameToLayoutId.insert(mapName, ParseUtil::jsonToQString(mapObj["layout"]));
+            this->mapNameToMapSectionName.insert(mapName, ParseUtil::jsonToQString(mapObj["region_map_section"]));
         }
     }
 
@@ -1905,7 +1908,7 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     this->groupedMapNames[groupNum].append(mapName);
 
     newMap->setIsPersistedToFile(false);
-    newMap->setName(mapName);
+    newMap->setName(mapName); // TODO: Set map name and map constant before calling this function
 
     this->mapConstantsToMapNames.insert(newMap->constantName(), newMap->name());
     this->mapNamesToMapConstants.insert(newMap->name(), newMap->constantName());

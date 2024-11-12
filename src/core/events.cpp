@@ -949,16 +949,16 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *) {
 
 void HealLocationEvent::setDefaultValues(Project *) {
     this->setElevation(projectConfig.defaultElevation);
-    if (!this->getMap())
+    if (!this->map)
         return;
+
     bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
-    const QString mapConstant = Map::mapConstantFromName(this->getMap()->name(), false);
     const QString prefix = projectConfig.getIdentifier(respawnEnabled ? ProjectIdentifier::define_spawn_prefix
                                                                       : ProjectIdentifier::define_heal_locations_prefix);
-    this->setLocationName(mapConstant);
-    this->setIdName(prefix + mapConstant);
+    this->setLocationName(this->map->constantName());
+    this->setIdName(prefix + this->map->constantName());
     if (respawnEnabled) {
-        this->setRespawnMap(this->getMap()->name());
+        this->setRespawnMap(this->map->name());
         this->setRespawnNPC(1);
     }
 }
