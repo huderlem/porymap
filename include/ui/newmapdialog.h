@@ -23,7 +23,7 @@ public:
     bool importedMap;
     QString layoutId;
     void init();
-    void initUi();
+    //void initUi();
     void init(int tabIndex, QString data);
     void init(Layout *);
     static void setDefaultSettings(Project *project);
@@ -34,8 +34,13 @@ signals:
 private:
     Ui::NewMapDialog *ui;
     Project *project;
-    bool checkNewMapDimensions();
-    bool checkNewMapGroup();
+
+    bool validateMapDimensions();
+    bool validateMapGroup();
+    bool validateTilesets();
+    bool validateID();
+    bool validateName();
+
     void saveSettings();
     void useLayout(QString layoutId);
     void useLayoutSettings(Layout *mapLayout);
@@ -48,23 +53,27 @@ private:
         int borderHeight;
         QString primaryTilesetLabel;
         QString secondaryTilesetLabel;
-        QString type;
-        QString location;
         QString song;
-        bool canFlyTo;
+        QString location;
+        bool requiresFlash;
+        QString weather;
+        QString type;
+        QString battleScene;
         bool showLocationName;
         bool allowRunning;
         bool allowBiking;
         bool allowEscaping;
         int floorNumber;
+        bool canFlyTo;
     };
     static struct Settings settings;
 
 private slots:
-    void on_checkBox_UseExistingLayout_stateChanged(int state);
-    void on_comboBox_Layout_currentTextChanged(const QString &text);
-    void on_pushButton_NewMap_Accept_clicked();
-    void on_lineEdit_NewMap_Name_textChanged(const QString &);
+    //void on_checkBox_UseExistingLayout_stateChanged(int state);
+    //void on_comboBox_Layout_currentTextChanged(const QString &text);
+    void on_pushButton_Accept_clicked();
+    void on_lineEdit_Name_textChanged(const QString &);
+    void on_lineEdit_ID_textChanged(const QString &);
 };
 
 #endif // NEWMAPDIALOG_H

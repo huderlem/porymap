@@ -1598,7 +1598,7 @@ void MainWindow::onNewMapCreated() {
     bool existingLayout = this->newMapDialog->existingLayout;
     bool importedMap = this->newMapDialog->importedMap;
 
-    newMap = editor->project->addNewMapToGroup(newMapName, newMapGroup, newMap, existingLayout, importedMap);
+    newMap = editor->project->addNewMapToGroup(newMap, newMapGroup, existingLayout, importedMap);
 
     logInfo(QString("Created a new map named %1.").arg(newMapName));
 
@@ -1657,7 +1657,7 @@ void MainWindow::openNewMapDialog() {
 
 void MainWindow::on_action_NewMap_triggered() {
     openNewMapDialog();
-    this->newMapDialog->initUi();
+    //this->newMapDialog->initUi();//TODO
     this->newMapDialog->init();
 }
 

@@ -6,466 +6,192 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>410</width>
-    <height>687</height>
+    <width>453</width>
+    <height>563</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>New Map Options</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="1">
-     <widget class="QFrame" name="frame_NewMap_Options">
-      <property name="enabled">
-       <bool>false</bool>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>427</width>
+        <height>841</height>
+       </rect>
       </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QFormLayout" name="formLayout_2">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetDefaultConstraint</enum>
-       </property>
+      <layout class="QGridLayout" name="gridLayout_3">
        <property name="verticalSpacing">
-        <number>12</number>
+        <number>10</number>
        </property>
        <item row="0" column="0">
-        <widget class="QLabel" name="label_newMap_Name">
+        <widget class="QLabel" name="label_Name">
          <property name="text">
           <string>Name</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_NewMap_Name">
+        <widget class="QLineEdit" name="lineEdit_Name">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. If the name is invalid (red), it will be replaced with the default name of a new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. The name cannot be the same as any other existing map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="clearButtonEnabled">
           <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_NewMap_Group">
-         <property name="text">
-          <string>Group</string>
+       <item row="7" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_BorderDimensions">
+         <property name="title">
+          <string>Border Dimensions</string>
          </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_BorderWidth">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="NoScrollSpinBox" name="spinBox_BorderWidth">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in metatiles) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="NoScrollSpinBox" name="spinBox_BorderHeight">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in metatiles) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_BorderHeight">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Height</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_NewMap_Group">
+       <item row="6" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_MapDimensions">
+         <property name="title">
+          <string>Map Dimensions</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_4">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_MapWidth">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="NoScrollSpinBox" name="spinBox_MapWidth">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in metatiles) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="NoScrollSpinBox" name="spinBox_MapHeight">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in metatiles) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QLabel" name="label_MapDimensionsError">
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(255, 0, 0)</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_MapHeight">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Height</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="NoScrollComboBox" name="comboBox_Group">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;New map group.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the group this map will be added to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="editable">
           <bool>true</bool>
          </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_NewMap_Width">
-         <property name="text">
-          <string>Map Width</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QSpinBox" name="spinBox_NewMap_Width">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in blocks) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="maximum">
-          <number>200</number>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_NewMap_Height">
-         <property name="text">
-          <string>Map Height</string>
+         <property name="insertPolicy">
+          <enum>QComboBox::InsertPolicy::NoInsert</enum>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QSpinBox" name="spinBox_NewMap_Height">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in blocks) of the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="maximum">
-          <number>200</number>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_NewMap_BorderWidth">
-         <property name="text">
-          <string>Border Width</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QSpinBox" name="spinBox_NewMap_BorderWidth">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Width (in blocks) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="maximum">
-          <number>255</number>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="label_NewMap_BorderHeight">
-         <property name="text">
-          <string>Border Height</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QSpinBox" name="spinBox_NewMap_BorderHeight">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height (in blocks) of the new map's border.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="maximum">
-          <number>255</number>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="label_NewMap_Primary_Tileset">
-         <property name="text">
-          <string>Primary Tileset</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_NewMap_Primary_Tileset">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The primary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="label_NewMap_Secondary_Tileset">
-         <property name="text">
-          <string>Secondary Tileset</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_NewMap_Secondary_Tileset">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The secondary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="label_NewMap_Type">
-         <property name="text">
-          <string>Type</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_NewMap_Type">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QLabel" name="label_NewMap_Location">
-         <property name="text">
-          <string>Location</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_NewMap_Location">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is displayed when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
-        <widget class="QLabel" name="label_Song">
-         <property name="text">
-          <string>Song</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_NewMap_Song">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default background music for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0">
-        <widget class="QLabel" name="label_NewMap_Flyable">
-         <property name="text">
-          <string>Can Fly To</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QCheckBox" name="checkBox_NewMap_Flyable">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether to add a heal location to the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0">
-        <widget class="QLabel" name="label_NewMap_Show_Location">
-         <property name="text">
-          <string>Show Location Name</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QCheckBox" name="checkBox_NewMap_Show_Location">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to display the location name when the player enters the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="0">
-        <widget class="QLabel" name="label_NewMap_Allow_Running">
-         <property name="text">
-          <string>Allow Running</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="1">
-        <widget class="QCheckBox" name="checkBox_NewMap_Allow_Running">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Running Shoes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="0">
-        <widget class="QLabel" name="label_NewMap_Allow_Biking">
-         <property name="text">
-          <string>Allow Biking</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
-        <widget class="QCheckBox" name="checkBox_NewMap_Allow_Biking">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use a Bike&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="0">
-        <widget class="QLabel" name="label_NewMap_Allow_Escape_Rope">
-         <property name="text">
-          <string>Allow Dig &amp; Escape Rope</string>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="1">
-        <widget class="QCheckBox" name="checkBox_NewMap_Allow_Escape_Rope">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Dig or Escape Rope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="0">
-        <widget class="QLabel" name="label_NewMap_Floor_Number">
-         <property name="text">
-          <string>Floor Number</string>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="1">
-        <widget class="QSpinBox" name="spinBox_NewMap_Floor_Number">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Floor number to be used for maps with elevators.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="maximum">
-          <number>127</number>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_Layout">
-         <property name="enabled">
+        <widget class="QLabel" name="label_GroupError">
+         <property name="visible">
           <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Layout</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Use Existing Layout</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkBox_UseExistingLayout">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="pushButton_NewMap_Accept">
-      <property name="text">
-       <string>Accept</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QFrame" name="frame_NewMap_Warning">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="visible">
-       <bool>false</bool>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QToolButton" name="toolButton_NewMap_DimensionWarning">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>!</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_NewMap_WarningMessage">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
          </property>
          <property name="styleSheet">
           <string notr="true">color: rgb(255, 0, 0)</string>
@@ -473,30 +199,384 @@
          <property name="text">
           <string/>
          </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineEdit_ID">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this map. It cannot be the same as any other existing map, and it must start with the specified prefix.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLabel" name="label_IDError">
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_HeaderData">
+         <property name="title">
+          <string>Header Data</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_Song">
+            <property name="text">
+             <string>Song</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="NoScrollComboBox" name="comboBox_Song">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default background music for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="insertPolicy">
+             <enum>QComboBox::InsertPolicy::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_Location">
+            <property name="text">
+             <string>Location</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_RequiresFlash">
+            <property name="text">
+             <string>Requires Flash</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_Weather">
+            <property name="text">
+             <string>Weather</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_Type">
+            <property name="text">
+             <string>Type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="NoScrollComboBox" name="comboBox_Type">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example, underground type maps will have a special transition effect when the player enters/exits the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="insertPolicy">
+             <enum>QComboBox::InsertPolicy::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_BattleScene">
+            <property name="text">
+             <string>Battle Scene</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_ShowLocation">
+            <property name="text">
+             <string>Show Location</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_AllowRunning">
+            <property name="text">
+             <string>Allow Running</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_AllowBiking">
+            <property name="text">
+             <string>Allow Biking</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_AllowEscaping">
+            <property name="text">
+             <string>Allow Escaping</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="label_FloorNumber">
+            <property name="text">
+             <string>Floor Number</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel" name="label_CanFlyTo">
+            <property name="text">
+             <string>Can Fly To</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="NoScrollComboBox" name="comboBox_Location">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is displayed when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="insertPolicy">
+             <enum>QComboBox::InsertPolicy::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="NoScrollSpinBox" name="spinBox_FloorNumber">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Floor number to be used for maps with elevators.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="maximum">
+             <number>127</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="NoScrollComboBox" name="comboBox_BattleScene">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This field is used to help determine what graphics to use in the background of battles on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="insertPolicy">
+             <enum>QComboBox::InsertPolicy::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="NoScrollComboBox" name="comboBox_Weather">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default weather on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="insertPolicy">
+             <enum>QComboBox::InsertPolicy::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="checkBox_RequiresFlash">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the player will need to use Flash to see fully on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QCheckBox" name="checkBox_ShowLocation">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a map name popup will appear when the player enters this map. The name that appears on this popup depends on the Location field.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QCheckBox" name="checkBox_AllowRunning">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the player will be allowed to run on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QCheckBox" name="checkBox_AllowBiking">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the player will be allowed to get on their bike on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QCheckBox" name="checkBox_AllowEscaping">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the player will be allowed to use Dig or Escape Rope on this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="QCheckBox" name="checkBox_CanFlyTo">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a Heal Location will be added to this map automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_Group">
+         <property name="text">
+          <string>Group</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_ID">
+         <property name="text">
+          <string>ID</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_NameError">
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_Tilesets">
+         <property name="title">
+          <string>Tilesets</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_PrimaryTileset">
+            <property name="text">
+             <string>Primary</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="NoScrollComboBox" name="comboBox_PrimaryTileset">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The primary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="insertPolicy">
+             <enum>QComboBox::InsertPolicy::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_SecondaryTileset">
+            <property name="text">
+             <string>Secondary</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="NoScrollComboBox" name="comboBox_SecondaryTileset">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The secondary tileset for the new map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+            <property name="insertPolicy">
+             <enum>QComboBox::InsertPolicy::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QLabel" name="label_TilesetsError">
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(255, 0, 0)</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
      </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>410</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="1">
+      <widget class="QPushButton" name="pushButton_Accept">
+       <property name="text">
+        <string>Accept</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>
    <class>NoScrollComboBox</class>
    <extends>QComboBox</extends>
    <header>noscrollcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>noscrollspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

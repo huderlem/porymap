@@ -39,13 +39,7 @@ QString Map::mapConstantFromName(QString mapName, bool includePrefix) {
     const QString prefix = includePrefix ? projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) : "";
     QString withMapAndUppercase = prefix + nameWithUnderscores.toUpper();
     static const QRegularExpression underscores("_+");
-    QString constantName = withMapAndUppercase.replace(underscores, "_");
-
-    // Handle special cases.
-    // SSTidal needs to be SS_TIDAL, rather than SSTIDAL
-    constantName = constantName.replace("SSTIDAL", "SS_TIDAL");
-
-    return constantName;
+    return withMapAndUppercase.replace(underscores, "_");
 }
 
 int Map::getWidth() const {

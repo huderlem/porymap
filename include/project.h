@@ -125,7 +125,7 @@ public:
     void deleteFile(QString path);
 
     bool readMapGroups();
-    Map* addNewMapToGroup(QString, int, Map*, bool, bool);
+    Map* addNewMapToGroup(Map*, int, bool, bool);
     QString getNewMapName();
     QString getProjectTitle();
 
@@ -234,7 +234,7 @@ public:
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
     static int getMaxMapDataSize();
-    static int getDefaultMapSize();
+    static int getDefaultMapDimension();
     static int getMaxMapWidth();
     static int getMaxMapHeight();
     static int getMapDataSize(int width, int height);
@@ -260,7 +260,7 @@ private:
     static int num_pals_primary;
     static int num_pals_total;
     static int max_map_data_size;
-    static int default_map_size;
+    static int default_map_dimension;
     static int max_object_events;
 
 signals:

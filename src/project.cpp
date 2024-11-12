@@ -32,7 +32,7 @@ int Project::num_metatiles_primary = 512;
 int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
 int Project::max_map_data_size = 10240; // 0x2800
-int Project::default_map_size = 20;
+int Project::default_map_dimension = 20;
 int Project::max_object_events = 64;
 
 Project::Project(QObject *parent) :
@@ -821,16 +821,16 @@ void Project::saveHealLocations(Map *map) {
 }
 
 // Saves heal location maps/coords/respawn data in root + /src/data/heal_locations.h
-void Project::saveHealLocationsData(Map *map) {
+void Project::saveHealLocationsData(Map *) {
+/* TODO: Will be re-implemented as part of changes to reading heal locations from map.json
     // Update heal locations from map
-/* TODO: Re-enable
     if (map->events[Event::Group::Heal].length() > 0) {
         for (Event *healEvent : map->events[Event::Group::Heal]) {
             HealLocation hl = HealLocation::fromEvent(healEvent);
             this->healLocations[hl.index - 1] = hl;
         }
     }
-*/
+
 
     // Find any duplicate constant names
     QMap<QString, int> healLocationsDupes;
@@ -898,6 +898,7 @@ void Project::saveHealLocationsData(Map *map) {
     QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_heal_locations);
     ignoreWatchedFileTemporarily(filepath);
     saveTextFile(filepath, text);
+    */
 }
 
 // Saves heal location defines in root + /include/constants/heal_locations.h
@@ -1876,6 +1877,7 @@ bool Project::readMapGroups() {
             this->mapGroups.insert(mapName, groupIndex);
             this->mapConstantsToMapNames.insert(mapConstant, mapName);
             this->mapNamesToMapConstants.insert(mapName, mapConstant);
+            // TODO: Keep these updated
             this->mapNameToLayoutId.insert(mapName, ParseUtil::jsonToQString(mapObj["layout"]));
             this->mapNameToMapSectionName.insert(mapName, ParseUtil::jsonToQString(mapObj["region_map_section"]));
         }
@@ -1898,20 +1900,19 @@ bool Project::readMapGroups() {
     return true;
 }
 
-Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool existingLayout, bool importedMap) {
+Map* Project::addNewMapToGroup(Map *newMap, int groupNum, bool existingLayout, bool importedMap) {
     int mapNamePos = 0;
     for (int i = 0; i <= groupNum; i++)
         mapNamePos += this->groupedMapNames.value(i).length();
 
-    this->mapNames.insert(mapNamePos, mapName);
-    this->mapGroups.insert(mapName, groupNum);
-    this->groupedMapNames[groupNum].append(mapName);
-
-    newMap->setIsPersistedToFile(false);
-    newMap->setName(mapName); // TODO: Set map name and map constant before calling this function
-
+    this->mapNames.insert(mapNamePos, newMap->name());
+    this->mapGroups.insert(newMap->name(), groupNum);
+    this->groupedMapNames[groupNum].append(newMap->name());
     this->mapConstantsToMapNames.insert(newMap->constantName(), newMap->name());
     this->mapNamesToMapConstants.insert(newMap->name(), newMap->constantName());
+
+    newMap->setIsPersistedToFile(false);
+
     if (!existingLayout) {
         this->mapLayouts.insert(newMap->layoutId(), newMap->layout());
         this->mapLayoutsTable.append(newMap->layoutId());
@@ -2891,9 +2892,9 @@ int Project::getMapDataSize(int width, int height)
     return (width + 15) * (height + 14);
 }
 
-int Project::getDefaultMapSize()
+int Project::getDefaultMapDimension()
 {
-    return Project::default_map_size;
+    return Project::default_map_dimension;
 }
 
 int Project::getMaxMapWidth()
@@ -2915,11 +2916,11 @@ bool Project::calculateDefaultMapSize(){
     int max = getMaxMapDataSize();
 
     if (max >= getMapDataSize(20, 20)) {
-        default_map_size = 20;
+        default_map_dimension = 20;
     } else if (max >= getMapDataSize(1, 1)) {
         // Below equation derived from max >= (x + 15) * (x + 14)
         // x^2 + 29x + (210 - max), then complete the square and simplify
-        default_map_size = qFloor((qSqrt(4 * getMaxMapDataSize() + 1) - 29) / 2);
+        default_map_dimension = qFloor((qSqrt(4 * getMaxMapDataSize() + 1) - 29) / 2);
     } else {
         logError(QString("'%1' of %2 is too small to support a 1x1 map. Must be at least %3.")
                     .arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_size))
