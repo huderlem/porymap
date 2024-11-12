@@ -8,6 +8,7 @@
 #include <QUndoCommand>
 #include <QList>
 #include <QPointer>
+#include <QMargins>
 
 class Map;
 class Layout;
@@ -203,7 +204,12 @@ private:
 /// Implements a command to commit a map or border resize action.
 class ResizeLayout : public QUndoCommand {
 public:
-    ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QSize newLayoutDimensions,
+    // ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QSize newLayoutDimensions,
+    //     const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
+    //     QSize oldBorderDimensions, QSize newBorderDimensions,
+    //     const Blockdata &oldBorder, const Blockdata &newBorder,
+    //     QUndoCommand *parent = nullptr);
+    ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QMargins newLayoutMargins,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
         const Blockdata &oldBorder, const Blockdata &newBorder,
@@ -220,8 +226,7 @@ private:
 
     int oldLayoutWidth;
     int oldLayoutHeight;
-    int newLayoutWidth;
-    int newLayoutHeight;
+    QMargins newLayoutMargins;
 
     int oldBorderWidth;
     int oldBorderHeight;
