@@ -330,8 +330,8 @@ void Map::setType(const QString &type) {
     m_type = type;
 }
 
-void Map::setShowsLocation(bool showsLocation) {
-    m_showsLocation = showsLocation;
+void Map::setShowsLocationName(bool showsLocationName) {
+    m_showsLocationName = showsLocationName;
 }
 
 void Map::setAllowsRunning(bool allowsRunning) {

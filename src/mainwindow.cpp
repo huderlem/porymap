@@ -235,6 +235,10 @@ void MainWindow::initCustomUI() {
         ui->mainTabBar->addTab(mainTabNames.value(i));
         ui->mainTabBar->setTabIcon(i, mainTabIcons.value(i));
     }
+
+    // Create map header data widget
+    this->mapHeader = new MapHeaderForm();
+    ui->layout_HeaderData->addWidget(this->mapHeader);
 }
 
 void MainWindow::initExtraSignals() {
@@ -597,7 +601,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     project->set_root(dir);
     connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
     connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
-    connect(project, &Project::mapSectionIdNamesChanged, this, &MainWindow::refreshLocationsComboBox);
+    connect(project, &Project::mapSectionIdNamesChanged, this->mapHeader, &MapHeaderForm::refreshLocationsComboBox);
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
@@ -1005,47 +1009,22 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
 
 void MainWindow::displayMapProperties() {
     // Block signals to the comboboxes while they are being modified
-    const QSignalBlocker blocker1(ui->comboBox_Song);
-    const QSignalBlocker blocker2(ui->comboBox_Location);
-    const QSignalBlocker blocker3(ui->comboBox_PrimaryTileset);
-    const QSignalBlocker blocker4(ui->comboBox_SecondaryTileset);
-    const QSignalBlocker blocker5(ui->comboBox_Weather);
-    const QSignalBlocker blocker6(ui->comboBox_BattleScene);
-    const QSignalBlocker blocker7(ui->comboBox_Type);
-    const QSignalBlocker blocker8(ui->checkBox_Visibility);
-    const QSignalBlocker blocker9(ui->checkBox_ShowLocation);
-    const QSignalBlocker blockerA(ui->checkBox_AllowRunning);
-    const QSignalBlocker blockerB(ui->checkBox_AllowBiking);
-    const QSignalBlocker blockerC(ui->spinBox_FloorNumber);
-    const QSignalBlocker blockerD(ui->checkBox_AllowEscaping);
+    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
 
-    ui->checkBox_Visibility->setChecked(false);
-    ui->checkBox_ShowLocation->setChecked(false);
-    ui->checkBox_AllowRunning->setChecked(false);
-    ui->checkBox_AllowBiking->setChecked(false);
-    ui->checkBox_AllowEscaping->setChecked(false);
+    this->mapHeader->clearDisplay();
     if (!editor || !editor->map || !editor->project) {
-        ui->frame_3->setEnabled(false);
+        ui->frame_HeaderData->setEnabled(false);
         return;
     }
 
-    ui->frame_3->setEnabled(true);
+    ui->frame_HeaderData->setEnabled(true);
     Map *map = editor->map;
 
     ui->comboBox_PrimaryTileset->setCurrentText(map->layout()->tileset_primary_label);
     ui->comboBox_SecondaryTileset->setCurrentText(map->layout()->tileset_secondary_label);
 
-    ui->comboBox_Song->setCurrentText(map->song());
-    ui->comboBox_Location->setCurrentText(map->location());
-    ui->checkBox_Visibility->setChecked(map->requiresFlash());
-    ui->comboBox_Weather->setCurrentText(map->weather());
-    ui->comboBox_Type->setCurrentText(map->type());
-    ui->comboBox_BattleScene->setCurrentText(map->battleScene());
-    ui->checkBox_ShowLocation->setChecked(map->showsLocation());
-    ui->checkBox_AllowRunning->setChecked(map->allowsRunning());
-    ui->checkBox_AllowBiking->setChecked(map->allowsBiking());
-    ui->checkBox_AllowEscaping->setChecked(map->allowsEscaping());
-    ui->spinBox_FloorNumber->setValue(map->floorNumber());
+    this->mapHeader->setMap(map);
 
     // Custom fields table.
 /* // TODO: Re-enable
@@ -1068,122 +1047,24 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
     }
 }
 
-void MainWindow::on_comboBox_Song_currentTextChanged(const QString &song)
-{
-    if (editor && editor->map) {
-        editor->map->setSong(song);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_comboBox_Location_currentTextChanged(const QString &location)
-{
-    if (editor && editor->map) {
-        editor->map->setLocation(location);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_comboBox_Weather_currentTextChanged(const QString &weather)
-{
-    if (editor && editor->map) {
-        editor->map->setWeather(weather);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_comboBox_Type_currentTextChanged(const QString &type)
-{
-    if (editor && editor->map) {
-        editor->map->setType(type);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_comboBox_BattleScene_currentTextChanged(const QString &battle_scene)
-{
-    if (editor && editor->map) {
-        editor->map->setBattleScene(battle_scene);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_checkBox_Visibility_stateChanged(int selected)
-{
-    if (editor && editor->map) {
-        editor->map->setRequiresFlash(selected == Qt::Checked);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_checkBox_ShowLocation_stateChanged(int selected)
-{
-    if (editor && editor->map) {
-        editor->map->setShowsLocation(selected == Qt::Checked);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_checkBox_AllowRunning_stateChanged(int selected)
-{
-    if (editor && editor->map) {
-        editor->map->setAllowsRunning(selected == Qt::Checked);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_checkBox_AllowBiking_stateChanged(int selected)
-{
-    if (editor && editor->map) {
-        editor->map->setAllowsBiking(selected == Qt::Checked);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_checkBox_AllowEscaping_stateChanged(int selected)
-{
-    if (editor && editor->map) {
-        editor->map->setAllowsEscaping(selected == Qt::Checked);
-        markMapEdited();
-    }
-}
-
-void MainWindow::on_spinBox_FloorNumber_valueChanged(int offset)
-{
-    if (editor && editor->map) {
-        editor->map->setFloorNumber(offset);
-        markMapEdited();
-    }
-}
-
 // Update the UI using information we've read from the user's project files.
 bool MainWindow::setProjectUI() {
     Project *project = editor->project;
 
+    this->mapHeader->setProject(project);
+
     // Block signals to the comboboxes while they are being modified
-    const QSignalBlocker blocker1(ui->comboBox_Song);
-    const QSignalBlocker blocker3(ui->comboBox_PrimaryTileset);
-    const QSignalBlocker blocker4(ui->comboBox_SecondaryTileset);
-    const QSignalBlocker blocker5(ui->comboBox_Weather);
-    const QSignalBlocker blocker6(ui->comboBox_BattleScene);
-    const QSignalBlocker blocker7(ui->comboBox_Type);
-    const QSignalBlocker blocker8(ui->comboBox_DiveMap);
-    const QSignalBlocker blocker9(ui->comboBox_EmergeMap);
-    const QSignalBlocker blocker10(ui->comboBox_LayoutSelector);
+    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
+    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
+    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
+    const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
 
     // Set up project comboboxes
-    ui->comboBox_Song->clear();
-    ui->comboBox_Song->addItems(project->songNames);
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_SecondaryTileset->clear();
     ui->comboBox_SecondaryTileset->addItems(project->secondaryTilesetLabels);
-    ui->comboBox_Weather->clear();
-    ui->comboBox_Weather->addItems(project->weatherNames);
-    ui->comboBox_BattleScene->clear();
-    ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
-    ui->comboBox_Type->clear();
-    ui->comboBox_Type->addItems(project->mapTypes);
     ui->comboBox_LayoutSelector->clear();
     ui->comboBox_LayoutSelector->addItems(project->mapLayoutsTable);
     ui->comboBox_DiveMap->clear();
@@ -1194,28 +1075,15 @@ bool MainWindow::setProjectUI() {
     ui->comboBox_EmergeMap->addItems(project->mapNames);
     ui->comboBox_EmergeMap->setClearButtonEnabled(true);
     ui->comboBox_EmergeMap->setFocusedScrollingEnabled(false);
-    refreshLocationsComboBox();
 
     // Show/hide parts of the UI that are dependent on the user's project settings
 
     // Wild Encounters tab
     ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, editor->project->wildEncountersLoaded);
 
-    bool hasFlags = projectConfig.mapAllowFlagsEnabled;
-    ui->checkBox_AllowRunning->setVisible(hasFlags);
-    ui->checkBox_AllowBiking->setVisible(hasFlags);
-    ui->checkBox_AllowEscaping->setVisible(hasFlags);
-    ui->label_AllowRunning->setVisible(hasFlags);
-    ui->label_AllowBiking->setVisible(hasFlags);
-    ui->label_AllowEscaping->setVisible(hasFlags);
-
     ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.eventWeatherTriggerEnabled);
     ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.eventSecretBaseEnabled);
     ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.eventCloneObjectEnabled);
-
-    bool floorNumEnabled = projectConfig.floorNumberEnabled;
-    ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
-    ui->label_FloorNumber->setVisible(floorNumEnabled);
 
     Event::setIcons();
     editor->setCollisionGraphics();
@@ -1244,40 +1112,21 @@ bool MainWindow::setProjectUI() {
     return true;
 }
 
-void MainWindow::refreshLocationsComboBox() {
-    QStringList locations = this->editor->project->mapSectionIdNames;
-    locations.sort();
-
-    const QSignalBlocker b(ui->comboBox_Location);
-    ui->comboBox_Location->clear();
-    ui->comboBox_Location->addItems(locations);
-    if (this->editor->map)
-        ui->comboBox_Location->setCurrentText(this->editor->map->location());
-}
-
 void MainWindow::clearProjectUI() {
     // Block signals to the comboboxes while they are being modified
-    const QSignalBlocker blocker1(ui->comboBox_Song);
-    const QSignalBlocker blocker2(ui->comboBox_Location);
-    const QSignalBlocker blocker3(ui->comboBox_PrimaryTileset);
-    const QSignalBlocker blocker4(ui->comboBox_SecondaryTileset);
-    const QSignalBlocker blocker5(ui->comboBox_Weather);
-    const QSignalBlocker blocker6(ui->comboBox_BattleScene);
-    const QSignalBlocker blocker7(ui->comboBox_Type);
-    const QSignalBlocker blocker8(ui->comboBox_DiveMap);
-    const QSignalBlocker blocker9(ui->comboBox_EmergeMap);
-    const QSignalBlocker blockerA(ui->comboBox_LayoutSelector);
+    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
+    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
+    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
+    const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
 
-    ui->comboBox_Song->clear();
-    ui->comboBox_Location->clear();
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_SecondaryTileset->clear();
-    ui->comboBox_Weather->clear();
-    ui->comboBox_BattleScene->clear();
-    ui->comboBox_Type->clear();
     ui->comboBox_DiveMap->clear();
     ui->comboBox_EmergeMap->clear();
     ui->comboBox_LayoutSelector->clear();
+
+    this->mapHeader->clear();
 
     // Clear map models
     delete this->mapGroupModel;

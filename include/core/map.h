@@ -62,7 +62,7 @@ public:
     void setRequiresFlash(bool requiresFlash);
     void setWeather(const QString &weather);
     void setType(const QString &type);
-    void setShowsLocation(bool showsLocation);
+    void setShowsLocationName(bool showsLocationName);
     void setAllowsRunning(bool allowsRunning);
     void setAllowsBiking(bool allowsBiking);
     void setAllowsEscaping(bool allowsEscaping);
@@ -74,7 +74,7 @@ public:
     bool requiresFlash() const { return m_requiresFlash; }
     QString weather() const { return m_weather; }
     QString type() const { return m_type; }
-    bool showsLocation() const { return m_showsLocation; }
+    bool showsLocationName() const { return m_showsLocationName; }
     bool allowsRunning() const { return m_allowsRunning; }
     bool allowsBiking() const { return m_allowsBiking; }
     bool allowsEscaping() const { return m_allowsEscaping; }
@@ -136,7 +136,7 @@ private:
     bool m_requiresFlash;
     QString m_weather;
     QString m_type;
-    bool m_showsLocation;
+    bool m_showsLocationName;
     bool m_allowsRunning;
     bool m_allowsBiking;
     bool m_allowsEscaping;

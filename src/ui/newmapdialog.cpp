@@ -31,6 +31,9 @@ NewMapDialog::NewMapDialog(QWidget *parent, Project *project) :
     ui->lineEdit_Name->setValidator(validator);
     ui->lineEdit_ID->setValidator(validator);
 
+    this->headerData = new MapHeaderForm();
+    ui->layout_HeaderData->addWidget(this->headerData);
+
     connect(ui->spinBox_MapWidth, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
     connect(ui->spinBox_MapHeight, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
 }
@@ -46,11 +49,7 @@ void NewMapDialog::init() {
     ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
     ui->comboBox_SecondaryTileset->addItems(project->secondaryTilesetLabels);
     ui->comboBox_Group->addItems(project->groupNames);
-    ui->comboBox_Song->addItems(project->songNames);
-    ui->comboBox_Location->addItems(project->mapSectionIdNames);
-    ui->comboBox_Weather->addItems(project->weatherNames);
-    ui->comboBox_Type->addItems(project->mapTypes);
-    ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
+    this->headerData->setProject(project);
 
     // Set spin box limits
     ui->spinBox_MapWidth->setMaximum(project->getMaxMapWidth());
@@ -58,20 +57,7 @@ void NewMapDialog::init() {
     ui->spinBox_BorderWidth->setMaximum(MAX_BORDER_WIDTH);
     ui->spinBox_BorderHeight->setMaximum(MAX_BORDER_HEIGHT);
 
-    // Hide config specific ui elements
-    bool hasFlags = projectConfig.mapAllowFlagsEnabled;
-    ui->checkBox_AllowRunning->setVisible(hasFlags);
-    ui->checkBox_AllowBiking->setVisible(hasFlags);
-    ui->checkBox_AllowEscaping->setVisible(hasFlags);
-    ui->label_AllowRunning->setVisible(hasFlags);
-    ui->label_AllowBiking->setVisible(hasFlags);
-    ui->label_AllowEscaping->setVisible(hasFlags);
-
     ui->groupBox_BorderDimensions->setVisible(projectConfig.useCustomBorderSize);
-
-    bool hasFloorNumber = projectConfig.floorNumberEnabled;
-    ui->spinBox_FloorNumber->setVisible(hasFloorNumber);
-    ui->label_FloorNumber->setVisible(hasFloorNumber);
 
     // Restore previous settings
     ui->lineEdit_Name->setText(project->getNewMapName());
@@ -82,17 +68,17 @@ void NewMapDialog::init() {
     ui->spinBox_BorderHeight->setValue(settings.borderHeight);
     ui->comboBox_PrimaryTileset->setTextItem(settings.primaryTilesetLabel);
     ui->comboBox_SecondaryTileset->setTextItem(settings.secondaryTilesetLabel);
-    ui->comboBox_Song->setTextItem(settings.song);
-    ui->comboBox_Location->setTextItem(settings.location);
-    ui->checkBox_RequiresFlash->setChecked(settings.requiresFlash);
-    ui->comboBox_Weather->setTextItem(settings.weather);
-    ui->comboBox_Type->setTextItem(settings.type);
-    ui->comboBox_BattleScene->setTextItem(settings.battleScene);
-    ui->checkBox_ShowLocation->setChecked(settings.showLocationName);
-    ui->checkBox_AllowRunning->setChecked(settings.allowRunning);
-    ui->checkBox_AllowBiking->setChecked(settings.allowBiking);
-    ui->checkBox_AllowEscaping->setChecked(settings.allowEscaping);
-    ui->spinBox_FloorNumber->setValue(settings.floorNumber);
+    this->headerData->ui->comboBox_Song->setTextItem(settings.song);
+    this->headerData->ui->comboBox_Location->setTextItem(settings.location);
+    this->headerData->ui->checkBox_RequiresFlash->setChecked(settings.requiresFlash);
+    this->headerData->ui->comboBox_Weather->setTextItem(settings.weather);
+    this->headerData->ui->comboBox_Type->setTextItem(settings.type);
+    this->headerData->ui->comboBox_BattleScene->setTextItem(settings.battleScene);
+    this->headerData->ui->checkBox_ShowLocationName->setChecked(settings.showLocationName);
+    this->headerData->ui->checkBox_AllowRunning->setChecked(settings.allowRunning);
+    this->headerData->ui->checkBox_AllowBiking->setChecked(settings.allowBiking);
+    this->headerData->ui->checkBox_AllowEscaping->setChecked(settings.allowEscaping);
+    this->headerData->ui->spinBox_FloorNumber->setValue(settings.floorNumber);
     ui->checkBox_CanFlyTo->setChecked(settings.canFlyTo);
 }
 
@@ -164,17 +150,17 @@ void NewMapDialog::saveSettings() {
     settings.borderHeight = ui->spinBox_BorderHeight->value();
     settings.primaryTilesetLabel = ui->comboBox_PrimaryTileset->currentText();
     settings.secondaryTilesetLabel = ui->comboBox_SecondaryTileset->currentText();
-    settings.song = ui->comboBox_Song->currentText();
-    settings.location = ui->comboBox_Location->currentText();
-    settings.requiresFlash = ui->checkBox_RequiresFlash->isChecked();
-    settings.weather = ui->comboBox_Weather->currentText();
-    settings.type = ui->comboBox_Type->currentText();
-    settings.battleScene = ui->comboBox_BattleScene->currentText();
-    settings.showLocationName = ui->checkBox_ShowLocation->isChecked();
-    settings.allowRunning = ui->checkBox_AllowRunning->isChecked();
-    settings.allowBiking = ui->checkBox_AllowBiking->isChecked();
-    settings.allowEscaping = ui->checkBox_AllowEscaping->isChecked();
-    settings.floorNumber = ui->spinBox_FloorNumber->value();
+    settings.song = this->headerData->ui->comboBox_Song->currentText();
+    settings.location = this->headerData->ui->comboBox_Location->currentText();
+    settings.requiresFlash = this->headerData->ui->checkBox_RequiresFlash->isChecked();
+    settings.weather = this->headerData->ui->comboBox_Weather->currentText();
+    settings.type = this->headerData->ui->comboBox_Type->currentText();
+    settings.battleScene = this->headerData->ui->comboBox_BattleScene->currentText();
+    settings.showLocationName = this->headerData->ui->checkBox_ShowLocationName->isChecked();
+    settings.allowRunning = this->headerData->ui->checkBox_AllowRunning->isChecked();
+    settings.allowBiking = this->headerData->ui->checkBox_AllowBiking->isChecked();
+    settings.allowEscaping = this->headerData->ui->checkBox_AllowEscaping->isChecked();
+    settings.floorNumber = this->headerData->ui->spinBox_FloorNumber->value();
     settings.canFlyTo = ui->checkBox_CanFlyTo->isChecked();
 }
 
@@ -334,20 +320,20 @@ void NewMapDialog::on_pushButton_Accept_clicked() {
     Map *newMap = new Map;
     newMap->setName(ui->lineEdit_Name->text());
     newMap->setConstantName(ui->lineEdit_ID->text());
-    newMap->setSong(ui->comboBox_Song->currentText());
-    newMap->setLocation(ui->comboBox_Location->currentText());
-    newMap->setRequiresFlash(ui->checkBox_RequiresFlash->isChecked());
-    newMap->setWeather(ui->comboBox_Weather->currentText());
-    newMap->setType(ui->comboBox_Type->currentText());
-    newMap->setBattleScene(ui->comboBox_BattleScene->currentText());
-    newMap->setShowsLocation(ui->checkBox_ShowLocation->isChecked());
+    newMap->setSong(this->headerData->ui->comboBox_Song->currentText());
+    newMap->setLocation(this->headerData->ui->comboBox_Location->currentText());
+    newMap->setRequiresFlash(this->headerData->ui->checkBox_RequiresFlash->isChecked());
+    newMap->setWeather(this->headerData->ui->comboBox_Weather->currentText());
+    newMap->setType(this->headerData->ui->comboBox_Type->currentText());
+    newMap->setBattleScene(this->headerData->ui->comboBox_BattleScene->currentText());
+    newMap->setShowsLocationName(this->headerData->ui->checkBox_ShowLocationName->isChecked());
     if (projectConfig.mapAllowFlagsEnabled) {
-        newMap->setAllowsRunning(ui->checkBox_AllowRunning->isChecked());
-        newMap->setAllowsBiking(ui->checkBox_AllowBiking->isChecked());
-        newMap->setAllowsEscaping(ui->checkBox_AllowEscaping->isChecked());
+        newMap->setAllowsRunning(this->headerData->ui->checkBox_AllowRunning->isChecked());
+        newMap->setAllowsBiking(this->headerData->ui->checkBox_AllowBiking->isChecked());
+        newMap->setAllowsEscaping(this->headerData->ui->checkBox_AllowEscaping->isChecked());
     }
     if (projectConfig.floorNumberEnabled) {
-        newMap->setFloorNumber(ui->spinBox_FloorNumber->value());
+        newMap->setFloorNumber(this->headerData->ui->spinBox_FloorNumber->value());
     }
     newMap->setNeedsHealLocation(ui->checkBox_CanFlyTo->isChecked());
 

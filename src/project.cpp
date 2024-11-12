@@ -221,7 +221,7 @@ bool Project::loadMapData(Map* map) {
     map->setRequiresFlash(ParseUtil::jsonToBool(mapObj["requires_flash"]));
     map->setWeather(ParseUtil::jsonToQString(mapObj["weather"]));
     map->setType(ParseUtil::jsonToQString(mapObj["map_type"]));
-    map->setShowsLocation(ParseUtil::jsonToBool(mapObj["show_map_name"]));
+    map->setShowsLocationName(ParseUtil::jsonToBool(mapObj["show_map_name"]));
     map->setBattleScene(ParseUtil::jsonToQString(mapObj["battle_scene"]));
 
     if (projectConfig.mapAllowFlagsEnabled) {
@@ -1293,7 +1293,7 @@ void Project::saveMap(Map *map) {
         mapObj["allow_escaping"] = map->allowsEscaping();
         mapObj["allow_running"] = map->allowsRunning();
     }
-    mapObj["show_map_name"] = map->showsLocation();
+    mapObj["show_map_name"] = map->showsLocationName();
     if (projectConfig.floorNumberEnabled) {
         mapObj["floor_number"] = map->floorNumber();
     }

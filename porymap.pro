@@ -83,6 +83,7 @@ SOURCES += src/core/block.cpp \
     src/ui/prefabcreationdialog.cpp \
     src/ui/regionmappixmapitem.cpp \
     src/ui/citymappixmapitem.cpp \
+    src/ui/mapheaderform.cpp \
     src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
@@ -166,6 +167,7 @@ HEADERS  += include/core/block.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
     include/ui/gridsettings.h \
+    include/ui/mapheaderform.h \
     include/ui/newmapconnectiondialog.h \
     include/ui/prefabframe.h \
     include/ui/projectsettingseditor.h \
@@ -233,6 +235,7 @@ FORMS    += forms/mainwindow.ui \
     forms/colorinputwidget.ui \
     forms/connectionslistitem.ui \
     forms/gridsettingsdialog.ui \
+    forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \

@@ -32,6 +32,7 @@
 #include "wildmonchart.h"
 #include "updatepromoter.h"
 #include "aboutporymap.h"
+#include "mapheaderform.h"
 
 
 
@@ -199,17 +200,7 @@ private slots:
     void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();
     void on_action_Exit_triggered();
-    void on_comboBox_Song_currentTextChanged(const QString &arg1);
-    void on_comboBox_Location_currentTextChanged(const QString &arg1);
-    void on_comboBox_Weather_currentTextChanged(const QString &arg1);
-    void on_comboBox_Type_currentTextChanged(const QString &arg1);
-    void on_comboBox_BattleScene_currentTextChanged(const QString &arg1);
-    void on_comboBox_LayoutSelector_currentTextChanged(const QString &arg1);
-    void on_checkBox_ShowLocation_stateChanged(int selected);
-    void on_checkBox_AllowRunning_stateChanged(int selected);
-    void on_checkBox_AllowBiking_stateChanged(int selected);
-    void on_checkBox_AllowEscaping_stateChanged(int selected);
-    void on_spinBox_FloorNumber_valueChanged(int offset);
+    void on_comboBox_LayoutSelector_currentTextChanged(const QString &text);
     void on_actionShortcuts_triggered();
 
     void on_actionZoom_In_triggered();
@@ -254,7 +245,6 @@ private slots:
     void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();
     void on_checkBox_smartPaths_stateChanged(int selected);
-    void on_checkBox_Visibility_stateChanged(int selected);
     void on_checkBox_ToggleBorder_stateChanged(int selected);
 
     void resetMapViewScale();
@@ -336,6 +326,8 @@ private:
 
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
+
+    MapHeaderForm *mapHeader = nullptr;
 
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 

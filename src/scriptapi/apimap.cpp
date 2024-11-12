@@ -811,7 +811,8 @@ QJSValue MainWindow::getTilePixels(int tileId) {
 // Editing map header
 //=====================
 
-// TODO: Replace UI setting here with calls to appropriate set functions. Update UI with signals from Map
+// TODO: Connect signals from new function calls to update UI
+// TODO: Is the error-checking for known constant names still reasonable / needed? (you can type anything after all)
 
 QString MainWindow::getSong() {
     if (!this->editor || !this->editor->map)
@@ -820,13 +821,13 @@ QString MainWindow::getSong() {
 }
 
 void MainWindow::setSong(QString song) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
     if (!this->editor->project->songNames.contains(song)) {
         logError(QString("Unknown song '%1'").arg(song));
         return;
     }
-    this->ui->comboBox_Song->setCurrentText(song);
+    this->editor->map->setSong(song);
 }
 
 QString MainWindow::getLocation() {
@@ -836,13 +837,13 @@ QString MainWindow::getLocation() {
 }
 
 void MainWindow::setLocation(QString location) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
     if (!this->editor->project->mapSectionIdNames.contains(location)) {
         logError(QString("Unknown location '%1'").arg(location));
         return;
     }
-    this->ui->comboBox_Location->setCurrentText(location);
+    this->editor->map->setLocation(location);
 }
 
 bool MainWindow::getRequiresFlash() {
@@ -852,9 +853,9 @@ bool MainWindow::getRequiresFlash() {
 }
 
 void MainWindow::setRequiresFlash(bool require) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_Visibility->setChecked(require);
+    this->editor->map->setRequiresFlash(require);
 }
 
 QString MainWindow::getWeather() {
@@ -864,13 +865,13 @@ QString MainWindow::getWeather() {
 }
 
 void MainWindow::setWeather(QString weather) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
     if (!this->editor->project->weatherNames.contains(weather)) {
         logError(QString("Unknown weather '%1'").arg(weather));
         return;
     }
-    this->ui->comboBox_Weather->setCurrentText(weather);
+    this->editor->map->setWeather(weather);
 }
 
 QString MainWindow::getType() {
@@ -880,13 +881,13 @@ QString MainWindow::getType() {
 }
 
 void MainWindow::setType(QString type) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
     if (!this->editor->project->mapTypes.contains(type)) {
         logError(QString("Unknown map type '%1'").arg(type));
         return;
     }
-    this->ui->comboBox_Type->setCurrentText(type);
+    this->editor->map->setType(type);
 }
 
 QString MainWindow::getBattleScene() {
@@ -896,25 +897,25 @@ QString MainWindow::getBattleScene() {
 }
 
 void MainWindow::setBattleScene(QString battleScene) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
     if (!this->editor->project->mapBattleScenes.contains(battleScene)) {
         logError(QString("Unknown battle scene '%1'").arg(battleScene));
         return;
     }
-    this->ui->comboBox_BattleScene->setCurrentText(battleScene);
+    this->editor->map->setBattleScene(battleScene);
 }
 
 bool MainWindow::getShowLocationName() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->showsLocation();
+    return this->editor->map->showsLocationName();
 }
 
 void MainWindow::setShowLocationName(bool show) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_ShowLocation->setChecked(show);
+    this->editor->map->setShowsLocationName(show);
 }
 
 bool MainWindow::getAllowRunning() {
@@ -924,9 +925,9 @@ bool MainWindow::getAllowRunning() {
 }
 
 void MainWindow::setAllowRunning(bool allow) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_AllowRunning->setChecked(allow);
+    this->editor->map->setAllowsRunning(allow);
 }
 
 bool MainWindow::getAllowBiking() {
@@ -936,9 +937,9 @@ bool MainWindow::getAllowBiking() {
 }
 
 void MainWindow::setAllowBiking(bool allow) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_AllowBiking->setChecked(allow);
+    this->editor->map->setAllowsBiking(allow);
 }
 
 bool MainWindow::getAllowEscaping() {
@@ -948,9 +949,9 @@ bool MainWindow::getAllowEscaping() {
 }
 
 void MainWindow::setAllowEscaping(bool allow) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_AllowEscaping->setChecked(allow);
+    this->editor->map->setAllowsEscaping(allow);
 }
 
 int MainWindow::getFloorNumber() {
@@ -960,12 +961,8 @@ int MainWindow::getFloorNumber() {
 }
 
 void MainWindow::setFloorNumber(int floorNumber) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    if (floorNumber < -128 || floorNumber > 127) {
-        logError(QString("Invalid floor number '%1'").arg(floorNumber));
-        return;
-    }
-    this->ui->spinBox_FloorNumber->setValue(floorNumber);
+    this->editor->map->setFloorNumber(floorNumber);
 }
 
