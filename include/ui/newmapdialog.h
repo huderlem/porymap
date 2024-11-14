@@ -20,31 +20,30 @@ class NewMapDialog : public QDialog
 public:
     explicit NewMapDialog(QWidget *parent = nullptr, Project *project = nullptr);
     ~NewMapDialog();
-    Map *map;
-    int group;
-    bool existingLayout;
-    bool importedMap;
-    QString layoutId;
     void init();
     void init(int tabIndex, QString data);
     void init(Layout *);
-    static void setDefaultSettings(Project *project);
+    void accept() override;
+    static void setDefaultSettings(const Project *project);
 
 signals:
-    void applied();
+    void applied(const QString &newMapName);
 
 private:
     Ui::NewMapDialog *ui;
     Project *project;
     CollapsibleSection *headerSection;
     MapHeaderForm *headerForm;
+    Layout *importedLayout = nullptr;
 
-    bool validateMapGroup();
-    bool validateID();
-    bool validateName();
+    // Each of these validation functions will allow empty names up until `OK` is selected,
+    // because clearing the text during editing is common and we don't want to flash errors for this.
+    bool validateID(bool allowEmpty = false);
+    bool validateName(bool allowEmpty = false);
+    bool validateGroup(bool allowEmpty = false);
 
     void saveSettings();
-    void useLayout(QString layoutId);
+    bool isExistingLayout() const;
     void useLayoutSettings(Layout *mapLayout);
 
     struct Settings {
@@ -56,11 +55,11 @@ private:
     static struct Settings settings;
 
 private slots:
-    //void on_checkBox_UseExistingLayout_stateChanged(int state); //TODO
-    //void on_comboBox_Layout_currentTextChanged(const QString &text);
-    void on_pushButton_Accept_clicked();
+    //void on_comboBox_Layout_currentTextChanged(const QString &text);//TODO
+    void dialogButtonClicked(QAbstractButton *button);
     void on_lineEdit_Name_textChanged(const QString &);
     void on_lineEdit_MapID_textChanged(const QString &);
+    void on_comboBox_Group_currentTextChanged(const QString &text);
 };
 
 #endif // NEWMAPDIALOG_H

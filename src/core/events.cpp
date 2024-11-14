@@ -392,7 +392,8 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     cloneJson["x"] = this->getX();
     cloneJson["y"] = this->getY();
     cloneJson["target_local_id"] = this->getTargetID();
-    cloneJson["target_map"] = project->mapNamesToMapConstants.value(this->getTargetMap());
+    const QString mapName = this->getTargetMap();
+    cloneJson["target_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
     this->addCustomValuesTo(&cloneJson);
 
     return cloneJson;
@@ -407,7 +408,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     // Log a warning if "target_map" isn't a known map ID, but don't overwrite user data.
     const QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
     if (!project->mapConstantsToMapNames.contains(mapConstant))
-        logWarn(QString("Target Map constant '%1' is invalid.").arg(mapConstant));
+        logWarn(QString("Unknown Target Map constant '%1'.").arg(mapConstant));
     this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
 
     this->readCustomValues(json);
@@ -496,7 +497,8 @@ OrderedJson::object WarpEvent::buildEventJson(Project *project) {
     warpJson["x"] = this->getX();
     warpJson["y"] = this->getY();
     warpJson["elevation"] = this->getElevation();
-    warpJson["dest_map"] = project->mapNamesToMapConstants.value(this->getDestinationMap());
+    const QString mapName = this->getDestinationMap();
+    warpJson["dest_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
     warpJson["dest_warp_id"] = this->getDestinationWarpID();
 
     this->addCustomValuesTo(&warpJson);
@@ -513,7 +515,7 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     // Log a warning if "dest_map" isn't a known map ID, but don't overwrite user data.
     const QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
     if (!project->mapConstantsToMapNames.contains(mapConstant))
-        logWarn(QString("Destination Map constant '%1' is invalid.").arg(mapConstant));
+        logWarn(QString("Unknown Destination Map constant '%1'.").arg(mapConstant));
     this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
 
     this->readCustomValues(json);

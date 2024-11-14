@@ -20,6 +20,7 @@ public:
     void initUi(Project *project);
 
     struct Settings {
+        QString id; // TODO: Support in UI (toggleable line edit)
         int width;
         int height;
         int borderWidth;

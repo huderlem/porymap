@@ -368,6 +368,7 @@ bool Project::loadMapData(Map* map) {
     return true;
 }
 
+// TODO: Refactor, we're duplicating logic between here, the new map dialog, and addNewLayout
 Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
     QString basePath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders);
     Layout *layout;
@@ -409,15 +410,16 @@ Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
         return nullptr;
     }
 
-    mapLayouts.insert(layout->id, layout);
-    mapLayoutsMaster.insert(layout->id, layout->copy());
-    mapLayoutsTable.append(layout->id);
-    mapLayoutsTableMaster.append(layout->id);
-    layoutIdsToNames.insert(layout->id, layout->name);
+    // TODO: Redundancy here, some of this is already handled in saveLayout > updateLayout
+    this->mapLayouts.insert(layout->id, layout);
+    this->mapLayoutsMaster.insert(layout->id, layout->copy());
+    this->layoutIds.append(layout->id);
+    this->layoutIdsMaster.append(layout->id);
 
     saveLayout(layout);
 
-    this->loadLayout(layout);
+    loadLayout(layout);
+    emit layoutAdded(layout);
 
     return layout;
 }
@@ -471,12 +473,12 @@ bool Project::loadMapLayout(Map* map) {
 }
 
 void Project::clearMapLayouts() {
-    qDeleteAll(mapLayouts);
-    mapLayouts.clear();
-    qDeleteAll(mapLayoutsMaster);
-    mapLayoutsMaster.clear();
-    mapLayoutsTable.clear();
-    layoutIdsToNames.clear();
+    qDeleteAll(this->mapLayouts);
+    this->mapLayouts.clear();
+    qDeleteAll(this->mapLayoutsMaster);
+    this->mapLayoutsMaster.clear();
+    this->layoutIds.clear();
+    this->layoutIdsMaster.clear();
 }
 
 bool Project::readMapLayouts() {
@@ -498,9 +500,9 @@ bool Project::readMapLayouts() {
         return false;
     }
 
-    layoutsLabel = ParseUtil::jsonToQString(layoutsObj["layouts_table_label"]);
-    if (layoutsLabel.isNull()) {
-        layoutsLabel = "gMapLayouts";
+    this->layoutsLabel = ParseUtil::jsonToQString(layoutsObj["layouts_table_label"]);
+    if (this->layoutsLabel.isEmpty()) {
+        this->layoutsLabel = "gMapLayouts";
         logWarn(QString("'layouts_table_label' value is missing from %1. Defaulting to %2")
                  .arg(layoutsFilepath)
                  .arg(layoutsLabel));
@@ -599,11 +601,11 @@ bool Project::readMapLayouts() {
             delete layout;
             return false;
         }
-        mapLayouts.insert(layout->id, layout);
-        mapLayoutsMaster.insert(layout->id, layout->copy());
-        mapLayoutsTable.append(layout->id);
-        mapLayoutsTableMaster.append(layout->id);
-        layoutIdsToNames.insert(layout->id, layout->name);
+
+        this->mapLayouts.insert(layout->id, layout);
+        this->mapLayoutsMaster.insert(layout->id, layout->copy());
+        this->layoutIds.append(layout->id);
+        this->layoutIdsMaster.append(layout->id);
     }
 
     return true;
@@ -618,11 +620,11 @@ void Project::saveMapLayouts() {
     }
 
     OrderedJson::object layoutsObj;
-    layoutsObj["layouts_table_label"] = layoutsLabel;
+    layoutsObj["layouts_table_label"] = this->layoutsLabel;
 
     OrderedJson::array layoutsArr;
-    for (QString layoutId : mapLayoutsTableMaster) {
-        Layout *layout = mapLayoutsMaster.value(layoutId);
+    for (const QString &layoutId : this->layoutIdsMaster) {
+        Layout *layout = this->mapLayoutsMaster.value(layoutId);
         OrderedJson::object layoutObj;
         layoutObj["id"] = layout->id;
         layoutObj["name"] = layout->name;
@@ -669,14 +671,12 @@ void Project::saveMapGroups() {
     }
     mapGroupsObj["group_order"] = groupNamesArr;
 
-    int groupNum = 0;
-    for (QStringList mapNames : groupedMapNames) {
+    for (const auto &groupName : this->groupNames) {
         OrderedJson::array groupArr;
-        for (QString mapName : mapNames) {
+        for (const auto &mapName : this->groupNameToMapNames.value(groupName)) {
             groupArr.push_back(mapName);
         }
-        mapGroupsObj[this->groupNames.at(groupNum)] = groupArr;
-        groupNum++;
+        mapGroupsObj[groupName] = groupArr;
     }
 
     ignoreWatchedFileTemporarily(mapGroupsFilepath);
@@ -1390,15 +1390,15 @@ void Project::saveLayout(Layout *layout) {
 }
 
 void Project::updateLayout(Layout *layout) {
-    if (!mapLayoutsTableMaster.contains(layout->id)) {
-        mapLayoutsTableMaster.append(layout->id);
+    if (!this->layoutIdsMaster.contains(layout->id)) {
+        this->layoutIdsMaster.append(layout->id);
     }
 
-    if (mapLayoutsMaster.contains(layout->id)) {
-        mapLayoutsMaster[layout->id]->copyFrom(layout);
+    if (this->mapLayoutsMaster.contains(layout->id)) {
+        this->mapLayoutsMaster[layout->id]->copyFrom(layout);
     }
     else {
-        mapLayoutsMaster.insert(layout->id, layout->copy());
+        this->mapLayoutsMaster.insert(layout->id, layout->copy());
     }
 }
 
@@ -1821,10 +1821,9 @@ bool Project::readWildMonData() {
 bool Project::readMapGroups() {
     this->mapConstantsToMapNames.clear();
     this->mapNamesToMapConstants.clear();
-    this->mapGroups.clear();
-    this->groupNames.clear();
-    this->groupedMapNames.clear();
     this->mapNames.clear();
+    this->groupNames.clear();
+    this->groupNameToMapNames.clear();
 
     this->initTopLevelMapFields();
 
@@ -1845,7 +1844,6 @@ bool Project::readMapGroups() {
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
         const QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
         const QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
-        this->groupedMapNames.append(QStringList());
         this->groupNames.append(groupName);
         
         // Process the names in this map group
@@ -1885,8 +1883,8 @@ bool Project::readMapGroups() {
 
             // Success, save the constants to the project
             this->mapNames.append(mapName);
-            this->groupedMapNames[groupIndex].append(mapName);
-            this->mapGroups.insert(mapName, groupIndex);
+            this->groupNameToMapNames[groupName].append(mapName);
+            // TODO: These are not well-kept in sync (and that's probably a bad design indication. Maybe Maps should have a not-fully-loaded state, but have all their map.json data cached)
             this->mapConstantsToMapNames.insert(mapConstant, mapName);
             this->mapNamesToMapConstants.insert(mapName, mapConstant);
             // TODO: Either verify that these are known IDs, or make sure nothing breaks when they're unknown.
@@ -1913,34 +1911,69 @@ bool Project::readMapGroups() {
     return true;
 }
 
-Map* Project::addNewMapToGroup(Map *newMap, int groupNum, bool existingLayout, bool importedMap) {
-    int mapNamePos = 0;
-    for (int i = 0; i <= groupNum; i++)
-        mapNamePos += this->groupedMapNames.value(i).length();
+void Project::addNewMap(Map *newMap, const QString &groupName) {
+    if (!newMap)
+        return;
+
+    // Make sure we keep the order of the map names the same as in the map group order.
+    int mapNamePos;
+    if (this->groupNames.contains(groupName)) {
+        mapNamePos = 0;
+        for (const auto &name : this->groupNames) {
+            mapNamePos += this->groupNameToMapNames[name].length();
+            if (name == groupName)
+                break;
+        }
+    } else {
+        // Adding map to a map group that doesn't exist yet.
+        // Create the group, and we already know the map will be last in the list.
+        addNewMapGroup(groupName);
+        mapNamePos = this->mapNames.length();
+    }
 
     this->mapNames.insert(mapNamePos, newMap->name());
-    this->mapGroups.insert(newMap->name(), groupNum);
-    this->groupedMapNames[groupNum].append(newMap->name());
+    this->groupNameToMapNames[groupName].append(newMap->name());
     this->mapConstantsToMapNames.insert(newMap->constantName(), newMap->name());
     this->mapNamesToMapConstants.insert(newMap->name(), newMap->constantName());
 
     newMap->setIsPersistedToFile(false);
 
-    if (!existingLayout) {
-        this->mapLayouts.insert(newMap->layoutId(), newMap->layout());
-        this->mapLayoutsTable.append(newMap->layoutId());
-        this->layoutIdsToNames.insert(newMap->layout()->id, newMap->layout()->name);
-        if (!importedMap) {
-            setNewLayoutBlockdata(newMap->layout());
-        }
-        if (newMap->layout()->border.isEmpty()) {
-            setNewLayoutBorder(newMap->layout());
-        }
+    // If we don't recognize the layout ID (i.e., it's also new) we'll add that too.
+    if (!this->layoutIds.contains(newMap->layout()->id)) {
+        addNewLayout(newMap->layout());
     }
 
-    loadLayoutTilesets(newMap->layout());
+    emit mapAdded(newMap, groupName);
+}
 
-    return newMap;
+void Project::addNewLayout(Layout* newLayout) {
+    if (!newLayout || this->layoutIds.contains(newLayout->id))
+        return;
+
+    this->mapLayouts.insert(newLayout->id, newLayout);
+    this->layoutIds.append(newLayout->id);
+
+    if (newLayout->blockdata.isEmpty()) {
+        // Fill layout using default fill settings
+        setNewLayoutBlockdata(newLayout);
+    }
+    if (newLayout->border.isEmpty()) {
+        // Fill border using default fill settings
+        setNewLayoutBorder(newLayout);
+    }
+
+    emit layoutAdded(newLayout);
+}
+
+void Project::addNewMapGroup(const QString &groupName) {
+    if (this->groupNames.contains(groupName))
+        return;
+
+    this->groupNames.append(groupName);
+    this->groupNameToMapNames.insert(groupName, QStringList());
+    this->hasUnsavedDataChanges = true;
+
+    emit mapGroupAdded(groupName);
 }
 
 QString Project::getNewMapName() {
@@ -1949,7 +1982,7 @@ QString Project::getNewMapName() {
     QString newMapName;
     do {
         newMapName = QString("NewMap%1").arg(++i);
-    } while (mapNames.contains(newMapName));
+    } while (this->mapNames.contains(newMapName));
 
     return newMapName;
 }
@@ -1966,7 +1999,7 @@ Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) 
     return qualifiers;
 }
 
-QString Project::getDefaultPrimaryTilesetLabel() {
+QString Project::getDefaultPrimaryTilesetLabel() const {
     QString defaultLabel = projectConfig.defaultPrimaryTileset;
     if (!this->primaryTilesetLabels.contains(defaultLabel)) {
         QString firstLabel = this->primaryTilesetLabels.first();
@@ -1976,7 +2009,7 @@ QString Project::getDefaultPrimaryTilesetLabel() {
     return defaultLabel;
 }
 
-QString Project::getDefaultSecondaryTilesetLabel() {
+QString Project::getDefaultSecondaryTilesetLabel() const {
     QString defaultLabel = projectConfig.defaultSecondaryTileset;
     if (!this->secondaryTilesetLabels.contains(defaultLabel)) {
         QString firstLabel = this->secondaryTilesetLabels.first();

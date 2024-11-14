@@ -2,6 +2,8 @@
 #include "ui_newlayoutform.h"
 #include "project.h"
 
+const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
+
 NewLayoutForm::NewLayoutForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::NewLayoutForm)
@@ -10,7 +12,7 @@ NewLayoutForm::NewLayoutForm(QWidget *parent)
 
     // TODO: Read from project?
     ui->spinBox_BorderWidth->setMaximum(MAX_BORDER_WIDTH);
-    ui->spinBox_BorderHeight->setMaximum(MAX_BORDER_HEIGHT);    
+    ui->spinBox_BorderHeight->setMaximum(MAX_BORDER_HEIGHT);
 
     connect(ui->spinBox_MapWidth, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
     connect(ui->spinBox_MapHeight, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
@@ -119,5 +121,7 @@ bool NewLayoutForm::validateTilesets() {
     bool isValid = errorText.isEmpty();
     ui->label_TilesetsError->setText(errorText);
     ui->label_TilesetsError->setVisible(!isValid);
+    ui->comboBox_PrimaryTileset->lineEdit()->setStyleSheet(!primaryErrorText.isEmpty() ? lineEdit_ErrorStylesheet : "");
+    ui->comboBox_SecondaryTileset->lineEdit()->setStyleSheet(!secondaryErrorText.isEmpty() ? lineEdit_ErrorStylesheet : "");
     return isValid;
 }

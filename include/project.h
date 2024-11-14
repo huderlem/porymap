@@ -32,20 +32,18 @@ public:
 
 public:
     QString root;
-    QStringList groupNames;
-    QMap<QString, int> mapGroups;
-    QList<QStringList> groupedMapNames;
     QStringList mapNames;
+    QStringList groupNames;
+    QMap<QString, QStringList> groupNameToMapNames;
     QList<HealLocation> healLocations;
     QMap<QString, int> healLocationNameToValue;
     QMap<QString, QString> mapConstantsToMapNames;
     QMap<QString, QString> mapNamesToMapConstants;
     QMap<QString, QString> mapNameToLayoutId;
     QMap<QString, QString> mapNameToMapSectionName;
-    QStringList mapLayoutsTable;
-    QStringList mapLayoutsTableMaster;
     QString layoutsLabel;
-    QMap<QString, QString> layoutIdsToNames;
+    QStringList layoutIds;
+    QStringList layoutIdsMaster;
     QMap<QString, Layout*> mapLayouts;
     QMap<QString, Layout*> mapLayoutsMaster;
     QMap<QString, EventGraphics*> eventGraphicsMap;
@@ -122,7 +120,9 @@ public:
     void deleteFile(QString path);
 
     bool readMapGroups();
-    Map* addNewMapToGroup(Map*, int, bool, bool);
+    void addNewMap(Map* newMap, const QString &groupName);
+    void addNewMapGroup(const QString &groupName);
+    void addNewLayout(Layout* newLayout);
     QString getNewMapName();
     QString getProjectTitle();
 
@@ -214,8 +214,8 @@ public:
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QStringList getEventScriptsFilePaths() const;
 
-    QString getDefaultPrimaryTilesetLabel();
-    QString getDefaultSecondaryTilesetLabel();
+    QString getDefaultPrimaryTilesetLabel() const;
+    QString getDefaultSecondaryTilesetLabel() const;
     void updateTilesetMetatileLabels(Tileset *tileset);
     QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
     QString findMetatileLabelsTileset(QString label);
@@ -265,6 +265,9 @@ signals:
     void fileChanged(QString filepath);
     void mapSectionIdNamesChanged(const QStringList &idNames);
     void mapLoaded(Map *map);
+    void mapAdded(Map *newMap, const QString &groupName);
+    void mapGroupAdded(const QString &groupName);
+    void layoutAdded(Layout *newLayout);
 };
 
 #endif // PROJECT_H

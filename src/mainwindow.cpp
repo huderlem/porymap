@@ -617,6 +617,9 @@ bool MainWindow::openProject(QString dir, bool initial) {
     project->set_root(dir);
     connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
     connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
+    connect(project, &Project::mapAdded, this, &MainWindow::onNewMapCreated);
+    connect(project, &Project::mapGroupAdded, this, &MainWindow::onNewMapGroupCreated);
+    connect(project, &Project::layoutAdded, this, &MainWindow::onNewLayoutCreated);
     connect(project, &Project::mapSectionIdNamesChanged, this->mapHeaderForm, &MapHeaderForm::setLocations);
     this->editor->setProject(project);
 
@@ -702,7 +705,7 @@ bool MainWindow::setInitialMap() {
         // User recently had a map open that still exists.
         if (setMap(recent))
             return true;
-    } else if (editor->project->mapLayoutsTable.contains(recent)) {
+    } else if (editor->project->layoutIds.contains(recent)) {
         // User recently had a layout open that still exists.
         if (setLayout(recent))
             return true;
@@ -713,7 +716,7 @@ bool MainWindow::setInitialMap() {
         if (name != recent && setMap(name))
             return true;
     }
-    for (const auto &id : editor->project->mapLayoutsTable) {
+    for (const auto &id : editor->project->layoutIds) {
         if (id != recent && setLayout(id))
             return true;
     }
@@ -932,13 +935,13 @@ bool MainWindow::userSetLayout(QString layoutId) {
 
 bool MainWindow::setLayout(QString layoutId) {
     if (this->editor->map)
-        logInfo("Switching to a layout-only editing mode. Disabling map-related edits.");
+        logInfo("Switching to layout-only editing mode. Disabling map-related edits.");
 
     unsetMap();
 
     // Prefer logging the name of the layout as displayed in the map list.
-    const QString layoutName = this->editor->project ? this->editor->project->layoutIdsToNames.value(layoutId, layoutId) : layoutId;
-    logInfo(QString("Setting layout to '%1'").arg(layoutName));
+    const Layout* layout = this->editor->project ? this->editor->project->mapLayouts.value(layoutId) : nullptr;
+    logInfo(QString("Setting layout to '%1'").arg(layout ? layout->name : layoutId));
 
     if (!this->editor->setLayout(layoutId)) {
         return false;
@@ -1069,7 +1072,7 @@ bool MainWindow::setProjectUI() {
 
     const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
     ui->comboBox_LayoutSelector->clear();
-    ui->comboBox_LayoutSelector->addItems(project->mapLayoutsTable);
+    ui->comboBox_LayoutSelector->addItems(project->layoutIds);
 
     const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
     ui->comboBox_DiveMap->clear();
@@ -1189,7 +1192,7 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     auto sourceModel = static_cast<MapListModel*>(model->sourceModel());
     QStandardItem *selectedItem = sourceModel->itemFromIndex(index);
     const QString itemType = selectedItem->data(MapListUserRoles::TypeRole).toString();
-    const QString itemName = selectedItem->data(Qt::UserRole).toString();
+    const QString itemName = selectedItem->data(MapListUserRoles::NameRole).toString();
 
     QMenu menu(this);
     QAction* addToFolderAction = nullptr;
@@ -1278,7 +1281,7 @@ void MainWindow::mapListAddGroup() {
     if (dialog.exec() == QDialog::Accepted) {
         QString newFieldName = newNameEdit->text();
         if (newFieldName.isEmpty()) return;
-        this->mapGroupModel->insertGroupItem(newFieldName);
+        this->editor->project->addNewMapGroup(newFieldName);
     }
 }
 
@@ -1307,7 +1310,7 @@ void MainWindow::mapListAddLayout() {
     });
 
     NoScrollComboBox *useExistingCombo = new NoScrollComboBox(&dialog);
-    useExistingCombo->addItems(this->editor->project->mapLayoutsTable);
+    useExistingCombo->addItems(this->editor->project->layoutIds);
     useExistingCombo->setEnabled(false);
 
     QCheckBox *useExistingCheck = new QCheckBox(&dialog);
@@ -1358,13 +1361,13 @@ void MainWindow::mapListAddLayout() {
             errorMessage = "Name cannot be empty";
         }
         // unique layout name & id
-        else if (this->editor->project->mapLayoutsTable.contains(newId->text())
+        /*else if (this->editor->project->layoutIds.contains(newId->text())
               || this->editor->project->layoutIdsToNames.find(tryLayoutName) != this->editor->project->layoutIdsToNames.end()) {
             errorMessage = "Layout Name / ID is not unique";
-        }
+        }*/ // TODO: Re-implement
         // from id is existing value
         else if (useExistingCheck->isChecked()) {
-            if (!this->editor->project->mapLayoutsTable.contains(useExistingCombo->currentText())) {
+            if (!this->editor->project->layoutIds.contains(useExistingCombo->currentText())) {
                 errorMessage = "Existing layout ID is not valid";
             }
         }
@@ -1395,7 +1398,6 @@ void MainWindow::mapListAddLayout() {
             layoutSettings.tileset_secondary_label = secondaryCombo->currentText();
         }
         Layout *newLayout = this->editor->project->createNewLayout(layoutSettings);
-        this->layoutTreeModel->insertLayoutItem(newLayout->id);
         setLayout(newLayout->id);
     }
 }
@@ -1407,10 +1409,9 @@ void MainWindow::mapListAddArea() {
     connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
-    QLineEdit *newNameEdit = new QLineEdit(&dialog);
-    QLineEdit *newNameDisplay = new QLineEdit(&dialog);
+    auto newNameEdit = new QLineEdit(&dialog);
+    auto newNameDisplay = new QLabel(&dialog);
     newNameDisplay->setText(prefix);
-    newNameDisplay->setEnabled(false);
     connect(newNameEdit, &QLineEdit::textEdited, [newNameDisplay, prefix] (const QString &text) {
         // As the user types a name, update the label to show the name with the prefix.
         newNameDisplay->setText(prefix + text);
@@ -1450,55 +1451,52 @@ void MainWindow::mapListAddArea() {
     }
 }
 
-void MainWindow::onNewMapCreated() {
-    QString newMapName = this->newMapDialog->map->name();
-    int newMapGroup = this->newMapDialog->group;
-    Map *newMap = this->newMapDialog->map;
-    bool existingLayout = this->newMapDialog->existingLayout;
-    bool importedMap = this->newMapDialog->importedMap;
-
-    newMap = editor->project->addNewMapToGroup(newMap, newMapGroup, existingLayout, importedMap);
-
-    logInfo(QString("Created a new map named %1.").arg(newMapName));
+void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
+    logInfo(QString("Created a new map named %1.").arg(newMap->name()));
 
     // TODO: Creating a new map shouldn't be automatically saved
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 
-    // Add new Map / Layout to the mapList models
-    this->mapGroupModel->insertMapItem(newMapName, editor->project->groupNames[newMapGroup]);
-    this->mapAreaModel->insertMapItem(newMapName, newMap->header()->location(), newMapGroup);
-    this->layoutTreeModel->insertMapItem(newMapName, newMap->layout()->id);
+    // Add new map to the map lists
+    this->mapGroupModel->insertMapItem(newMap->name(), groupName);
+    this->mapAreaModel->insertMapItem(newMap->name(), newMap->header()->location());
+    this->layoutTreeModel->insertMapItem(newMap->name(), newMap->layout()->id);
 
     // Refresh any combo box that displays map names and persists between maps
     // (other combo boxes like for warp destinations are repopulated when the map changes).
-    int mapIndex = this->editor->project->mapNames.indexOf(newMapName);
+    int mapIndex = this->editor->project->mapNames.indexOf(newMap->name());
     if (mapIndex >= 0) {
         const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
         const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
-        ui->comboBox_DiveMap->insertItem(mapIndex, newMapName);
-        ui->comboBox_EmergeMap->insertItem(mapIndex, newMapName);
+        ui->comboBox_DiveMap->insertItem(mapIndex, newMap->name());
+        ui->comboBox_EmergeMap->insertItem(mapIndex, newMap->name());
     }
-
-    // Refresh layout combo box (if a new one was created)
-    if (!existingLayout) {
-        int layoutIndex = this->editor->project->mapLayoutsTable.indexOf(newMap->layout()->id);
-        if (layoutIndex >= 0) {
-            const QSignalBlocker b_Layouts(ui->comboBox_LayoutSelector);
-            ui->comboBox_LayoutSelector->insertItem(layoutIndex, newMap->layout()->id);
-        }
-    }
-
-    setMap(newMapName);
 
     if (newMap->needsHealLocation()) {
         addNewEvent(Event::Type::HealLocation);
         editor->project->saveHealLocations(newMap);
         editor->save();
     }
+}
 
-    disconnect(this->newMapDialog, &NewMapDialog::applied, this, &MainWindow::onNewMapCreated);
-    delete newMap;
+void MainWindow::onNewLayoutCreated(Layout *layout) {
+    logInfo(QString("Created a new layout named %1.").arg(layout->name));
+
+    // Refresh layout combo box
+    int layoutIndex = this->editor->project->layoutIds.indexOf(layout->id);
+    if (layoutIndex >= 0) {
+        const QSignalBlocker b(ui->comboBox_LayoutSelector);
+        ui->comboBox_LayoutSelector->insertItem(layoutIndex, layout->id);
+    }
+
+    // Add new layout to the Layouts map list view
+    this->layoutTreeModel->insertLayoutItem(layout->id);
+}
+
+void MainWindow::onNewMapGroupCreated(const QString &groupName) {
+    // Add new map group to the Groups map list view
+    this->mapGroupModel->insertGroupItem(groupName);
 }
 
 void MainWindow::openNewMapDialog() {
@@ -1508,7 +1506,7 @@ void MainWindow::openNewMapDialog() {
     }
     if (!this->newMapDialog) {
         this->newMapDialog = new NewMapDialog(this, this->editor->project);
-        connect(this->newMapDialog, &NewMapDialog::applied, this, &MainWindow::onNewMapCreated);
+        connect(this->newMapDialog, &NewMapDialog::applied, this, &MainWindow::userSetMap);
     }
 
     openSubWindow(this->newMapDialog);
@@ -1701,9 +1699,10 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
     if (!index.isValid())
         return;
 
-    QVariant data = index.data(Qt::UserRole);
+    QVariant data = index.data(MapListUserRoles::NameRole);
     if (data.isNull())
         return;
+    const QString name = data.toString();
 
     // Normally when a new map/layout is opened the search filters are cleared and the lists will scroll to display that map/layout in the list.
     // We don't want to do this when the user interacts with a list directly, so we temporarily prevent changes to the search filter.
@@ -1712,9 +1711,9 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
 
     QString type = index.data(MapListUserRoles::TypeRole).toString();
     if (type == "map_name") {
-        userSetMap(data.toString());
+        userSetMap(name);
     } else if (type == "map_layout") {
-        userSetLayout(data.toString());
+        userSetLayout(name);
     }
 
     if (toolbar) toolbar->setFilterLocked(false);

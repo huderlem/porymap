@@ -13,9 +13,8 @@
 class Project;
 
 enum MapListUserRoles {
-    GroupRole = Qt::UserRole + 1, // Used to hold the map group number.
-    TypeRole,  // Used to differentiate between the different layers of the map list tree view.
-    TypeRole2, // Used for various extra data needed.
+    NameRole = Qt::UserRole, // Holds the name of the item in the list
+    TypeRole, // Used to differentiate between the different layers of the map list tree view.
 };
 
 
@@ -92,7 +91,7 @@ public:
 public:
     void setMap(QString mapName) { this->openMap = mapName; }
 
-    QStandardItem *createGroupItem(QString groupName, int groupIndex, QStandardItem *fromItem = nullptr);
+    QStandardItem *createGroupItem(QString groupName, QStandardItem *fromItem = nullptr);
     QStandardItem *createMapItem(QString mapName, QStandardItem *fromItem = nullptr);
 
     QStandardItem *insertGroupItem(QString groupName);
@@ -138,10 +137,10 @@ public:
     void setMap(QString mapName) { this->openMap = mapName; }
 
     QStandardItem *createAreaItem(QString areaName);
-    QStandardItem *createMapItem(QString mapName, int areaIndex, int mapIndex);
+    QStandardItem *createMapItem(QString mapName);
 
     QStandardItem *insertAreaItem(QString areaName);
-    QStandardItem *insertMapItem(QString mapName, QString areaName, int groupIndex);
+    QStandardItem *insertMapItem(QString mapName, QString areaName);
 
     virtual QStandardItem *getItem(const QModelIndex &index) const override;
     virtual QModelIndex indexOf(QString mapName) const override;

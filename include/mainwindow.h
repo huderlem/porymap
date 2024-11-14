@@ -188,7 +188,9 @@ private slots:
     void onOpenConnectedMap(MapConnection*);
     void onTilesetsSaved(QString, QString);
     void openNewMapDialog();
-    void onNewMapCreated();
+    void onNewMapCreated(Map *newMap, const QString &groupName);
+    void onNewMapGroupCreated(const QString &groupName);
+    void onNewLayoutCreated(Layout *layout);
     void onMapLoaded(Map *map);
     void importMapFromAdvanceMap1_92();
     void onMapRulerStatusChanged(const QString &);
