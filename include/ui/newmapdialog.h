@@ -24,7 +24,6 @@ public:
     void init(int tabIndex, QString data);
     void init(Layout *);
     void accept() override;
-    static void setDefaultSettings(const Project *project);
 
 signals:
     void applied(const QString &newMapName);
@@ -35,27 +34,20 @@ private:
     CollapsibleSection *headerSection;
     MapHeaderForm *headerForm;
     Layout *importedLayout = nullptr;
+    Project::NewMapSettings *settings = nullptr;
 
     // Each of these validation functions will allow empty names up until `OK` is selected,
     // because clearing the text during editing is common and we don't want to flash errors for this.
-    bool validateID(bool allowEmpty = false);
+    bool validateMapID(bool allowEmpty = false);
     bool validateName(bool allowEmpty = false);
     bool validateGroup(bool allowEmpty = false);
 
     void saveSettings();
     bool isExistingLayout() const;
-    void useLayoutSettings(Layout *mapLayout);
-
-    struct Settings {
-        QString group;
-        bool canFlyTo;
-        NewLayoutForm::Settings layout;
-        MapHeader header;
-    };
-    static struct Settings settings;
+    void useLayoutSettings(const Layout *mapLayout);
+    void useLayoutIdSettings(const QString &layoutId);
 
 private slots:
-    //void on_comboBox_Layout_currentTextChanged(const QString &text);//TODO
     void dialogButtonClicked(QAbstractButton *button);
     void on_lineEdit_Name_textChanged(const QString &);
     void on_lineEdit_MapID_textChanged(const QString &);

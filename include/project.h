@@ -81,6 +81,16 @@ public:
     bool wildEncountersLoaded;
     bool saveEmptyMapsec;
 
+    struct NewMapSettings {
+        QString mapName;
+        QString mapId;
+        QString group;
+        bool canFlyTo;
+        Layout::Settings layout;
+        MapHeader header;
+    };
+    NewMapSettings newMapSettings;
+
     void set_root(QString);
 
     void clearMapCache();
@@ -124,6 +134,8 @@ public:
     void addNewMapGroup(const QString &groupName);
     void addNewLayout(Layout* newLayout);
     QString getNewMapName();
+    QString getNewLayoutName();
+    bool isLayoutNameUnique(const QString &name);
     QString getProjectTitle();
 
     bool readWildMonData();
@@ -147,7 +159,7 @@ public:
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
-    Layout *createNewLayout(Layout::SimpleSettings &layoutSettings);
+    Layout *createNewLayout(const Layout::Settings &layoutSettings);
     bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
@@ -222,6 +234,8 @@ public:
 
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
+    void initNewMapSettings();
+    void initNewLayoutSettings();
 
     static QString getDynamicMapDefineName();
     static QString getDynamicMapName();

@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>NewLayoutForm</class>
  <widget class="QWidget" name="NewLayoutForm">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>304</width>
-    <height>344</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>

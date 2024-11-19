@@ -10,6 +10,8 @@ NewLayoutForm::NewLayoutForm(QWidget *parent)
 {
     ui->setupUi(this);
 
+    ui->groupBox_BorderDimensions->setVisible(projectConfig.useCustomBorderSize);
+
     // TODO: Read from project?
     ui->spinBox_BorderWidth->setMaximum(MAX_BORDER_WIDTH);
     ui->spinBox_BorderHeight->setMaximum(MAX_BORDER_HEIGHT);
@@ -36,8 +38,6 @@ void NewLayoutForm::initUi(Project *project) {
         ui->spinBox_MapWidth->setMaximum(m_project->getMaxMapWidth());
         ui->spinBox_MapHeight->setMaximum(m_project->getMaxMapHeight());
     }
-
-    ui->groupBox_BorderDimensions->setVisible(projectConfig.useCustomBorderSize);
 }
 
 void NewLayoutForm::setDisabled(bool disabled) {
@@ -46,7 +46,7 @@ void NewLayoutForm::setDisabled(bool disabled) {
     ui->groupBox_Tilesets->setDisabled(disabled);
 }
 
-void NewLayoutForm::setSettings(const Settings &settings) {
+void NewLayoutForm::setSettings(const Layout::Settings &settings) {
     ui->spinBox_MapWidth->setValue(settings.width);
     ui->spinBox_MapHeight->setValue(settings.height);
     ui->spinBox_BorderWidth->setValue(settings.borderWidth);
@@ -55,12 +55,17 @@ void NewLayoutForm::setSettings(const Settings &settings) {
     ui->comboBox_SecondaryTileset->setTextItem(settings.secondaryTilesetLabel);
 }
 
-NewLayoutForm::Settings NewLayoutForm::settings() const {
-    NewLayoutForm::Settings settings;
+Layout::Settings NewLayoutForm::settings() const {
+    Layout::Settings settings;
     settings.width = ui->spinBox_MapWidth->value();
     settings.height = ui->spinBox_MapHeight->value();
-    settings.borderWidth = ui->spinBox_BorderWidth->value();
-    settings.borderHeight = ui->spinBox_BorderHeight->value();
+    if (ui->groupBox_BorderDimensions->isVisible()) {
+        settings.borderWidth = ui->spinBox_BorderWidth->value();
+        settings.borderHeight = ui->spinBox_BorderHeight->value();
+    } else {
+        settings.borderWidth = DEFAULT_BORDER_WIDTH;
+        settings.borderHeight = DEFAULT_BORDER_HEIGHT;
+    }
     settings.primaryTilesetLabel = ui->comboBox_PrimaryTileset->currentText();
     settings.secondaryTilesetLabel = ui->comboBox_SecondaryTileset->currentText();
     return settings;

@@ -107,6 +107,7 @@ bool Project::load() {
                 && readSongNames()
                 && readMapGroups();
     applyParsedLimits();
+    initNewMapSettings();
     return success;
 }
 
@@ -368,39 +369,53 @@ bool Project::loadMapData(Map* map) {
     return true;
 }
 
-// TODO: Refactor, we're duplicating logic between here, the new map dialog, and addNewLayout
-Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
-    QString basePath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders);
-    Layout *layout;
+/*
+void Project::addNewLayout(Layout* newLayout) {
 
-    // Handle the case where we are copying from an existing layout first.
-    if (!layoutSettings.from_id.isEmpty()) {
+    if (newLayout->blockdata.isEmpty()) {
+        // Fill layout using default fill settings
+        setNewLayoutBlockdata(newLayout);
+    }
+    if (newLayout->border.isEmpty()) {
+        // Fill border using default fill settings
+        setNewLayoutBorder(newLayout);
+    }
+
+    emit layoutAdded(newLayout);
+}
+*/
+
+// TODO: Fold back into createNewLayout?
+/*
+Layout *Project::duplicateLayout(const Layout *toDuplicate) {
+    //TODO
+    if (!settings.from_id.isEmpty()) {
         // load from layout
-        loadLayout(mapLayouts[layoutSettings.from_id]);
-
-        layout = mapLayouts[layoutSettings.from_id]->copy();
-        layout->name = layoutSettings.name;
-        layout->id = layoutSettings.id;
-        layout->border_path = QString("%1%2/border.bin").arg(basePath, layoutSettings.name);
-        layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layoutSettings.name);
+        loadLayout(mapLayouts[settings.from_id]);
+        layout = mapLayouts[settings.from_id]->copy();
+        layout->name = settings.name;
+        layout->id = settings.id;
+        layout->border_path = QString("%1%2/border.bin").arg(basePath, layout->name);
+        layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layout->name);
     }
-    else {
-        layout = new Layout;
+}
+*/
 
-        layout->name = layoutSettings.name;
-        layout->id = layoutSettings.id;
-        layout->width = layoutSettings.width;
-        layout->height = layoutSettings.height;
-        layout->border_width = DEFAULT_BORDER_WIDTH;
-        layout->border_height = DEFAULT_BORDER_HEIGHT;
-        layout->tileset_primary_label = layoutSettings.tileset_primary_label;
-        layout->tileset_secondary_label = layoutSettings.tileset_secondary_label;
-        layout->border_path = QString("%1%2/border.bin").arg(basePath, layoutSettings.name);
-        layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layoutSettings.name);
+// TODO: Refactor, we're duplicating logic between here, the new map dialog, and addNewLayout
+Layout *Project::createNewLayout(const Layout::Settings &settings) {
+    Layout *layout = new Layout;
+    layout->id = settings.id;
+    layout->name = settings.name;
+    layout->width = settings.width;
+    layout->height = settings.height;
+    layout->border_width = settings.borderWidth;
+    layout->border_height = settings.borderHeight;
+    layout->tileset_primary_label = settings.primaryTilesetLabel;
+    layout->tileset_secondary_label = settings.secondaryTilesetLabel;
 
-        setNewLayoutBlockdata(layout);
-        setNewLayoutBorder(layout);
-    }
+    const QString basePath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders);
+    layout->border_path = QString("%1%2/border.bin").arg(basePath, layout->name);
+    layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layout->name);
 
     // Create a new directory for the layout
     QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), layout->name);
@@ -410,16 +425,8 @@ Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
         return nullptr;
     }
 
-    // TODO: Redundancy here, some of this is already handled in saveLayout > updateLayout
-    this->mapLayouts.insert(layout->id, layout);
-    this->mapLayoutsMaster.insert(layout->id, layout->copy());
-    this->layoutIds.append(layout->id);
-    this->layoutIdsMaster.append(layout->id);
-
-    saveLayout(layout);
-
-    loadLayout(layout);
-    emit layoutAdded(layout);
+    addNewLayout(layout);
+    saveLayout(layout); // TODO: Ideally we shouldn't automatically save new layouts
 
     return layout;
 }
@@ -1987,6 +1994,26 @@ QString Project::getNewMapName() {
     return newMapName;
 }
 
+QString Project::getNewLayoutName() {
+    // Ensure default name doesn't already exist.
+    int i = 0;
+    QString newLayoutName;
+    do {
+        newLayoutName = QString("NewLayout%1").arg(++i);
+    } while (!isLayoutNameUnique(newLayoutName));
+
+    return newLayoutName;
+}
+
+bool Project::isLayoutNameUnique(const QString &name) {
+    for (const auto &layout : this->mapLayouts) {
+        if (layout->name == name) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) {
     Project::DataQualifiers qualifiers;
 
@@ -3026,6 +3053,32 @@ void Project::applyParsedLimits() {
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
     projectConfig.collisionSheetHeight = qMin(projectConfig.collisionSheetHeight, Block::getMaxElevation() + 1);
     projectConfig.collisionSheetWidth = qMin(projectConfig.collisionSheetWidth, Block::getMaxCollision() + 1);
+}
+
+void Project::initNewMapSettings() {
+    this->newMapSettings.group = this->groupNames.at(0);
+    this->newMapSettings.canFlyTo = false;
+    this->newMapSettings.header.setSong(this->defaultSong);
+    this->newMapSettings.header.setLocation(this->mapSectionIdNames.value(0, "0"));
+    this->newMapSettings.header.setRequiresFlash(false);
+    this->newMapSettings.header.setWeather(this->weatherNames.value(0, "0"));
+    this->newMapSettings.header.setType(this->mapTypes.value(0, "0"));
+    this->newMapSettings.header.setBattleScene(this->mapBattleScenes.value(0, "0"));
+    this->newMapSettings.header.setShowsLocationName(true);
+    this->newMapSettings.header.setAllowsRunning(false);
+    this->newMapSettings.header.setAllowsBiking(false);
+    this->newMapSettings.header.setAllowsEscaping(false);
+    this->newMapSettings.header.setFloorNumber(0);
+    initNewLayoutSettings();
+}
+
+void Project::initNewLayoutSettings() {
+    this->newMapSettings.layout.width = getDefaultMapDimension();
+    this->newMapSettings.layout.height = getDefaultMapDimension();
+    this->newMapSettings.layout.borderWidth = DEFAULT_BORDER_WIDTH;
+    this->newMapSettings.layout.borderHeight = DEFAULT_BORDER_HEIGHT;
+    this->newMapSettings.layout.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
+    this->newMapSettings.layout.secondaryTilesetLabel = getDefaultSecondaryTilesetLabel();
 }
 
 bool Project::hasUnsavedChanges() {

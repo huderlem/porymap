@@ -14,6 +14,8 @@ class LayoutPixmapItem;
 class CollisionPixmapItem;
 class BorderMetatilesPixmapItem;
 
+// TODO: Privatize members as appropriate
+
 class Layout : public QObject {
     Q_OBJECT
 public:
@@ -70,14 +72,16 @@ public:
     QUndoStack editHistory;
 
     // to simplify new layout settings transfer between functions
-    struct SimpleSettings {
+    // TODO: Make this the equivalent of struct MapHeader
+    struct Settings {
         QString id;
         QString name;
         int width;
         int height;
-        QString tileset_primary_label;
-        QString tileset_secondary_label;
-        QString from_id = QString();
+        int borderWidth;
+        int borderHeight;
+        QString primaryTilesetLabel;
+        QString secondaryTilesetLabel;
     };
 
 public:

@@ -290,6 +290,8 @@ void MainWindow::initExtraSignals() {
     label_MapRulerStatus->setAlignment(Qt::AlignCenter);
     label_MapRulerStatus->setTextFormat(Qt::PlainText);
     label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    connect(ui->actionNew_Layout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -402,6 +404,7 @@ void MainWindow::initMapList() {
     layout->setContentsMargins(0, 0, 0, 0);
 
     // Create add map/layout button
+    // TODO: Tool tip
     QPushButton *buttonAdd = new QPushButton(QIcon(":/icons/add.ico"), "");
     connect(buttonAdd, &QPushButton::clicked, this, &MainWindow::on_action_NewMap_triggered);
     layout->addWidget(buttonAdd);
@@ -442,7 +445,7 @@ void MainWindow::initMapList() {
     // Connect the "add folder" button in each of the map lists
     connect(ui->mapListToolBar_Groups,  &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddGroup);
     connect(ui->mapListToolBar_Areas,   &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddArea);
-    connect(ui->mapListToolBar_Layouts, &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddLayout);
+    connect(ui->mapListToolBar_Layouts, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
 
     connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::saveMapListTab);
 }
@@ -607,8 +610,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     userConfig.load();
     projectConfig.projectDir = dir;
     projectConfig.load();
-
-    this->newMapDefaultsSet = false;
 
     Scripting::init(this);
 
@@ -920,6 +921,7 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
 
 // setLayout, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a layout to open.
+// TODO: Update the various functions taking layout IDs to take layout names (to mirror the equivalent map functions, this discrepancy is confusing atm)
 bool MainWindow::userSetLayout(QString layoutId) {
     if (!setLayout(layoutId)) {
         QMessageBox msgBox(this);
@@ -934,11 +936,6 @@ bool MainWindow::userSetLayout(QString layoutId) {
 }
 
 bool MainWindow::setLayout(QString layoutId) {
-    if (this->editor->map)
-        logInfo("Switching to layout-only editing mode. Disabling map-related edits.");
-
-    unsetMap();
-
     // Prefer logging the name of the layout as displayed in the map list.
     const Layout* layout = this->editor->project ? this->editor->project->mapLayouts.value(layoutId) : nullptr;
     logInfo(QString("Setting layout to '%1'").arg(layout ? layout->name : layoutId));
@@ -946,6 +943,11 @@ bool MainWindow::setLayout(QString layoutId) {
     if (!this->editor->setLayout(layoutId)) {
         return false;
     }
+
+    if (this->editor->map)
+        logInfo("Switching to layout-only editing mode. Disabling map-related edits.");
+
+    unsetMap();
 
     layoutTreeModel->setLayout(layoutId);
 
@@ -1224,6 +1226,7 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     }
 
     if (addToFolderAction) {
+        // All folders only contain maps, so adding an item to any folder is adding a new map.
         connect(addToFolderAction, &QAction::triggered, [this, itemName] {
             openNewMapDialog();
             this->newMapDialog->init(ui->mapListContainer->currentIndex(), itemName);
@@ -1289,7 +1292,9 @@ void MainWindow::mapListAddGroup() {
 // (or, re-use the new map dialog with some tweaks)
 // TODO: This needs to take the same default settings you would get for a new map (tilesets, dimensions, etc.)
 //       and initialize it with the same fill settings (default metatile/collision/elevation, default border)
+// TODO: Remove
 void MainWindow::mapListAddLayout() {
+    /*
     if (!editor || !editor->project) return;
 
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
@@ -1361,10 +1366,10 @@ void MainWindow::mapListAddLayout() {
             errorMessage = "Name cannot be empty";
         }
         // unique layout name & id
-        /*else if (this->editor->project->layoutIds.contains(newId->text())
+        else if (this->editor->project->layoutIds.contains(newId->text())
               || this->editor->project->layoutIdsToNames.find(tryLayoutName) != this->editor->project->layoutIdsToNames.end()) {
             errorMessage = "Layout Name / ID is not unique";
-        }*/ // TODO: Re-implement
+        }
         // from id is existing value
         else if (useExistingCheck->isChecked()) {
             if (!this->editor->project->layoutIds.contains(useExistingCombo->currentText())) {
@@ -1400,6 +1405,7 @@ void MainWindow::mapListAddLayout() {
         Layout *newLayout = this->editor->project->createNewLayout(layoutSettings);
         setLayout(newLayout->id);
     }
+    */
 }
 
 void MainWindow::mapListAddArea() {
@@ -1408,6 +1414,7 @@ void MainWindow::mapListAddArea() {
     QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
     connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
+    // TODO: This would be a little more seamless with a single line edit that enforces the MAPSEC prefix, rather than a separate label for the actual name.
     const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
     auto newNameEdit = new QLineEdit(&dialog);
     auto newNameDisplay = new QLabel(&dialog);
@@ -1436,10 +1443,8 @@ void MainWindow::mapListAddArea() {
 
     QLabel *newNameEditLabel = new QLabel("New Area Name", &dialog);
     QLabel *newNameDisplayLabel = new QLabel("Constant Name", &dialog);
-    newNameDisplayLabel->setEnabled(false);
 
     QFormLayout form(&dialog);
-
     form.addRow(newNameEditLabel, newNameEdit);
     form.addRow(newNameDisplayLabel, newNameDisplay);
     form.addRow("", errorMessageLabel);
@@ -1499,11 +1504,10 @@ void MainWindow::onNewMapGroupCreated(const QString &groupName) {
     this->mapGroupModel->insertGroupItem(groupName);
 }
 
+// TODO: This and the new layout dialog are modal. We shouldn't need to reference their dialogs outside these open functions,
+//       so we should be able to remove them as members of MainWindow.
+//       (plus, the opening then init() call after showing for NewMapDialog is Bad)
 void MainWindow::openNewMapDialog() {
-    if (!this->newMapDefaultsSet) {
-        NewMapDialog::setDefaultSettings(this->editor->project);
-        this->newMapDefaultsSet = true;
-    }
     if (!this->newMapDialog) {
         this->newMapDialog = new NewMapDialog(this, this->editor->project);
         connect(this->newMapDialog, &NewMapDialog::applied, this, &MainWindow::userSetMap);
@@ -1516,6 +1520,15 @@ void MainWindow::on_action_NewMap_triggered() {
     openNewMapDialog();
     //this->newMapDialog->initUi();//TODO
     this->newMapDialog->init();
+}
+
+void MainWindow::openNewLayoutDialog() {
+    if (!this->newLayoutDialog) {
+        this->newLayoutDialog = new NewLayoutDialog(this, this->editor->project);
+        connect(this->newLayoutDialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+    }
+
+    openSubWindow(this->newLayoutDialog);
 }
 
 // Insert label for newly-created tileset into sorted list of existing labels

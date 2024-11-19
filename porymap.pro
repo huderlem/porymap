@@ -90,6 +90,7 @@ SOURCES += src/core/block.cpp \
     src/ui/movablerect.cpp \
     src/ui/movementpermissionsselector.cpp \
     src/ui/neweventtoolbutton.cpp \
+    src/ui/newlayoutdialog.cpp \
     src/ui/newlayoutform.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
@@ -196,6 +197,7 @@ HEADERS  += include/core/block.h \
     include/ui/movablerect.h \
     include/ui/movementpermissionsselector.h \
     include/ui/neweventtoolbutton.h \
+    include/ui/newlayoutdialog.h \
     include/ui/newlayoutform.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
@@ -241,6 +243,7 @@ FORMS    += forms/mainwindow.ui \
     forms/gridsettingsdialog.ui \
     forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
+    forms/newlayoutdialog.ui \
     forms/newlayoutform.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \

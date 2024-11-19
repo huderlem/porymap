@@ -23,6 +23,7 @@
 #include "filterchildrenproxymodel.h"
 #include "maplistmodels.h"
 #include "newmapdialog.h"
+#include "newlayoutdialog.h"
 #include "newtilesetdialog.h"
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
@@ -188,6 +189,7 @@ private slots:
     void onOpenConnectedMap(MapConnection*);
     void onTilesetsSaved(QString, QString);
     void openNewMapDialog();
+    void openNewLayoutDialog();
     void onNewMapCreated(Map *newMap, const QString &groupName);
     void onNewMapGroupCreated(const QString &groupName);
     void onNewLayoutCreated(Layout *layout);
@@ -306,6 +308,7 @@ private:
     QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
     QPointer<MapImageExporter> mapImageExporter = nullptr;
     QPointer<NewMapDialog> newMapDialog = nullptr;
+    QPointer<NewLayoutDialog> newLayoutDialog = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<GridSettingsDialog> gridSettingsDialog = nullptr;
@@ -334,7 +337,6 @@ private:
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
-    bool newMapDefaultsSet = false;
 
     bool tilesetNeedsRedraw = false;
 

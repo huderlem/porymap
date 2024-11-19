@@ -1740,7 +1740,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1834,7 +1834,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1928,7 +1928,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2028,7 +2028,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2122,7 +2122,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>16</height>
+                             <height>30</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2700,8 +2700,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>204</width>
-                        <height>16</height>
+                        <width>100</width>
+                        <height>30</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="layout_ConnectionsList">
@@ -2926,6 +2926,7 @@
     <addaction name="actionMap_Shift"/>
     <addaction name="separator"/>
     <addaction name="action_NewMap"/>
+    <addaction name="actionNew_Layout"/>
     <addaction name="actionNew_Tileset"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
@@ -3280,6 +3281,11 @@
   <action name="actionGrid_Settings">
    <property name="text">
     <string>Grid Settings...</string>
+   </property>
+  </action>
+  <action name="actionNew_Layout">
+   <property name="text">
+    <string>New Layout...</string>
    </property>
   </action>
  </widget>

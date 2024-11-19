@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>NewMapDialog</class>
  <widget class="QDialog" name="NewMapDialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>453</width>
-    <height>588</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>New Map Options</string>
   </property>
@@ -24,8 +16,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>427</width>
-        <height>522</height>
+        <width>229</width>
+        <height>254</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
@@ -69,7 +61,14 @@
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QComboBox" name="comboBox"/>
+        <widget class="QComboBox" name="comboBox_LayoutID">
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="insertPolicy">
+          <enum>QComboBox::InsertPolicy::NoInsert</enum>
+         </property>
+        </widget>
        </item>
        <item row="12" column="0" colspan="2">
         <widget class="QWidget" name="widget_HeaderData" native="true">
@@ -176,7 +175,7 @@
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="label_LayoutID">
          <property name="text">
           <string>Layout ID</string>
          </property>
@@ -207,15 +206,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NoScrollComboBox</class>
-   <extends>QComboBox</extends>
-   <header>noscrollcombobox.h</header>
-  </customwidget>
-  <customwidget>
    <class>NewLayoutForm</class>
    <extends>QWidget</extends>
    <header>newlayoutform.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollComboBox</class>
+   <extends>QComboBox</extends>
+   <header>noscrollcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

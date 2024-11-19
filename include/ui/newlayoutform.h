@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "maplayout.h"
+
 class Project;
 
 namespace Ui {
@@ -19,18 +21,8 @@ public:
 
     void initUi(Project *project);
 
-    struct Settings {
-        QString id; // TODO: Support in UI (toggleable line edit)
-        int width;
-        int height;
-        int borderWidth;
-        int borderHeight;
-        QString primaryTilesetLabel;
-        QString secondaryTilesetLabel;
-    };
-
-    void setSettings(const Settings &settings);
-    NewLayoutForm::Settings settings() const;
+    void setSettings(const Layout::Settings &settings);
+    Layout::Settings settings() const;
 
     void setDisabled(bool disabled);
 
