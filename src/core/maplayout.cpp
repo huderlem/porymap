@@ -7,13 +7,13 @@
 
 
 
-Layout *Layout::copy() {
+Layout *Layout::copy() const {
     Layout *layout = new Layout;
     layout->copyFrom(this);
     return layout;
 }
 
-void Layout::copyFrom(Layout *other) {
+void Layout::copyFrom(const Layout *other) {
     this->id = other->id;
     this->name = other->name;
     this->width = other->width;
@@ -30,19 +30,30 @@ void Layout::copyFrom(Layout *other) {
     this->border = other->border;
 }
 
+QString Layout::layoutNameFromMapName(const QString &mapName) {
+    return QString("%1_Layout").arg(mapName);
+}
+
 QString Layout::layoutConstantFromName(QString mapName) {
     // Transform map names of the form 'GraniteCave_B1F` into layout constants like 'LAYOUT_GRANITE_CAVE_B1F'.
     static const QRegularExpression caseChange("([a-z])([A-Z])");
     QString nameWithUnderscores = mapName.replace(caseChange, "\\1_\\2");
     QString withMapAndUppercase = "LAYOUT_" + nameWithUnderscores.toUpper();
     static const QRegularExpression underscores("_+");
-    QString constantName = withMapAndUppercase.replace(underscores, "_");
+    return withMapAndUppercase.replace(underscores, "_");
+}
 
-    // Handle special cases.
-    // SSTidal should be SS_TIDAL, rather than SSTIDAL
-    constantName = constantName.replace("SSTIDAL", "SS_TIDAL");
-
-    return constantName;
+Layout::Settings Layout::settings() const {
+    Layout::Settings settings;
+    settings.id = this->id;
+    settings.name = this->name;
+    settings.width = this->width;
+    settings.height = this->height;
+    settings.borderWidth = this->border_width;
+    settings.borderHeight = this->border_height;
+    settings.primaryTilesetLabel = this->tileset_primary_label;
+    settings.secondaryTilesetLabel = this->tileset_secondary_label;
+    return settings;
 }
 
 bool Layout::isWithinBounds(int x, int y) {

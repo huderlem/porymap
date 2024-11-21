@@ -18,10 +18,11 @@ class NewLayoutDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit NewLayoutDialog(QWidget *parent = nullptr, Project *project = nullptr);
+    explicit NewLayoutDialog(Project *project, QWidget *parent = nullptr);
+    explicit NewLayoutDialog(Project *project, const Layout *layoutToCopy, QWidget *parent = nullptr);
     ~NewLayoutDialog();
-    void copyFrom(const Layout &);
-    void accept() override;
+
+    virtual void accept() override;
 
 signals:
     void applied(const QString &newLayoutId);
@@ -30,18 +31,21 @@ private:
     Ui::NewLayoutDialog *ui;
     Project *project;
     Layout *importedLayout = nullptr;
-    Layout::Settings *settings = nullptr;
+
+    static Layout::Settings settings;
+    static bool initializedSettings;
 
     // Each of these validation functions will allow empty names up until `OK` is selected,
     // because clearing the text during editing is common and we don't want to flash errors for this.
     bool validateLayoutID(bool allowEmpty = false);
     bool validateName(bool allowEmpty = false);
 
+    void refresh();
+
     void saveSettings();
     bool isExistingLayout() const;
 
 private slots:
-    //void on_comboBox_Layout_currentTextChanged(const QString &text);//TODO
     void dialogButtonClicked(QAbstractButton *button);
     void on_lineEdit_Name_textChanged(const QString &);
     void on_lineEdit_LayoutID_textChanged(const QString &);

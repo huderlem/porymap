@@ -23,6 +23,8 @@
 #include "newmapconnectiondialog.h"
 #include "config.h"
 #include "filedialog.h"
+#include "newmapdialog.h"
+#include "newlayoutdialog.h"
 
 #include <QClipboard>
 #include <QDirIterator>
@@ -291,7 +293,8 @@ void MainWindow::initExtraSignals() {
     label_MapRulerStatus->setTextFormat(Qt::PlainText);
     label_MapRulerStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
-    connect(ui->actionNew_Layout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
+    connect(ui->action_NewMap, &QAction::triggered, this, &MainWindow::openNewMapDialog);
+    connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -406,7 +409,7 @@ void MainWindow::initMapList() {
     // Create add map/layout button
     // TODO: Tool tip
     QPushButton *buttonAdd = new QPushButton(QIcon(":/icons/add.ico"), "");
-    connect(buttonAdd, &QPushButton::clicked, this, &MainWindow::on_action_NewMap_triggered);
+    connect(buttonAdd, &QPushButton::clicked, this, &MainWindow::openNewMapDialog);
     layout->addWidget(buttonAdd);
 
     /* TODO: Remove button disabled, no current support for deleting maps/layouts
@@ -932,6 +935,10 @@ bool MainWindow::userSetLayout(QString layoutId) {
         msgBox.critical(nullptr, "Error Opening Layout", errorMsg);
         return false;
     }
+
+    // Only the Layouts tab of the map list shows Layouts, so if we're not already on that tab we'll open it now.
+    ui->mapListContainer->setCurrentIndex(MapListTab::Layouts);
+
     return true;
 }
 
@@ -1228,8 +1235,9 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     if (addToFolderAction) {
         // All folders only contain maps, so adding an item to any folder is adding a new map.
         connect(addToFolderAction, &QAction::triggered, [this, itemName] {
-            openNewMapDialog();
-            this->newMapDialog->init(ui->mapListContainer->currentIndex(), itemName);
+            auto dialog = new NewMapDialog(this->editor->project, ui->mapListContainer->currentIndex(), itemName, this);
+            connect(dialog, &NewMapDialog::applied, this, &MainWindow::userSetMap);
+            dialog->open();
         });
     }
     if (deleteFolderAction) {
@@ -1267,8 +1275,8 @@ void MainWindow::mapListAddGroup() {
 
     connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
         const QString mapGroupName = newNameEdit->text();
-        if (this->editor->project->groupNames.contains(mapGroupName)) {
-            errorMessageLabel->setText(QString("A map group with the name '%1' already exists").arg(mapGroupName));
+        if (!this->editor->project->isIdentifierUnique(mapGroupName)) {
+            errorMessageLabel->setText(QString("The name '%1' is not unique.").arg(mapGroupName));
             errorMessageLabel->setVisible(true);
         } else {
             dialog.accept();
@@ -1286,126 +1294,6 @@ void MainWindow::mapListAddGroup() {
         if (newFieldName.isEmpty()) return;
         this->editor->project->addNewMapGroup(newFieldName);
     }
-}
-
-// TODO: Pull this all out into a custom window. Connect that to an action in the main menu as well.
-// (or, re-use the new map dialog with some tweaks)
-// TODO: This needs to take the same default settings you would get for a new map (tilesets, dimensions, etc.)
-//       and initialize it with the same fill settings (default metatile/collision/elevation, default border)
-// TODO: Remove
-void MainWindow::mapListAddLayout() {
-    /*
-    if (!editor || !editor->project) return;
-
-    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    dialog.setWindowModality(Qt::ApplicationModal);
-    QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    QLineEdit *newNameEdit = new QLineEdit(&dialog);
-    newNameEdit->setClearButtonEnabled(true);
-
-    static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
-    newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
-
-    // TODO: Support arbitrary LAYOUT_ ID names (Note from GriffinR: This is already handled in an unopened PR)
-    QLabel *newId = new QLabel("LAYOUT_", &dialog);
-    connect(newNameEdit, &QLineEdit::textChanged, [&](QString text){
-        newId->setText(Layout::layoutConstantFromName(text.remove("_Layout")));
-    });
-
-    NoScrollComboBox *useExistingCombo = new NoScrollComboBox(&dialog);
-    useExistingCombo->addItems(this->editor->project->layoutIds);
-    useExistingCombo->setEnabled(false);
-
-    QCheckBox *useExistingCheck = new QCheckBox(&dialog);
-
-    QLabel *errorMessageLabel = new QLabel(&dialog);
-    errorMessageLabel->setVisible(false);
-    errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
-
-    QComboBox *primaryCombo = new QComboBox(&dialog);
-    primaryCombo->addItems(this->editor->project->primaryTilesetLabels);
-    QComboBox *secondaryCombo = new QComboBox(&dialog);
-    secondaryCombo->addItems(this->editor->project->secondaryTilesetLabels);
-
-    QSpinBox *widthSpin = new QSpinBox(&dialog);
-    QSpinBox *heightSpin = new QSpinBox(&dialog);
-
-    widthSpin->setMinimum(1);
-    heightSpin->setMinimum(1);
-    widthSpin->setMaximum(this->editor->project->getMaxMapWidth());
-    heightSpin->setMaximum(this->editor->project->getMaxMapHeight());
-
-    connect(useExistingCheck, &QCheckBox::stateChanged, [&](int state){
-        bool useExisting = (state == Qt::Checked);
-        useExistingCombo->setEnabled(useExisting);
-        primaryCombo->setEnabled(!useExisting);
-        secondaryCombo->setEnabled(!useExisting);
-        widthSpin->setEnabled(!useExisting);
-        heightSpin->setEnabled(!useExisting);
-    });
-
-    QFormLayout form(&dialog);
-    form.addRow("New Layout Name", newNameEdit);
-    form.addRow("New Layout ID", newId);
-    form.addRow("Copy Existing Layout", useExistingCheck);
-    form.addRow("", useExistingCombo);
-    form.addRow("Primary Tileset", primaryCombo);
-    form.addRow("Secondary Tileset", secondaryCombo);
-    form.addRow("Layout Width", widthSpin);
-    form.addRow("Layout Height", heightSpin);
-    form.addRow("", errorMessageLabel);
-
-    connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
-        // verify some things
-        QString errorMessage;
-        QString tryLayoutName = newNameEdit->text();
-        // name not empty
-        if (tryLayoutName.isEmpty()) {
-            errorMessage = "Name cannot be empty";
-        }
-        // unique layout name & id
-        else if (this->editor->project->layoutIds.contains(newId->text())
-              || this->editor->project->layoutIdsToNames.find(tryLayoutName) != this->editor->project->layoutIdsToNames.end()) {
-            errorMessage = "Layout Name / ID is not unique";
-        }
-        // from id is existing value
-        else if (useExistingCheck->isChecked()) {
-            if (!this->editor->project->layoutIds.contains(useExistingCombo->currentText())) {
-                errorMessage = "Existing layout ID is not valid";
-            }
-        }
-
-        if (!errorMessage.isEmpty()) {
-            // show error
-            errorMessageLabel->setText(errorMessage);
-            errorMessageLabel->setVisible(true);
-        }
-        else {
-            dialog.accept();
-        }
-    });
-
-    form.addRow(&newItemButtonBox);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        Layout::SimpleSettings layoutSettings;
-        QString layoutName = newNameEdit->text();
-        layoutSettings.name = layoutName;
-        layoutSettings.id = Layout::layoutConstantFromName(layoutName.remove("_Layout"));
-        if (useExistingCheck->isChecked()) {
-            layoutSettings.from_id = useExistingCombo->currentText();
-        } else {
-            layoutSettings.width = widthSpin->value();
-            layoutSettings.height = heightSpin->value();
-            layoutSettings.tileset_primary_label = primaryCombo->currentText();
-            layoutSettings.tileset_secondary_label = secondaryCombo->currentText();
-        }
-        Layout *newLayout = this->editor->project->createNewLayout(layoutSettings);
-        setLayout(newLayout->id);
-    }
-    */
 }
 
 void MainWindow::mapListAddArea() {
@@ -1433,8 +1321,8 @@ void MainWindow::mapListAddArea() {
 
     connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
         const QString newAreaName = newNameDisplay->text();
-        if (this->editor->project->mapSectionIdNames.contains(newAreaName)){
-            errorMessageLabel->setText(QString("An area with the name '%1' already exists").arg(newAreaName));
+        if (!this->editor->project->isIdentifierUnique(newAreaName)) {
+            errorMessageLabel->setText(QString("The name '%1' is not unique.").arg(newAreaName));
             errorMessageLabel->setVisible(true);
         } else {
             dialog.accept();
@@ -1485,6 +1373,7 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     }
 }
 
+// Called any time a new layout is created (including as a byproduct of creating a new map)
 void MainWindow::onNewLayoutCreated(Layout *layout) {
     logInfo(QString("Created a new layout named %1.").arg(layout->name));
 
@@ -1504,31 +1393,16 @@ void MainWindow::onNewMapGroupCreated(const QString &groupName) {
     this->mapGroupModel->insertGroupItem(groupName);
 }
 
-// TODO: This and the new layout dialog are modal. We shouldn't need to reference their dialogs outside these open functions,
-//       so we should be able to remove them as members of MainWindow.
-//       (plus, the opening then init() call after showing for NewMapDialog is Bad)
 void MainWindow::openNewMapDialog() {
-    if (!this->newMapDialog) {
-        this->newMapDialog = new NewMapDialog(this, this->editor->project);
-        connect(this->newMapDialog, &NewMapDialog::applied, this, &MainWindow::userSetMap);
-    }
-
-    openSubWindow(this->newMapDialog);
-}
-
-void MainWindow::on_action_NewMap_triggered() {
-    openNewMapDialog();
-    //this->newMapDialog->initUi();//TODO
-    this->newMapDialog->init();
+    auto dialog = new NewMapDialog(this->editor->project, this);
+    connect(dialog, &NewMapDialog::applied, this, &MainWindow::userSetMap);
+    dialog->open();
 }
 
 void MainWindow::openNewLayoutDialog() {
-    if (!this->newLayoutDialog) {
-        this->newLayoutDialog = new NewLayoutDialog(this, this->editor->project);
-        connect(this->newLayoutDialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
-    }
-
-    openSubWindow(this->newLayoutDialog);
+    auto dialog = new NewLayoutDialog(this->editor->project, this);
+    connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+    dialog->open();
 }
 
 // Insert label for newly-created tileset into sorted list of existing labels
@@ -2732,8 +2606,9 @@ void MainWindow::on_actionImport_Layout_from_Advance_Map_1_92_triggered() {
         return;
     }
 
-    openNewLayoutDialog();
-    this->newLayoutDialog->copyFrom(*mapLayout);
+    auto dialog = new NewLayoutDialog(this->editor->project, mapLayout, this);
+    connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+    dialog->open();
     delete mapLayout;
 }
 
@@ -2756,7 +2631,7 @@ void MainWindow::on_pushButton_AddConnection_clicked() {
 
     auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames);
     connect(dialog, &NewMapConnectionDialog::accepted, this->editor, &Editor::addConnection);
-    dialog->exec();
+    dialog->open();
 }
 
 void MainWindow::on_pushButton_NewWildMonGroup_clicked() {
@@ -3243,10 +3118,6 @@ bool MainWindow::closeSupplementaryWindows() {
     if (this->mapImageExporter && !this->mapImageExporter->close())
         return false;
     this->mapImageExporter = nullptr;
-
-    if (this->newMapDialog && !this->newMapDialog->close())
-        return false;
-    this->newMapDialog = nullptr;
 
     if (this->shortcutsEditor && !this->shortcutsEditor->close())
         return false;

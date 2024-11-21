@@ -82,8 +82,8 @@ public:
     bool saveEmptyMapsec;
 
     struct NewMapSettings {
-        QString mapName;
-        QString mapId;
+        QString name;
+        QString id;
         QString group;
         bool canFlyTo;
         Layout::Settings layout;
@@ -133,9 +133,9 @@ public:
     void addNewMap(Map* newMap, const QString &groupName);
     void addNewMapGroup(const QString &groupName);
     void addNewLayout(Layout* newLayout);
-    QString getNewMapName();
-    QString getNewLayoutName();
-    bool isLayoutNameUnique(const QString &name);
+    NewMapSettings getNewMapSettings() const;
+    Layout::Settings getNewLayoutSettings() const;
+    bool isIdentifierUnique(const QString &identifier) const;
     QString getProjectTitle();
 
     bool readWildMonData();
@@ -159,7 +159,7 @@ public:
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
-    Layout *createNewLayout(const Layout::Settings &layoutSettings);
+    Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
     bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
@@ -234,8 +234,6 @@ public:
 
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
-    void initNewMapSettings();
-    void initNewLayoutSettings();
 
     static QString getDynamicMapDefineName();
     static QString getDynamicMapName();

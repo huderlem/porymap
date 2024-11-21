@@ -10,7 +10,7 @@ NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
     this->setFixedSize(this->width(), this->height());
     this->project = project;
     //only allow characters valid for a symbol
-    static const QRegularExpression expression("[_A-Za-z0-9]+$");
+    static const QRegularExpression expression("[_A-Za-z0-9]+$"); // TODO: Incorrect, allows digits at beginning
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
     this->ui->nameLineEdit->setValidator(validator);
 
@@ -35,6 +35,7 @@ void NewTilesetDialog::SecondaryChanged(){
     NameOrSecondaryChanged();
 }
 
+// TODO: No validation
 void NewTilesetDialog::NameOrSecondaryChanged() {
     this->friendlyName = this->ui->nameLineEdit->text();
     this->fullSymbolName = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix) + this->friendlyName;

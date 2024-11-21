@@ -9,29 +9,53 @@
 
 const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
 
-NewLayoutDialog::NewLayoutDialog(QWidget *parent, Project *project) :
+Layout::Settings NewLayoutDialog::settings = {};
+bool NewLayoutDialog::initializedSettings = false;
+
+NewLayoutDialog::NewLayoutDialog(Project *project, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NewLayoutDialog)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setModal(true);
     ui->setupUi(this);
+    ui->label_GenericError->setVisible(false);
     this->project = project;
-    this->settings = &project->newMapSettings.layout;
 
-    ui->lineEdit_Name->setText(project->getNewLayoutName());
-
+    Layout::Settings newSettings = project->getNewLayoutSettings();
+    if (!initializedSettings) {
+        // The first time this dialog is opened we initialize all the default settings.
+        settings = newSettings;
+        initializedSettings = true;
+    } else {
+        // On subsequent openings we only initialize the settings that should be unique,
+        // preserving all other settings from the last time the dialog was open.
+        settings.name = newSettings.name;
+        settings.id = newSettings.id;
+    }
     ui->newLayoutForm->initUi(project);
-    ui->newLayoutForm->setSettings(*this->settings);
 
-    // Names and IDs can only contain word characters, and cannot start with a digit.
+    // Identifiers can only contain word characters, and cannot start with a digit.
     static const QRegularExpression re("[A-Za-z_]+[\\w]*");
     auto validator = new QRegularExpressionValidator(re, this);
     ui->lineEdit_Name->setValidator(validator);
     ui->lineEdit_LayoutID->setValidator(validator);
 
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewLayoutDialog::dialogButtonClicked);
+
+    refresh();
     adjustSize();
+}
+
+// Creating new layout from AdvanceMap import
+// TODO: Re-use for a "Duplicate Layout" option
+NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layout, QWidget *parent) :
+    NewLayoutDialog(project, parent)
+{
+    if (layout) {
+        this->importedLayout = layout->copy();
+        refresh();
+    }
 }
 
 NewLayoutDialog::~NewLayoutDialog()
@@ -41,33 +65,24 @@ NewLayoutDialog::~NewLayoutDialog()
     delete ui;
 }
 
-// Creating new layout from AdvanceMap import
-// TODO: Re-use for a "Duplicate Layout" option?
-void NewLayoutDialog::copyFrom(const Layout &layoutToCopy) {
-    if (this->importedLayout)
-        delete this->importedLayout;
+void NewLayoutDialog::refresh() {
+    if (this->importedLayout) {
+        // If we're importing a layout then some settings will be enforced.
+        ui->newLayoutForm->setSettings(this->importedLayout->settings());
+        ui->newLayoutForm->setDisabled(true);
+    } else {
+        ui->newLayoutForm->setSettings(settings);
+        ui->newLayoutForm->setDisabled(false);
+    }
 
-    this->importedLayout = new Layout();
-    this->importedLayout->blockdata = layoutToCopy.blockdata;
-    if (!layoutToCopy.border.isEmpty())
-        this->importedLayout->border = layoutToCopy.border;
-
-    this->settings->width = layoutToCopy.width;
-    this->settings->height = layoutToCopy.height;
-    this->settings->borderWidth = layoutToCopy.border_width;
-    this->settings->borderHeight = layoutToCopy.border_height;
-    this->settings->primaryTilesetLabel = layoutToCopy.tileset_primary_label;
-    this->settings->secondaryTilesetLabel = layoutToCopy.tileset_secondary_label;
-
-    // Don't allow changes to the layout settings
-    ui->newLayoutForm->setSettings(*this->settings);
-    ui->newLayoutForm->setDisabled(true);
+    ui->lineEdit_Name->setText(settings.name);
+    ui->lineEdit_LayoutID->setText(settings.id);
 }
 
 void NewLayoutDialog::saveSettings() {
-    *this->settings = ui->newLayoutForm->settings();
-    this->settings->id = ui->lineEdit_LayoutID->text();
-    this->settings->name = ui->lineEdit_Name->text();
+    settings = ui->newLayoutForm->settings();
+    settings.id = ui->lineEdit_LayoutID->text();
+    settings.name = ui->lineEdit_Name->text();
 }
 
 bool NewLayoutDialog::validateLayoutID(bool allowEmpty) {
@@ -76,8 +91,8 @@ bool NewLayoutDialog::validateLayoutID(bool allowEmpty) {
     QString errorText;
     if (id.isEmpty()) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_LayoutID->text());
-    } else if (this->project->mapLayouts.contains(id)) {
-        errorText = QString("%1 '%2' is already in use.").arg(ui->label_LayoutID->text()).arg(id);
+    } else if (!this->project->isIdentifierUnique(id)) {
+        errorText = QString("%1 '%2' is not unique.").arg(ui->label_LayoutID->text()).arg(id);
     }
 
     bool isValid = errorText.isEmpty();
@@ -97,8 +112,8 @@ bool NewLayoutDialog::validateName(bool allowEmpty) {
     QString errorText;
     if (name.isEmpty()) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_Name->text());
-    } else if (!this->project->isLayoutNameUnique(name)) {
-        errorText = QString("%1 '%2' is already in use.").arg(ui->label_Name->text()).arg(name);
+    } else if (!this->project->isIdentifierUnique(name)) {
+        errorText = QString("%1 '%2' is not unique.").arg(ui->label_Name->text()).arg(name);
     }
 
     bool isValid = errorText.isEmpty();
@@ -110,6 +125,8 @@ bool NewLayoutDialog::validateName(bool allowEmpty) {
 
 void NewLayoutDialog::on_lineEdit_Name_textChanged(const QString &text) {
     validateName(true);
+    
+    // Changing the layout name updates the layout ID field to match.
     ui->lineEdit_LayoutID->setText(Layout::layoutConstantFromName(text));
 }
 
@@ -118,8 +135,8 @@ void NewLayoutDialog::dialogButtonClicked(QAbstractButton *button) {
     if (role == QDialogButtonBox::RejectRole){
         reject();
     } else if (role == QDialogButtonBox::ResetRole) {
-        this->project->initNewLayoutSettings(); // TODO: Don't allow this to change locked settings
-        ui->newLayoutForm->setSettings(*this->settings);
+        settings = this->project->getNewLayoutSettings();
+        refresh();
     } else if (role == QDialogButtonBox::AcceptRole) {
         accept();
     }
@@ -137,18 +154,13 @@ void NewLayoutDialog::accept() {
     // Update settings from UI
     saveSettings();
 
-    /*
-    if (this->importedLayout) {
-        // Copy layout data from imported layout
-        layout->blockdata = this->importedLayout->blockdata;
-        if (!this->importedLayout->border.isEmpty())
-            layout->border = this->importedLayout->border;
-    }
-    */
-
-    Layout *layout = this->project->createNewLayout(*this->settings);
-    if (!layout)
+    Layout *layout = this->project->createNewLayout(settings, this->importedLayout);
+    if (!layout) {
+        ui->label_GenericError->setText(QString("Failed to create layout. See %1 for details.").arg(getLogPath()));
+        ui->label_GenericError->setVisible(true);
         return;
+    }
+    ui->label_GenericError->setVisible(false);
 
     emit applied(layout->id);
     QDialog::accept();

@@ -2,8 +2,16 @@
 <ui version="4.0">
  <class>NewLayoutDialog</class>
  <widget class="QDialog" name="NewLayoutDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>264</width>
+    <height>173</height>
+   </rect>
+  </property>
   <property name="windowTitle">
-   <string>New Map Options</string>
+   <string>New Layout Options</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -17,13 +25,46 @@
         <x>0</x>
         <y>0</y>
         <width>238</width>
-        <height>146</height>
+        <height>106</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <property name="verticalSpacing">
         <number>10</number>
        </property>
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_NameError">
+         <property name="visible">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 0, 0)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="NewLayoutForm" name="newLayoutForm" native="true"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineEdit_LayoutID">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this layout. It cannot be the same as any other existing layout.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_Name">
+         <property name="text">
+          <string>Layout Name</string>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_LayoutID">
          <property name="text">
@@ -34,17 +75,10 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="lineEdit_Name">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. The name cannot be the same as any other existing map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new layout. The name cannot be the same as any other existing layout.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="clearButtonEnabled">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_Name">
-         <property name="text">
-          <string>Layout Name</string>
          </property>
         </widget>
        </item>
@@ -64,32 +98,6 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_NameError">
-         <property name="visible">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 0, 0)</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_LayoutID">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this map. It cannot be the same as any other existing map, and it must start with the specified prefix.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <widget class="NewLayoutForm" name="newLayoutForm" native="true"/>
-       </item>
        <item row="8" column="0" colspan="2">
         <spacer name="verticalSpacer">
          <property name="orientation">
@@ -105,6 +113,19 @@
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_GenericError">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 0, 0)</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item>

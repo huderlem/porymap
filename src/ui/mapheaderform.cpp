@@ -154,9 +154,10 @@ MapHeader MapHeaderForm::headerData() const {
     return header;
 }
 
-void MapHeaderForm::setLocationsDisabled(bool disabled) {
-    ui->label_Location->setDisabled(disabled);
-    ui->comboBox_Location->setDisabled(disabled);
+void MapHeaderForm::setLocationDisabled(bool disabled) {
+    m_locationDisabled = disabled;
+    ui->label_Location->setDisabled(m_locationDisabled);
+    ui->comboBox_Location->setDisabled(m_locationDisabled);
 }
 
 void MapHeaderForm::updateSong() {

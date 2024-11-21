@@ -21,6 +21,7 @@ class Layout : public QObject {
 public:
     Layout() {}
 
+    static QString layoutNameFromMapName(const QString &mapName);
     static QString layoutConstantFromName(QString mapName);
 
     bool loaded = false;
@@ -83,10 +84,10 @@ public:
         QString primaryTilesetLabel;
         QString secondaryTilesetLabel;
     };
+    Settings settings() const;
 
-public:
-    Layout *copy();
-    void copyFrom(Layout *other);
+    Layout *copy() const;
+    void copyFrom(const Layout *other);
 
     int getWidth() const { return width; }
     int getHeight() const { return height; }

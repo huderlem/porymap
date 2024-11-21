@@ -32,11 +32,13 @@ public:
     MapHeader headerData() const;
 
     void setLocations(QStringList locations);
-    void setLocationsDisabled(bool disabled);
+    void setLocationDisabled(bool disabled);
+    bool isLocationDisabled() const { return m_locationDisabled; }
 
 private:
     Ui::MapHeaderForm *ui;
     QPointer<MapHeader> m_header = nullptr;
+    bool m_locationDisabled = false;
 
     void updateUi();
     void updateSong();

@@ -2926,7 +2926,7 @@
     <addaction name="actionMap_Shift"/>
     <addaction name="separator"/>
     <addaction name="action_NewMap"/>
-    <addaction name="actionNew_Layout"/>
+    <addaction name="action_NewLayout"/>
     <addaction name="actionNew_Tileset"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
@@ -3283,7 +3283,7 @@
     <string>Grid Settings...</string>
    </property>
   </action>
-  <action name="actionNew_Layout">
+  <action name="action_NewLayout">
    <property name="text">
     <string>New Layout...</string>
    </property>

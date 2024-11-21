@@ -22,8 +22,6 @@
 #include "mapimageexporter.h"
 #include "filterchildrenproxymodel.h"
 #include "maplistmodels.h"
-#include "newmapdialog.h"
-#include "newlayoutdialog.h"
 #include "newtilesetdialog.h"
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
@@ -188,8 +186,6 @@ private slots:
     void onLayoutChanged(Layout *layout);
     void onOpenConnectedMap(MapConnection*);
     void onTilesetsSaved(QString, QString);
-    void openNewMapDialog();
-    void openNewLayoutDialog();
     void onNewMapCreated(Map *newMap, const QString &groupName);
     void onNewMapGroupCreated(const QString &groupName);
     void onNewLayoutCreated(Layout *layout);
@@ -199,7 +195,6 @@ private slots:
     void markMapEdited();
     void markSpecificMapEdited(Map*);
 
-    void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();
     void on_action_Exit_triggered();
@@ -306,8 +301,6 @@ private:
     QPointer<RegionMapEditor> regionMapEditor = nullptr;
     QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
     QPointer<MapImageExporter> mapImageExporter = nullptr;
-    QPointer<NewMapDialog> newMapDialog = nullptr;
-    QPointer<NewLayoutDialog> newLayoutDialog = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<GridSettingsDialog> gridSettingsDialog = nullptr;
@@ -353,6 +346,8 @@ private:
     bool setProjectUI();
     void clearProjectUI();
 
+    void openNewMapDialog();
+    void openNewLayoutDialog();
     void openSubWindow(QWidget * window);
     void scrollMapList(MapTree *list, QString itemName);
     void scrollMapListToCurrentMap(MapTree *list);
@@ -371,7 +366,6 @@ private:
 
     void updateMapList();
     void mapListAddGroup();
-    void mapListAddLayout();
     void mapListAddArea();
     void openMapListItem(const QModelIndex &index);
     void saveMapListTab(int index);
