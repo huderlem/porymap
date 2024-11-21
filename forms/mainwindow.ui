@@ -2931,7 +2931,7 @@
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
     <addaction name="separator"/>
-    <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
+    <addaction name="actionImport_Layout_from_Advance_Map_1_92"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_Project_in_Text_Editor"/>
    </widget>
@@ -3222,9 +3222,9 @@
     <string>Open Config Folder</string>
    </property>
   </action>
-  <action name="actionImport_Map_from_Advance_Map_1_92">
+  <action name="actionImport_Layout_from_Advance_Map_1_92">
    <property name="text">
-    <string>Import Map from Advance Map 1.92...</string>
+    <string>Import Layout from Advance Map 1.92...</string>
    </property>
   </action>
   <action name="actionProject_Settings">

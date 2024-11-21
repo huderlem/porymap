@@ -41,38 +41,33 @@ NewLayoutDialog::~NewLayoutDialog()
     delete ui;
 }
 
-// Creating new map from AdvanceMap import
+// Creating new layout from AdvanceMap import
 // TODO: Re-use for a "Duplicate Layout" option?
-void NewLayoutDialog::init(Layout *layoutToCopy) {
+void NewLayoutDialog::copyFrom(const Layout &layoutToCopy) {
     if (this->importedLayout)
         delete this->importedLayout;
 
     this->importedLayout = new Layout();
-    this->importedLayout->blockdata = layoutToCopy->blockdata;
-    if (!layoutToCopy->border.isEmpty())
-        this->importedLayout->border = layoutToCopy->border;
+    this->importedLayout->blockdata = layoutToCopy.blockdata;
+    if (!layoutToCopy.border.isEmpty())
+        this->importedLayout->border = layoutToCopy.border;
 
-    useLayoutSettings(this->importedLayout);
+    this->settings->width = layoutToCopy.width;
+    this->settings->height = layoutToCopy.height;
+    this->settings->borderWidth = layoutToCopy.border_width;
+    this->settings->borderHeight = layoutToCopy.border_height;
+    this->settings->primaryTilesetLabel = layoutToCopy.tileset_primary_label;
+    this->settings->secondaryTilesetLabel = layoutToCopy.tileset_secondary_label;
+
+    // Don't allow changes to the layout settings
+    ui->newLayoutForm->setSettings(*this->settings);
+    ui->newLayoutForm->setDisabled(true);
 }
 
 void NewLayoutDialog::saveSettings() {
     *this->settings = ui->newLayoutForm->settings();
     this->settings->id = ui->lineEdit_LayoutID->text();
     this->settings->name = ui->lineEdit_Name->text();
-}
-
-void NewLayoutDialog::useLayoutSettings(Layout *layout) {
-    if (!layout) return;
-    this->settings->width = layout->width;
-    this->settings->height = layout->height;
-    this->settings->borderWidth = layout->border_width;
-    this->settings->borderHeight = layout->border_height;
-    this->settings->primaryTilesetLabel = layout->tileset_primary_label;
-    this->settings->secondaryTilesetLabel = layout->tileset_secondary_label;
-    ui->newLayoutForm->setSettings(*this->settings);
-
-    // Don't allow changes to the layout settings
-    ui->newLayoutForm->setDisabled(true);
 }
 
 bool NewLayoutDialog::validateLayoutID(bool allowEmpty) {

@@ -189,7 +189,7 @@ public:
     void saveTilesetMetatiles(Tileset*);
     void saveTilesetTilesImage(Tileset*);
     void saveTilesetPalettes(Tileset*);
-    void appendTilesetLabel(QString label, QString isSecondaryStr);
+    void appendTilesetLabel(const QString &label, const QString &isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();
     bool readRegionMapSections();

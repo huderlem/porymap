@@ -2,7 +2,7 @@
 #include "ui_tileseteditor.h"
 #include "log.h"
 #include "imageproviders.h"
-#include "metatileparser.h"
+#include "advancemapparser.h"
 #include "paletteutil.h"
 #include "imageexport.h"
 #include "config.h"
@@ -978,7 +978,7 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     }
 
     bool error = false;
-    QList<Metatile*> metatiles = MetatileParser::parse(filepath, &error, primary);
+    QList<Metatile*> metatiles = AdvanceMapParser::parseMetatiles(filepath, &error, primary);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import metatiles from Advance Map 1.92 .bvd file.");

@@ -9,6 +9,7 @@
 #include "array_value.h"
 #include "define_statement.h"
 #include "lexer.h"
+#include "orderedmap.h"
 
 namespace fex
 {
@@ -19,9 +20,9 @@ namespace fex
 
         std::vector<DefineStatement> Parse(std::vector<Token> tokens);
         std::vector<Array> ParseTopLevelArrays(std::vector<Token> tokens);
-        std::map<std::string, ArrayValue> ParseTopLevelObjects(std::vector<Token> tokens);
+        tsl::ordered_map<std::string, ArrayValue> ParseTopLevelObjects(std::vector<Token> tokens);
 
-        std::map<std::string, int> ReadDefines(const std::string &filename, std::vector<std::string> matching);
+        tsl::ordered_map<std::string, int> ReadDefines(const std::string &filename, std::vector<std::string> matching);
 
     private:
         int EvaluateExpression(std::vector<Token> tokens);

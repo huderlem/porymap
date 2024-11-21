@@ -20,7 +20,7 @@ class NewLayoutDialog : public QDialog
 public:
     explicit NewLayoutDialog(QWidget *parent = nullptr, Project *project = nullptr);
     ~NewLayoutDialog();
-    void init(Layout *);
+    void copyFrom(const Layout &);
     void accept() override;
 
 signals:
@@ -39,7 +39,6 @@ private:
 
     void saveSettings();
     bool isExistingLayout() const;
-    void useLayoutSettings(Layout *mapLayout);
 
 private slots:
     //void on_comboBox_Layout_currentTextChanged(const QString &text);//TODO

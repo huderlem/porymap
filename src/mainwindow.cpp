@@ -14,7 +14,7 @@
 #include "editcommands.h"
 #include "flowlayout.h"
 #include "shortcut.h"
-#include "mapparser.h"
+#include "advancemapparser.h"
 #include "prefab.h"
 #include "montabwidget.h"
 #include "imageexport.h"
@@ -1634,7 +1634,7 @@ void MainWindow::on_actionNew_Tileset_triggered() {
             int index = insertTilesetLabel(&editor->project->secondaryTilesetLabels, createTilesetDialog->fullSymbolName);
             this->ui->comboBox_SecondaryTileset->insertItem(index, createTilesetDialog->fullSymbolName);
         }
-        insertTilesetLabel(&editor->project->tilesetLabelsOrdered, createTilesetDialog->fullSymbolName);
+        editor->project->tilesetLabelsOrdered.append(createTilesetDialog->fullSymbolName);
 
         QMessageBox msgBox(this);
         msgBox.setText("Successfully created tileset.");
@@ -2712,20 +2712,14 @@ void MainWindow::on_actionExport_Map_Timelapse_Image_triggered() {
     showExportMapImageWindow(ImageExporterMode::Timelapse);
 }
 
-void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered(){
-    importMapFromAdvanceMap1_92();
-}
-
-void MainWindow::importMapFromAdvanceMap1_92()
-{
-    QString filepath = FileDialog::getOpenFileName(this, "Import Map from Advance Map 1.92", "", "Advance Map 1.92 Map Files (*.map)");
+void MainWindow::on_actionImport_Layout_from_Advance_Map_1_92_triggered() {
+    QString filepath = FileDialog::getOpenFileName(this, "Import Layout from Advance Map 1.92", "", "Advance Map 1.92 Map Files (*.map)");
     if (filepath.isEmpty()) {
         return;
     }
 
-    MapParser parser;
     bool error = false;
-    Layout *mapLayout = parser.parse(filepath, &error, editor->project);
+    Layout *mapLayout = AdvanceMapParser::parseLayout(filepath, &error, editor->project);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import map from Advance Map 1.92 .map file.");
@@ -2734,11 +2728,13 @@ void MainWindow::importMapFromAdvanceMap1_92()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Icon::Critical);
         msgBox.exec();
+        delete mapLayout;
         return;
     }
 
-    openNewMapDialog();
-    this->newMapDialog->init(mapLayout);
+    openNewLayoutDialog();
+    this->newLayoutDialog->copyFrom(*mapLayout);
+    delete mapLayout;
 }
 
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {

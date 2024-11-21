@@ -21,7 +21,8 @@ QMAKE_TARGET_BUNDLE_PREFIX = com.pret
 VERSION = 5.4.1
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
-SOURCES += src/core/block.cpp \
+SOURCES += src/core/advancemapparser.cpp \
+    src/core/block.cpp \
     src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
@@ -32,9 +33,7 @@ SOURCES += src/core/block.cpp \
     src/core/mapconnection.cpp \
     src/core/mapheader.cpp \
     src/core/maplayout.cpp \
-    src/core/mapparser.cpp \
     src/core/metatile.cpp \
-    src/core/metatileparser.cpp \
     src/core/network.cpp \
     src/core/paletteutil.cpp \
     src/core/parseutil.cpp \
@@ -127,7 +126,8 @@ SOURCES += src/core/block.cpp \
     src/ui/updatepromoter.cpp \
     src/ui/wildmonchart.cpp
 
-HEADERS  += include/core/block.h \
+HEADERS  += include/core/advancemapparser.h \
+    include/core/block.h \
     include/core/bitpacker.h \
     include/core/blockdata.h \
     include/core/events.h \
@@ -139,9 +139,7 @@ HEADERS  += include/core/block.h \
     include/core/mapconnection.h \
     include/core/mapheader.h \
     include/core/maplayout.h \
-    include/core/mapparser.h \
     include/core/metatile.h \
-    include/core/metatileparser.h \
     include/core/network.h \
     include/core/paletteutil.h \
     include/core/parseutil.h \

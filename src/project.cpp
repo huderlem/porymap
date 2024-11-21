@@ -1115,6 +1115,9 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     return true;
 }
 
+// TODO: We are parsing the tileset headers file whenever we load a tileset for the first time.
+//       At a minimum this means we're parsing the file three times per session (twice here for the first map's tilesets, once on launch in Project::readTilesetLabels).
+//       We can cache the header data instead and only parse it once on launch.
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     auto memberMap = Tileset::getHeaderMemberMap(this->usingAsmTilesets);
     if (this->usingAsmTilesets) {
@@ -1134,14 +1137,14 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         tileset->metatile_attrs_label = values.value(memberMap.key("metatileAttributes"));
     } else {
         // Read C tileset header
-        const auto structs = parser.readCStructs(projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label, memberMap);
+        auto structs = parser.readCStructs(projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label, memberMap);
         if (!structs.contains(label)) {
             return nullptr;
         }
         if (tileset == nullptr) {
             tileset = new Tileset;
         }
-        const auto tilesetAttributes = structs[label];
+        auto tilesetAttributes = structs[label];
         tileset->name = label;
         tileset->is_secondary = ParseUtil::gameStringToBool(tilesetAttributes.value("isSecondary"));
         tileset->tiles_label = tilesetAttributes.value("tiles");
@@ -1579,7 +1582,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
 }
 
 QString Project::findMetatileLabelsTileset(QString label) {
-    for (QString tilesetName : this->tilesetLabelsOrdered) {
+    for (const QString &tilesetName : this->tilesetLabelsOrdered) {
         QString metatileLabelPrefix = Tileset::getMetatileLabelPrefix(tilesetName);
         if (label.startsWith(metatileLabelPrefix))
             return tilesetName;
@@ -2046,7 +2049,7 @@ QString Project::getDefaultSecondaryTilesetLabel() const {
     return defaultLabel;
 }
 
-void Project::appendTilesetLabel(QString label, QString isSecondaryStr) {
+void Project::appendTilesetLabel(const QString &label, const QString &isSecondaryStr) {
     bool ok;
     bool isSecondary = ParseUtil::gameStringToBool(isSecondaryStr, &ok);
     if (!ok) {
@@ -2080,19 +2083,17 @@ bool Project::readTilesetLabels() {
             QRegularExpressionMatch match = iter.next();
             appendTilesetLabel(match.captured("label"), match.captured("isSecondary"));
         }
-        this->primaryTilesetLabels.sort();
-        this->secondaryTilesetLabels.sort();
-        this->tilesetLabelsOrdered.sort();
         filename = asm_filename; // For error reporting further down
     } else {
         this->usingAsmTilesets = false;
         const auto structs = parser.readCStructs(filename, "", Tileset::getHeaderMemberMap(this->usingAsmTilesets));
-        const QStringList labels = structs.keys();
-        // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
-        for (const auto &tilesetLabel : labels){
-            appendTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
+        for (auto i = structs.cbegin(); i != structs.cend(); i++){
+            appendTilesetLabel(i.key(), i.value().value("isSecondary"));
         }
     }
+
+    this->primaryTilesetLabels.sort();
+    this->secondaryTilesetLabels.sort();
 
     bool success = true;
     if (this->secondaryTilesetLabels.isEmpty()) {
@@ -2784,7 +2785,7 @@ bool Project::readEventGraphics() {
     };
 
     QString filepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
-    const auto gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
+    auto gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
 
     QMap<QString, QStringList> picTables = parser.readCArrayMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables));
     QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
@@ -2794,7 +2795,7 @@ bool Project::readEventGraphics() {
         if (!gfxInfos.contains(info_label))
             continue;
 
-        const auto gfxInfoAttributes = gfxInfos[info_label];
+        auto gfxInfoAttributes = gfxInfos[info_label];
 
         auto eventGraphics = new EventGraphics;
         eventGraphics->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));

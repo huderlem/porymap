@@ -17,7 +17,7 @@ QStringList ParserUtil::ReadDefines(QString filename, QString prefix)
     fex::Parser parser;
 
     std::vector<std::string> match_list = { prefix.toStdString() + ".*" };
-    std::map<std::string, int> defines = parser.ReadDefines(filepath.toStdString(), match_list);
+    tsl::ordered_map<std::string, int> defines = parser.ReadDefines(filepath.toStdString(), match_list);
 
     QStringList out;
     for(auto const& define : defines) {
@@ -39,7 +39,7 @@ QStringList ParserUtil::ReadDefinesValueSort(QString filename, QString prefix)
     fex::Parser parser;
 
     std::vector<std::string> match_list = { prefix.toStdString() + ".*" };
-    std::map<std::string, int> defines = parser.ReadDefines(filepath.toStdString(), match_list);
+    tsl::ordered_map<std::string, int> defines = parser.ReadDefines(filepath.toStdString(), match_list);
 
     QMultiMap<int, QString> defines_keyed_by_value;
     for (const auto& pair : defines) {
