@@ -132,7 +132,8 @@ public:
     bool readMapGroups();
     void addNewMap(Map* newMap, const QString &groupName);
     void addNewMapGroup(const QString &groupName);
-    void addNewLayout(Layout* newLayout);
+    Map *createNewMap(const Project::NewMapSettings &mapSettings, const Map* toDuplicate = nullptr);
+    Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
     NewMapSettings getNewMapSettings() const;
     Layout::Settings getNewLayoutSettings() const;
     bool isIdentifierUnique(const QString &identifier) const;
@@ -159,7 +160,6 @@ public:
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
-    Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
     bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
@@ -277,9 +277,9 @@ signals:
     void fileChanged(QString filepath);
     void mapSectionIdNamesChanged(const QStringList &idNames);
     void mapLoaded(Map *map);
-    void mapAdded(Map *newMap, const QString &groupName);
+    void mapCreated(Map *newMap, const QString &groupName);
     void mapGroupAdded(const QString &groupName);
-    void layoutAdded(Layout *newLayout);
+    void layoutCreated(Layout *newLayout);
 };
 
 #endif // PROJECT_H

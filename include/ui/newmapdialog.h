@@ -25,9 +25,6 @@ public:
 
     virtual void accept() override;
 
-signals:
-    void applied(const QString &newMapName);
-
 private:
     Ui::NewMapDialog *ui;
     Project *project;
@@ -45,10 +42,9 @@ private:
     bool validateGroup(bool allowEmpty = false);
     bool validateLayoutID(bool allowEmpty = false);
 
-    void refresh();
-
+    void setUI(const Project::NewMapSettings &settings);
     void saveSettings();
-    void useLayoutSettings(const Layout *mapLayout);
+    void setLayout(const Layout *mapLayout);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

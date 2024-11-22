@@ -50,7 +50,6 @@ NewMapDialog::NewMapDialog(Project *project, QWidget *parent) :
     // Create a collapsible section that has all the map header data.
     this->headerForm = new MapHeaderForm();
     this->headerForm->init(project);
-    this->headerForm->setHeader(&settings.header);
     auto sectionLayout = new QVBoxLayout();
     sectionLayout->addWidget(this->headerForm);
 
@@ -61,47 +60,36 @@ NewMapDialog::NewMapDialog(Project *project, QWidget *parent) :
 
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewMapDialog::dialogButtonClicked);
 
-    refresh();
+    setUI(settings);
     adjustSize(); // TODO: Save geometry?
 }
 
-// Adding new map to existing map list folder.
+// Adding new map to existing map list folder. Initialize settings accordingly.
+// Even if we initialize settings like this we'll allow users to change them afterwards,
+// because nothing is expecting them to stay at these values.
 NewMapDialog::NewMapDialog(Project *project, int mapListTab, const QString &mapListItem, QWidget *parent) :
     NewMapDialog(project, parent)
 {
     switch (mapListTab)
     {
     case MapListTab::Groups:
-        settings.group = mapListItem;
-        ui->label_Group->setDisabled(true);
-        ui->comboBox_Group->setDisabled(true);
-        ui->comboBox_Group->setTextItem(settings.group);
+        ui->comboBox_Group->setTextItem(mapListItem);
         break;
     case MapListTab::Areas:
-        settings.header.setLocation(mapListItem);
-        this->headerForm->setLocationDisabled(true);
-        // Header UI is kept in sync automatically by MapHeaderForm
+        this->headerForm->setLocation(mapListItem);
         break;
     case MapListTab::Layouts:
-        settings.layout.id = mapListItem;
-        ui->label_LayoutID->setDisabled(true);
-        ui->comboBox_LayoutID->setDisabled(true);
-        ui->comboBox_LayoutID->setTextItem(settings.layout.id);
+        ui->comboBox_LayoutID->setTextItem(mapListItem);
         break;
     }
 }
 
-// TODO: Use for a "Duplicate Map" option
 NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *parent) :
     NewMapDialog(project, parent)
 {
-    /*
-    if (this->importedMap)
-        delete this->importedMap;
-
-    this->importedMap = new Map(mapToCopy);
-    useLayoutSettings(this->importedMap->layout());
-    */
+    if (!mapToCopy)
+        return;
+    // TODO
 }
 
 NewMapDialog::~NewMapDialog()
@@ -111,35 +99,38 @@ NewMapDialog::~NewMapDialog()
     delete ui;
 }
 
-// Sync UI with settings. If any UI elements are disabled (because their settings are being enforced)
-// then we don't update them using the settings here.
-void NewMapDialog::refresh() {
+void NewMapDialog::setUI(const Project::NewMapSettings &settings) {
     ui->lineEdit_Name->setText(settings.name);
     ui->lineEdit_MapID->setText(settings.id);
-    
     ui->comboBox_Group->setTextItem(settings.group);
-    ui->checkBox_CanFlyTo->setChecked(settings.canFlyTo);
     ui->comboBox_LayoutID->setTextItem(settings.layout.id);
-    ui->newLayoutForm->setSettings(settings.layout);
-    // Header UI is kept in sync automatically by MapHeaderForm
+    if (this->importedMap && this->importedMap->layout()) {
+        // When importing a layout these settings shouldn't be changed.
+        ui->newLayoutForm->setSettings(this->importedMap->layout()->settings());
+    } else {
+        ui->newLayoutForm->setSettings(settings.layout);
+    }
+    ui->checkBox_CanFlyTo->setChecked(settings.canFlyTo);
+    this->headerForm->setHeaderData(settings.header);
 }
 
 void NewMapDialog::saveSettings() {
     settings.name = ui->lineEdit_Name->text();
     settings.id = ui->lineEdit_MapID->text();
     settings.group = ui->comboBox_Group->currentText();
-    settings.canFlyTo = ui->checkBox_CanFlyTo->isChecked();
     settings.layout = ui->newLayoutForm->settings();
     settings.layout.id = ui->comboBox_LayoutID->currentText();
     // We don't provide full control for naming new layouts here (just via the ID).
     // If a user wants to explicitly name a layout they can create it individually before creating the map.
-    settings.layout.name = Layout::layoutNameFromMapName(settings.name);
+    settings.layout.name = Layout::layoutNameFromMapName(settings.name); // TODO: Verify uniqueness
+    settings.canFlyTo = ui->checkBox_CanFlyTo->isChecked();
     settings.header = this->headerForm->headerData();
     porymapConfig.newMapHeaderSectionExpanded = this->headerSection->isExpanded();
 }
 
-void NewMapDialog::useLayoutSettings(const Layout *layout) {
+void NewMapDialog::setLayout(const Layout *layout) {
     if (layout) {
+        ui->comboBox_LayoutID->setTextItem(layout->id);
         ui->newLayoutForm->setSettings(layout->settings());
         ui->newLayoutForm->setDisabled(true);
     } else {
@@ -152,10 +143,10 @@ bool NewMapDialog::validateMapID(bool allowEmpty) {
     const QString expectedPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
 
     QString errorText;
-    if (id.isEmpty()) {
+    if (id.isEmpty() || id == expectedPrefix) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_MapID->text());
     } else if (!id.startsWith(expectedPrefix)) {
-        errorText = QString("%1 '%2' must start with '%3'.").arg(ui->label_MapID->text()).arg(id).arg(expectedPrefix);
+        errorText = QString("%1 must start with '%2'.").arg(ui->label_MapID->text()).arg(expectedPrefix);
     } else if (!this->project->isIdentifierUnique(id)) {
         errorText = QString("%1 '%2' is not unique.").arg(ui->label_MapID->text()).arg(id);
     }
@@ -223,8 +214,14 @@ bool NewMapDialog::validateLayoutID(bool allowEmpty) {
     QString errorText;
     if (layoutId.isEmpty()) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_LayoutID->text());
-    } else if (!this->project->layoutIds.contains(layoutId) && !this->project->isIdentifierUnique(layoutId)) {
-        errorText = QString("%1 must either be the ID for an existing layout, or a unique identifier for a new layout.").arg(ui->label_LayoutID->text());
+    } else if (!this->project->isIdentifierUnique(layoutId)) {
+        // Layout name is already in use by something. If we're duplicating a map this isn't allowed.
+        if (this->importedMap) {
+            errorText = QString("%1 is not unique.").arg(ui->label_LayoutID->text());
+        // If we're not duplicating a map this is ok as long as it's the name of an existing layout.
+        } else if (!this->project->layoutIds.contains(layoutId)) {
+            errorText = QString("%1 must either be the ID for an existing layout, or a unique identifier for a new layout.").arg(ui->label_LayoutID->text());
+        }
     }
 
     bool isValid = errorText.isEmpty();
@@ -236,7 +233,7 @@ bool NewMapDialog::validateLayoutID(bool allowEmpty) {
 
 void NewMapDialog::on_comboBox_LayoutID_currentTextChanged(const QString &text) {
     validateLayoutID(true);
-    useLayoutSettings(this->project->mapLayouts.value(text));
+    setLayout(this->project->mapLayouts.value(text));
 }
 
 void NewMapDialog::dialogButtonClicked(QAbstractButton *button) {
@@ -244,16 +241,7 @@ void NewMapDialog::dialogButtonClicked(QAbstractButton *button) {
     if (role == QDialogButtonBox::RejectRole){
         reject();
     } else if (role == QDialogButtonBox::ResetRole) {
-        auto newSettings = this->project->getNewMapSettings();
-
-        // If the location setting is disabled we need to enforce that setting on the new header.
-        if (this->headerForm->isLocationDisabled())
-            newSettings.header.setLocation(settings.header.location());
-
-        settings = newSettings;
-        this->headerForm->setHeader(&settings.header); // TODO: Unnecessary?
-        refresh();
-
+        setUI(this->project->getNewMapSettings());
     } else if (role == QDialogButtonBox::AcceptRole) {
         accept();
     }
@@ -273,30 +261,12 @@ void NewMapDialog::accept() {
     // Update settings from UI
     saveSettings();
 
-    Map *newMap = new Map;
-    newMap->setName(settings.name);
-    newMap->setConstantName(settings.id);
-    newMap->setHeader(settings.header);
-    newMap->setNeedsHealLocation(settings.canFlyTo);
-
-    Layout *layout = this->project->mapLayouts.value(settings.layout.id);
-    if (layout) {
-        // Layout already exists
-        newMap->setNeedsLayoutDir(false); // TODO: Remove this member?
-    } else {
-        layout = this->project->createNewLayout(settings.layout);
-    }
-    if (!layout) {
-        ui->label_GenericError->setText(QString("Failed to create layout for map. See %1 for details.").arg(getLogPath()));
+    Map *map = this->project->createNewMap(settings, this->importedMap);
+    if (!map) {
+        ui->label_GenericError->setText(QString("Failed to create map. See %1 for details.").arg(getLogPath()));
         ui->label_GenericError->setVisible(true);
-        delete newMap;
         return;
     }
     ui->label_GenericError->setVisible(false);
-
-    newMap->setLayout(layout);
-
-    this->project->addNewMap(newMap, settings.group);
-    emit applied(newMap->name());
     QDialog::accept();
 }

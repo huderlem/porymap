@@ -621,9 +621,9 @@ bool MainWindow::openProject(QString dir, bool initial) {
     project->set_root(dir);
     connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
     connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
-    connect(project, &Project::mapAdded, this, &MainWindow::onNewMapCreated);
+    connect(project, &Project::mapCreated, this, &MainWindow::onNewMapCreated);
+    connect(project, &Project::layoutCreated, this, &MainWindow::onNewLayoutCreated);
     connect(project, &Project::mapGroupAdded, this, &MainWindow::onNewMapGroupCreated);
-    connect(project, &Project::layoutAdded, this, &MainWindow::onNewLayoutCreated);
     connect(project, &Project::mapSectionIdNamesChanged, this->mapHeaderForm, &MapHeaderForm::setLocations);
     this->editor->setProject(project);
 
@@ -1210,6 +1210,10 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     if (itemType == "map_name") {
         // Right-clicking on a map.
         openItemAction = menu.addAction("Open Map");
+        connect(menu.addAction("Duplicate Map"), &QAction::triggered, [this, itemName] {
+            auto dialog = new NewMapDialog(this->editor->project, this->editor->project->getMap(itemName), this);
+            dialog->open();
+        });
         //menu.addSeparator();
         //connect(menu.addAction("Delete Map"), &QAction::triggered, [this, index] { deleteMapListItem(index); }); // TODO: No support for deleting maps
     } else if (itemType == "map_group") {
@@ -1227,6 +1231,14 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     } else if (itemType == "map_layout") {
         // Right-clicking on a map layout
         openItemAction = menu.addAction("Open Layout");
+        connect(menu.addAction("Duplicate Layout"), &QAction::triggered, [this, itemName] {
+            auto layout = this->editor->project->loadLayout(itemName);
+            if (layout) {
+                auto dialog = new NewLayoutDialog(this->editor->project, layout, this);
+                connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+                dialog->open();
+            }
+        });
         addToFolderAction = menu.addAction("Add New Map with Layout");
         //menu.addSeparator();
         //deleteFolderAction = menu.addAction("Delete Layout"); // TODO: No support for deleting layouts
@@ -1236,7 +1248,6 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         // All folders only contain maps, so adding an item to any folder is adding a new map.
         connect(addToFolderAction, &QAction::triggered, [this, itemName] {
             auto dialog = new NewMapDialog(this->editor->project, ui->mapListContainer->currentIndex(), itemName, this);
-            connect(dialog, &NewMapDialog::applied, this, &MainWindow::userSetMap);
             dialog->open();
         });
     }
@@ -1371,6 +1382,8 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
         editor->project->saveHealLocations(newMap);
         editor->save();
     }
+
+    userSetMap(newMap->name());
 }
 
 // Called any time a new layout is created (including as a byproduct of creating a new map)
@@ -1395,7 +1408,6 @@ void MainWindow::onNewMapGroupCreated(const QString &groupName) {
 
 void MainWindow::openNewMapDialog() {
     auto dialog = new NewMapDialog(this->editor->project, this);
-    connect(dialog, &NewMapDialog::applied, this, &MainWindow::userSetMap);
     dialog->open();
 }
 

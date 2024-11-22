@@ -35,6 +35,7 @@ class Map : public QObject
     Q_OBJECT
 public:
     explicit Map(QObject *parent = nullptr);
+    explicit Map(const Map &other, QObject *parent = nullptr);
     ~Map();
 
 public:
@@ -125,7 +126,7 @@ private:
     bool m_scriptsLoaded = false;
 
     QMap<Event::Group, QList<Event *>> m_events;
-    QList<Event *> m_ownedEvents; // for memory management
+    QSet<Event *> m_ownedEvents; // for memory management
 
     QList<int> m_metatileLayerOrder;
     QList<float> m_metatileLayerOpacity;

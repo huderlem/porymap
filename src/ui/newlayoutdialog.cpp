@@ -47,15 +47,26 @@ NewLayoutDialog::NewLayoutDialog(Project *project, QWidget *parent) :
     adjustSize();
 }
 
-// Creating new layout from AdvanceMap import
-// TODO: Re-use for a "Duplicate Layout" option
-NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layout, QWidget *parent) :
+// Creating new layout from an existing layout (e.g. via AdvanceMap import, or duplicating from map list).
+NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, QWidget *parent) :
     NewLayoutDialog(project, parent)
 {
-    if (layout) {
-        this->importedLayout = layout->copy();
-        refresh();
+    if (!layoutToCopy)
+        return;
+
+    this->importedLayout = layoutToCopy->copy();
+    if (!this->importedLayout->name.isEmpty()) {
+        // If the layout we're duplicating has a name and ID we'll initialize the name/ID fields
+        // using that name and add a suffix to make it unique.
+        // Layouts imported with AdvanceMap won't have a name/ID.
+        int i = 2;
+        do {
+            settings.name = QString("%1_%2").arg(this->importedLayout->name).arg(i);
+            settings.id = QString("%1_%2").arg(this->importedLayout->id).arg(i);
+            i++;
+        } while (!this->project->isIdentifierUnique(settings.name) || !this->project->isIdentifierUnique(settings.id));
     }
+    refresh();
 }
 
 NewLayoutDialog::~NewLayoutDialog()
@@ -162,6 +173,8 @@ void NewLayoutDialog::accept() {
     }
     ui->label_GenericError->setVisible(false);
 
+    // TODO: See if we can get away with emitting this from Project so that we don't need to connect
+    //       to this signal every time we create the dialog.
     emit applied(layout->id);
     QDialog::accept();
 }

@@ -35,98 +35,87 @@ MapHeader &MapHeader::operator=(const MapHeader &other) {
 void MapHeader::setSong(const QString &song) {
     if (m_song == song)
         return;
-    auto before = m_song;
     m_song = song;
-    emit songChanged(before, m_song);
+    emit songChanged(m_song);
     emit modified();
 }
 
 void MapHeader::setLocation(const QString &location) {
     if (m_location == location)
         return;
-    auto before = m_location;
     m_location = location;
-    emit locationChanged(before, m_location);
+    emit locationChanged(m_location);
     emit modified();
 }
 
 void MapHeader::setRequiresFlash(bool requiresFlash) {
     if (m_requiresFlash == requiresFlash)
         return;
-    auto before = m_requiresFlash;
     m_requiresFlash = requiresFlash;
-    emit requiresFlashChanged(before, m_requiresFlash);
+    emit requiresFlashChanged(m_requiresFlash);
     emit modified();
 }
 
 void MapHeader::setWeather(const QString &weather) {
     if (m_weather == weather)
         return;
-    auto before = m_weather;
     m_weather = weather;
-    emit weatherChanged(before, m_weather);
+    emit weatherChanged(m_weather);
     emit modified();
 }
 
 void MapHeader::setType(const QString &type) {
     if (m_type == type)
         return;
-    auto before = m_type;
     m_type = type;
-    emit typeChanged(before, m_type);
+    emit typeChanged(m_type);
     emit modified();
 }
 
 void MapHeader::setShowsLocationName(bool showsLocationName) {
     if (m_showsLocationName == showsLocationName)
         return;
-    auto before = m_showsLocationName;
     m_showsLocationName = showsLocationName;
-    emit showsLocationNameChanged(before, m_showsLocationName);
+    emit showsLocationNameChanged(m_showsLocationName);
     emit modified();
 }
 
 void MapHeader::setAllowsRunning(bool allowsRunning) {
     if (m_allowsRunning == allowsRunning)
         return;
-    auto before = m_allowsRunning;
     m_allowsRunning = allowsRunning;
-    emit allowsRunningChanged(before, m_allowsRunning);
+    emit allowsRunningChanged(m_allowsRunning);
     emit modified();
 }
 
 void MapHeader::setAllowsBiking(bool allowsBiking) {
     if (m_allowsBiking == allowsBiking)
         return;
-    auto before = m_allowsBiking;
     m_allowsBiking = allowsBiking;
-    emit allowsBikingChanged(before, m_allowsBiking);
+    emit allowsBikingChanged(m_allowsBiking);
     emit modified();
 }
 
 void MapHeader::setAllowsEscaping(bool allowsEscaping) {
     if (m_allowsEscaping == allowsEscaping)
         return;
-    auto before = m_allowsEscaping;
     m_allowsEscaping = allowsEscaping;
-    emit allowsEscapingChanged(before, m_allowsEscaping);
+    emit allowsEscapingChanged(m_allowsEscaping);
     emit modified();
 }
 
 void MapHeader::setFloorNumber(int floorNumber) {
     if (m_floorNumber == floorNumber)
         return;
-    auto before = m_floorNumber;
     m_floorNumber = floorNumber;
-    emit floorNumberChanged(before, m_floorNumber);
+    emit floorNumberChanged(m_floorNumber);
     emit modified();
 }
 
 void MapHeader::setBattleScene(const QString &battleScene) {
     if (m_battleScene == battleScene)
         return;
-    auto before = m_battleScene;
     m_battleScene = battleScene;
-    emit battleSceneChanged(before, m_battleScene);
+    emit battleSceneChanged(m_battleScene);
     emit modified();
 }

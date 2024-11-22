@@ -20,6 +20,7 @@ class Layout : public QObject {
     Q_OBJECT
 public:
     Layout() {}
+    Layout(const Layout &other);
 
     static QString layoutNameFromMapName(const QString &mapName);
     static QString layoutConstantFromName(QString mapName);

@@ -363,8 +363,59 @@ bool Project::loadMapData(Map* map) {
     return true;
 }
 
+Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* toDuplicate) {
+    Map *map = toDuplicate ? new Map(*toDuplicate) : new Map;
+    map->setName(settings.name);
+    map->setConstantName(settings.id);
+    map->setHeader(settings.header);
+    map->setNeedsHealLocation(settings.canFlyTo);
+
+    Layout *layout = this->mapLayouts.value(settings.layout.id);
+    if (layout) {
+        // Layout already exists
+        map->setNeedsLayoutDir(false); // TODO: Remove this member?
+    } else {
+        layout = createNewLayout(settings.layout);
+    }
+    if (!layout) {
+        delete map;
+        return nullptr;
+    }
+    map->setLayout(layout);
+
+    // Make sure we keep the order of the map names the same as in the map group order.
+    int mapNamePos;
+    if (this->groupNames.contains(settings.group)) {
+        mapNamePos = 0;
+        for (const auto &name : this->groupNames) {
+            mapNamePos += this->groupNameToMapNames[name].length();
+            if (name == settings.group)
+                break;
+        }
+    } else {
+        // Adding map to a map group that doesn't exist yet.
+        // Create the group, and we already know the map will be last in the list.
+        addNewMapGroup(settings.group);
+        mapNamePos = this->mapNames.length();
+    }
+
+    this->mapNames.insert(mapNamePos, map->name());
+    this->groupNameToMapNames[settings.group].append(map->name());
+    this->mapConstantsToMapNames.insert(map->constantName(), map->name());
+    this->mapNamesToMapConstants.insert(map->name(), map->constantName());
+
+    map->setIsPersistedToFile(false);
+
+    emit mapCreated(map, settings.group);
+
+    return map;
+}
+
 Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout *toDuplicate) {
-    Layout *layout = new Layout;
+    if (this->layoutIds.contains(settings.id))
+        return nullptr;
+
+    Layout *layout = toDuplicate ? new Layout(*toDuplicate) : new Layout();
     layout->id = settings.id;
     layout->name = settings.name;
     layout->width = settings.width;
@@ -373,13 +424,6 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
     layout->border_height = settings.borderHeight;
     layout->tileset_primary_label = settings.primaryTilesetLabel;
     layout->tileset_secondary_label = settings.secondaryTilesetLabel;
-
-    if (toDuplicate) {
-        // If we're duplicating an existing layout we'll copy over the blockdata.
-        // Otherwise addNewLayout will fill our new layout using the default settings.
-        layout->blockdata = toDuplicate->blockdata;
-        layout->border = toDuplicate->border;
-    }
 
     const QString basePath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders);
     layout->border_path = QString("%1%2/border.bin").arg(basePath, layout->name);
@@ -393,8 +437,21 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
         return nullptr;
     }
 
-    addNewLayout(layout);
+    this->mapLayouts.insert(layout->id, layout);
+    this->layoutIds.append(layout->id);
+
+    if (layout->blockdata.isEmpty()) {
+        // Fill layout using default fill settings
+        setNewLayoutBlockdata(layout);
+    }
+    if (layout->border.isEmpty()) {
+        // Fill border using default fill settings
+        setNewLayoutBorder(layout);
+    }
+
     saveLayout(layout); // TODO: Ideally we shouldn't automatically save new layouts
+
+    emit layoutCreated(layout);
 
     return layout;
 }
@@ -1886,60 +1943,6 @@ bool Project::readMapGroups() {
     return true;
 }
 
-void Project::addNewMap(Map *newMap, const QString &groupName) {
-    if (!newMap)
-        return;
-
-    // Make sure we keep the order of the map names the same as in the map group order.
-    int mapNamePos;
-    if (this->groupNames.contains(groupName)) {
-        mapNamePos = 0;
-        for (const auto &name : this->groupNames) {
-            mapNamePos += this->groupNameToMapNames[name].length();
-            if (name == groupName)
-                break;
-        }
-    } else {
-        // Adding map to a map group that doesn't exist yet.
-        // Create the group, and we already know the map will be last in the list.
-        addNewMapGroup(groupName);
-        mapNamePos = this->mapNames.length();
-    }
-
-    this->mapNames.insert(mapNamePos, newMap->name());
-    this->groupNameToMapNames[groupName].append(newMap->name());
-    this->mapConstantsToMapNames.insert(newMap->constantName(), newMap->name());
-    this->mapNamesToMapConstants.insert(newMap->name(), newMap->constantName());
-
-    newMap->setIsPersistedToFile(false);
-
-    // If we don't recognize the layout ID (i.e., it's also new) we'll add that too.
-    if (!this->layoutIds.contains(newMap->layout()->id)) {
-        addNewLayout(newMap->layout());
-    }
-
-    emit mapAdded(newMap, groupName);
-}
-
-void Project::addNewLayout(Layout* newLayout) {
-    if (!newLayout || this->layoutIds.contains(newLayout->id))
-        return;
-
-    this->mapLayouts.insert(newLayout->id, newLayout);
-    this->layoutIds.append(newLayout->id);
-
-    if (newLayout->blockdata.isEmpty()) {
-        // Fill layout using default fill settings
-        setNewLayoutBlockdata(newLayout);
-    }
-    if (newLayout->border.isEmpty()) {
-        // Fill border using default fill settings
-        setNewLayoutBorder(newLayout);
-    }
-
-    emit layoutAdded(newLayout);
-}
-
 void Project::addNewMapGroup(const QString &groupName) {
     if (this->groupNames.contains(groupName))
         return;
@@ -2005,12 +2008,11 @@ Layout::Settings Project::getNewLayoutSettings() const {
     return settings;
 }
 
-// When we ask the user to provide a new identifier for something (like a map/layout name or ID)
+// When we ask the user to provide a new identifier for something (like a map name or MAPSEC id)
 // we use this to make sure that it doesn't collide with any known identifiers first.
 // Porymap knows of many more identifiers than this, but for simplicity we only check the lists that users can add to via Porymap.
 // In general this only matters to Porymap if the identifier will be added to the group it collides with,
 // but name collisions are likely undesirable in the project.
-// TODO: Use elsewhere
 bool Project::isIdentifierUnique(const QString &identifier) const {
     if (this->mapNames.contains(identifier))
         return false;

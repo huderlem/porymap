@@ -53,17 +53,17 @@ public:
     QString battleScene() const { return m_battleScene; }
 
 signals:
-    void songChanged(QString, QString);
-    void locationChanged(QString, QString);
-    void requiresFlashChanged(bool, bool);
-    void weatherChanged(QString, QString);
-    void typeChanged(QString, QString);
-    void showsLocationNameChanged(bool, bool);
-    void allowsRunningChanged(bool, bool);
-    void allowsBikingChanged(bool, bool);
-    void allowsEscapingChanged(bool, bool);
-    void floorNumberChanged(int, int);
-    void battleSceneChanged(QString, QString);
+    void songChanged(QString);
+    void locationChanged(QString);
+    void requiresFlashChanged(bool);
+    void weatherChanged(QString);
+    void typeChanged(QString);
+    void showsLocationNameChanged(bool);
+    void allowsRunningChanged(bool);
+    void allowsBikingChanged(bool);
+    void allowsEscapingChanged(bool);
+    void floorNumberChanged(int);
+    void battleSceneChanged(QString);
     void modified();
 
 private:

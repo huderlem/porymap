@@ -5,7 +5,9 @@
 #include "scripting.h"
 #include "imageproviders.h"
 
-
+Layout::Layout(const Layout &other) : Layout() {
+    copyFrom(&other);
+}
 
 Layout *Layout::copy() const {
     Layout *layout = new Layout;

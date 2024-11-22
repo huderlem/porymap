@@ -13,12 +13,38 @@
 
 Map::Map(QObject *parent) : QObject(parent)
 {
-    m_scriptsLoaded = false;
     m_editHistory = new QUndoStack(this);
     resetEvents();
 
     m_header = new MapHeader(this);
     connect(m_header, &MapHeader::modified, this, &Map::modified);
+}
+
+Map::Map(const Map &other, QObject *parent) : Map(parent) {
+    m_name = other.m_name;
+    m_constantName = other.m_constantName;
+    m_layoutId = other.m_layoutId;
+    m_sharedEventsMap = other.m_sharedEventsMap;
+    m_sharedScriptsMap = other.m_sharedScriptsMap;
+    m_customAttributes = other.m_customAttributes;
+    *m_header = *other.m_header;
+    m_layout = other.m_layout;
+    m_isPersistedToFile = false;
+    m_metatileLayerOrder = other.m_metatileLayerOrder;
+    m_metatileLayerOpacity = other.m_metatileLayerOpacity;
+
+    // Copy events
+    for (auto i = other.m_events.constBegin(); i != other.m_events.constEnd(); i++) {
+        QList<Event*> newEvents;
+        for (const auto &event : i.value()) {
+            auto newEvent = event->duplicate();
+            m_ownedEvents.insert(newEvent);
+            newEvents.append(newEvent);
+        }
+        m_events[i.key()] = newEvents;
+    }
+
+    // Duplicating the map connections is probably not desirable, so we skip them.
 }
 
 Map::~Map() {
@@ -201,7 +227,7 @@ void Map::removeEvent(Event *event) {
 void Map::addEvent(Event *event) {
     event->setMap(this);
     m_events[event->getEventGroup()].append(event);
-    if (!m_ownedEvents.contains(event)) m_ownedEvents.append(event);
+    if (!m_ownedEvents.contains(event)) m_ownedEvents.insert(event);
 }
 
 int Map::getIndexOfEvent(Event *event) const {

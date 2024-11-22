@@ -29,29 +29,38 @@ public:
     void clear();
 
     void setHeader(MapHeader *header);
+    void setHeaderData(const MapHeader &header);
     MapHeader headerData() const;
 
+    void setSong(const QString &song);
+    void setLocation(const QString &location);
+    void setRequiresFlash(bool requiresFlash);
+    void setWeather(const QString &weather);
+    void setType(const QString &type);
+    void setBattleScene(const QString &battleScene);
+    void setShowsLocationName(bool showsLocationName);
+    void setAllowsRunning(bool allowsRunning);
+    void setAllowsBiking(bool allowsBiking);
+    void setAllowsEscaping(bool allowsEscaping);
+    void setFloorNumber(int floorNumber);
+
+    QString song() const;
+    QString location() const;
+    bool requiresFlash() const;
+    QString weather() const;
+    QString type() const;
+    QString battleScene() const;
+    bool showsLocationName() const;
+    bool allowsRunning() const;
+    bool allowsBiking() const;
+    bool allowsEscaping() const;
+    int floorNumber() const;
+
     void setLocations(QStringList locations);
-    void setLocationDisabled(bool disabled);
-    bool isLocationDisabled() const { return m_locationDisabled; }
 
 private:
     Ui::MapHeaderForm *ui;
     QPointer<MapHeader> m_header = nullptr;
-    bool m_locationDisabled = false;
-
-    void updateUi();
-    void updateSong();
-    void updateLocation();
-    void updateRequiresFlash();
-    void updateWeather();
-    void updateType();
-    void updateBattleScene();
-    void updateShowsLocationName();
-    void updateAllowsRunning();
-    void updateAllowsBiking();
-    void updateAllowsEscaping();
-    void updateFloorNumber();
 
     void onSongUpdated(const QString &song);
     void onLocationChanged(const QString &location);
