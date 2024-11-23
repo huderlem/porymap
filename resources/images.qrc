@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/add.ico</file>
+        <file>icons/chart_bar.ico</file>
         <file>icons/collapse_all.ico</file>
         <file>icons/cursor.ico</file>
         <file>icons/delete.ico</file>
