@@ -188,6 +188,7 @@ private slots:
     void onTilesetsSaved(QString, QString);
     void onNewMapCreated(Map *newMap, const QString &groupName);
     void onNewMapGroupCreated(const QString &groupName);
+    void onNewMapSectionCreated(const QString &idName);
     void onNewLayoutCreated(Layout *layout);
     void onMapLoaded(Map *map);
     void onMapRulerStatusChanged(const QString &);

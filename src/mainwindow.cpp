@@ -624,6 +624,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     connect(project, &Project::mapCreated, this, &MainWindow::onNewMapCreated);
     connect(project, &Project::layoutCreated, this, &MainWindow::onNewLayoutCreated);
     connect(project, &Project::mapGroupAdded, this, &MainWindow::onNewMapGroupCreated);
+    connect(project, &Project::mapSectionAdded, this, &MainWindow::onNewMapSectionCreated);
     connect(project, &Project::mapSectionIdNamesChanged, this->mapHeaderForm, &MapHeaderForm::setLocations);
     this->editor->setProject(project);
 
@@ -1351,7 +1352,7 @@ void MainWindow::mapListAddArea() {
 
     if (dialog.exec() == QDialog::Accepted) {
         if (newNameEdit->text().isEmpty()) return;
-        this->mapAreaModel->insertAreaItem(newNameDisplay->text());
+        this->editor->project->addNewMapsec(newNameDisplay->text());
     }
 }
 
@@ -1404,6 +1405,13 @@ void MainWindow::onNewLayoutCreated(Layout *layout) {
 void MainWindow::onNewMapGroupCreated(const QString &groupName) {
     // Add new map group to the Groups map list view
     this->mapGroupModel->insertGroupItem(groupName);
+}
+
+void MainWindow::onNewMapSectionCreated(const QString &idName) {
+    // Add new map section to the Areas map list view
+    this->mapAreaModel->insertAreaItem(idName);
+
+    // TODO: Refresh Region Map Editor's map section dropdown, if it's open
 }
 
 void MainWindow::openNewMapDialog() {

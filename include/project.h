@@ -130,8 +130,8 @@ public:
     void deleteFile(QString path);
 
     bool readMapGroups();
-    void addNewMap(Map* newMap, const QString &groupName);
     void addNewMapGroup(const QString &groupName);
+
     Map *createNewMap(const Project::NewMapSettings &mapSettings, const Map* toDuplicate = nullptr);
     Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
     NewMapSettings getNewMapSettings() const;
@@ -275,11 +275,12 @@ private:
 
 signals:
     void fileChanged(QString filepath);
-    void mapSectionIdNamesChanged(const QStringList &idNames);
     void mapLoaded(Map *map);
     void mapCreated(Map *newMap, const QString &groupName);
-    void mapGroupAdded(const QString &groupName);
     void layoutCreated(Layout *newLayout);
+    void mapGroupAdded(const QString &groupName);
+    void mapSectionAdded(const QString &idName);
+    void mapSectionIdNamesChanged(const QStringList &idNames);
 };
 
 #endif // PROJECT_H

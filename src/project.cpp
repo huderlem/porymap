@@ -399,10 +399,18 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
         mapNamePos = this->mapNames.length();
     }
 
+    if (!this->mapSectionIdNames.contains(map->header()->location())) {
+        // Unrecognized MAPSEC value. Add it.
+        // TODO: Validate location before adding
+        addNewMapsec(map->header()->location());
+    }
+
     this->mapNames.insert(mapNamePos, map->name());
     this->groupNameToMapNames[settings.group].append(map->name());
     this->mapConstantsToMapNames.insert(map->constantName(), map->name());
     this->mapNamesToMapConstants.insert(map->name(), map->constantName());
+    this->mapNameToLayoutId.insert(map->name(), map->layoutId());
+    this->mapNameToMapSectionName.insert(map->name(), map->header()->location());
 
     map->setIsPersistedToFile(false);
 
@@ -730,8 +738,6 @@ void Project::saveRegionMapSections() {
     const QString emptyMapsecName = getEmptyMapsecName();
     OrderedJson::array mapSectionArray;
     for (const auto &idName : this->mapSectionIdNames) {
-        // The 'empty' map section (MAPSEC_NONE) isn't normally present in the region map sections data file.
-        // We append this name to mapSectionIdNames ourselves if it isn't present, in which case we don't want to output data for it here.
         if (!this->saveEmptyMapsec && idName == emptyMapsecName)
             continue;
 
@@ -2308,9 +2314,10 @@ bool Project::readRegionMapSections() {
     const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
 
     QJsonDocument doc;
-    const QString filepath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
+    const QString baseFilepath = projectConfig.getFilePath(ProjectFilePath::json_region_map_entries);
+    const QString filepath = QString("%1/%2").arg(this->root).arg(baseFilepath);
     if (!parser.tryParseJsonFile(&doc, filepath)) {
-        logError(QString("Failed to read region map sections from '%1'").arg(filepath));
+        logError(QString("Failed to read region map sections from '%1'").arg(baseFilepath));
         return false;
     }
     fileWatcher.addPath(filepath);
@@ -2319,22 +2326,23 @@ bool Project::readRegionMapSections() {
     for (int i = 0; i < mapSections.size(); i++) {
         QJsonObject mapSectionObj = mapSections.at(i).toObject();
 
-        // For each map section, "id" is the only required field. This is the field we use to display the location names in various drop-downs.
+        // For each map section, "id" is the only required field. This is the field we use to display the location names in the map list, and in various drop-downs.
         const QString idField = "id";
         if (!mapSectionObj.contains(idField)) {
-            logWarn(QString("Ignoring data for map section %1. Missing required field \"%2\"").arg(i).arg(idField));
+            logWarn(QString("Ignoring data for map section %1 in '%2'. Missing required field \"%3\"").arg(i).arg(baseFilepath).arg(idField));
             continue;
         }
         const QString idName = ParseUtil::jsonToQString(mapSectionObj[idField]);
         if (!idName.startsWith(requiredPrefix)) {
-            logWarn(QString("Ignoring data for map section '%1'. IDs must start with the prefix '%2'").arg(idName).arg(requiredPrefix));
+            logWarn(QString("Ignoring data for map section '%1' in '%2'. IDs must start with the prefix '%3'").arg(idName).arg(baseFilepath).arg(requiredPrefix));
             continue;
         }
 
         this->mapSectionIdNames.append(idName);
         if (idName == defaultName) {
-            // If the user has data for the 'empty' MAPSEC we need to know to output it later,
-            // because we will otherwise add a dummy entry for this value.
+            // The default map section (MAPSEC_NONE) isn't normally present in the region map sections data file.
+            // We append this name to mapSectionIdNames ourselves if it isn't present.
+            // We need to record whether we found it in the data file, so that we can preserve the data when we save the file later.
             this->saveEmptyMapsec = true;
         }
 
@@ -2375,13 +2383,16 @@ QString Project::getEmptyMapsecName() {
 
 // This function assumes a valid and unique name
 void Project::addNewMapsec(const QString &name) {
-    if (!this->mapSectionIdNames.isEmpty() && this->mapSectionIdNames.last() == getEmptyMapsecName()) {
+    if (this->mapSectionIdNames.last() == getEmptyMapsecName()) {
         // If the default map section name (MAPSEC_NONE) is last in the list we'll keep it last in the list.
         this->mapSectionIdNames.insert(this->mapSectionIdNames.length() - 1, name);
     } else {
         this->mapSectionIdNames.append(name);
     }
     this->hasUnsavedDataChanges = true;
+
+    // TODO: Simplify into a single signal that updates the map list only if necessary
+    emit mapSectionAdded(name);
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
 }
 

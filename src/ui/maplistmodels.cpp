@@ -429,7 +429,6 @@ QStandardItem *MapAreaModel::createMapItem(QString mapName) {
 }
 
 QStandardItem *MapAreaModel::insertAreaItem(QString areaName) {
-    this->project->addNewMapsec(areaName);
     QStandardItem *item = createAreaItem(areaName);
     this->root->appendRow(item);
     this->sort(0, Qt::AscendingOrder);
