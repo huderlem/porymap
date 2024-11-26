@@ -9,30 +9,56 @@
 
 const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
 
-Layout::Settings NewLayoutDialog::settings = {};
-bool NewLayoutDialog::initializedSettings = false;
-
 NewLayoutDialog::NewLayoutDialog(Project *project, QWidget *parent) :
+    NewLayoutDialog(project, nullptr, parent)
+{}
+
+NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::NewLayoutDialog)
+    ui(new Ui::NewLayoutDialog),
+    layoutToCopy(layoutToCopy)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setModal(true);
     ui->setupUi(this);
-    ui->label_GenericError->setVisible(false);
     this->project = project;
 
-    Layout::Settings newSettings = project->getNewLayoutSettings();
-    if (!initializedSettings) {
-        // The first time this dialog is opened we initialize all the default settings.
-        settings = newSettings;
-        initializedSettings = true;
+    QString newName;
+    QString newId;
+    if (this->layoutToCopy && !this->layoutToCopy->name.isEmpty()) {
+        // Duplicating a layout, the initial name will be the base layout's name
+        // with a numbered suffix to make it unique.
+        // Note: Layouts imported with AdvanceMap have no name, so they'll use the default new layout name instead.
+
+        // If the layout name ends with the default '_Layout' suffix we'll ignore it.
+        // This is because (normally) the ID for these layouts will not have this suffix,
+        // so you can end up in a situation where you might have Map_Layout and Map_2_Layout,
+        // and if you try to duplicate Map_Layout the next available name (because of ID collisions)
+        // would be Map_Layout_3 instead of Map_3_Layout.
+        QString baseName = this->layoutToCopy->name;
+        QString suffix = "_Layout";
+        if (baseName.length() > suffix.length() && baseName.endsWith(suffix)) {
+            baseName.truncate(baseName.length() - suffix.length());
+        } else {
+            suffix = "";
+        }
+
+        int i = 2;
+        do {
+            newName = QString("%1_%2%3").arg(baseName).arg(i).arg(suffix);
+            newId = QString("%1_%2").arg(this->layoutToCopy->id).arg(i);
+            i++;
+        } while (!project->isIdentifierUnique(newName) || !project->isIdentifierUnique(newId));
     } else {
-        // On subsequent openings we only initialize the settings that should be unique,
-        // preserving all other settings from the last time the dialog was open.
-        settings.name = newSettings.name;
-        settings.id = newSettings.id;
+        newName = project->getNewLayoutName();
+        newId = Layout::layoutConstantFromName(newName);
     }
+
+    // We reset these settings for every session with the new layout dialog.
+    // The rest of the settings are preserved in the project between sessions.
+    project->newLayoutSettings.name = newName;
+    project->newLayoutSettings.id = newId;
+
     ui->newLayoutForm->initUi(project);
 
     // Identifiers can only contain word characters, and cannot start with a digit.
@@ -47,53 +73,34 @@ NewLayoutDialog::NewLayoutDialog(Project *project, QWidget *parent) :
     adjustSize();
 }
 
-// Creating new layout from an existing layout (e.g. via AdvanceMap import, or duplicating from map list).
-NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, QWidget *parent) :
-    NewLayoutDialog(project, parent)
-{
-    if (!layoutToCopy)
-        return;
-
-    this->importedLayout = layoutToCopy->copy();
-    if (!this->importedLayout->name.isEmpty()) {
-        // If the layout we're duplicating has a name and ID we'll initialize the name/ID fields
-        // using that name and add a suffix to make it unique.
-        // Layouts imported with AdvanceMap won't have a name/ID.
-        int i = 2;
-        do {
-            settings.name = QString("%1_%2").arg(this->importedLayout->name).arg(i);
-            settings.id = QString("%1_%2").arg(this->importedLayout->id).arg(i);
-            i++;
-        } while (!this->project->isIdentifierUnique(settings.name) || !this->project->isIdentifierUnique(settings.id));
-    }
-    refresh();
-}
-
 NewLayoutDialog::~NewLayoutDialog()
 {
     saveSettings();
-    delete this->importedLayout;
     delete ui;
 }
 
 void NewLayoutDialog::refresh() {
-    if (this->importedLayout) {
+    const Layout::Settings *settings = &this->project->newLayoutSettings;
+
+    if (this->layoutToCopy) {
         // If we're importing a layout then some settings will be enforced.
-        ui->newLayoutForm->setSettings(this->importedLayout->settings());
+        ui->newLayoutForm->setSettings(this->layoutToCopy->settings());
         ui->newLayoutForm->setDisabled(true);
     } else {
-        ui->newLayoutForm->setSettings(settings);
+        ui->newLayoutForm->setSettings(*settings);
         ui->newLayoutForm->setDisabled(false);
     }
 
-    ui->lineEdit_Name->setText(settings.name);
-    ui->lineEdit_LayoutID->setText(settings.id);
+    ui->lineEdit_Name->setText(settings->name);
+    ui->lineEdit_LayoutID->setText(settings->id);
 }
 
 void NewLayoutDialog::saveSettings() {
-    settings = ui->newLayoutForm->settings();
-    settings.id = ui->lineEdit_LayoutID->text();
-    settings.name = ui->lineEdit_Name->text();
+    Layout::Settings *settings = &this->project->newLayoutSettings;
+
+    *settings = ui->newLayoutForm->settings();
+    settings->id = ui->lineEdit_LayoutID->text();
+    settings->name = ui->lineEdit_Name->text();
 }
 
 bool NewLayoutDialog::validateLayoutID(bool allowEmpty) {
@@ -146,7 +153,7 @@ void NewLayoutDialog::dialogButtonClicked(QAbstractButton *button) {
     if (role == QDialogButtonBox::RejectRole){
         reject();
     } else if (role == QDialogButtonBox::ResetRole) {
-        settings = this->project->getNewLayoutSettings();
+        this->project->initNewLayoutSettings();
         refresh();
     } else if (role == QDialogButtonBox::AcceptRole) {
         accept();
@@ -165,7 +172,7 @@ void NewLayoutDialog::accept() {
     // Update settings from UI
     saveSettings();
 
-    Layout *layout = this->project->createNewLayout(settings, this->importedLayout);
+    Layout *layout = this->project->createNewLayout(this->project->newLayoutSettings, this->layoutToCopy);
     if (!layout) {
         ui->label_GenericError->setText(QString("Failed to create layout. See %1 for details.").arg(getLogPath()));
         ui->label_GenericError->setVisible(true);

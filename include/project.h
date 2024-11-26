@@ -81,16 +81,6 @@ public:
     bool wildEncountersLoaded;
     bool saveEmptyMapsec;
 
-    struct NewMapSettings {
-        QString name;
-        QString id;
-        QString group;
-        bool canFlyTo;
-        Layout::Settings layout;
-        MapHeader header;
-    };
-    NewMapSettings newMapSettings;
-
     void set_root(QString);
 
     void clearMapCache();
@@ -132,10 +122,23 @@ public:
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
 
+    struct NewMapSettings {
+        QString name;
+        QString group;
+        bool canFlyTo;
+        Layout::Settings layout;
+        MapHeader header;
+    };
+    NewMapSettings newMapSettings;
+    Layout::Settings newLayoutSettings;
+
+    QString getNewMapName() const;
+    QString getNewLayoutName() const;
+    void initNewMapSettings();
+    void initNewLayoutSettings();
+
     Map *createNewMap(const Project::NewMapSettings &mapSettings, const Map* toDuplicate = nullptr);
     Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
-    NewMapSettings getNewMapSettings() const;
-    Layout::Settings getNewLayoutSettings() const;
     bool isIdentifierUnique(const QString &identifier) const;
     QString getProjectTitle();
 

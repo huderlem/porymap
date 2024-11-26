@@ -30,10 +30,7 @@ signals:
 private:
     Ui::NewLayoutDialog *ui;
     Project *project;
-    Layout *importedLayout = nullptr;
-
-    static Layout::Settings settings;
-    static bool initializedSettings;
+    const Layout *layoutToCopy;
 
     // Each of these validation functions will allow empty names up until `OK` is selected,
     // because clearing the text during editing is common and we don't want to flash errors for this.
@@ -41,7 +38,6 @@ private:
     bool validateName(bool allowEmpty = false);
 
     void refresh();
-
     void saveSettings();
     bool isExistingLayout() const;
 

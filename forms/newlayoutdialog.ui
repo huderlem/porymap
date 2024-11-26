@@ -117,6 +117,9 @@
    </item>
    <item>
     <widget class="QLabel" name="label_GenericError">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(255, 0, 0)</string>
      </property>

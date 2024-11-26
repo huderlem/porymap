@@ -74,7 +74,6 @@ public:
     QUndoStack editHistory;
 
     // to simplify new layout settings transfer between functions
-    // TODO: Make this the equivalent of struct MapHeader
     struct Settings {
         QString id;
         QString name;

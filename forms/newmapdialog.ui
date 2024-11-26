@@ -25,41 +25,43 @@
         <x>0</x>
         <y>0</y>
         <width>229</width>
-        <height>306</height>
+        <height>228</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <property name="verticalSpacing">
         <number>10</number>
        </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_Name">
+         <property name="text">
+          <string>Map Name</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0" colspan="2">
+        <widget class="QWidget" name="widget_HeaderData" native="true">
+         <layout class="QVBoxLayout" name="layout_HeaderData">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
        <item row="3" column="1">
-        <widget class="QLabel" name="label_MapIDError">
+        <widget class="QLabel" name="label_GroupError">
          <property name="visible">
           <bool>false</bool>
          </property>
-         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 0, 0)</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_LayoutID">
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-         <property name="insertPolicy">
-          <enum>QComboBox::InsertPolicy::NoInsert</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="QLabel" name="label_LayoutIDError">
          <property name="styleSheet">
           <string notr="true">color: rgb(255, 0, 0)</string>
          </property>
@@ -87,57 +89,22 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_MapID">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this map. It cannot be the same as any other existing map, and it must start with the specified prefix.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_LayoutID">
+         <property name="text">
+          <string>Layout ID</string>
          </property>
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_MapID">
+        <widget class="QLabel" name="label_Group">
          <property name="text">
-          <string>Map ID</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0" colspan="2">
-        <widget class="QWidget" name="widget_HeaderData" native="true">
-         <layout class="QVBoxLayout" name="layout_HeaderData">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-         </layout>
-        </widget>
-       </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="label_CanFlyTo">
-         <property name="text">
-          <string>Can Fly To</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_Name">
-         <property name="text">
-          <string>Map Name</string>
+          <string>Map Group</string>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="NoScrollComboBox" name="comboBox_Group">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the group this map will be added to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
+        <widget class="NoScrollComboBox" name="comboBox_LayoutID">
          <property name="editable">
           <bool>true</bool>
          </property>
@@ -146,17 +113,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_Name">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. The name cannot be the same as any other existing map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="clearButtonEnabled">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
+       <item row="8" column="1">
         <widget class="QCheckBox" name="checkBox_CanFlyTo">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a Heal Location will be added to this map automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -166,8 +123,8 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QLabel" name="label_GroupError">
+       <item row="6" column="1">
+        <widget class="QLabel" name="label_LayoutIDError">
          <property name="visible">
           <bool>false</bool>
          </property>
@@ -182,24 +139,40 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
+       <item row="7" column="0" colspan="2">
         <widget class="NewLayoutForm" name="newLayoutForm" native="true"/>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_Group">
-         <property name="text">
-          <string>Map Group</string>
+       <item row="2" column="1">
+        <widget class="NoScrollComboBox" name="comboBox_Group">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the group this map will be added to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="insertPolicy">
+          <enum>QComboBox::InsertPolicy::NoInsert</enum>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_LayoutID">
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_CanFlyTo">
          <property name="text">
-          <string>Layout ID</string>
+          <string>Can Fly To</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="0" colspan="2">
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_Name">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. The name cannot be the same as any other existing map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="0" colspan="2">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
@@ -218,6 +191,9 @@
    </item>
    <item>
     <widget class="QLabel" name="label_GenericError">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(255, 0, 0)</string>
      </property>

@@ -106,6 +106,9 @@ bool Project::load() {
                 && readEventGraphics()
                 && readSongNames()
                 && readMapGroups();
+
+    initNewLayoutSettings();
+    initNewMapSettings();
     applyParsedLimits();
     return success;
 }
@@ -366,16 +369,24 @@ bool Project::loadMapData(Map* map) {
 Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* toDuplicate) {
     Map *map = toDuplicate ? new Map(*toDuplicate) : new Map;
     map->setName(settings.name);
-    map->setConstantName(settings.id);
     map->setHeader(settings.header);
     map->setNeedsHealLocation(settings.canFlyTo);
+
+    // Generate a unique MAP constant.
+    int suffix = 2;
+    const QString baseMapConstant = Map::mapConstantFromName(map->name());
+    QString mapConstant = baseMapConstant;
+    while (!isIdentifierUnique(mapConstant)) {
+        mapConstant = QString("%1_%2").arg(baseMapConstant).arg(suffix++);
+    }
+    map->setConstantName(mapConstant);
 
     Layout *layout = this->mapLayouts.value(settings.layout.id);
     if (layout) {
         // Layout already exists
         map->setNeedsLayoutDir(false); // TODO: Remove this member?
     } else {
-        layout = createNewLayout(settings.layout);
+        layout = createNewLayout(settings.layout, toDuplicate ? toDuplicate->layout() : nullptr);
     }
     if (!layout) {
         delete map;
@@ -1960,60 +1971,6 @@ void Project::addNewMapGroup(const QString &groupName) {
     emit mapGroupAdded(groupName);
 }
 
-Project::NewMapSettings Project::getNewMapSettings() const {
-    // Ensure default name/ID doesn't already exist.
-    int i = 0;
-    QString newMapName;
-    QString newMapId;
-    do {
-        newMapName = QString("NewMap%1").arg(++i);
-        newMapId = Map::mapConstantFromName(newMapName);
-    } while (!isIdentifierUnique(newMapName) || !isIdentifierUnique(newMapId));
-
-    NewMapSettings settings;
-    settings.name = newMapName;
-    settings.id =  newMapId;
-    settings.group = this->groupNames.at(0);
-    settings.canFlyTo = false;
-    settings.layout = getNewLayoutSettings();
-    settings.layout.id = Layout::layoutConstantFromName(newMapName);
-    settings.layout.name = Layout::layoutNameFromMapName(newMapName);
-    settings.header.setSong(this->defaultSong);
-    settings.header.setLocation(this->mapSectionIdNames.value(0, "0"));
-    settings.header.setRequiresFlash(false);
-    settings.header.setWeather(this->weatherNames.value(0, "0"));
-    settings.header.setType(this->mapTypes.value(0, "0"));
-    settings.header.setBattleScene(this->mapBattleScenes.value(0, "0"));
-    settings.header.setShowsLocationName(true);
-    settings.header.setAllowsRunning(false);
-    settings.header.setAllowsBiking(false);
-    settings.header.setAllowsEscaping(false);
-    settings.header.setFloorNumber(0);
-    return settings;
-}
-
-Layout::Settings Project::getNewLayoutSettings() const {
-    // Ensure default name/ID doesn't already exist.
-    int i = 0;
-    QString newLayoutName;
-    QString newLayoutId;
-    do {
-        newLayoutName = QString("NewLayout%1").arg(++i);
-        newLayoutId = Layout::layoutConstantFromName(newLayoutName);
-    } while (!isIdentifierUnique(newLayoutId) || !isIdentifierUnique(newLayoutName));
-
-    Layout::Settings settings;
-    settings.name = newLayoutName;
-    settings.id = newLayoutId;
-    settings.width = getDefaultMapDimension();
-    settings.height = getDefaultMapDimension();
-    settings.borderWidth = DEFAULT_BORDER_WIDTH;
-    settings.borderHeight = DEFAULT_BORDER_HEIGHT;
-    settings.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
-    settings.secondaryTilesetLabel = getDefaultSecondaryTilesetLabel();
-    return settings;
-}
-
 // When we ask the user to provide a new identifier for something (like a map name or MAPSEC id)
 // we use this to make sure that it doesn't collide with any known identifiers first.
 // Porymap knows of many more identifiers than this, but for simplicity we only check the lists that users can add to via Porymap.
@@ -2038,6 +1995,64 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
         }
     }
     return true;
+}
+
+QString Project::getNewMapName() const {
+    // Ensure default name/ID doesn't already exist.
+    int i = 0;
+    QString newMapName;
+    do {
+        newMapName = QString("NewMap%1").arg(++i);
+    } while (!isIdentifierUnique(newMapName) || !isIdentifierUnique(Map::mapConstantFromName(newMapName)));
+    return newMapName;
+}
+
+QString Project::getNewLayoutName() const {
+    // Ensure default name/ID doesn't already exist.
+    int i = 0;
+    QString newLayoutName;
+    do {
+        newLayoutName = QString("NewLayout%1").arg(++i);
+    } while (!isIdentifierUnique(newLayoutName) || !isIdentifierUnique(Layout::layoutConstantFromName(newLayoutName)));
+    return newLayoutName;
+}
+
+void Project::initNewMapSettings() {
+    this->newMapSettings.name = getNewMapName();
+    this->newMapSettings.group = this->groupNames.at(0);
+    this->newMapSettings.canFlyTo = false;
+
+    this->newMapSettings.layout.name = Layout::layoutNameFromMapName(this->newMapSettings.name);
+    this->newMapSettings.layout.id = Layout::layoutConstantFromName(this->newMapSettings.name);
+    this->newMapSettings.layout.width = getDefaultMapDimension();
+    this->newMapSettings.layout.height = getDefaultMapDimension();
+    this->newMapSettings.layout.borderWidth = DEFAULT_BORDER_WIDTH;
+    this->newMapSettings.layout.borderHeight = DEFAULT_BORDER_HEIGHT;
+    this->newMapSettings.layout.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
+    this->newMapSettings.layout.secondaryTilesetLabel = getDefaultSecondaryTilesetLabel();
+
+    this->newMapSettings.header.setSong(this->defaultSong);
+    this->newMapSettings.header.setLocation(this->mapSectionIdNames.value(0, "0"));
+    this->newMapSettings.header.setRequiresFlash(false);
+    this->newMapSettings.header.setWeather(this->weatherNames.value(0, "0"));
+    this->newMapSettings.header.setType(this->mapTypes.value(0, "0"));
+    this->newMapSettings.header.setBattleScene(this->mapBattleScenes.value(0, "0"));
+    this->newMapSettings.header.setShowsLocationName(true);
+    this->newMapSettings.header.setAllowsRunning(false);
+    this->newMapSettings.header.setAllowsBiking(false);
+    this->newMapSettings.header.setAllowsEscaping(false);
+    this->newMapSettings.header.setFloorNumber(0);
+}
+
+void Project::initNewLayoutSettings() {
+    this->newLayoutSettings.name = getNewLayoutName();
+    this->newLayoutSettings.id = Layout::layoutConstantFromName(this->newLayoutSettings.name);
+    this->newLayoutSettings.width = getDefaultMapDimension();
+    this->newLayoutSettings.height = getDefaultMapDimension();
+    this->newLayoutSettings.borderWidth = DEFAULT_BORDER_WIDTH;
+    this->newLayoutSettings.borderHeight = DEFAULT_BORDER_HEIGHT;
+    this->newLayoutSettings.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
+    this->newLayoutSettings.secondaryTilesetLabel = getDefaultSecondaryTilesetLabel();
 }
 
 Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) {
