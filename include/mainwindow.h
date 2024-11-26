@@ -180,6 +180,7 @@ private slots:
     void duplicate();
     void setClipboardData(poryjson::Json::object);
     void setClipboardData(QImage);
+    void setClipboardData(const QString &text);
     void copy();
     void paste();
 
@@ -350,7 +351,7 @@ private:
     void openNewMapDialog();
     void openNewLayoutDialog();
     void openSubWindow(QWidget * window);
-    void scrollMapList(MapTree *list, QString itemName);
+    void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
     void scrollMapListToCurrentLayout(MapTree *list);
     void resetMapListFilters();

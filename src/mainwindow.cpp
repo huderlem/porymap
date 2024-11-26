@@ -956,9 +956,6 @@ bool MainWindow::setLayout(QString layoutId) {
         logInfo("Switching to layout-only editing mode. Disabling map-related edits.");
 
     unsetMap();
-
-    layoutTreeModel->setLayout(layoutId);
-
     refreshMapScene();
     updateWindowTitle();
     updateMapList();
@@ -1163,7 +1160,7 @@ void MainWindow::clearProjectUI() {
     Event::clearIcons();
 }
 
-void MainWindow::scrollMapList(MapTree *list, QString itemName) {
+void MainWindow::scrollMapList(MapTree *list, const QString &itemName) {
     if (!list || itemName.isEmpty())
         return;
     auto model = static_cast<FilterChildrenProxyModel*>(list->model());
@@ -1208,9 +1205,16 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     QAction* addToFolderAction = nullptr;
     QAction* deleteFolderAction = nullptr;
     QAction* openItemAction = nullptr;
+    QAction* copyDisplayNameAction = nullptr;
+    QAction* copyToolTipAction = nullptr;
+
     if (itemType == "map_name") {
         // Right-clicking on a map.
         openItemAction = menu.addAction("Open Map");
+        menu.addSeparator();
+        copyDisplayNameAction = menu.addAction("Copy Map Name");
+        copyToolTipAction = menu.addAction("Copy Map ID");
+        menu.addSeparator();
         connect(menu.addAction("Duplicate Map"), &QAction::triggered, [this, itemName] {
             auto dialog = new NewMapDialog(this->editor->project, this->editor->project->getMap(itemName), this);
             dialog->open();
@@ -1226,12 +1230,18 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         // Right-clicking on a MAPSEC folder
         addToFolderAction = menu.addAction("Add New Map to Area");
         menu.addSeparator();
+        copyDisplayNameAction = menu.addAction("Copy Area Name");
+        menu.addSeparator();
         deleteFolderAction = menu.addAction("Delete Area");
         if (itemName == this->editor->project->getEmptyMapsecName())
             deleteFolderAction->setEnabled(false); // Disallow deleting the default name
     } else if (itemType == "map_layout") {
         // Right-clicking on a map layout
         openItemAction = menu.addAction("Open Layout");
+        menu.addSeparator();
+        copyDisplayNameAction = menu.addAction("Copy Layout Name");
+        copyToolTipAction = menu.addAction("Copy Layout ID");
+        menu.addSeparator();
         connect(menu.addAction("Duplicate Layout"), &QAction::triggered, [this, itemName] {
             auto layout = this->editor->project->loadLayout(itemName);
             if (layout) {
@@ -1261,8 +1271,21 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
             deleteFolderAction->setEnabled(false);
         }
     }
+
     if (openItemAction) {
-        connect(openItemAction, &QAction::triggered, [this, index] { openMapListItem(index); });
+        connect(openItemAction, &QAction::triggered, [this, index] {
+            openMapListItem(index);
+        });
+    }
+    if (copyDisplayNameAction) {
+        connect(copyDisplayNameAction, &QAction::triggered, [this, sourceModel, index] {
+            setClipboardData(sourceModel->data(index, Qt::DisplayRole).toString());
+        });
+    }
+    if (copyToolTipAction) {
+        connect(copyToolTipAction, &QAction::triggered, [this, sourceModel, index] {
+            setClipboardData(sourceModel->data(index, Qt::ToolTipRole).toString());
+        });
     }
 
     if (menu.actions().length() != 0)
@@ -1399,17 +1422,17 @@ void MainWindow::onNewLayoutCreated(Layout *layout) {
     }
 
     // Add new layout to the Layouts map list view
-    this->layoutTreeModel->insertLayoutItem(layout->id);
+    this->layoutTreeModel->insertMapFolderItem(layout->id);
 }
 
 void MainWindow::onNewMapGroupCreated(const QString &groupName) {
     // Add new map group to the Groups map list view
-    this->mapGroupModel->insertGroupItem(groupName);
+    this->mapGroupModel->insertMapFolderItem(groupName);
 }
 
 void MainWindow::onNewMapSectionCreated(const QString &idName) {
     // Add new map section to the Areas map list view
-    this->mapAreaModel->insertAreaItem(idName);
+    this->mapAreaModel->insertMapFolderItem(idName);
 
     // TODO: Refresh Region Map Editor's map section dropdown, if it's open
 }
@@ -1627,28 +1650,28 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
 }
 
 void MainWindow::updateMapList() {
+    // Get the name of the open map/layout (or clear the relevant selection if there is none).
+    QString activeItemName; 
     if (this->editor->map) {
-        this->mapGroupModel->setMap(this->editor->map->name());
-        this->groupListProxyModel->layoutChanged();
-        this->mapAreaModel->setMap(this->editor->map->name());
-        this->areaListProxyModel->layoutChanged();
+        activeItemName = this->editor->map->name();
     } else {
-        this->mapGroupModel->setMap(QString());
-        this->groupListProxyModel->layoutChanged();
-        this->ui->mapList->clearSelection();
-        this->mapAreaModel->setMap(QString());
-        this->areaListProxyModel->layoutChanged();
-        this->ui->areaList->clearSelection();
+        ui->mapList->clearSelection();
+        ui->areaList->clearSelection();
+
+        if (this->editor->layout) {
+            activeItemName = this->editor->layout->id;
+        } else {
+            ui->layoutList->clearSelection();
+        }
     }
 
-    if (this->editor->layout) {
-        this->layoutTreeModel->setLayout(this->editor->layout->id);
-        this->layoutListProxyModel->layoutChanged();
-    } else {
-        this->layoutTreeModel->setLayout(QString());
-        this->layoutListProxyModel->layoutChanged();
-        this->ui->layoutList->clearSelection();
-    }
+    this->mapGroupModel->setActiveItem(activeItemName);
+    this->mapAreaModel->setActiveItem(activeItemName);
+    this->layoutTreeModel->setActiveItem(activeItemName);
+
+    this->groupListProxyModel->layoutChanged();
+    this->areaListProxyModel->layoutChanged();
+    this->layoutListProxyModel->layoutChanged();
 }
 
 void MainWindow::on_action_Save_Project_triggered() {
@@ -1780,6 +1803,11 @@ void MainWindow::setClipboardData(OrderedJson::object object) {
     OrderedJson data(object);
     data.dump(newText, &indent);
     clipboard->setText(newText);
+}
+
+void MainWindow::setClipboardData(const QString &text) {
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(text);
 }
 
 void MainWindow::setClipboardData(QImage image) {

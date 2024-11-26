@@ -38,6 +38,43 @@ void MapTree::keyPressEvent(QKeyEvent *event) {
     }
 }
 
+
+
+MapListModel::MapListModel(Project *project, QObject *parent) : QStandardItemModel(parent) {
+    this->project = project;
+    this->root = invisibleRootItem();
+
+    this->mapGrayIcon = QIcon(QStringLiteral(":/icons/map_grayed.ico"));
+    this->mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
+    this->mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
+    this->mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
+
+    this->mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
+    this->mapFolderIcon.addFile(QStringLiteral(":/icons/folder_map.ico"), QSize(), QIcon::Normal, QIcon::On);
+
+    this->emptyMapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
+    this->emptyMapFolderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
+}
+
+QStandardItem *MapListModel::getItem(const QModelIndex &index) const {
+    if (index.isValid()) {
+        QStandardItem *item = static_cast<QStandardItem*>(index.internalPointer());
+        if (item)
+            return item;
+    }
+    return this->root;
+}
+
+QModelIndex MapListModel::indexOf(const QString &itemName) const {
+    if (this->mapItems.contains(itemName))
+        return this->mapItems.value(itemName)->index();
+
+    if (this->mapFolderItems.contains(itemName))
+        return this->mapFolderItems.value(itemName)->index();
+
+    return QModelIndex();
+}
+
 void MapListModel::removeItemAt(const QModelIndex &index) {
     QStandardItem *item = this->getItem(index)->child(index.row(), index.column());
     if (!item)
@@ -49,9 +86,87 @@ void MapListModel::removeItemAt(const QModelIndex &index) {
     } else {
         // TODO: Because there's no support for deleting maps we can only delete empty folders
         if (!item->hasChildren()) {
-            this->removeItem(item);
+            removeItem(item);
         }
     }
+}
+
+QStandardItem *MapListModel::createMapItem(const QString &mapName, QStandardItem *map) {
+    if (!map) map = new QStandardItem;
+    map->setText(mapName);
+    map->setData(mapName, MapListUserRoles::NameRole);
+    map->setData("map_name", MapListUserRoles::TypeRole);
+    map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemNeverHasChildren);
+    map->setEditable(this->editable); // Will override flags if necessary
+    this->mapItems.insert(mapName, map);
+    return map;
+}
+
+QStandardItem *MapListModel::createMapFolderItem(const QString &folderName, QStandardItem *folder) {
+    if (!folder) folder = new QStandardItem;
+    folder->setText(folderName);
+    folder->setData(folderName, MapListUserRoles::NameRole);
+    folder->setData(this->folderTypeName, MapListUserRoles::TypeRole);
+    folder->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled);
+    folder->setEditable(this->editable); // Will override flags if necessary
+    this->mapFolderItems.insert(folderName, folder);
+    return folder;
+}
+
+QStandardItem *MapListModel::insertMapItem(const QString &mapName, const QString &folderName) {
+    // Disallow adding MAP_DYNAMIC to the map list.
+    if (mapName == this->project->getDynamicMapName())
+        return nullptr;
+
+    QStandardItem *folder = this->mapFolderItems[folderName];
+    if (!folder) folder = insertMapFolderItem(folderName);
+
+    QStandardItem *map = createMapItem(mapName);
+    folder->appendRow(map);
+    if (this->sortingEnabled)
+        this->sort(0, Qt::AscendingOrder);
+    return map;
+}
+
+QStandardItem *MapListModel::insertMapFolderItem(const QString &folderName) {
+    QStandardItem *item = createMapFolderItem(folderName);
+    this->root->appendRow(item);
+    if (this->sortingEnabled)
+        this->sort(0, Qt::AscendingOrder);
+    return item;
+}
+
+QVariant MapListModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid())
+        return QVariant();
+
+    int row = index.row();
+    int col = index.column();
+
+    const QStandardItem *item = this->getItem(index)->child(row, col);
+    const QString type = item->data(MapListUserRoles::TypeRole).toString();
+    const QString name = item->data(MapListUserRoles::NameRole).toString();
+
+    if (type == "map_name") {
+        // Data for maps in the map list
+        if (role == Qt::DecorationRole) {
+            if (name == this->activeItemName)
+                return this->mapOpenedIcon;
+
+            const Map* map = this->project->mapCache.value(name);
+            if (!map)
+                return this->mapGrayIcon;
+            return map->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon; 
+        } else if (role == Qt::ToolTipRole) {
+            return this->project->mapNamesToMapConstants.value(name);
+        }
+    } else if (type == this->folderTypeName) {
+        // Data for map folders in the map list
+        if (role == Qt::DecorationRole) {
+            return item->hasChildren() ? this->mapFolderIcon : this->emptyMapFolderIcon;
+        }
+    }
+    return QStandardItemModel::data(index, role);
 }
 
 
@@ -83,11 +198,15 @@ void GroupNameDelegate::updateEditorGeometry(QWidget *editor, const QStyleOption
 
 
 
-MapGroupModel::MapGroupModel(Project *project, QObject *parent) : MapListModel(parent) {
-    this->project = project;
-    this->root = this->invisibleRootItem();
+MapGroupModel::MapGroupModel(Project *project, QObject *parent) : MapListModel(project, parent) {
+    this->folderTypeName = "map_group";
+    this->editable = true;
 
-    initialize();
+    for (const auto &groupName : this->project->groupNames) {
+        for (const auto &mapName : this->project->groupNameToMapNames.value(groupName)) {
+            insertMapItem(mapName, groupName);
+        }
+    }
 }
 
 Qt::DropActions MapGroupModel::supportedDropActions() const {
@@ -173,7 +292,7 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 
         QModelIndex groupIndex = index(row, 0, parentIndex);
         QStandardItem *groupItem = this->itemFromIndex(groupIndex);
-        createGroupItem(groupName, groupItem);
+        createMapFolderItem(groupName, groupItem);
 
         for (QString mapName : mapsToMove) {
             QStandardItem *mapItem = createMapItem(mapName);
@@ -251,143 +370,36 @@ void MapGroupModel::updateProject() {
     this->project->hasUnsavedDataChanges = true;
 }
 
-QStandardItem *MapGroupModel::createGroupItem(QString groupName, QStandardItem *group) {
-    if (!group) group = new QStandardItem;
-    group->setText(groupName);
-    group->setData(groupName, MapListUserRoles::NameRole);
-    group->setData("map_group", MapListUserRoles::TypeRole);
-    group->setFlags(Qt::ItemIsEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsSelectable);
-    this->groupItems.insert(groupName, group);
-    return group;
-}
-
-QStandardItem *MapGroupModel::createMapItem(QString mapName, QStandardItem *map) {
-    if (!map) map = new QStandardItem;
-    map->setData(mapName, MapListUserRoles::NameRole);
-    map->setData("map_name", MapListUserRoles::TypeRole);
-    map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-    this->mapItems[mapName] = map;
-    return map;
-}
-
-QStandardItem *MapGroupModel::insertGroupItem(QString groupName) {
-    QStandardItem *group = createGroupItem(groupName);
-    this->root->appendRow(group);
-    return group;
-}
-
 void MapGroupModel::removeItem(QStandardItem *item) {
     this->removeRow(item->row());
     this->updateProject();
 }
 
-QStandardItem *MapGroupModel::insertMapItem(QString mapName, QString groupName) {
-    QStandardItem *group = this->groupItems[groupName];
-    if (!group) {
-        group = insertGroupItem(groupName);
-    }
-    QStandardItem *map = createMapItem(mapName);
-    group->appendRow(map);
-    return map;
-}
-
-void MapGroupModel::initialize() {
-    this->groupItems.clear();
-    this->mapItems.clear();
-
-
-    for (const auto &groupName : this->project->groupNames) {
-        QStandardItem *group = createGroupItem(groupName);
-        root->appendRow(group);
-        for (const auto &mapName : this->project->groupNameToMapNames.value(groupName)) {
-            group->appendRow(createMapItem(mapName));
-        }
-    }
-}
-
-QStandardItem *MapGroupModel::getItem(const QModelIndex &index) const {
-    if (index.isValid()) {
-        QStandardItem *item = static_cast<QStandardItem*>(index.internalPointer());
-        if (item)
-            return item;
-    }
-    return this->root;
-}
-
-QModelIndex MapGroupModel::indexOf(QString mapName) const {
-    if (this->mapItems.contains(mapName)) {
-        return this->mapItems[mapName]->index();
-    }
-    return QModelIndex();
-}
-
 QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid()) return QVariant();
+    if (!index.isValid())
+        return QVariant();
 
     int row = index.row();
     int col = index.column();
 
-    if (role == Qt::DecorationRole) {
-        static QIcon mapGrayIcon = QIcon(QStringLiteral(":/icons/map_grayed.ico"));
-        static QIcon mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
-        static QIcon mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
-        static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
+    const QStandardItem *item = this->getItem(index)->child(row, col);
+    const QString type = item->data(MapListUserRoles::TypeRole).toString();
+    const QString name = item->data(MapListUserRoles::NameRole).toString();
 
-        static QIcon mapFolderIcon;
-        static QIcon folderIcon;
-        static bool loaded = false;
-        if (!loaded) {
-            mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
-            mapFolderIcon.addFile(QStringLiteral(":/icons/folder_map.ico"), QSize(), QIcon::Normal, QIcon::On);
-            folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
-            folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
-            loaded = true;
-        }
-
-        QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListUserRoles::TypeRole).toString();
-
-        if (type == "map_group") {
-            if (!item->hasChildren()) {
-                return folderIcon;
-            }
-            return mapFolderIcon;
-        } else if (type == "map_name") {
-            QString mapName = item->data(MapListUserRoles::NameRole).toString();
-            if (mapName == this->openMap) {
-                return mapOpenedIcon;
-            }
-            else if (this->project->mapCache.contains(mapName)) {
-                if (this->project->mapCache.value(mapName)->hasUnsavedChanges()) {
-                    return mapEditedIcon;
-                }
-                else {
-                    return mapIcon;
-                }
-            }
-            return mapGrayIcon;
-        }
-    }
-    else if (role == Qt::DisplayRole) {
-        QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListUserRoles::TypeRole).toString();
-
+    if (role == Qt::DisplayRole) {
         if (type == "map_name") {
-            return QString("[%1.%2] ").arg(this->getItem(index)->row()).arg(row, 2, 10, QLatin1Char('0')) + item->data(MapListUserRoles::NameRole).toString();
+            return QString("[%1.%2] ").arg(this->getItem(index)->row()).arg(row, 2, 10, QLatin1Char('0')) + name;
         }
-        else if (type == "map_group") {
-            return item->data(MapListUserRoles::NameRole).toString();
+        else if (type == this->folderTypeName) {
+            return name;
         }
     }
-
-    return QStandardItemModel::data(index, role);
+    return MapListModel::data(index, role);
 }
 
 bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (role == MapListUserRoles::NameRole && data(index, MapListUserRoles::TypeRole).toString() == "map_group") {
-        // verify uniqueness of new group name
-        // TODO: Check that the name is a valid symbol name (i.e. only word characters, not starting with a number)
-        if (this->project->groupNames.contains(value.toString())) {
+        if (!this->project->isIdentifierUnique(value.toString())) {
             return false;
         }
     }
@@ -399,50 +411,15 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
 
 
 
-MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(parent) {
-    this->project = project;
-    this->root = this->invisibleRootItem();
+MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(project, parent) {
+    this->folderTypeName = "map_section";
 
-    initialize();
-}
-
-QStandardItem *MapAreaModel::createAreaItem(QString mapsecName) {
-    QStandardItem *area = new QStandardItem;
-    area->setText(mapsecName);
-    area->setEditable(false);
-    area->setData(mapsecName, MapListUserRoles::NameRole);
-    area->setData("map_section", MapListUserRoles::TypeRole);
-    // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-    this->areaItems.insert(mapsecName, area);
-    return area;
-}
-
-QStandardItem *MapAreaModel::createMapItem(QString mapName) {
-    QStandardItem *map = new QStandardItem;
-    map->setText(mapName);
-    map->setEditable(false);
-    map->setData(mapName, MapListUserRoles::NameRole);
-    map->setData("map_name", MapListUserRoles::TypeRole);
-    // map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-    this->mapItems.insert(mapName, map);
-    return map;
-}
-
-QStandardItem *MapAreaModel::insertAreaItem(QString areaName) {
-    QStandardItem *item = createAreaItem(areaName);
-    this->root->appendRow(item);
-    this->sort(0, Qt::AscendingOrder);
-    return item;
-}
-
-QStandardItem *MapAreaModel::insertMapItem(QString mapName, QString areaName) {
-    QStandardItem *area = this->areaItems[areaName];
-    if (!area) {
-        return nullptr;
+    for (const auto &mapName : this->project->mapNames) {
+        insertMapItem(mapName, this->project->mapNameToMapSectionName.value(mapName));
     }
-    QStandardItem *map = createMapItem(mapName);
-    area->appendRow(map);
-    return map;
+
+    this->sortingEnabled = true;
+    sort(0, Qt::AscendingOrder);
 }
 
 void MapAreaModel::removeItem(QStandardItem *item) {
@@ -450,227 +427,52 @@ void MapAreaModel::removeItem(QStandardItem *item) {
     this->removeRow(item->row());
 }
 
-void MapAreaModel::initialize() {
-    this->areaItems.clear();
-    this->mapItems.clear();
 
-    for (const auto &idName : this->project->mapSectionIdNames) {
-        this->root->appendRow(createAreaItem(idName));
-    }
+
+LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListModel(project, parent) {
+    this->folderTypeName = "map_layout";
 
     for (const auto &mapName : this->project->mapNames) {
-        const QString mapsecName = this->project->mapNameToMapSectionName.value(mapName);
-        if (this->areaItems.contains(mapsecName))
-            this->areaItems[mapsecName]->appendRow(createMapItem(mapName));
+        insertMapItem(mapName, this->project->mapNameToLayoutId.value(mapName));
     }
 
-    this->sort(0, Qt::AscendingOrder);
-}
-
-QStandardItem *MapAreaModel::getItem(const QModelIndex &index) const {
-    if (index.isValid()) {
-        QStandardItem *item = static_cast<QStandardItem*>(index.internalPointer());
-        if (item)
-            return item;
-    }
-    return this->root;
-}
-
-QModelIndex MapAreaModel::indexOf(QString mapName) const {
-    if (this->mapItems.contains(mapName)) {
-        return this->mapItems[mapName]->index();
-    }
-    return QModelIndex();
-}
-
-QVariant MapAreaModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid()) return QVariant();
-
-    int row = index.row();
-    int col = index.column();
-
-    if (role == Qt::DecorationRole) {
-        static QIcon mapGrayIcon = QIcon(QStringLiteral(":/icons/map_grayed.ico"));
-        static QIcon mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
-        static QIcon mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
-        static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
-
-        static QIcon mapFolderIcon;
-        static QIcon folderIcon;
-        static bool loaded = false;
-        if (!loaded) {
-            mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
-            mapFolderIcon.addFile(QStringLiteral(":/icons/folder_map.ico"), QSize(), QIcon::Normal, QIcon::On);
-            folderIcon.addFile(QStringLiteral(":/icons/folder_closed.ico"), QSize(), QIcon::Normal, QIcon::Off);
-            folderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
-            loaded = true;
-        }
-
-        QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListUserRoles::TypeRole).toString();
-
-        if (type == "map_section") {
-            if (item->hasChildren()) {
-                return mapFolderIcon;
-            }
-            return folderIcon;
-        } else if (type == "map_name") {
-            QString mapName = item->data(MapListUserRoles::NameRole).toString();
-            if (mapName == this->openMap) {
-                return mapOpenedIcon;
-            }
-            else if (this->project->mapCache.contains(mapName)) {
-                if (this->project->mapCache.value(mapName)->hasUnsavedChanges()) {
-                    return mapEditedIcon;
-                }
-                else {
-                    return mapIcon;
-                }
-            }
-            return mapGrayIcon;
-        }
-    }
-    else if (role == Qt::DisplayRole) {
-        QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListUserRoles::TypeRole).toString();
-
-        if (type == "map_section") {
-            return item->data(MapListUserRoles::NameRole).toString();
-        }
-    }
-
-    return QStandardItemModel::data(index, role);
-}
-
-
-
-LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListModel(parent) {
-    this->project = project;
-    this->root = this->invisibleRootItem();
-
-    initialize();
-}
-
-QStandardItem *LayoutTreeModel::createLayoutItem(QString layoutId) {
-    QStandardItem *layout = new QStandardItem;
-    layout->setText(this->project->mapLayouts[layoutId]->name);
-    layout->setEditable(false);
-    layout->setData(layoutId, MapListUserRoles::NameRole);
-    layout->setData("map_layout", MapListUserRoles::TypeRole);
-    // // group->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-    this->layoutItems.insert(layoutId, layout);
-    return layout;
-}
-
-QStandardItem *LayoutTreeModel::createMapItem(QString mapName) {
-    QStandardItem *map = new QStandardItem;
-    map->setText(mapName);
-    map->setEditable(false);
-    map->setData(mapName, MapListUserRoles::NameRole);
-    map->setData("map_name", MapListUserRoles::TypeRole);
-    map->setFlags(Qt::NoItemFlags | Qt::ItemNeverHasChildren);
-    this->mapItems.insert(mapName, map);
-    return map;
-}
-
-QStandardItem *LayoutTreeModel::insertLayoutItem(QString layoutId) {
-    QStandardItem *layoutItem = this->createLayoutItem(layoutId);
-    this->root->appendRow(layoutItem);
-    this->sort(0, Qt::AscendingOrder);
-    return layoutItem;
-}
-
-QStandardItem *LayoutTreeModel::insertMapItem(QString mapName, QString layoutId) {
-    QStandardItem *layout = nullptr;
-    if (this->layoutItems.contains(layoutId)) {
-        layout = this->layoutItems[layoutId];
-    }
-    else {
-        layout = createLayoutItem(layoutId);
-        this->root->appendRow(layout);
-    }
-    if (!layout) {
-        return nullptr;
-    }
-    QStandardItem *map = createMapItem(mapName);
-    layout->appendRow(map);
-    return map;
+    this->sortingEnabled = true;
+    sort(0, Qt::AscendingOrder);
 }
 
 void LayoutTreeModel::removeItem(QStandardItem *) {
     // TODO: Deleting layouts not supported
 }
 
-
-void LayoutTreeModel::initialize() {
-    this->layoutItems.clear();
-    this->mapItems.clear();
-
-    for (const auto &layoutId : this->project->layoutIds) {
-        this->root->appendRow(createLayoutItem(layoutId));
-    }
-
-    for (const auto &mapName : this->project->mapNames) {
-        QString layoutId = project->mapNameToLayoutId.value(mapName);
-        if (this->layoutItems.contains(layoutId))
-            this->layoutItems[layoutId]->appendRow(createMapItem(mapName));
-    }
-
-    this->sort(0, Qt::AscendingOrder);
-}
-
-QStandardItem *LayoutTreeModel::getItem(const QModelIndex &index) const {
-    if (index.isValid()) {
-        QStandardItem *item = static_cast<QStandardItem*>(index.internalPointer());
-        if (item)
-            return item;
-    }
-    return this->root;
-}
-
-QModelIndex LayoutTreeModel::indexOf(QString layoutName) const {
-    if (this->layoutItems.contains(layoutName)) {
-        return this->layoutItems[layoutName]->index();
-    }
-    return QModelIndex();
-}
-
 QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid()) return QVariant();
+    if (!index.isValid())
+        return QVariant();
 
     int row = index.row();
     int col = index.column();
 
-    if (role == Qt::DecorationRole) {
-        static QIcon mapGrayIcon = QIcon(QStringLiteral(":/icons/map_grayed.ico"));
-        static QIcon mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
-        static QIcon mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
-        static QIcon mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
+    const QStandardItem *item = this->getItem(index)->child(row, col);
+    const QString type = item->data(MapListUserRoles::TypeRole).toString();
+    const QString name = item->data(MapListUserRoles::NameRole).toString();
 
-        QStandardItem *item = this->getItem(index)->child(row, col);
-        QString type = item->data(MapListUserRoles::TypeRole).toString();
+    if (type == this->folderTypeName) {
+        const Layout* layout = this->project->mapLayouts.value(name);
 
-        if (type == "map_layout") {
-            QString layoutId = item->data(MapListUserRoles::NameRole).toString();
-            if (layoutId == this->openLayout) {
-                return mapOpenedIcon;
-            }
-            else if (this->project->mapLayouts.contains(layoutId)) {
-                if (this->project->mapLayouts.value(layoutId)->hasUnsavedChanges()) {
-                    return mapEditedIcon;
-                }
-                else if (!this->project->mapLayouts[layoutId]->loaded) {
-                    return mapGrayIcon;
-                }
-            }
-            return mapIcon;
+        if (role == Qt::DecorationRole) {
+            // Map layouts are used as folders, but we display them with the same icons as maps.
+            if (name == this->activeItemName)
+                return this->mapOpenedIcon;
+
+            if (!layout || !layout->loaded)
+                return this->mapGrayIcon;
+            return layout->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon;
         }
-        else if (type == "map_name") {
-            return QVariant();
+        else if (role == Qt::DisplayRole) {
+            // Despite using layout IDs internally, the Layouts map list shows layouts using their file path name.
+            if (layout) return layout->name;
+        } else if (role == Qt::ToolTipRole) {
+            if (layout) return layout->id;
         }
-
-        return QVariant();
     }
-
-    return QStandardItemModel::data(index, role);
+    return MapListModel::data(index, role);
 }
