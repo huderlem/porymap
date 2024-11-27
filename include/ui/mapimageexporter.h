@@ -45,22 +45,25 @@ public:
 private:
     Ui::MapImageExporter *ui;
 
-    Layout *layout = nullptr;
-    Map *map = nullptr;
-    Editor *editor = nullptr;
-    QGraphicsScene *scene = nullptr;
+    Layout *m_layout = nullptr;
+    Map *m_map = nullptr;
+    Editor *m_editor = nullptr;
+    QGraphicsScene *m_scene = nullptr;
 
-    QPixmap preview;
+    QPixmap m_preview;
 
-    ImageExporterSettings settings;
-    ImageExporterMode mode = ImageExporterMode::Normal;
+    ImageExporterSettings m_settings;
+    ImageExporterMode m_mode = ImageExporterMode::Normal;
 
     void updatePreview();
     void scalePreview();
     void updateShowBorderState();
     void saveImage();
     QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
+    QPixmap getFormattedMapPixmap();
     QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder = false);
+    QPixmap getFormattedLayoutPixmap(Layout *layout, bool ignoreBorder = false, bool ignoreGrid = false);
+    void paintGrid(QPixmap *pixmap, bool ignoreBorder = false);
     bool historyItemAppliesToFrame(const QUndoCommand *command);
 
 protected:
