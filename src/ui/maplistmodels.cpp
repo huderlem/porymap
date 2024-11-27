@@ -203,6 +203,7 @@ MapGroupModel::MapGroupModel(Project *project, QObject *parent) : MapListModel(p
     this->editable = true;
 
     for (const auto &groupName : this->project->groupNames) {
+        insertMapFolderItem(groupName);
         for (const auto &mapName : this->project->groupNameToMapNames.value(groupName)) {
             insertMapItem(mapName, groupName);
         }
@@ -414,6 +415,9 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
 MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(project, parent) {
     this->folderTypeName = "map_section";
 
+    for (const auto &idName : this->project->mapSectionIdNames) {
+        insertMapFolderItem(idName);
+    }
     for (const auto &mapName : this->project->mapNames) {
         insertMapItem(mapName, this->project->mapNameToMapSectionName.value(mapName));
     }
@@ -432,6 +436,9 @@ void MapAreaModel::removeItem(QStandardItem *item) {
 LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListModel(project, parent) {
     this->folderTypeName = "map_layout";
 
+    for (const auto &layoutId : this->project->layoutIds) {
+        insertMapFolderItem(layoutId);
+    }
     for (const auto &mapName : this->project->mapNames) {
         insertMapItem(mapName, this->project->mapNameToLayoutId.value(mapName));
     }
