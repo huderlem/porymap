@@ -67,12 +67,10 @@ public:
     QString sharedEventsMap() const { return m_sharedEventsMap; }
     QString sharedScriptsMap() const { return m_sharedScriptsMap; }
 
-    void setNeedsLayoutDir(bool needsLayoutDir) { m_needsLayoutDir = needsLayoutDir; }
     void setNeedsHealLocation(bool needsHealLocation) { m_needsHealLocation = needsHealLocation; }
     void setIsPersistedToFile(bool persistedToFile) { m_isPersistedToFile = persistedToFile; }
     void setHasUnsavedDataChanges(bool unsavedDataChanges) { m_hasUnsavedDataChanges = unsavedDataChanges; }
 
-    bool needsLayoutDir() const { return m_needsLayoutDir; }
     bool needsHealLocation() const { return m_needsHealLocation; }
     bool isPersistedToFile() const { return m_isPersistedToFile; }
     bool hasUnsavedDataChanges() const { return m_hasUnsavedDataChanges; }
@@ -121,7 +119,6 @@ private:
 
     bool m_isPersistedToFile = true;
     bool m_hasUnsavedDataChanges = false;
-    bool m_needsLayoutDir = true;
     bool m_needsHealLocation = false;
     bool m_scriptsLoaded = false;
 

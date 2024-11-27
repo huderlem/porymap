@@ -1382,7 +1382,9 @@ void MainWindow::mapListAddArea() {
 void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     logInfo(QString("Created a new map named %1.").arg(newMap->name()));
 
-    // TODO: Creating a new map shouldn't be automatically saved
+    // TODO: Creating a new map shouldn't be automatically saved.
+    //       For one, it takes away the option to discard the new map.
+    //       For two, if the new map uses an existing layout, any unsaved changes to that layout will also be saved.
     editor->project->saveMap(newMap);
     editor->project->saveAllDataStructures();
 

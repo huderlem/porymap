@@ -28,26 +28,12 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
     if (this->layoutToCopy && !this->layoutToCopy->name.isEmpty()) {
         // Duplicating a layout, the initial name will be the base layout's name
         // with a numbered suffix to make it unique.
-        // Note: Layouts imported with AdvanceMap have no name, so they'll use the default new layout name instead.
-
-        // If the layout name ends with the default '_Layout' suffix we'll ignore it.
-        // This is because (normally) the ID for these layouts will not have this suffix,
-        // so you can end up in a situation where you might have Map_Layout and Map_2_Layout,
-        // and if you try to duplicate Map_Layout the next available name (because of ID collisions)
-        // would be Map_Layout_3 instead of Map_3_Layout.
-        QString baseName = this->layoutToCopy->name;
-        QString suffix = "_Layout";
-        if (baseName.length() > suffix.length() && baseName.endsWith(suffix)) {
-            baseName.truncate(baseName.length() - suffix.length());
-        } else {
-            suffix = "";
-        }
-
+        // Note: If 'layoutToCopy' is an imported AdvanceMap layout it won't have
+        //       a name, so it uses the default new layout name instead.
         int i = 2;
         do {
-            newName = QString("%1_%2%3").arg(baseName).arg(i).arg(suffix);
-            newId = QString("%1_%2").arg(this->layoutToCopy->id).arg(i);
-            i++;
+            newName = QString("%1_%2").arg(this->layoutToCopy->name).arg(i++);
+            newId = Layout::layoutConstantFromName(newName);
         } while (!project->isIdentifierUnique(newName) || !project->isIdentifierUnique(newId));
     } else {
         newName = project->getNewLayoutName();

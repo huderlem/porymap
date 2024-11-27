@@ -71,12 +71,12 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewMapDialog::dialogButtonClicked);
 
     refresh();
-    adjustSize(); // TODO: Save geometry?
+    adjustSize();
 }
 
-// Adding new map to existing map list folder. Initialize settings accordingly.
+// Adding new map to an existing map list folder. Initialize settings accordingly.
 // Even if we initialize settings like this we'll allow users to change them afterwards,
-// because nothing is expecting them to stay at these values.
+// because nothing is expecting them to stay at these values (with exception to layouts).
 NewMapDialog::NewMapDialog(Project *project, int mapListTab, const QString &mapListItem, QWidget *parent) :
     NewMapDialog(project, parent)
 {
@@ -132,21 +132,18 @@ void NewMapDialog::saveSettings() {
     settings->group = ui->comboBox_Group->currentText();
     settings->layout = ui->newLayoutForm->settings();
     settings->layout.id = ui->comboBox_LayoutID->currentText();
-    settings->layout.name = Layout::layoutNameFromMapName(settings->name); // TODO: Verify uniqueness
     settings->canFlyTo = ui->checkBox_CanFlyTo->isChecked();
     settings->header = this->headerForm->headerData();
 
-    porymapConfig.newMapHeaderSectionExpanded = this->headerSection->isExpanded();
-}
+    // TODO: Verify uniqueness. If the layout ID belongs to an existing layout we don't need to do this at all.
+    settings->layout.name = QString("%1%2").arg(settings->name).arg(Layout::defaultSuffix());
 
-void NewMapDialog::setLayout(const Layout *layout) {
-    if (layout) {
-        ui->comboBox_LayoutID->setTextItem(layout->id);
-        ui->newLayoutForm->setSettings(layout->settings());
-        ui->newLayoutForm->setDisabled(true);
-    } else {
-        ui->newLayoutForm->setDisabled(false);
-    }
+    // Folders for new layouts created for new maps use the map name, rather than the layout name.
+    // There's no real reason for this, aside from maintaining consistency with the default layout
+    // folder names that do this (which would otherwise all have a '_Layout' suffix in the name).
+    settings->layout.folderName = settings->name;
+
+    porymapConfig.newMapHeaderSectionExpanded = this->headerSection->isExpanded();
 }
 
 bool NewMapDialog::validateName(bool allowEmpty) {
@@ -168,6 +165,8 @@ bool NewMapDialog::validateName(bool allowEmpty) {
 
 void NewMapDialog::on_lineEdit_Name_textChanged(const QString &text) {
     validateName(true);
+
+    // Changing the map name updates the layout ID field to match.
     if (ui->comboBox_LayoutID->isEnabled()) {
         ui->comboBox_LayoutID->setCurrentText(Layout::layoutConstantFromName(text));
     }
@@ -219,7 +218,15 @@ bool NewMapDialog::validateLayoutID(bool allowEmpty) {
 
 void NewMapDialog::on_comboBox_LayoutID_currentTextChanged(const QString &text) {
     validateLayoutID(true);
-    setLayout(this->project->mapLayouts.value(text));
+
+    // Changing the layout ID to an existing layout updates the layout settings to match.
+    const Layout *layout = this->project->mapLayouts.value(text);
+    if (layout) {
+        ui->newLayoutForm->setSettings(layout->settings());
+        ui->newLayoutForm->setDisabled(true);
+    } else {
+        ui->newLayoutForm->setDisabled(false);
+    }
 }
 
 void NewMapDialog::dialogButtonClicked(QAbstractButton *button) {

@@ -40,7 +40,6 @@ private:
 
     void refresh();
     void saveSettings();
-    void setLayout(const Layout *mapLayout);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

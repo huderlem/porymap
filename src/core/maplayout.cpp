@@ -32,8 +32,8 @@ void Layout::copyFrom(const Layout *other) {
     this->border = other->border;
 }
 
-QString Layout::layoutNameFromMapName(const QString &mapName) {
-    return QString("%1_Layout").arg(mapName);
+QString Layout::defaultSuffix() {
+    return "_Layout";
 }
 
 QString Layout::layoutConstantFromName(QString mapName) {

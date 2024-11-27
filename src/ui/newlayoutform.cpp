@@ -71,6 +71,7 @@ Layout::Settings NewLayoutForm::settings() const {
     return settings;
 }
 
+// TODO: Validate while typing
 bool NewLayoutForm::validate() {
     // Make sure to call each validation function so that all errors are shown at once.
     bool valid = true;

@@ -382,15 +382,17 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     map->setConstantName(mapConstant);
 
     Layout *layout = this->mapLayouts.value(settings.layout.id);
-    if (layout) {
-        // Layout already exists
-        map->setNeedsLayoutDir(false); // TODO: Remove this member?
-    } else {
-        layout = createNewLayout(settings.layout, toDuplicate ? toDuplicate->layout() : nullptr);
-    }
     if (!layout) {
-        delete map;
-        return nullptr;
+        // Layout doesn't already exist, create it.
+        layout = createNewLayout(settings.layout, toDuplicate ? toDuplicate->layout() : nullptr);
+        if (!layout) {
+            // Layout creation failed.
+            delete map;
+            return nullptr;
+        }
+    } else {
+        // This layout already exists. Make sure it's loaded.
+        loadLayout(layout);
     }
     map->setLayout(layout);
 
@@ -444,14 +446,17 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
     layout->tileset_primary_label = settings.primaryTilesetLabel;
     layout->tileset_secondary_label = settings.secondaryTilesetLabel;
 
-    const QString basePath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders);
-    layout->border_path = QString("%1%2/border.bin").arg(basePath, layout->name);
-    layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layout->name);
+    // If a special folder name was specified (as in the case when we're creating a layout for a new map) then use that name.
+    // Otherwise the new layout's folder name will just be the layout's name.
+    const QString folderName = !settings.folderName.isEmpty() ? settings.folderName : layout->name;
+    const QString folderPath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders) + folderName;
+    layout->border_path = folderPath + "/border.bin";
+    layout->blockdata_path = folderPath + "/map.bin";
 
-    // Create a new directory for the layout
-    QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), layout->name);
-    if (!QDir::root().mkdir(newLayoutDir)) {
-        logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+    // Create a new directory for the layout, if it doesn't already exist.
+    const QString fullPath = QString("%1/%2").arg(this->root).arg(folderPath);
+    if (!QDir::root().mkpath(fullPath)) {
+        logError(QString("Failed to create directory for new layout: '%1'").arg(fullPath));
         delete layout;
         return nullptr;
     }
@@ -493,14 +498,14 @@ bool Project::loadLayout(Layout *layout) {
 }
 
 Layout *Project::loadLayout(QString layoutId) {
-    if (mapLayouts.contains(layoutId)) {
-        Layout *layout = mapLayouts[layoutId];
+    if (this->mapLayouts.contains(layoutId)) {
+        Layout *layout = this->mapLayouts[layoutId];
         if (loadLayout(layout)) {
             return layout;
         }
     }
 
-    logError(QString("Error: Failed to load layout '%1'").arg(layoutId));
+    logError(QString("Failed to load layout '%1'").arg(layoutId));
     return nullptr;
 }
 
@@ -509,10 +514,10 @@ bool Project::loadMapLayout(Map* map) {
         return true;
     }
 
-    if (mapLayouts.contains(map->layoutId())) {
-        map->setLayout(mapLayouts[map->layoutId()]);
+    if (this->mapLayouts.contains(map->layoutId())) {
+        map->setLayout(this->mapLayouts[map->layoutId()]);
     } else {
-        logError(QString("Error: Map '%1' has an unknown layout '%2'").arg(map->name()).arg(map->layoutId()));
+        logError(QString("Map '%1' has an unknown layout '%2'").arg(map->name()).arg(map->layoutId()));
         return false;
     }
 
@@ -535,8 +540,8 @@ void Project::clearMapLayouts() {
 bool Project::readMapLayouts() {
     clearMapLayouts();
 
-    QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
-    QString fullFilepath = QString("%1/%2").arg(root).arg(layoutsFilepath);
+    const QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
+    const QString fullFilepath = QString("%1/%2").arg(this->root).arg(layoutsFilepath);
     fileWatcher.addPath(fullFilepath);
     QJsonDocument layoutsDoc;
     if (!parser.tryParseJsonFile(&layoutsDoc, fullFilepath)) {
@@ -1295,40 +1300,32 @@ void Project::saveAllMaps() {
 
 void Project::saveMap(Map *map) {
     // Create/Modify a few collateral files for brand new maps.
-    QString basePath = projectConfig.getFilePath(ProjectFilePath::data_map_folders);
-    QString mapDataDir = root + "/" + basePath + map->name();
+    const QString folderPath = projectConfig.getFilePath(ProjectFilePath::data_map_folders) + map->name();
+    const QString fullPath = QString("%1/%2").arg(this->root).arg(folderPath);
     if (!map->isPersistedToFile()) {
-        if (!QDir::root().mkdir(mapDataDir)) {
-            logError(QString("Error: failed to create directory for new map: '%1'").arg(mapDataDir));
+        if (!QDir::root().mkpath(fullPath)) {
+            logError(QString("Failed to create directory for new map: '%1'").arg(fullPath));
         }
 
         // Create file data/maps/<map_name>/scripts.inc
         QString text = this->getScriptDefaultString(projectConfig.usePoryScript, map->name());
-        saveTextFile(mapDataDir + "/scripts" + this->getScriptFileExtension(projectConfig.usePoryScript), text);
+        saveTextFile(fullPath + "/scripts" + this->getScriptFileExtension(projectConfig.usePoryScript), text);
 
         if (projectConfig.createMapTextFileEnabled) {
             // Create file data/maps/<map_name>/text.inc
-            saveTextFile(mapDataDir + "/text" + this->getScriptFileExtension(projectConfig.usePoryScript), "\n");
+            saveTextFile(fullPath + "/text" + this->getScriptFileExtension(projectConfig.usePoryScript), "\n");
         }
 
         // Simply append to data/event_scripts.s.
-        text = QString("\n\t.include \"%1%2/scripts.inc\"\n").arg(basePath, map->name());
+        text = QString("\n\t.include \"%1/scripts.inc\"\n").arg(folderPath);
         if (projectConfig.createMapTextFileEnabled) {
-            text += QString("\t.include \"%1%2/text.inc\"\n").arg(basePath, map->name());
+            text += QString("\t.include \"%1/text.inc\"\n").arg(folderPath);
         }
         appendTextFile(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts), text);
-
-        // TODO: Either simplify this redundancy or explain why we need it (to create folders without the _Layout suffix)
-        if (map->needsLayoutDir()) {
-            QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), map->name());
-            if (!QDir::root().mkdir(newLayoutDir)) {
-                logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
-            }
-        }
     }
 
     // Create map.json for map data.
-    QString mapFilepath = QString("%1/map.json").arg(mapDataDir);
+    QString mapFilepath = fullPath + "/map.json";
     QFile mapFile(mapFilepath);
     if (!mapFile.open(QIODevice::WriteOnly)) {
         logError(QString("Error: Could not open %1 for writing").arg(mapFilepath));
@@ -1428,7 +1425,6 @@ void Project::saveMap(Map *map) {
 }
 
 void Project::saveLayout(Layout *layout) {
-    //
     saveLayoutBorder(layout);
     saveLayoutBlockdata(layout);
 
@@ -2022,7 +2018,8 @@ void Project::initNewMapSettings() {
     this->newMapSettings.group = this->groupNames.at(0);
     this->newMapSettings.canFlyTo = false;
 
-    this->newMapSettings.layout.name = Layout::layoutNameFromMapName(this->newMapSettings.name);
+    this->newMapSettings.layout.folderName = this->newMapSettings.name;
+    this->newMapSettings.layout.name = QString("%1%2").arg(this->newMapSettings.name).arg(Layout::defaultSuffix());
     this->newMapSettings.layout.id = Layout::layoutConstantFromName(this->newMapSettings.name);
     this->newMapSettings.layout.width = getDefaultMapDimension();
     this->newMapSettings.layout.height = getDefaultMapDimension();

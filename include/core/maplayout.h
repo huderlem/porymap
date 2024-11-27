@@ -22,8 +22,9 @@ public:
     Layout() {}
     Layout(const Layout &other);
 
-    static QString layoutNameFromMapName(const QString &mapName);
     static QString layoutConstantFromName(QString mapName);
+    static QString defaultSuffix();
+
 
     bool loaded = false;
 
@@ -77,6 +78,9 @@ public:
     struct Settings {
         QString id;
         QString name;
+        // The name of a new layout's folder in `data/layouts/` is not always the same as the layout's name
+        // (e.g. the majority of the default layouts use the name of their associated map).
+        QString folderName;
         int width;
         int height;
         int borderWidth;
