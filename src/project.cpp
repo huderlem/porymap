@@ -1990,6 +1990,8 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
             return false;
         }
     }
+    if (identifier == getEmptyMapDefineName())
+        return false;
     return true;
 }
 
@@ -3048,6 +3050,11 @@ bool Project::calculateDefaultMapSize(){
 int Project::getMaxObjectEvents()
 {
     return Project::max_object_events;
+}
+
+QString Project::getEmptyMapDefineName() {
+    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
+    return prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_empty);
 }
 
 QString Project::getDynamicMapDefineName() {

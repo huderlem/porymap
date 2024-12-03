@@ -238,6 +238,7 @@ public:
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
 
+    static QString getEmptyMapDefineName();
     static QString getDynamicMapDefineName();
     static QString getDynamicMapName();
     static int getNumTilesPrimary();
