@@ -234,7 +234,7 @@ private slots:
     void on_action_Export_Map_Image_triggered();
     void on_actionExport_Stitched_Map_Image_triggered();
     void on_actionExport_Map_Timelapse_Image_triggered();
-    void on_actionImport_Layout_from_Advance_Map_1_92_triggered();
+    void on_actionImport_Map_from_Advance_Map_1_92_triggered();
 
     void on_pushButton_AddConnection_clicked();
     void on_button_OpenDiveMap_clicked();

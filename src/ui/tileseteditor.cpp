@@ -987,6 +987,7 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Icon::Critical);
         msgBox.exec();
+        qDeleteAll(metatiles);
         return;
     }
 

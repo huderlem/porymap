@@ -2636,8 +2636,8 @@ void MainWindow::on_actionExport_Map_Timelapse_Image_triggered() {
     showExportMapImageWindow(ImageExporterMode::Timelapse);
 }
 
-void MainWindow::on_actionImport_Layout_from_Advance_Map_1_92_triggered() {
-    QString filepath = FileDialog::getOpenFileName(this, "Import Layout from Advance Map 1.92", "", "Advance Map 1.92 Map Files (*.map)");
+void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered() {
+    QString filepath = FileDialog::getOpenFileName(this, "Import Map from Advance Map 1.92", "", "Advance Map 1.92 Map Files (*.map)");
     if (filepath.isEmpty()) {
         return;
     }
@@ -2658,8 +2658,8 @@ void MainWindow::on_actionImport_Layout_from_Advance_Map_1_92_triggered() {
 
     auto dialog = new NewLayoutDialog(this->editor->project, mapLayout, this);
     connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+    connect(dialog, &NewLayoutDialog::finished, [mapLayout] { mapLayout->deleteLater(); });
     dialog->open();
-    delete mapLayout;
 }
 
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
