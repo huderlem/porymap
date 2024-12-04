@@ -1130,7 +1130,8 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset) {
-    for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
+    int numPalettes = qMin(tileset->palettePaths.length(), tileset->palettes.length());
+    for (int i = 0; i < numPalettes; i++) {
         QString filepath = tileset->palettePaths.at(i);
         PaletteUtil::writeJASC(filepath, tileset->palettes.at(i).toVector(), 0, 16);
     }
