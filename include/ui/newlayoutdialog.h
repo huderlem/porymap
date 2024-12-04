@@ -39,7 +39,6 @@ private:
 
     void refresh();
     void saveSettings();
-    bool isExistingLayout() const;
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

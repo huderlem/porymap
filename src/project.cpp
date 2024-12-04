@@ -122,19 +122,13 @@ QString Project::getProjectTitle() {
 }
 
 void Project::clearMapCache() {
-    for (auto *map : mapCache.values()) {
-        if (map)
-            delete map;
-    }
-    mapCache.clear();
+    qDeleteAll(this->mapCache);
+    this->mapCache.clear();
 }
 
 void Project::clearTilesetCache() {
-    for (auto *tileset : tilesetCache.values()) {
-        if (tileset)
-            delete tileset;
-    }
-    tilesetCache.clear();
+    qDeleteAll(this->tilesetCache);
+    this->tilesetCache.clear();
 }
 
 Map* Project::loadMap(QString mapName) {
@@ -1005,25 +999,21 @@ void Project::saveHealLocationsConstants() {
 
 void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     saveTilesetMetatileLabels(primaryTileset, secondaryTileset);
-    saveTilesetMetatileAttributes(primaryTileset);
-    saveTilesetMetatileAttributes(secondaryTileset);
-    saveTilesetMetatiles(primaryTileset);
-    saveTilesetMetatiles(secondaryTileset);
-    saveTilesetTilesImage(primaryTileset);
-    saveTilesetTilesImage(secondaryTileset);
-    saveTilesetPalettes(primaryTileset);
-    saveTilesetPalettes(secondaryTileset);
+    if (primaryTileset)
+        primaryTileset->save();
+    if (secondaryTileset)
+        secondaryTileset->save();
 }
 
 void Project::updateTilesetMetatileLabels(Tileset *tileset) {
     // Erase old labels, then repopulate with new labels
     const QString prefix = tileset->getMetatileLabelPrefix();
-    metatileLabelsMap[tileset->name].clear();
+    this->metatileLabelsMap[tileset->name].clear();
     for (int metatileId : tileset->metatileLabels.keys()) {
         if (tileset->metatileLabels[metatileId].isEmpty())
             continue;
         QString label = prefix + tileset->metatileLabels[metatileId];
-        metatileLabelsMap[tileset->name][label] = metatileId;
+        this->metatileLabelsMap[tileset->name][label] = metatileId;
     }
 }
 
@@ -1080,59 +1070,6 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     ignoreWatchedFileTemporarily(root + "/" + filename);
     saveTextFile(root + "/" + filename, outputText);
-}
-
-void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
-    QFile attrs_file(tileset->metatile_attrs_path);
-    if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QByteArray data;
-        for (const auto &metatile : tileset->metatiles()) {
-            uint32_t attributes = metatile->getAttributes();
-            for (int i = 0; i < projectConfig.metatileAttributesSize; i++)
-                data.append(static_cast<char>(attributes >> (8 * i)));
-        }
-        attrs_file.write(data);
-    } else {
-        logError(QString("Could not save tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
-    }
-}
-
-void Project::saveTilesetMetatiles(Tileset *tileset) {
-    QFile metatiles_file(tileset->metatiles_path);
-    if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QByteArray data;
-        int numTiles = projectConfig.getNumTilesInMetatile();
-        for (const auto &metatile : tileset->metatiles()) {
-            for (int i = 0; i < numTiles; i++) {
-                uint16_t tile = metatile->tiles.at(i).rawValue();
-                data.append(static_cast<char>(tile));
-                data.append(static_cast<char>(tile >> 8));
-            }
-        }
-        metatiles_file.write(data);
-    } else {
-        tileset->clearMetatiles();
-        logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
-    }
-}
-
-void Project::saveTilesetTilesImage(Tileset *tileset) {
-    // Only write the tiles image if it was changed.
-    // Porymap will only ever change an existing tiles image by importing a new one.
-    if (tileset->hasUnsavedTilesImage) {
-        if (!tileset->tilesImage.save(tileset->tilesImagePath, "PNG")) {
-            logError(QString("Failed to save tiles image '%1'").arg(tileset->tilesImagePath));
-            return;
-        }
-        tileset->hasUnsavedTilesImage = false;
-    }
-}
-
-void Project::saveTilesetPalettes(Tileset *tileset) {
-    for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
-        QString filepath = tileset->palettePaths.at(i);
-        PaletteUtil::writeJASC(filepath, tileset->palettes.at(i).toVector(), 0, 16);
-    }
 }
 
 bool Project::loadLayoutTilesets(Layout *layout) {
@@ -1465,18 +1402,9 @@ void Project::loadTilesetAssets(Tileset* tileset) {
     if (tileset->name.isNull()) {
         return;
     }
-    this->readTilesetPaths(tileset);
-    QImage image;
-    if (QFile::exists(tileset->tilesImagePath)) {
-        image = QImage(tileset->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
-        flattenTo4bppImage(&image);
-    } else {
-        image = QImage(8, 8, QImage::Format_Indexed8);
-    }
-    this->loadTilesetTiles(tileset, image);
-    this->loadTilesetMetatiles(tileset);
-    this->loadTilesetMetatileLabels(tileset);
-    this->loadTilesetPalettes(tileset);
+    readTilesetPaths(tileset);
+    loadTilesetMetatileLabels(tileset);
+    tileset->load();
 }
 
 void Project::readTilesetPaths(Tileset* tileset) {
@@ -1536,84 +1464,89 @@ void Project::readTilesetPaths(Tileset* tileset) {
     }
 }
 
-void Project::loadTilesetPalettes(Tileset* tileset) {
-    QList<QList<QRgb>> palettes;
-    QList<QList<QRgb>> palettePreviews;
-    for (int i = 0; i < tileset->palettePaths.length(); i++) {
-        QString path = tileset->palettePaths.value(i);
-        bool error = false;
-        QList<QRgb> palette = PaletteUtil::parse(path, &error);
-        if (error) {
-            for (int j = 0; j < 16; j++) {
-                palette.append(qRgb(j * 16, j * 16, j * 16));
+Tileset *Project::createNewTileset(const QString &friendlyName, bool secondary, bool checkerboardFill) {
+    auto tileset = new Tileset();
+    tileset->name = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix) + friendlyName;
+    tileset->is_secondary = secondary;
+
+    // Create tileset directories
+    const QString fullDirectoryPath = QString("%1/%2").arg(this->root).arg(tileset->getExpectedDir());
+    QDir directory;
+    if (!directory.mkpath(fullDirectoryPath)) {
+        logError(QString("Failed to create directory '%1' for new tileset '%2'").arg(fullDirectoryPath).arg(tileset->name));
+        delete tileset;
+        return nullptr;
+    }
+    const QString palettesPath = fullDirectoryPath + "/palettes";
+    if (!directory.mkpath(palettesPath)) {
+        logError(QString("Failed to create palettes directory '%1' for new tileset '%2'").arg(palettesPath).arg(tileset->name));
+        delete tileset;
+        return nullptr;
+    }
+
+    tileset->tilesImagePath = fullDirectoryPath + "/tiles.png";
+    tileset->metatiles_path = fullDirectoryPath + "/metatiles.bin";
+    tileset->metatile_attrs_path = fullDirectoryPath + "/metatile_attributes.bin";
+
+    // Set default tiles image
+    QImage tilesImage(":/images/blank_tileset.png");
+    tileset->loadTilesImage(&tilesImage);
+    //exportIndexed4BPPPng(tileset->tilesImage, tileset->tilesImagePath); // TODO: Make sure we can now properly handle the 8bpp images that get written without this.
+
+    // Create default metatiles
+    const int numMetatiles = tileset->is_secondary ? (Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary()) : Project::getNumMetatilesPrimary();
+    const int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
+    for (int i = 0; i < numMetatiles; ++i) {
+        auto metatile = new Metatile();
+        for(int j = 0; j < tilesPerMetatile; ++j){
+            Tile tile = Tile();
+            if (checkerboardFill) {
+                // Create a checkerboard-style dummy tileset
+                if (((i / 8) % 2) == 0)
+                    tile.tileId = ((i % 2) == 0) ? 1 : 2;
+                else
+                    tile.tileId = ((i % 2) == 1) ? 1 : 2;
             }
+            metatile->tiles.append(tile);
         }
-
-        palettes.append(palette);
-        palettePreviews.append(palette);
-    }
-    tileset->palettes = palettes;
-    tileset->palettePreviews = palettePreviews;
-}
-
-void Project::loadTilesetTiles(Tileset *tileset, QImage image) {
-    QList<QImage> tiles;
-    int w = 8;
-    int h = 8;
-    for (int y = 0; y < image.height(); y += h)
-    for (int x = 0; x < image.width(); x += w) {
-        QImage tile = image.copy(x, y, w, h);
-        tiles.append(tile);
-    }
-    tileset->tilesImage = image;
-    tileset->tiles = tiles;
-}
-
-void Project::loadTilesetMetatiles(Tileset* tileset) {
-    QFile metatiles_file(tileset->metatiles_path);
-    if (metatiles_file.open(QIODevice::ReadOnly)) {
-        QByteArray data = metatiles_file.readAll();
-        int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
-        int bytesPerMetatile = 2 * tilesPerMetatile;
-        int num_metatiles = data.length() / bytesPerMetatile;
-        QList<Metatile*> metatiles;
-        for (int i = 0; i < num_metatiles; i++) {
-            Metatile *metatile = new Metatile;
-            int index = i * bytesPerMetatile;
-            for (int j = 0; j < tilesPerMetatile; j++) {
-                uint16_t tileRaw = static_cast<unsigned char>(data[index++]);
-                tileRaw |= static_cast<unsigned char>(data[index++]) << 8;
-                metatile->tiles.append(Tile(tileRaw));
-            }
-            metatiles.append(metatile);
-        }
-        tileset->setMetatiles(metatiles);
-    } else {
-        tileset->clearMetatiles();
-        logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
+        tileset->addMetatile(metatile);
     }
 
-    QFile attrs_file(tileset->metatile_attrs_path);
-    if (attrs_file.open(QIODevice::ReadOnly)) {
-        QByteArray data = attrs_file.readAll();
-        int num_metatiles = tileset->numMetatiles();
-        int attrSize = projectConfig.metatileAttributesSize;
-        int num_metatileAttrs = data.length() / attrSize;
-        if (num_metatiles != num_metatileAttrs) {
-            logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(num_metatiles).arg(num_metatileAttrs).arg(tileset->name));
-            if (num_metatileAttrs > num_metatiles)
-                num_metatileAttrs = num_metatiles;
+    // Create default palettes
+    for(int i = 0; i < 16; ++i) {
+        QList<QRgb> currentPal;
+        for(int i = 0; i < 16;++i) {
+            currentPal.append(qRgb(0,0,0));
         }
-
-        for (int i = 0; i < num_metatileAttrs; i++) {
-            uint32_t attributes = 0;
-            for (int j = 0; j < attrSize; j++)
-                attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
-            tileset->metatileAt(i)->setAttributes(attributes);
-        }
-    } else {
-        logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
+        tileset->palettes.append(currentPal);
+        tileset->palettePreviews.append(currentPal);
+        tileset->palettePaths.append(QString("%1/%2.pal").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')));
     }
+    tileset->palettes[0][1] = qRgb(255,0,255);
+    tileset->palettePreviews[0][1] = qRgb(255,0,255);
+
+    // Update tileset label arrays
+    QStringList *labelList = tileset->is_secondary ? &this->secondaryTilesetLabels : &this->primaryTilesetLabels;
+    for (int i = 0; i < labelList->length(); i++) {
+        if (labelList->at(i) > tileset->name) {
+            labelList->insert(i, tileset->name);
+            break;
+        }
+    }
+    this->tilesetLabelsOrdered.append(tileset->name);
+
+    // TODO: Ideally we wouldn't save new Tilesets immediately
+    // Append to tileset specific files
+    tileset->appendToHeaders(this->root, friendlyName, this->usingAsmTilesets);
+    tileset->appendToGraphics(this->root, friendlyName, this->usingAsmTilesets);
+    tileset->appendToMetatiles(this->root, friendlyName, this->usingAsmTilesets);
+
+    tileset->save();
+
+    this->tilesetCache.insert(tileset->name, tileset);
+
+    emit tilesetCreated(tileset);
+    return tileset;
 }
 
 QString Project::findMetatileLabelsTileset(QString label) {
@@ -1658,9 +1591,9 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     QString metatileLabelPrefix = tileset->getMetatileLabelPrefix();
 
     // Reverse map for faster lookup by metatile id
-    for (QString labelName : metatileLabelsMap[tileset->name].keys()) {
-        auto metatileId = metatileLabelsMap[tileset->name][labelName];
-        tileset->metatileLabels[metatileId] = labelName.replace(metatileLabelPrefix, "");
+    for (auto it = this->metatileLabelsMap[tileset->name].constBegin(); it != this->metatileLabelsMap[tileset->name].constEnd(); it++) {
+        QString labelName = it.key();
+        tileset->metatileLabels[it.value()] = labelName.replace(metatileLabelPrefix, "");
     }
 }
 

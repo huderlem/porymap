@@ -716,22 +716,9 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         image = image.convertToFormat(QImage::Format::Format_Indexed8, colorTable);
     }
 
-    // Validate image is properly indexed to 16 colors.
-    int colorCount = image.colorCount();
-    if (colorCount > 16) {
-        flattenTo4bppImage(&image);
-    } else if (colorCount < 16) {
-        QVector<QRgb> colorTable = image.colorTable();
-        for (int i = colorTable.length(); i < 16; i++) {
-            colorTable.append(Qt::black);
-        }
-        image.setColorTable(colorTable);
-    }
-
-    this->project->loadTilesetTiles(tileset, image);
+    tileset->loadTilesImage(&image);
     this->refresh();
     this->hasUnsavedChanges = true;
-    tileset->hasUnsavedTilesImage = true;
 }
 
 void TilesetEditor::closeEvent(QCloseEvent *event)

@@ -139,6 +139,7 @@ public:
 
     Map *createNewMap(const Project::NewMapSettings &mapSettings, const Map* toDuplicate = nullptr);
     Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
+    Tileset *createNewTileset(const QString &friendlyName, bool secondary, bool checkerboardFill);
     bool isIdentifierUnique(const QString &identifier) const;
     QString getProjectTitle();
 
@@ -167,10 +168,7 @@ public:
     bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
     void loadTilesetAssets(Tileset*);
-    void loadTilesetTiles(Tileset*, QImage);
-    void loadTilesetMetatiles(Tileset*);
     void loadTilesetMetatileLabels(Tileset*);
-    void loadTilesetPalettes(Tileset*);
     void readTilesetPaths(Tileset* tileset);
 
     void saveLayout(Layout *);
@@ -188,10 +186,6 @@ public:
     void saveHealLocations(Map*);
     void saveTilesets(Tileset*, Tileset*);
     void saveTilesetMetatileLabels(Tileset*, Tileset*);
-    void saveTilesetMetatileAttributes(Tileset*);
-    void saveTilesetMetatiles(Tileset*);
-    void saveTilesetTilesImage(Tileset*);
-    void saveTilesetPalettes(Tileset*);
     void appendTilesetLabel(const QString &label, const QString &isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();
@@ -282,6 +276,7 @@ signals:
     void mapLoaded(Map *map);
     void mapCreated(Map *newMap, const QString &groupName);
     void layoutCreated(Layout *newLayout);
+    void tilesetCreated(Tileset *newTileset);
     void mapGroupAdded(const QString &groupName);
     void mapSectionAdded(const QString &idName);
     void mapSectionIdNamesChanged(const QStringList &idNames);

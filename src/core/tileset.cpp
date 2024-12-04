@@ -3,6 +3,7 @@
 #include "project.h"
 #include "log.h"
 #include "config.h"
+#include "imageproviders.h"
 
 #include <QPainter>
 #include <QImage>
@@ -23,7 +24,7 @@ Tileset::Tileset(const Tileset &other)
       metatileLabels(other.metatileLabels),
       palettes(other.palettes),
       palettePreviews(other.palettePreviews),
-      hasUnsavedTilesImage(false)
+      m_hasUnsavedTilesImage(other.m_hasUnsavedTilesImage)
 {
     for (auto tile : other.tiles) {
         tiles.append(tile.copy());
@@ -396,4 +397,185 @@ QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
     map.insert(4 + paddingOffset, "metatiles");
     map.insert(metatileAttrPosition, "metatileAttributes");
     return map;
+}
+
+void Tileset::loadMetatiles() {
+    clearMetatiles();
+
+    QFile metatiles_file(this->metatiles_path);
+    if (!metatiles_file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading.").arg(this->metatiles_path));
+        return;
+    }
+
+    QByteArray data = metatiles_file.readAll();
+    int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
+    int bytesPerMetatile = 2 * tilesPerMetatile;
+    int num_metatiles = data.length() / bytesPerMetatile;
+    for (int i = 0; i < num_metatiles; i++) {
+        auto metatile = new Metatile;
+        int index = i * bytesPerMetatile;
+        for (int j = 0; j < tilesPerMetatile; j++) {
+            uint16_t tileRaw = static_cast<unsigned char>(data[index++]);
+            tileRaw |= static_cast<unsigned char>(data[index++]) << 8;
+            metatile->tiles.append(Tile(tileRaw));
+        }
+        m_metatiles.append(metatile);
+    }
+}
+
+void Tileset::saveMetatiles() {
+    QFile metatiles_file(this->metatiles_path);
+    if (!metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing.").arg(this->metatiles_path));
+        return;
+    }
+
+    QByteArray data;
+    int numTiles = projectConfig.getNumTilesInMetatile();
+    for (const auto &metatile : m_metatiles) {
+        for (int i = 0; i < numTiles; i++) {
+            uint16_t tile = metatile->tiles.at(i).rawValue();
+            data.append(static_cast<char>(tile));
+            data.append(static_cast<char>(tile >> 8));
+        }
+    }
+    metatiles_file.write(data);
+}
+
+void Tileset::loadMetatileAttributes() {
+    QFile attrs_file(this->metatile_attrs_path);
+    if (!attrs_file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading.").arg(this->metatile_attrs_path));
+        return;
+    }
+
+    QByteArray data = attrs_file.readAll();
+    int attrSize = projectConfig.metatileAttributesSize;
+    int numMetatiles = m_metatiles.length();
+    int numMetatileAttrs = data.length() / attrSize;
+    if (numMetatiles != numMetatileAttrs) {
+        logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(numMetatiles).arg(numMetatileAttrs).arg(this->name));
+    }
+
+    for (int i = 0; i < qMin(numMetatiles, numMetatileAttrs); i++) {
+        uint32_t attributes = 0;
+        for (int j = 0; j < attrSize; j++)
+            attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
+        m_metatiles.at(i)->setAttributes(attributes);
+    }
+}
+
+void Tileset::saveMetatileAttributes() {
+    QFile attrs_file(this->metatile_attrs_path);
+    if (!attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing.").arg(this->metatile_attrs_path));
+        return;
+    }
+
+    QByteArray data;
+    for (const auto &metatile : m_metatiles) {
+        uint32_t attributes = metatile->getAttributes();
+        for (int i = 0; i < projectConfig.metatileAttributesSize; i++)
+            data.append(static_cast<char>(attributes >> (8 * i)));
+    }
+    attrs_file.write(data);
+}
+
+void Tileset::loadTilesImage(QImage *importedImage) {
+    QImage image;
+    if (importedImage) {
+        image = *importedImage;
+        m_hasUnsavedTilesImage = true;
+    } else if (QFile::exists(this->tilesImagePath)) {
+        // No image provided, load from file path.
+        image = QImage(this->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
+    } else {
+        // Use default image
+        image = QImage(8, 8, QImage::Format_Indexed8);
+    }
+
+    // Validate image contains 16 colors.
+    int colorCount = image.colorCount();
+    if (colorCount > 16) {
+        flattenTo4bppImage(&image);
+    } else if (colorCount < 16) {
+        QVector<QRgb> colorTable = image.colorTable();
+        for (int i = colorTable.length(); i < 16; i++) {
+            colorTable.append(Qt::black);
+        }
+        image.setColorTable(colorTable);
+    }
+
+    QList<QImage> tiles;
+    int w = 8;
+    int h = 8;
+    for (int y = 0; y < image.height(); y += h)
+    for (int x = 0; x < image.width(); x += w) {
+        QImage tile = image.copy(x, y, w, h);
+        tiles.append(tile);
+    }
+    this->tilesImage = image;
+    this->tiles = tiles;
+}
+
+void Tileset::saveTilesImage() {
+    // Only write the tiles image if it was changed.
+    // Porymap will only ever change an existing tiles image by importing a new one.
+    if (!m_hasUnsavedTilesImage)
+        return;
+
+    if (!this->tilesImage.save(this->tilesImagePath, "PNG")) {
+        logError(QString("Failed to save tiles image '%1'").arg(this->tilesImagePath));
+        return;
+    }
+
+    m_hasUnsavedTilesImage = false;
+}
+
+void Tileset::loadPalettes() {
+    this->palettes.clear();
+    this->palettePreviews.clear();
+
+    for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
+        QList<QRgb> palette;
+        QString path = this->palettePaths.value(i);
+        if (!path.isEmpty()) {
+            bool error = false;
+            palette = PaletteUtil::parse(path, &error);
+            if (error) palette.clear();
+        }
+        if (palette.isEmpty()) {
+            // Either the palette failed to load, or no palette exists.
+            // We expect tilesets to have a certain number of palettes,
+            // so fill this palette with dummy colors.
+            for (int j = 0; j < 16; j++) {
+                palette.append(qRgb(j * 16, j * 16, j * 16));
+            }
+        }
+        this->palettes.append(palette);
+        this->palettePreviews.append(palette);
+    }
+}
+
+void Tileset::savePalettes() {
+    int numPalettes = qMin(this->palettePaths.length(), this->palettes.length());
+    for (int i = 0; i < numPalettes; i++) {
+        PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, 16);
+    }
+}
+
+void Tileset::load() {
+    loadMetatiles();
+    loadMetatileAttributes();
+    loadTilesImage();
+    loadPalettes();
+}
+
+// Because metatile labels are global (and handled by the project) we don't save them here.
+void Tileset::save() {
+    saveMetatiles();
+    saveMetatileAttributes();
+    saveTilesImage();
+    savePalettes();
 }

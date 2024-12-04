@@ -337,7 +337,7 @@ void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
     this->editor->map_item->draw(true);
     this->editor->updateMapBorder();
     this->editor->updateMapConnections();
-    this->editor->project->saveTilesetPalettes(tileset);
+    tileset->savePalettes();
 }
 
 void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
@@ -576,14 +576,14 @@ void MainWindow::setSecondaryTileset(QString tileset) {
 
 void MainWindow::saveMetatilesByMetatileId(int metatileId) {
     Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
-    if (this->editor->project && tileset)
-        this->editor->project->saveTilesetMetatiles(tileset);
+    if (tileset)
+        tileset->saveMetatiles();
 }
 
 void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
     Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
-    if (this->editor->project && tileset)
-        this->editor->project->saveTilesetMetatileAttributes(tileset);
+    if (tileset)
+        tileset->saveMetatileAttributes();
 
     // If the tileset editor is open it needs to be refreshed with the new changes.
     // Rather than do a full refresh (which is costly) we tell the editor it will need
@@ -811,9 +811,6 @@ QJSValue MainWindow::getTilePixels(int tileId) {
 // Editing map header
 //=====================
 
-// TODO: Connect signals from new function calls to update UI
-// TODO: Is the error-checking for known constant names still reasonable / needed? (you can type anything after all)
-
 QString MainWindow::getSong() {
     if (!this->editor || !this->editor->map)
         return QString();
@@ -823,10 +820,6 @@ QString MainWindow::getSong() {
 void MainWindow::setSong(QString song) {
     if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->songNames.contains(song)) {
-        logError(QString("Unknown song '%1'").arg(song));
-        return;
-    }
     this->editor->map->header()->setSong(song);
 }
 
@@ -867,10 +860,6 @@ QString MainWindow::getWeather() {
 void MainWindow::setWeather(QString weather) {
     if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->weatherNames.contains(weather)) {
-        logError(QString("Unknown weather '%1'").arg(weather));
-        return;
-    }
     this->editor->map->header()->setWeather(weather);
 }
 
@@ -883,10 +872,6 @@ QString MainWindow::getType() {
 void MainWindow::setType(QString type) {
     if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->mapTypes.contains(type)) {
-        logError(QString("Unknown map type '%1'").arg(type));
-        return;
-    }
     this->editor->map->header()->setType(type);
 }
 
@@ -899,10 +884,6 @@ QString MainWindow::getBattleScene() {
 void MainWindow::setBattleScene(QString battleScene) {
     if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->mapBattleScenes.contains(battleScene)) {
-        logError(QString("Unknown battle scene '%1'").arg(battleScene));
-        return;
-    }
     this->editor->map->header()->setBattleScene(battleScene);
 }
 

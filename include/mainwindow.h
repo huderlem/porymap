@@ -22,7 +22,6 @@
 #include "mapimageexporter.h"
 #include "filterchildrenproxymodel.h"
 #include "maplistmodels.h"
-#include "newtilesetdialog.h"
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
@@ -191,6 +190,7 @@ private slots:
     void onNewMapGroupCreated(const QString &groupName);
     void onNewMapSectionCreated(const QString &idName);
     void onNewLayoutCreated(Layout *layout);
+    void onNewTilesetCreated(Tileset *tileset);
     void onMapLoaded(Map *map);
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
@@ -412,7 +412,6 @@ private:
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
-    int insertTilesetLabel(QStringList * list, QString label);
 
     void checkForUpdates(bool requestedByUser);
     void setDivingMapsVisible(bool visible);
