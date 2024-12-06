@@ -406,10 +406,10 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
         mapNamePos = this->mapNames.length();
     }
 
-    if (!this->mapSectionIdNames.contains(map->header()->location())) {
+    const QString location = map->header()->location();
+    if (!this->mapSectionIdNames.contains(location) && isIdentifierUnique(location)) {
         // Unrecognized MAPSEC value. Add it.
-        // TODO: Validate location before adding
-        addNewMapsec(map->header()->location());
+        addNewMapsec(location);
     }
 
     this->mapNames.insert(mapNamePos, map->name());
@@ -492,15 +492,12 @@ bool Project::loadLayout(Layout *layout) {
 }
 
 Layout *Project::loadLayout(QString layoutId) {
-    if (this->mapLayouts.contains(layoutId)) {
-        Layout *layout = this->mapLayouts[layoutId];
-        if (loadLayout(layout)) {
-            return layout;
-        }
+    Layout *layout = this->mapLayouts.value(layoutId);
+    if (!layout || !loadLayout(layout)) {
+        logError(QString("Failed to load layout '%1'").arg(layoutId));
+        return nullptr;
     }
-
-    logError(QString("Failed to load layout '%1'").arg(layoutId));
-    return nullptr;
+    return layout;
 }
 
 bool Project::loadMapLayout(Map* map) {
@@ -508,12 +505,12 @@ bool Project::loadMapLayout(Map* map) {
         return true;
     }
 
-    if (this->mapLayouts.contains(map->layoutId())) {
-        map->setLayout(this->mapLayouts[map->layoutId()]);
-    } else {
+    Layout *layout = this->mapLayouts.value(map->layoutId());
+    if (!layout) {
         logError(QString("Map '%1' has an unknown layout '%2'").arg(map->name()).arg(map->layoutId()));
         return false;
     }
+    map->setLayout(layout);
 
     if (map->hasUnsavedChanges()) {
         return true;
@@ -558,24 +555,11 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
-    static const QList<QString> requiredFields = QList<QString>{
-        "id",
-        "name",
-        "width",
-        "height",
-        "primary_tileset",
-        "secondary_tileset",
-        "border_filepath",
-        "blockdata_filepath",
-    };
+    QStringList failedLayoutNames; // TODO: Populate
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
             continue;
-        if (!parser.ensureFieldsExist(layoutObj, requiredFields)) {
-            logError(QString("Layout %1 is missing field(s) in %2.").arg(i).arg(layoutsFilepath));
-            return false;
-        }
         Layout *layout = new Layout();
         layout->id = ParseUtil::jsonToQString(layoutObj["id"]);
         if (layout->id.isEmpty()) {
@@ -611,15 +595,11 @@ bool Project::readMapLayouts() {
         if (projectConfig.useCustomBorderSize) {
             int bwidth = ParseUtil::jsonToInt(layoutObj["border_width"]);
             if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
-                logWarn(QString("Invalid 'border_width' value '%1' for %2 in %3. Must be greater than 0. Using default (%4) instead.")
-                                .arg(bwidth).arg(layout->id).arg(layoutsFilepath).arg(DEFAULT_BORDER_WIDTH));
                 bwidth = DEFAULT_BORDER_WIDTH;
             }
             layout->border_width = bwidth;
             int bheight = ParseUtil::jsonToInt(layoutObj["border_height"]);
             if (bheight <= 0) {
-                logWarn(QString("Invalid 'border_height' value '%1' for %2 in %3. Must be greater than 0. Using default (%4) instead.")
-                                .arg(bheight).arg(layout->id).arg(layoutsFilepath).arg(DEFAULT_BORDER_HEIGHT));
                 bheight = DEFAULT_BORDER_HEIGHT;
             }
             layout->border_height = bheight;
@@ -1817,8 +1797,10 @@ bool Project::readMapGroups() {
     QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
 
     const QString dynamicMapName = getDynamicMapName();
+    const QString dynamicMapConstant = getDynamicMapDefineName();
 
     // Process the map group lists
+    QStringList failedMapNames;
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
         const QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
         const QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
@@ -1829,45 +1811,73 @@ bool Project::readMapGroups() {
             const QString mapName = ParseUtil::jsonToQString(mapNamesJson.at(j));
             if (mapName == dynamicMapName) {
                 logWarn(QString("Ignoring map with reserved name '%1'.").arg(mapName));
+                failedMapNames.append(mapName);
                 continue;
             }
             if (this->mapNames.contains(mapName)) {
                 logWarn(QString("Ignoring repeated map name '%1'.").arg(mapName));
+                failedMapNames.append(mapName);
                 continue;
             }
 
             // Load the map's json file so we can get its ID constant (and two other constants we use for the map list).
             QJsonDocument mapDoc;
-            if (!readMapJson(mapName, &mapDoc))
+            if (!readMapJson(mapName, &mapDoc)) {
+                failedMapNames.append(mapName);
                 continue; // Error message has already been logged
+            }
 
             // Read and validate the map's ID from its JSON data.
             const QJsonObject mapObj = mapDoc.object();
             const QString mapConstant = ParseUtil::jsonToQString(mapObj["id"]);
             if (mapConstant.isEmpty()) {
                 logWarn(QString("Map '%1' is missing an \"id\" value and will be ignored.").arg(mapName));
+                failedMapNames.append(mapName);
+                continue;
+            }
+            if (mapConstant == dynamicMapConstant) {
+                logWarn(QString("Ignoring map with reserved \"id\" value '%1'.").arg(mapName));
+                failedMapNames.append(mapName);
                 continue;
             }
             const QString expectedPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
             if (!mapConstant.startsWith(expectedPrefix)) {
                 logWarn(QString("Map '%1' has invalid \"id\" value '%2' and will be ignored. Value must begin with '%3'.").arg(mapName).arg(mapConstant).arg(expectedPrefix));
+                failedMapNames.append(mapName);
                 continue;
             }
             auto it = this->mapConstantsToMapNames.constFind(mapConstant);
             if (it != this->mapConstantsToMapNames.constEnd()) {
                 logWarn(QString("Map '%1' has the same \"id\" value '%2' as map '%3' and will be ignored.").arg(mapName).arg(it.key()).arg(it.value()));
+                failedMapNames.append(mapName);
                 continue;
+            }
+
+            // Read layout ID for map list
+            const QString layoutId = ParseUtil::jsonToQString(mapObj["layout"]);
+            if (!this->layoutIds.contains(layoutId)) {
+                // If a map has an unknown layout ID it won't be able to load it at all anyway, so skip it.
+                // Skipping these will let us assume all the map layout IDs are valid, which simplies some handling elsewhere.
+                logWarn(QString("Map '%1' has unknown \"layout\" value '%2' and will be ignored.").arg(mapName).arg(layoutId));
+                failedMapNames.append(mapName);
+                continue;
+            }
+
+            // Read MAPSEC name for map list
+            const QString mapSectionName = ParseUtil::jsonToQString(mapObj["region_map_section"]);
+            if (!this->mapSectionIdNames.contains(mapSectionName)) {
+                // An unknown location is OK. Aside from that name not appearing in the dropdowns this shouldn't cause problems.
+                // We'll log a warning, but allow this map to be displayed.
+                logWarn(QString("Map '%1' has unknown \"region_map_section\" value '%2'.").arg(mapName).arg(mapSectionName));
             }
 
             // Success, save the constants to the project
             this->mapNames.append(mapName);
             this->groupNameToMapNames[groupName].append(mapName);
-            // TODO: These are not well-kept in sync (and that's probably a bad design indication. Maybe Maps should have a not-fully-loaded state, but have all their map.json data cached)
             this->mapConstantsToMapNames.insert(mapConstant, mapName);
             this->mapNamesToMapConstants.insert(mapName, mapConstant);
-            // TODO: Either verify that these are known IDs, or make sure nothing breaks when they're unknown.
-            this->mapNameToLayoutId.insert(mapName, ParseUtil::jsonToQString(mapObj["layout"]));
-            this->mapNameToMapSectionName.insert(mapName, ParseUtil::jsonToQString(mapObj["region_map_section"]));
+            this->mapNameToLayoutId.insert(mapName, layoutId);
+            this->mapNameToMapSectionName.insert(mapName, mapSectionName);
         }
     }
 
@@ -1880,10 +1890,15 @@ bool Project::readMapGroups() {
         return false;
     }
 
+    if (!failedMapNames.isEmpty()) {
+        // At least 1 map was excluded due to an error.
+        // User should be alerted of this, rather than just silently logging the details.
+        emit mapsExcluded(failedMapNames);
+    }
+
     // Save special "Dynamic" constant
-    const QString defineName = this->getDynamicMapDefineName();
-    this->mapConstantsToMapNames.insert(defineName, dynamicMapName);
-    this->mapNamesToMapConstants.insert(dynamicMapName, defineName);
+    this->mapConstantsToMapNames.insert(dynamicMapConstant, dynamicMapName);
+    this->mapNamesToMapConstants.insert(dynamicMapName, dynamicMapConstant);
     this->mapNames.append(dynamicMapName);
 
     return true;
@@ -2274,10 +2289,18 @@ bool Project::readRegionMapSections() {
         QJsonObject mapSectionObj = mapSections.at(i).toObject();
 
         // For each map section, "id" is the only required field. This is the field we use to display the location names in the map list, and in various drop-downs.
-        const QString idField = "id";
+        QString idField = "id";
         if (!mapSectionObj.contains(idField)) {
-            logWarn(QString("Ignoring data for map section %1 in '%2'. Missing required field \"%3\"").arg(i).arg(baseFilepath).arg(idField));
-            continue;
+            const QString oldIdField = "map_section";
+            if (mapSectionObj.contains(oldIdField)) {
+                // User has the old name for this field. Parse using this name, then save with the new name.
+                // This will presumably stop the user's project from compiling, but that's preferable to
+                // ignoring everything here and then wiping the file's data when we save later.
+                idField = oldIdField;
+            } else {
+                logWarn(QString("Ignoring data for map section %1 in '%2'. Missing required field \"%3\"").arg(i).arg(baseFilepath).arg(idField));
+                continue;
+            }
         }
         const QString idName = ParseUtil::jsonToQString(mapSectionObj[idField]);
         if (!idName.startsWith(requiredPrefix)) {
@@ -2338,7 +2361,6 @@ void Project::addNewMapsec(const QString &name) {
     }
     this->hasUnsavedDataChanges = true;
 
-    // TODO: Simplify into a single signal that updates the map list only if necessary
     emit mapSectionAdded(name);
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
 }

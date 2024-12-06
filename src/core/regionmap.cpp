@@ -397,10 +397,15 @@ void RegionMap::saveLayout() {
         case LayoutFormat::Binary:
         {
             QByteArray data;
+            int defaultValue = this->project->mapSectionIdNames.indexOf(this->default_map_section);
             for (int m = 0; m < this->layout_height; m++) {
                 for (int n = 0; n < this->layout_width; n++) {
                     int i = n + this->layout_width * m;
-                    data.append(this->project->mapSectionIdNames.indexOf(this->layouts["main"][i].map_section));
+                    int mapSectionValue = this->project->mapSectionIdNames.indexOf(this->layouts["main"][i].map_section);
+                    if (mapSectionValue < 0){
+                        mapSectionValue = defaultValue;
+                    }
+                    data.append(mapSectionValue);
                 }
             }
             QFile bfile(fullPath(this->layout_path));

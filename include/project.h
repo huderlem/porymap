@@ -280,6 +280,7 @@ signals:
     void mapGroupAdded(const QString &groupName);
     void mapSectionAdded(const QString &idName);
     void mapSectionIdNamesChanged(const QStringList &idNames);
+    void mapsExcluded(const QStringList &excludedMapNames);
 };
 
 #endif // PROJECT_H

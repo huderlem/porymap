@@ -25,7 +25,7 @@
         <x>0</x>
         <y>0</y>
         <width>238</width>
-        <height>106</height>
+        <height>107</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
@@ -55,6 +55,9 @@
         <widget class="QLineEdit" name="lineEdit_LayoutID">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this layout. It cannot be the same as any other existing layout.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

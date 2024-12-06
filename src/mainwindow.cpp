@@ -627,7 +627,8 @@ bool MainWindow::openProject(QString dir, bool initial) {
     connect(project, &Project::tilesetCreated, this, &MainWindow::onNewTilesetCreated);
     connect(project, &Project::mapGroupAdded, this, &MainWindow::onNewMapGroupCreated);
     connect(project, &Project::mapSectionAdded, this, &MainWindow::onNewMapSectionCreated);
-    connect(project, &Project::mapSectionIdNamesChanged, this->mapHeaderForm, &MapHeaderForm::setLocations);
+    connect(project, &Project::mapSectionIdNamesChanged, this, &MainWindow::setLocationComboBoxes);
+    connect(project, &Project::mapsExcluded, this, &MainWindow::showMapsExcludedAlert);
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
@@ -700,6 +701,22 @@ void MainWindow::showProjectOpenFailure() {
     QMessageBox error(QMessageBox::Critical, "porymap", errorMsg, QMessageBox::Ok, this);
     error.setDetailedText(getMostRecentError());
     error.exec();
+}
+
+// Alert the user that one or more maps have been excluded while loading the project.
+void MainWindow::showMapsExcludedAlert(const QStringList &excludedMapNames) {
+    QMessageBox msgBox(QMessageBox::Icon::Warning, "porymap", "", QMessageBox::Ok, this);
+
+    QString errorMsg;
+    if (excludedMapNames.length() == 1) {
+        errorMsg = QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first());
+    } else {
+        errorMsg = QString("Failed to load the maps listed below. Saving will exclude these maps from your project.");
+        msgBox.setDetailedText(excludedMapNames.join("\n"));
+    }
+    errorMsg.append(QString("\n\nPlease see %1 for full error details.").arg(getLogPath()));
+    msgBox.setText(errorMsg);
+    msgBox.exec();
 }
 
 bool MainWindow::isProjectOpen() {
@@ -861,19 +878,23 @@ bool MainWindow::userSetMap(QString map_name) {
         return true; // Already set
 
     if (map_name == editor->project->getDynamicMapName()) {
-        QMessageBox msgBox(this);
-        QString errorMsg = QString("The map '%1' can't be opened, it's a placeholder to indicate the specified map will be set programmatically.").arg(map_name);
-        msgBox.warning(nullptr, "Cannot Open Map", errorMsg);
+        QMessageBox msgBox(QMessageBox::Icon::Warning,
+                        "Cannot Open Map",
+                        QString("The map '%1' can't be opened, it's a placeholder to indicate the specified map will be set programmatically.").arg(map_name),
+                        QMessageBox::Ok,
+                        this);
+        msgBox.exec();
         return false;
     }
 
     if (!setMap(map_name)) {
-        QMessageBox msgBox(this);
-        QString errorMsg = QString("There was an error opening map %1. Please see %2 for full error details.\n\n%3")
-                .arg(map_name)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
-        msgBox.critical(nullptr, "Error Opening Map", errorMsg);
+        QMessageBox msgBox(QMessageBox::Icon::Critical,
+                        "Error Opening Map",
+                        QString("There was an error opening map %1.\n\nPlease see %2 for full error details.").arg(map_name).arg(getLogPath()),
+                        QMessageBox::Ok,
+                        this);
+        msgBox.setDetailedText(getMostRecentError());
+        msgBox.exec();
         return false;
     }
     return true;
@@ -929,12 +950,13 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
 // Use when the user is specifically requesting a layout to open.
 bool MainWindow::userSetLayout(QString layoutId) {
     if (!setLayout(layoutId)) {
-        QMessageBox msgBox(this);
-        QString errorMsg = QString("There was an error opening layout %1. Please see %2 for full error details.\n\n%3")
-                .arg(layoutId)
-                .arg(getLogPath())
-                .arg(getMostRecentError());
-        msgBox.critical(nullptr, "Error Opening Layout", errorMsg);
+        QMessageBox msgBox(QMessageBox::Icon::Critical,
+                        "Error Opening Layout",
+                        QString("There was an error opening layout %1.\n\nPlease see %2 for full error details.").arg(layoutId).arg(getLogPath()),
+                        QMessageBox::Ok,
+                        this);
+        msgBox.setDetailedText(getMostRecentError());
+        msgBox.exec();
         return false;
     }
 
@@ -1217,8 +1239,7 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         copyToolTipAction = menu.addAction("Copy Map ID");
         menu.addSeparator();
         connect(menu.addAction("Duplicate Map"), &QAction::triggered, [this, itemName] {
-            auto dialog = new NewMapDialog(this->editor->project, this->editor->project->getMap(itemName), this);
-            dialog->open();
+            openDuplicateMapDialog(itemName);
         });
         //menu.addSeparator();
         //connect(menu.addAction("Delete Map"), &QAction::triggered, [this, index] { deleteMapListItem(index); }); // TODO: No support for deleting maps
@@ -1244,12 +1265,7 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         copyToolTipAction = menu.addAction("Copy Layout ID");
         menu.addSeparator();
         connect(menu.addAction("Duplicate Layout"), &QAction::triggered, [this, itemName] {
-            auto layout = this->editor->project->loadLayout(itemName);
-            if (layout) {
-                auto dialog = new NewLayoutDialog(this->editor->project, layout, this);
-                connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
-                dialog->open();
-            }
+            openDuplicateLayoutDialog(itemName);
         });
         addToFolderAction = menu.addAction("Add New Map with Layout");
         //menu.addSeparator();
@@ -1436,8 +1452,12 @@ void MainWindow::onNewMapGroupCreated(const QString &groupName) {
 void MainWindow::onNewMapSectionCreated(const QString &idName) {
     // Add new map section to the Areas map list view
     this->mapAreaModel->insertMapFolderItem(idName);
+}
 
-    // TODO: Refresh Region Map Editor's map section dropdown, if it's open
+void MainWindow::setLocationComboBoxes(const QStringList &locations) {
+    this->mapHeaderForm->setLocations(locations);
+    if (this->regionMapEditor)
+        this->regionMapEditor->setLocations(locations);
 }
 
 void MainWindow::onNewTilesetCreated(Tileset *tileset) {
@@ -1460,10 +1480,31 @@ void MainWindow::openNewMapDialog() {
     dialog->open();
 }
 
+void MainWindow::openDuplicateMapDialog(const QString &mapName) {
+    const Map *map = this->editor->project->getMap(mapName);
+    if (map) {
+        auto dialog = new NewMapDialog(this->editor->project, map, this);
+        dialog->open();
+    } else {
+        //TODO
+    }
+}
+
 void MainWindow::openNewLayoutDialog() {
     auto dialog = new NewLayoutDialog(this->editor->project, this);
     connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
     dialog->open();
+}
+
+void MainWindow::openDuplicateLayoutDialog(const QString &layoutId) {
+    auto layout = this->editor->project->loadLayout(layoutId);
+    if (layout) {
+        auto dialog = new NewLayoutDialog(this->editor->project, layout, this);
+        connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+        dialog->open();
+    } else {
+        //TODO
+    }
 }
 
 void MainWindow::on_actionNew_Tileset_triggered() {

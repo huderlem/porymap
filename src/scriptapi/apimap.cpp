@@ -832,10 +832,6 @@ QString MainWindow::getLocation() {
 void MainWindow::setLocation(QString location) {
     if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->mapSectionIdNames.contains(location)) {
-        logError(QString("Unknown location '%1'").arg(location));
-        return;
-    }
     this->editor->map->header()->setLocation(location);
 }
 

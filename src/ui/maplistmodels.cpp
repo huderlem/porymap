@@ -454,10 +454,11 @@ QStandardItem *LayoutTreeModel::createMapFolderItem(const QString &folderName, Q
     // Despite using layout IDs internally, the Layouts map list shows layouts using their file path name.
     // We could handle this with Qt::DisplayRole in LayoutTreeModel::data, but then it would be sorted using the ID instead of the name.
     const Layout* layout = this->project->mapLayouts.value(folderName);
-    if (layout) {
-        folder->setText(layout->name);
-        folder->setToolTip(layout->id);
-    }
+    if (layout) folder->setText(layout->name);
+
+    // The layout ID will instead be shown as a tool tip.
+    folder->setToolTip(folderName);
+
     return folder;
 }
 

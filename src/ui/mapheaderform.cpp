@@ -55,7 +55,11 @@ void MapHeaderForm::init(const Project * project) {
     ui->comboBox_BattleScene->clear();
     ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
 
-    setLocations(project->mapSectionIdNames);
+    QStringList locations = project->mapSectionIdNames;
+    locations.sort();
+    const QSignalBlocker b_Locations(ui->comboBox_Location);
+    ui->comboBox_Location->clear();
+    ui->comboBox_Location->addItems(locations);
 
     // Hide config-specific settings
 
@@ -72,8 +76,7 @@ void MapHeaderForm::init(const Project * project) {
     ui->label_FloorNumber->setVisible(floorNumEnabled);
 }
 
-// This combo box is treated specially because (unlike the other combo boxes)
-// items that should be in this drop-down can be added or removed externally.
+// Unlike other combo boxes in the map header form, locations can be added or removed externally.
 void MapHeaderForm::setLocations(QStringList locations) {
     locations.sort();
 

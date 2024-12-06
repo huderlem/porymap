@@ -651,10 +651,9 @@ void RegionMapEditor::displayRegionMapLayout() {
 void RegionMapEditor::displayRegionMapLayoutOptions() {
     if (!this->region_map->layoutEnabled()) return;
 
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
+    const QSignalBlocker b(ui->comboBox_RM_ConnectedMap);
     this->ui->comboBox_RM_ConnectedMap->clear();
     this->ui->comboBox_RM_ConnectedMap->addItems(this->project->mapSectionIdNames);
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 
     this->ui->frame_RM_Options->setEnabled(true);
 
@@ -662,22 +661,19 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 }
 
 void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
+    const QSignalBlocker b_ConnectedMap(ui->comboBox_RM_ConnectedMap);
     this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->squareMapSection(index));
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 
     this->ui->pushButton_RM_Options_delete->setEnabled(this->region_map->squareHasMap(index));
 
-    this->ui->spinBox_RM_LayoutWidth->blockSignals(true);
-    this->ui->spinBox_RM_LayoutHeight->blockSignals(true);
+    const QSignalBlocker b_LayoutWidth(ui->spinBox_RM_LayoutWidth);
+    const QSignalBlocker b_LayoutHeight(ui->spinBox_RM_LayoutHeight);
     this->ui->spinBox_RM_LayoutWidth->setMinimum(1);
     this->ui->spinBox_RM_LayoutWidth->setMaximum(this->region_map->tilemapWidth() - this->region_map->padLeft());
     this->ui->spinBox_RM_LayoutHeight->setMinimum(1);
     this->ui->spinBox_RM_LayoutHeight->setMaximum(this->region_map->tilemapHeight() - this->region_map->padTop());
     this->ui->spinBox_RM_LayoutWidth->setValue(this->region_map->layoutWidth());
     this->ui->spinBox_RM_LayoutHeight->setValue(this->region_map->layoutHeight());
-    this->ui->spinBox_RM_LayoutWidth->blockSignals(false);
-    this->ui->spinBox_RM_LayoutHeight->blockSignals(false);
 }
 
 void RegionMapEditor::displayRegionMapEntriesImage() {
@@ -1322,4 +1318,19 @@ void RegionMapEditor::on_verticalSlider_Zoom_Image_Tiles_valueChanged(int val) {
     ui->graphicsView_RegionMap_Tiles->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_RegionMap_Tiles->setTransform(transform);
     ui->graphicsView_RegionMap_Tiles->setFixedSize(width + 2, height + 2);
+}
+
+// Repopulate the combo boxes that display MAPSEC names.
+void RegionMapEditor::setLocations(const QStringList &locations) {
+    const QSignalBlocker b_ConnectedMap(ui->comboBox_RM_ConnectedMap);
+    auto before = ui->comboBox_RM_ConnectedMap->currentText();
+    ui->comboBox_RM_ConnectedMap->clear();
+    ui->comboBox_RM_ConnectedMap->addItems(locations);
+    ui->comboBox_RM_ConnectedMap->setCurrentText(before);
+
+    const QSignalBlocker b_MapSection(ui->comboBox_RM_Entry_MapSection);
+    before = ui->comboBox_RM_Entry_MapSection->currentText();
+    ui->comboBox_RM_Entry_MapSection->clear();
+    ui->comboBox_RM_Entry_MapSection->addItems(locations);
+    ui->comboBox_RM_Entry_MapSection->setCurrentText(before);
 }

@@ -349,7 +349,9 @@ private:
     void clearProjectUI();
 
     void openNewMapDialog();
+    void openDuplicateMapDialog(const QString &mapName);
     void openNewLayoutDialog();
+    void openDuplicateLayoutDialog(const QString &layoutId);
     void openSubWindow(QWidget * window);
     void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
@@ -360,6 +362,7 @@ private:
     bool openProject(QString dir, bool initial = false);
     bool closeProject();
     void showProjectOpenFailure();
+    void showMapsExcludedAlert(const QStringList &excludedMapNames);
 
     bool setInitialMap();
     void saveGlobalConfigs();
@@ -408,7 +411,7 @@ private:
     void scrollMetatileSelectorToSelection();
     MapListToolBar* getCurrentMapListToolBar();
     MapTree* getCurrentMapList();
-    void refreshLocationsComboBox();
+    void setLocationComboBoxes(const QStringList &locations);
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
