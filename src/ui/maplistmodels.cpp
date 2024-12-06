@@ -98,6 +98,7 @@ QStandardItem *MapListModel::createMapItem(const QString &mapName, QStandardItem
     map->setData("map_name", MapListUserRoles::TypeRole);
     map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemNeverHasChildren);
     map->setEditable(this->editable); // Will override flags if necessary
+    map->setToolTip(this->project->mapNamesToMapConstants.value(mapName));
     this->mapItems.insert(mapName, map);
     return map;
 }
@@ -147,9 +148,9 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
     const QString type = item->data(MapListUserRoles::TypeRole).toString();
     const QString name = item->data(MapListUserRoles::NameRole).toString();
 
-    if (type == "map_name") {
-        // Data for maps in the map list
-        if (role == Qt::DecorationRole) {
+    if (role == Qt::DecorationRole) {
+        if (type == "map_name") {
+            // Decorating map in the map list
             if (name == this->activeItemName)
                 return this->mapOpenedIcon;
 
@@ -157,12 +158,8 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
             if (!map)
                 return this->mapGrayIcon;
             return map->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon; 
-        } else if (role == Qt::ToolTipRole) {
-            return this->project->mapNamesToMapConstants.value(name);
-        }
-    } else if (type == this->folderTypeName) {
-        // Data for map folders in the map list
-        if (role == Qt::DecorationRole) {
+        } else if (type == this->folderTypeName) {
+            // Decorating map folder in the map list
             return item->hasChildren() ? this->mapFolderIcon : this->emptyMapFolderIcon;
         }
     }
@@ -451,6 +448,19 @@ void LayoutTreeModel::removeItem(QStandardItem *) {
     // TODO: Deleting layouts not supported
 }
 
+QStandardItem *LayoutTreeModel::createMapFolderItem(const QString &folderName, QStandardItem *folder) {
+    folder = MapListModel::createMapFolderItem(folderName, folder);
+
+    // Despite using layout IDs internally, the Layouts map list shows layouts using their file path name.
+    // We could handle this with Qt::DisplayRole in LayoutTreeModel::data, but then it would be sorted using the ID instead of the name.
+    const Layout* layout = this->project->mapLayouts.value(folderName);
+    if (layout) {
+        folder->setText(layout->name);
+        folder->setToolTip(layout->id);
+    }
+    return folder;
+}
+
 QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid())
         return QVariant();
@@ -463,22 +473,15 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
     const QString name = item->data(MapListUserRoles::NameRole).toString();
 
     if (type == this->folderTypeName) {
-        const Layout* layout = this->project->mapLayouts.value(name);
-
         if (role == Qt::DecorationRole) {
             // Map layouts are used as folders, but we display them with the same icons as maps.
             if (name == this->activeItemName)
                 return this->mapOpenedIcon;
 
+            const Layout* layout = this->project->mapLayouts.value(name);
             if (!layout || !layout->loaded)
                 return this->mapGrayIcon;
             return layout->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon;
-        }
-        else if (role == Qt::DisplayRole) {
-            // Despite using layout IDs internally, the Layouts map list shows layouts using their file path name.
-            if (layout) return layout->name;
-        } else if (role == Qt::ToolTipRole) {
-            if (layout) return layout->id;
         }
     }
     return MapListModel::data(index, role);

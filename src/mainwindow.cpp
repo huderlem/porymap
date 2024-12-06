@@ -1279,13 +1279,13 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         });
     }
     if (copyDisplayNameAction) {
-        connect(copyDisplayNameAction, &QAction::triggered, [this, sourceModel, index] {
-            setClipboardData(sourceModel->data(index, Qt::DisplayRole).toString());
+        connect(copyDisplayNameAction, &QAction::triggered, [this, selectedItem] {
+            setClipboardData(selectedItem->text());
         });
     }
     if (copyToolTipAction) {
-        connect(copyToolTipAction, &QAction::triggered, [this, sourceModel, index] {
-            setClipboardData(sourceModel->data(index, Qt::ToolTipRole).toString());
+        connect(copyToolTipAction, &QAction::triggered, [this, selectedItem] {
+            setClipboardData(selectedItem->toolTip());
         });
     }
 

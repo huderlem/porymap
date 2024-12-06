@@ -148,6 +148,7 @@ public:
     ~LayoutTreeModel() {}
 
     QVariant data(const QModelIndex &index, int role) const override;
+    QStandardItem *createMapFolderItem(const QString &folderName, QStandardItem *folder) override;
 
 protected:
     void removeItem(QStandardItem *item) override;
