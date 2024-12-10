@@ -26,6 +26,7 @@
 #include "newmapdialog.h"
 #include "newlayoutdialog.h"
 #include "newtilesetdialog.h"
+#include "newnamedialog.h"
 
 #include <QClipboard>
 #include <QDirIterator>
@@ -1310,90 +1311,16 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
 }
 
 void MainWindow::mapListAddGroup() {
-    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    dialog.setWindowModality(Qt::ApplicationModal);
-    QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    QLineEdit *newNameEdit = new QLineEdit(&dialog);
-    newNameEdit->setClearButtonEnabled(true);
-
-    static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
-    newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
-
-    QLabel *errorMessageLabel = new QLabel(&dialog);
-    errorMessageLabel->setVisible(false);
-    errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
-
-    connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
-        const QString mapGroupName = newNameEdit->text();
-        if (!this->editor->project->isIdentifierUnique(mapGroupName)) {
-            errorMessageLabel->setText(QString("The name '%1' is not unique.").arg(mapGroupName));
-            errorMessageLabel->setVisible(true);
-        } else {
-            dialog.accept();
-        }
-    });
-
-    QFormLayout form(&dialog);
-
-    form.addRow("New Group Name", newNameEdit);
-    form.addRow("", errorMessageLabel);
-    form.addRow(&newItemButtonBox);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        QString newFieldName = newNameEdit->text();
-        if (newFieldName.isEmpty()) return;
-        this->editor->project->addNewMapGroup(newFieldName);
-    }
+    auto dialog = new NewNameDialog("New Group Name", this->editor->project, this);
+    connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapGroup);
+    dialog->open();
 }
 
 void MainWindow::mapListAddArea() {
-    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    dialog.setWindowModality(Qt::ApplicationModal);
-    QDialogButtonBox newItemButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    connect(&newItemButtonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    // TODO: This would be a little more seamless with a single line edit that enforces the MAPSEC prefix, rather than a separate label for the actual name.
-    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
-    auto newNameEdit = new QLineEdit(&dialog);
-    auto newNameDisplay = new QLabel(&dialog);
-    newNameDisplay->setText(prefix);
-    connect(newNameEdit, &QLineEdit::textEdited, [newNameDisplay, prefix] (const QString &text) {
-        // As the user types a name, update the label to show the name with the prefix.
-        newNameDisplay->setText(prefix + text);
-    });
-
-    QLabel *errorMessageLabel = new QLabel(&dialog);
-    errorMessageLabel->setVisible(false);
-    errorMessageLabel->setStyleSheet("QLabel { background-color: rgba(255, 0, 0, 25%) }");
-
-    static const QRegularExpression re_validChars("[A-Za-z_]+[\\w]*");
-    newNameEdit->setValidator(new QRegularExpressionValidator(re_validChars, newNameEdit));
-
-    connect(&newItemButtonBox, &QDialogButtonBox::accepted, [&](){
-        const QString newAreaName = newNameDisplay->text();
-        if (!this->editor->project->isIdentifierUnique(newAreaName)) {
-            errorMessageLabel->setText(QString("The name '%1' is not unique.").arg(newAreaName));
-            errorMessageLabel->setVisible(true);
-        } else {
-            dialog.accept();
-        }
-    });
-
-    QLabel *newNameEditLabel = new QLabel("New Area Name", &dialog);
-    QLabel *newNameDisplayLabel = new QLabel("Constant Name", &dialog);
-
-    QFormLayout form(&dialog);
-    form.addRow(newNameEditLabel, newNameEdit);
-    form.addRow(newNameDisplayLabel, newNameDisplay);
-    form.addRow("", errorMessageLabel);
-    form.addRow(&newItemButtonBox);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        if (newNameEdit->text().isEmpty()) return;
-        this->editor->project->addNewMapsec(newNameDisplay->text());
-    }
+    auto dialog = new NewNameDialog("New Area Name", this->editor->project, this);
+    dialog->setNamePrefix(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix));
+    connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapsec);
+    dialog->open();
 }
 
 void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {

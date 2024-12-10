@@ -12,12 +12,14 @@ NewLayoutForm::NewLayoutForm(QWidget *parent)
 
     ui->groupBox_BorderDimensions->setVisible(projectConfig.useCustomBorderSize);
 
-    // TODO: Read from project?
     ui->spinBox_BorderWidth->setMaximum(MAX_BORDER_WIDTH);
     ui->spinBox_BorderHeight->setMaximum(MAX_BORDER_HEIGHT);
 
-    connect(ui->spinBox_MapWidth, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
-    connect(ui->spinBox_MapHeight, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){validateMapDimensions();});
+    connect(ui->spinBox_MapWidth,  QOverload<int>::of(&QSpinBox::valueChanged), [=](int){ validateMapDimensions(); });
+    connect(ui->spinBox_MapHeight, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){ validateMapDimensions(); });
+
+    connect(ui->comboBox_PrimaryTileset->lineEdit(),   &QLineEdit::editingFinished, [this]{ validatePrimaryTileset(true); });
+    connect(ui->comboBox_SecondaryTileset->lineEdit(), &QLineEdit::editingFinished, [this]{ validateSecondaryTileset(true); });
 }
 
 NewLayoutForm::~NewLayoutForm()
@@ -71,12 +73,12 @@ Layout::Settings NewLayoutForm::settings() const {
     return settings;
 }
 
-// TODO: Validate while typing
 bool NewLayoutForm::validate() {
     // Make sure to call each validation function so that all errors are shown at once.
     bool valid = true;
     if (!validateMapDimensions()) valid = false;
-    if (!validateTilesets()) valid = false;
+    if (!validatePrimaryTileset()) valid = false;
+    if (!validateSecondaryTileset()) valid = false;
     return valid;
 }
 
@@ -84,11 +86,17 @@ bool NewLayoutForm::validateMapDimensions() {
     int size = m_project->getMapDataSize(ui->spinBox_MapWidth->value(), ui->spinBox_MapHeight->value());
     int maxSize = m_project->getMaxMapDataSize();
 
+    // TODO: Get from project
+    const int additionalWidth = 15;
+    const int additionalHeight = 14;
+
     QString errorText;
     if (size > maxSize) {
         errorText = QString("The specified width and height are too large.\n"
-                    "The maximum map width and height is the following: (width + 15) * (height + 14) <= %1\n"
-                    "The specified map width and height was: (%2 + 15) * (%3 + 14) = %4")
+                    "The maximum map width and height is the following: (width + %1) * (height + %2) <= %3\n"
+                    "The specified map width and height was: (%4 + %1) * (%5 + %2) = %6")
+                        .arg(additionalWidth)
+                        .arg(additionalHeight)
                         .arg(maxSize)
                         .arg(ui->spinBox_MapWidth->value())
                         .arg(ui->spinBox_MapHeight->value())
@@ -101,33 +109,36 @@ bool NewLayoutForm::validateMapDimensions() {
     return isValid;
 }
 
-bool NewLayoutForm::validateTilesets() {
-    QString primaryTileset = ui->comboBox_PrimaryTileset->currentText();
-    QString secondaryTileset = ui->comboBox_SecondaryTileset->currentText();
+bool NewLayoutForm::validatePrimaryTileset(bool allowEmpty) {
+    const QString name = ui->comboBox_PrimaryTileset->currentText();
 
-    QString primaryErrorText;
-    if (primaryTileset.isEmpty()) {
-        primaryErrorText = QString("The primary tileset cannot be empty.");
-    } else if (ui->comboBox_PrimaryTileset->findText(primaryTileset) < 0) {
-        primaryErrorText = QString("The specified primary tileset '%1' does not exist.").arg(primaryTileset);
+    QString errorText;
+    if (name.isEmpty()) {
+        if (!allowEmpty) errorText = QString("The Primary Tileset cannot be empty.");
+    } else if (ui->comboBox_PrimaryTileset->findText(name) < 0) {
+        errorText = QString("The Primary Tileset '%1' does not exist.").arg(ui->label_PrimaryTileset->text()).arg(name);
     }
-
-    QString secondaryErrorText;
-    if (secondaryTileset.isEmpty()) {
-        secondaryErrorText = QString("The secondary tileset cannot be empty.");
-    } else if (ui->comboBox_SecondaryTileset->findText(secondaryTileset) < 0) {
-        secondaryErrorText = QString("The specified secondary tileset '%2' does not exist.").arg(secondaryTileset);
-    }
-
-    QString errorText = QString("%1%2%3")
-                        .arg(primaryErrorText)
-                        .arg(!primaryErrorText.isEmpty() ? "\n" : "")
-                        .arg(secondaryErrorText);
 
     bool isValid = errorText.isEmpty();
-    ui->label_TilesetsError->setText(errorText);
-    ui->label_TilesetsError->setVisible(!isValid);
-    ui->comboBox_PrimaryTileset->lineEdit()->setStyleSheet(!primaryErrorText.isEmpty() ? lineEdit_ErrorStylesheet : "");
-    ui->comboBox_SecondaryTileset->lineEdit()->setStyleSheet(!secondaryErrorText.isEmpty() ? lineEdit_ErrorStylesheet : "");
+    ui->label_PrimaryTilesetError->setText(errorText);
+    ui->label_PrimaryTilesetError->setVisible(!isValid);
+    ui->comboBox_PrimaryTileset->lineEdit()->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    return isValid;
+}
+
+bool NewLayoutForm::validateSecondaryTileset(bool allowEmpty) {
+    const QString name = ui->comboBox_SecondaryTileset->currentText();
+
+    QString errorText;
+    if (name.isEmpty()) {
+        if (!allowEmpty) errorText = QString("The Secondary Tileset cannot be empty.");
+    } else if (ui->comboBox_SecondaryTileset->findText(name) < 0) {
+        errorText = QString("The Secondary Tileset '%1' does not exist.").arg(name);
+    }
+
+    bool isValid = errorText.isEmpty();
+    ui->label_SecondaryTilesetError->setText(errorText);
+    ui->label_SecondaryTilesetError->setVisible(!isValid);
+    ui->comboBox_SecondaryTileset->lineEdit()->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
     return isValid;
 }

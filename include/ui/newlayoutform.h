@@ -33,7 +33,8 @@ private:
     Project *m_project;
 
     bool validateMapDimensions();
-    bool validateTilesets();    
+    bool validatePrimaryTileset(bool allowEmpty = false);
+    bool validateSecondaryTileset(bool allowEmpty = false);
 };
 
 #endif // NEWLAYOUTFORM_H

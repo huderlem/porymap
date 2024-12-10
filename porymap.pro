@@ -91,6 +91,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/neweventtoolbutton.cpp \
     src/ui/newlayoutdialog.cpp \
     src/ui/newlayoutform.cpp \
+    src/ui/newnamedialog.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
     src/ui/montabwidget.cpp \
@@ -197,6 +198,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/neweventtoolbutton.h \
     include/ui/newlayoutdialog.h \
     include/ui/newlayoutform.h \
+    include/ui/newnamedialog.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
     include/ui/montabwidget.h \
@@ -243,6 +245,7 @@ FORMS    += forms/mainwindow.ui \
     forms/maplisttoolbar.ui \
     forms/newlayoutdialog.ui \
     forms/newlayoutform.ui \
+    forms/newnamedialog.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
