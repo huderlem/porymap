@@ -44,7 +44,6 @@ SOURCES += src/core/block.cpp \
     src/core/editcommands.cpp \
     src/lib/fex/lexer.cpp \
     src/lib/fex/parser.cpp \
-    src/lib/fex/parser_util.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
     src/scriptapi/apimap.cpp \
@@ -150,7 +149,6 @@ HEADERS  += include/core/block.h \
     include/lib/fex/define_statement.h \
     include/lib/fex/lexer.h \
     include/lib/fex/parser.h \
-    include/lib/fex/parser_util.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
