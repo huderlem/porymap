@@ -596,7 +596,7 @@ bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
 QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
     QString filePath = this->root + "/" + filename;
     auto cParser = fex::Parser();
-    auto tokens = fex::Lexer().LexFile(filePath.toStdString());
+    auto tokens = fex::Lexer().LexFile(filePath);
     auto structs = cParser.ParseTopLevelObjects(tokens);
     QMap<QString, QHash<QString, QString>> structMaps;
     for (auto it = structs.begin(); it != structs.end(); it++) {
