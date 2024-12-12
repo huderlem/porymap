@@ -135,12 +135,29 @@ void NewMapDialog::saveSettings() {
     settings->canFlyTo = ui->checkBox_CanFlyTo->isChecked();
     settings->header = this->headerForm->headerData();
 
-    // TODO: Verify uniqueness. If the layout ID belongs to an existing layout we don't need to do this at all.
-    settings->layout.name = QString("%1%2").arg(settings->name).arg(Layout::defaultSuffix());
+    // This dialog doesn't give users the option to give new layouts a name.
+    // If a new layout is being created we'll generate a unique layout name using the map name and a suffix.
+    //  (an older iteration of this dialog gave users an option to name new layouts, but it's extra clutter for
+    //   something the majority of users creating a map won't need. If they want to give a specific name to a layout
+    //   they can create the layout first, then create a new map that uses that layout.)
+    const Layout *layout = this->project->mapLayouts.value(settings->layout.id);
+    if (!layout) {
+        const QString baseLayoutName = QString("%1%2").arg(settings->name).arg(Layout::defaultSuffix());
+        QString newLayoutName = baseLayoutName;
+        int i = 2;
+        while (!this->project->isIdentifierUnique(newLayoutName)) {
+            newLayoutName = QString("%1_%2").arg(baseLayoutName).arg(i++);
+        }
+        settings->layout.name = newLayoutName;
+    } else {
+        // Pre-existing layout. The layout name won't be read, but we'll make sure it's correct anyway.
+        settings->layout.name = layout->name;
+    }
 
     // Folders for new layouts created for new maps use the map name, rather than the layout name.
     // There's no real reason for this, aside from maintaining consistency with the default layout
-    // folder names that do this (which would otherwise all have a '_Layout' suffix in the name).
+    // folder names that do this (i.e., if you create "MyMap", you'll get a 'data/layouts/MyMap/',
+    // rather than 'data/layouts/MyMap_Layout/').
     settings->layout.folderName = settings->name;
 
     porymapConfig.newMapHeaderSectionExpanded = this->headerSection->isExpanded();
