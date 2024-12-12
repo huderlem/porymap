@@ -1486,6 +1486,9 @@ Tileset *Project::createNewTileset(const QString &friendlyName, bool secondary, 
                     tile.tileId = ((i % 2) == 0) ? 1 : 2;
                 else
                     tile.tileId = ((i % 2) == 1) ? 1 : 2;
+
+                if (tileset->is_secondary)
+                    tile.tileId += Project::getNumTilesPrimary();
             }
             metatile->tiles.append(tile);
         }
