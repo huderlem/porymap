@@ -226,17 +226,11 @@ QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
     int primaryLength = this->primaryTileset->tiles.length();
     int height = qCeil(primaryLength / static_cast<double>(this->numTilesWide));
     QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
+    image.fill(0);
 
     QPainter painter(&image);
     for (uint16_t tile = 0; tile < primaryLength; tile++) {
-        QImage tileImage;
-        if (tile < primaryLength) {
-            tileImage = getGreyscaleTileImage(tile, this->primaryTileset, this->secondaryTileset);
-        } else {
-            tileImage = QImage(8, 8, QImage::Format_RGBA8888);
-            tileImage.fill(qRgb(0, 0, 0));
-        }
-
+        QImage tileImage = getGreyscaleTileImage(tile, this->primaryTileset, this->secondaryTileset);
         int y = tile / this->numTilesWide;
         int x = tile % this->numTilesWide;
         QPoint origin = QPoint(x * 8, y * 8);
@@ -261,18 +255,12 @@ QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
     int secondaryLength = this->secondaryTileset->tiles.length();
     int height = qCeil(secondaryLength / static_cast<double>(this->numTilesWide));
     QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
+    image.fill(0);
 
     QPainter painter(&image);
     uint16_t primaryLength = static_cast<uint16_t>(Project::getNumTilesPrimary());
     for (uint16_t tile = 0; tile < secondaryLength; tile++) {
-        QImage tileImage;
-        if (tile < secondaryLength) {
-            tileImage = getGreyscaleTileImage(tile + primaryLength, this->primaryTileset, this->secondaryTileset);
-        } else {
-            tileImage = QImage(8, 8, QImage::Format_RGBA8888);
-            tileImage.fill(qRgb(0, 0, 0));
-        }
-
+        QImage tileImage = getGreyscaleTileImage(tile + primaryLength, this->primaryTileset, this->secondaryTileset);
         int y = tile / this->numTilesWide;
         int x = tile % this->numTilesWide;
         QPoint origin = QPoint(x * 8, y * 8);

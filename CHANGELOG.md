@@ -60,6 +60,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix bug where layout json and blockdata could be saved separately leading to inconsistent data.
 - Fix crash when saving tilesets with fewer palettes than the maximum.
 - Fix projects not opening on Windows if the project filepath contains certain characters.
+- Fix exported tile images containing garbage pixels after the end of the tiles.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
