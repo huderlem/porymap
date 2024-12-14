@@ -11,6 +11,7 @@
 #include "config.h"
 #include "scripting.h"
 #include "customattributestable.h"
+#include "validator.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -299,9 +300,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     QLineEdit *lineEdit = new QLineEdit();
     lineEdit->setClearButtonEnabled(true);
     form.addRow(new QLabel("Group Base Label:"), lineEdit);
-    static const QRegularExpression re_validChars("[_A-Za-z0-9]*");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
-    lineEdit->setValidator(validator);
+    lineEdit->setValidator(new IdentifierValidator(lineEdit));
     connect(lineEdit, &QLineEdit::textChanged, [this, &lineEdit, &buttonBox](QString text){
         if (this->project->encounterGroupLabels.contains(text)) {
             lineEdit->setStyleSheet("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");

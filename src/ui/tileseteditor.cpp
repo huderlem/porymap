@@ -8,6 +8,7 @@
 #include "config.h"
 #include "shortcut.h"
 #include "filedialog.h"
+#include "validator.h"
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QCloseEvent>
@@ -20,9 +21,25 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     layout(layout),
     hasUnsavedChanges(false)
 {
-    this->setAttribute(Qt::WA_DeleteOnClose);
-    this->setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
-    this->initUi();
+    setAttribute(Qt::WA_DeleteOnClose);
+    setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
+    ui->setupUi(this);
+
+    this->tileXFlip = ui->checkBox_xFlip->isChecked();
+    this->tileYFlip = ui->checkBox_yFlip->isChecked();
+    this->paletteId = ui->spinBox_paletteSelector->value();
+    ui->spinBox_paletteSelector->setMinimum(0);
+    ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+    ui->lineEdit_metatileLabel->setValidator(new IdentifierValidator(this));
+
+    setAttributesUi();
+    initMetatileSelector();
+    initMetatileLayersItem();
+    initTileSelector();
+    initSelectedTileItem();
+    initShortcuts();
+    this->metatileSelector->select(0);
+    restoreWindowState();
 }
 
 TilesetEditor::~TilesetEditor()
@@ -92,26 +109,6 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     this->initMetatileHistory();
 }
 
-void TilesetEditor::initUi() {
-    ui->setupUi(this);
-    this->tileXFlip = ui->checkBox_xFlip->isChecked();
-    this->tileYFlip = ui->checkBox_yFlip->isChecked();
-    this->paletteId = ui->spinBox_paletteSelector->value();
-    this->ui->spinBox_paletteSelector->setMinimum(0);
-    this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
-
-    this->setAttributesUi();
-    this->setMetatileLabelValidator();
-
-    this->initMetatileSelector();
-    this->initMetatileLayersItem();
-    this->initTileSelector();
-    this->initSelectedTileItem();
-    this->initShortcuts();
-    this->metatileSelector->select(0);
-    this->restoreWindowState();
-}
-
 void TilesetEditor::setAttributesUi() {
     // Behavior
     if (projectConfig.metatileBehaviorMask) {
@@ -169,13 +166,6 @@ void TilesetEditor::setAttributesUi() {
         this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
     this->ui->frame_Properties->adjustSize();
-}
-
-void TilesetEditor::setMetatileLabelValidator() {
-    //only allow characters valid for a symbol
-    static const QRegularExpression expression("[_A-Za-z0-9]*$");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
-    this->ui->lineEdit_metatileLabel->setValidator(validator);
 }
 
 void TilesetEditor::initMetatileSelector()

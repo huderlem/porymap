@@ -19,10 +19,8 @@ class NewNameDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit NewNameDialog(const QString &label, Project *project, QWidget *parent = nullptr);
+    explicit NewNameDialog(const QString &label, const QString &prefix = "", Project *project = nullptr, QWidget *parent = nullptr);
     ~NewNameDialog();
-
-    void setNamePrefix(const QString &prefix);
 
     virtual void accept() override;
 
@@ -32,7 +30,7 @@ signals:
 private:
     Ui::NewNameDialog *ui;
     Project *project = nullptr;
-    const QString symbolPrefix;
+    const QString namePrefix;
 
     bool validateName(bool allowEmpty = false);
     void onNameChanged(const QString &name);

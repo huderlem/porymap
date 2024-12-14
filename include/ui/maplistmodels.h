@@ -54,9 +54,6 @@ private:
 };
 
 
-
-class QRegularExpressionValidator;
-
 class MapListModel : public QStandardItemModel {
     Q_OBJECT
 

@@ -2,6 +2,7 @@
 #include "maplayout.h"
 #include "ui_newlayoutdialog.h"
 #include "config.h"
+#include "validator.h"
 
 #include <QMap>
 #include <QSet>
@@ -34,9 +35,7 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
 
     ui->newLayoutForm->initUi(project);
 
-    // Identifiers can only contain word characters, and cannot start with a digit.
-    static const QRegularExpression re("[A-Za-z_]+[\\w]*");
-    auto validator = new QRegularExpressionValidator(re, this);
+    auto validator = new IdentifierValidator(this);
     ui->lineEdit_Name->setValidator(validator);
     ui->lineEdit_LayoutID->setValidator(validator);
 

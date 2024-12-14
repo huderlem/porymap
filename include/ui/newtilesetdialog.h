@@ -27,7 +27,7 @@ private:
     const QString symbolPrefix;
 
     bool validateName(bool allowEmpty = false);
-    void onFriendlyNameChanged(const QString &friendlyName);
+    void onNameChanged(const QString &name);
     void dialogButtonClicked(QAbstractButton *button);
 };
 

@@ -1,10 +1,10 @@
 #include "maplistmodels.h"
+#include "validator.h"
+#include "project.h"
+#include "filterchildrenproxymodel.h"
 
 #include <QMouseEvent>
 #include <QLineEdit>
-
-#include "project.h"
-#include "filterchildrenproxymodel.h"
 
 
 
@@ -179,9 +179,8 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
 
 QWidget *GroupNameDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
     QLineEdit *editor = new QLineEdit(parent);
-    static const QRegularExpression expression("[A-Za-z_]+[\\w]*");
     editor->setPlaceholderText("gMapGroup_");
-    editor->setValidator(new QRegularExpressionValidator(expression, parent));
+    editor->setValidator(new IdentifierValidator(parent));
     editor->setFrame(false);
     return editor;
 }

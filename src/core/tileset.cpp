@@ -4,6 +4,7 @@
 #include "log.h"
 #include "config.h"
 #include "imageproviders.h"
+#include "validator.h"
 
 #include <QPainter>
 #include <QImage>
@@ -180,10 +181,8 @@ bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTi
     if (!tileset)
         return false;
 
-    static const QRegularExpression expression("[_A-Za-z0-9]*$");
-    QRegularExpressionValidator validator(expression);
-    int pos = 0;
-    if (validator.validate(label, pos) != QValidator::Acceptable)
+    IdentifierValidator validator;
+    if (!validator.isValid(label))
         return false;
 
     tileset->metatileLabels[metatileId] = label;

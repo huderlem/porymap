@@ -3,6 +3,7 @@
 #include "mainwindow.h"
 #include "ui_newmapdialog.h"
 #include "config.h"
+#include "validator.h"
 
 #include <QMap>
 #include <QSet>
@@ -45,9 +46,7 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
     ui->comboBox_Group->addItems(project->groupNames);
     ui->comboBox_LayoutID->addItems(project->layoutIds);
 
-    // Identifiers can only contain word characters, and cannot start with a digit.
-    static const QRegularExpression re("[A-Za-z_]+[\\w]*");
-    auto validator = new QRegularExpressionValidator(re, this);
+    auto validator = new IdentifierValidator(this);
     ui->lineEdit_Name->setValidator(validator);
     ui->comboBox_Group->setValidator(validator);
     ui->comboBox_LayoutID->setValidator(validator);

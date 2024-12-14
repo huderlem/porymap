@@ -1310,14 +1310,13 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
 }
 
 void MainWindow::openNewMapGroupDialog() {
-    auto dialog = new NewNameDialog("New Group Name", this->editor->project, this);
+    auto dialog = new NewNameDialog("New Group Name", "", this->editor->project, this);
     connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapGroup);
     dialog->open();
 }
 
 void MainWindow::openNewAreaDialog() {
-    auto dialog = new NewNameDialog("New Area Name", this->editor->project, this);
-    dialog->setNamePrefix(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix));
+    auto dialog = new NewNameDialog("New Area Name", projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix), this->editor->project, this);
     connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapsec);
     dialog->open();
 }

@@ -8,7 +8,7 @@
 #include "tileset.h"
 #include "map.h"
 #include "filedialog.h"
-
+#include "validator.h"
 #include "orderedjson.h"
 
 #include <QDir>
@@ -1453,9 +1453,15 @@ void Project::readTilesetPaths(Tileset* tileset) {
     }
 }
 
-Tileset *Project::createNewTileset(const QString &friendlyName, bool secondary, bool checkerboardFill) {
+Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboardFill) {
+    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
+    if (!name.startsWith(prefix)) {
+        logError(QString("Tileset name '%1' doesn't begin with the prefix '%2'.").arg(name).arg(prefix));
+        return nullptr;
+    }
+
     auto tileset = new Tileset();
-    tileset->name = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix) + friendlyName;
+    tileset->name = name;
     tileset->is_secondary = secondary;
 
     // Create tileset directories
@@ -1527,10 +1533,11 @@ Tileset *Project::createNewTileset(const QString &friendlyName, bool secondary, 
     this->tilesetLabelsOrdered.append(tileset->name);
 
     // TODO: Ideally we wouldn't save new Tilesets immediately
-    // Append to tileset specific files
-    tileset->appendToHeaders(this->root, friendlyName, this->usingAsmTilesets);
-    tileset->appendToGraphics(this->root, friendlyName, this->usingAsmTilesets);
-    tileset->appendToMetatiles(this->root, friendlyName, this->usingAsmTilesets);
+    // Append to tileset specific files. Strip prefix from name to get base name for use in other symbols.
+    name.remove(0, prefix.length());
+    tileset->appendToHeaders(this->root, name, this->usingAsmTilesets);
+    tileset->appendToGraphics(this->root, name, this->usingAsmTilesets);
+    tileset->appendToMetatiles(this->root, name, this->usingAsmTilesets);
 
     tileset->save();
 
@@ -1966,12 +1973,10 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
     return true;
 }
 
-// For some arbitrary string, return true if it's both a valid identifier name
-// and not one that's already in-use.
-bool Project::isValidNewIdentifier(const QString &identifier) const {
-    static const QRegularExpression re_identifier("[A-Za-z_]+[\\w]*");
-    QRegularExpressionMatch match = re_identifier.match(identifier);
-    return match.hasMatch() && isIdentifierUnique(identifier);
+// For some arbitrary string, return true if it's both a valid identifier name and not one that's already in-use.
+bool Project::isValidNewIdentifier(QString identifier) const {
+    IdentifierValidator validator;
+    return validator.isValid(identifier) && isIdentifierUnique(identifier);
 }
 
 // Assumes 'identifier' is a valid name. If 'identifier' is unique, returns 'identifier'.

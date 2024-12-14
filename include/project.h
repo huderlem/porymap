@@ -140,9 +140,9 @@ public:
 
     Map *createNewMap(const Project::NewMapSettings &mapSettings, const Map* toDuplicate = nullptr);
     Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
-    Tileset *createNewTileset(const QString &friendlyName, bool secondary, bool checkerboardFill);
+    Tileset *createNewTileset(QString name, bool secondary, bool checkerboardFill);
     bool isIdentifierUnique(const QString &identifier) const;
-    bool isValidNewIdentifier(const QString &identifier) const;
+    bool isValidNewIdentifier(QString identifier) const;
     QString toUniqueIdentifier(const QString &identifier) const;
     QString getProjectTitle();
 

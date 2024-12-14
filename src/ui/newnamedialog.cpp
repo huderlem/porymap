@@ -2,12 +2,14 @@
 #include "ui_newnamedialog.h"
 #include "project.h"
 #include "imageexport.h"
+#include "validator.h"
 
 const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
 
-NewNameDialog::NewNameDialog(const QString &label, Project* project, QWidget *parent) :
+NewNameDialog::NewNameDialog(const QString &label, const QString &prefix, Project* project, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::NewNameDialog)
+    ui(new Ui::NewNameDialog),
+    namePrefix(prefix)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
@@ -16,10 +18,8 @@ NewNameDialog::NewNameDialog(const QString &label, Project* project, QWidget *pa
     if (!label.isEmpty())
         ui->label_Name->setText(label);
 
-    // Identifiers must only contain word characters, and cannot start with a digit.
-    static const QRegularExpression expression("[A-Za-z_]+[\\w]*");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression, this);
-    ui->lineEdit_Name->setValidator(validator);
+    ui->lineEdit_Name->setValidator(new IdentifierValidator(namePrefix, this));
+    ui->lineEdit_Name->setText(namePrefix);
 
     connect(ui->lineEdit_Name, &QLineEdit::textChanged, this, &NewNameDialog::onNameChanged);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewNameDialog::dialogButtonClicked);
@@ -32,10 +32,6 @@ NewNameDialog::~NewNameDialog()
     delete ui;
 }
 
-void NewNameDialog::setNamePrefix(const QString &) {
-    //TODO
-}
-
 void NewNameDialog::onNameChanged(const QString &) {
     validateName(true);
 }
@@ -44,9 +40,9 @@ bool NewNameDialog::validateName(bool allowEmpty) {
     const QString name = ui->lineEdit_Name->text();
 
     QString errorText;
-    if (name.isEmpty()) {
+    if (name.isEmpty() || name == namePrefix) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_Name->text());
-    } else if (!this->project->isIdentifierUnique(name)) {
+    } else if (this->project && !this->project->isIdentifierUnique(name)) {
         errorText = QString("%1 '%2' is not unique.").arg(ui->label_Name->text()).arg(name);
     }
 

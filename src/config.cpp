@@ -2,6 +2,7 @@
 #include "log.h"
 #include "shortcut.h"
 #include "map.h"
+#include "validator.h"
 #include <QDir>
 #include <QFile>
 #include <QFormLayout>
@@ -952,10 +953,8 @@ void ProjectConfig::setIdentifier(ProjectIdentifier id, QString text) {
         const QString idName = defaultIdentifiers.value(id).first;
         if (idName.startsWith("define_") || idName.startsWith("symbol_")) {
             // Validate the input for the identifier, depending on the type.
-            static const QRegularExpression re("[A-Za-z_]+[\\w]*");
-            auto validator = QRegularExpressionValidator(re);
-            int temp = 0;
-            if (validator.validate(text, temp) != QValidator::Acceptable) {
+            IdentifierValidator validator;
+            if (!validator.isValid(text)) {
                 logError(QString("The name '%1' for project identifier '%2' is invalid. It must only contain word characters, and cannot start with a digit.").arg(text).arg(idName));
                 return;
             }

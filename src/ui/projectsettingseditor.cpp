@@ -114,11 +114,6 @@ void ProjectSettingsEditor::initUi() {
     ui->lineEdit_BorderMetatiles->setValidator(validator_HexList);
     this->setBorderMetatilesUi(projectConfig.useCustomBorderSize);
 
-    // Validate that the text added to the warp behavior list could be a valid define
-    // (we don't care whether it actually is a metatile behavior define)
-    static const QRegularExpression expression_Word("^[A-Za-z0-9_]*$");
-    QRegularExpressionValidator *validator_Word = new QRegularExpressionValidator(expression_Word);
-    ui->comboBox_WarpBehaviors->setValidator(validator_Word);
     ui->textEdit_WarpBehaviors->setTextColor(Qt::gray);
 
     // Set spin box limits
