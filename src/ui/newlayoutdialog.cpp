@@ -19,31 +19,18 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
     layoutToCopy(layoutToCopy)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    setModal(true);
     ui->setupUi(this);
     this->project = project;
+    Layout::Settings *settings = &project->newLayoutSettings;
 
-    QString newName;
-    QString newId;
+    // Note: 'layoutToCopy' will have an empty name if it's an import from AdvanceMap
     if (this->layoutToCopy && !this->layoutToCopy->name.isEmpty()) {
-        // Duplicating a layout, the initial name will be the base layout's name
-        // with a numbered suffix to make it unique.
-        // Note: If 'layoutToCopy' is an imported AdvanceMap layout it won't have
-        //       a name, so it uses the default new layout name instead.
-        int i = 2;
-        do {
-            newName = QString("%1_%2").arg(this->layoutToCopy->name).arg(i++);
-            newId = Layout::layoutConstantFromName(newName);
-        } while (!project->isIdentifierUnique(newName) || !project->isIdentifierUnique(newId));
+        settings->name = project->toUniqueIdentifier(this->layoutToCopy->name);
     } else {
-        newName = project->getNewLayoutName();
-        newId = Layout::layoutConstantFromName(newName);
+        settings->name = project->getNewLayoutName();
     }
-
-    // We reset these settings for every session with the new layout dialog.
-    // The rest of the settings are preserved in the project between sessions.
-    project->newLayoutSettings.name = newName;
-    project->newLayoutSettings.id = newId;
+    // Generate a unique Layout constant
+    settings->id = project->toUniqueIdentifier(Layout::layoutConstantFromName(settings->name));
 
     ui->newLayoutForm->initUi(project);
 
@@ -166,8 +153,6 @@ void NewLayoutDialog::accept() {
     }
     ui->label_GenericError->setVisible(false);
 
-    // TODO: See if we can get away with emitting this from Project so that we don't need to connect
-    //       to this signal every time we create the dialog.
     emit applied(layout->id);
     QDialog::accept();
 }

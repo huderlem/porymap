@@ -115,21 +115,30 @@ QStandardItem *MapListModel::createMapFolderItem(const QString &folderName, QSta
 }
 
 QStandardItem *MapListModel::insertMapItem(const QString &mapName, const QString &folderName) {
-    // Disallow adding MAP_DYNAMIC to the map list.
-    if (mapName == this->project->getDynamicMapName())
+    if (mapName.isEmpty() || mapName == this->project->getDynamicMapName()) // Disallow adding MAP_DYNAMIC to the map list.
         return nullptr;
 
-    QStandardItem *folder = this->mapFolderItems[folderName];
-    if (!folder) folder = insertMapFolderItem(folderName);
-
     QStandardItem *map = createMapItem(mapName);
-    folder->appendRow(map);
+
+    QStandardItem *folder = this->mapFolderItems[folderName];
+    if (!folder) {
+        // Folder doesn't exist yet, add it.
+        folder = insertMapFolderItem(folderName);
+    }
+    // If folder is still nullptr here it's because we failed to create it.
+    if (folder) {
+        folder->appendRow(map);
+    }
+
     if (this->sortingEnabled)
         this->sort(0, Qt::AscendingOrder);
     return map;
 }
 
 QStandardItem *MapListModel::insertMapFolderItem(const QString &folderName) {
+    if (folderName.isEmpty())
+        return nullptr;
+
     QStandardItem *item = createMapFolderItem(folderName);
     this->root->appendRow(item);
     if (this->sortingEnabled)

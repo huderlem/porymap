@@ -395,7 +395,7 @@ QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath)
     if (!path.startsWith(this->baseDir)){
         // Most of Porymap's file-parsing code for project files will assume that filepaths
         // are relative to the root project folder, so we enforce that here.
-        QMessageBox::warning(this, "Failed to set custom filepath",
+        QMessageBox::warning(this, QApplication::applicationName(),
                            QString("Custom filepaths must be inside the root project folder '%1'").arg(this->baseDir));
         return QString();
     }

@@ -107,7 +107,7 @@ public:
 private:
     QString m_name;
     QString m_constantName;
-    QString m_layoutId; // TODO: Why do we do half this->layout()->id and half this->layoutId. Should these ever be different?
+    QString m_layoutId;
     QString m_sharedEventsMap = "";
     QString m_sharedScriptsMap = "";
 

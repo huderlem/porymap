@@ -185,7 +185,7 @@ void CustomScriptsEditor::displayNewScript(QString filepath) {
     // Verify new script path is not already in list
     for (int i = 0; i < ui->list->count(); i++) {
         if (filepath == this->getScriptFilepath(ui->list->item(i), false)) {
-            QMessageBox::information(this, "", QString("The script '%1' is already loaded").arg(filepath));
+            QMessageBox::information(this, QApplication::applicationName(), QString("The script '%1' is already loaded").arg(filepath));
             return;
         }
     }
@@ -219,7 +219,7 @@ void CustomScriptsEditor::openScript(QListWidgetItem * item) {
     const QString path = this->getScriptFilepath(item);
     QFileInfo fileInfo(path);
     if (!fileInfo.exists() || !fileInfo.isFile()){
-        QMessageBox::warning(this, "", QString("Failed to open script '%1'").arg(path));
+        QMessageBox::warning(this, QApplication::applicationName(), QString("Failed to open script '%1'").arg(path));
         return;
     }
     Editor::openInTextEditor(path);

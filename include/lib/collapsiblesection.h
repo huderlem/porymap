@@ -41,7 +41,7 @@ public:
     explicit CollapsibleSection(const QString& title = "",  const bool expanded = false, const int animationDuration = 0, QWidget* parent = 0);
 
     void setContentLayout(QLayout* contentLayout);
-    void setTitle(QString title);
+    void setTitle(const QString &title);
     bool isExpanded() const { return this->expanded; }
 
 public slots:

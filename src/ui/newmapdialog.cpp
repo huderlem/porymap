@@ -20,33 +20,28 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
     mapToCopy(mapToCopy)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    setModal(true);
     ui->setupUi(this);
     this->project = project;
+    Project::NewMapSettings *settings = &project->newMapSettings;
 
-    QString newMapName;
-    QString newLayoutId;
     if (this->mapToCopy) {
-        // Duplicating a map, the initial name will be the base map's name
-        // with a numbered suffix to make it unique.
-        int i = 2;
-        do {
-            newMapName = QString("%1_%2").arg(this->mapToCopy->name()).arg(i++);
-            newLayoutId = Layout::layoutConstantFromName(newMapName);
-        } while (!project->isIdentifierUnique(newMapName) || !project->isIdentifierUnique(newLayoutId));
+        // Copy settings from the map we're duplicating
+        if (this->mapToCopy->layout()){
+            settings->layout = this->mapToCopy->layout()->settings();
+        }
+        settings->header = *this->mapToCopy->header();
+        settings->group = project->mapNameToMapGroup(this->mapToCopy->name());
+        settings->name = project->toUniqueIdentifier(this->mapToCopy->name());
+        
     } else {
         // Not duplicating a map, get a generic new map name.
-        newMapName = project->getNewMapName();
-        newLayoutId = Layout::layoutConstantFromName(newMapName);
+        // The rest of the settings are preserved in the project between sessions.
+        settings->name = project->getNewMapName();
     }
-
-    // We reset these settings for every session with the new map dialog.
-    // The rest of the settings are preserved in the project between sessions.
-    project->newMapSettings.name = newMapName;
-    project->newMapSettings.layout.id = newLayoutId;    
+    // Generate a unique Layout constant
+    settings->layout.id = project->toUniqueIdentifier(Layout::layoutConstantFromName(settings->name));
 
     ui->newLayoutForm->initUi(project);
-    
     ui->comboBox_Group->addItems(project->groupNames);
     ui->comboBox_LayoutID->addItems(project->layoutIds);
 
@@ -66,12 +61,10 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
     this->headerSection = new CollapsibleSection("Header Data", porymapConfig.newMapHeaderSectionExpanded, 150, this);
     this->headerSection->setContentLayout(sectionLayout);
     ui->layout_HeaderData->addWidget(this->headerSection);
-    ui->layout_HeaderData->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::Expanding));
 
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewMapDialog::dialogButtonClicked);
 
     refresh();
-    adjustSize();
 }
 
 // Adding new map to an existing map list folder. Initialize settings accordingly.
@@ -115,12 +108,7 @@ void NewMapDialog::refresh() {
     if (ui->comboBox_LayoutID->isEnabled())
         ui->comboBox_LayoutID->setTextItem(settings->layout.id);
 
-    if (this->mapToCopy && this->mapToCopy->layout()) {
-        // When importing a layout these settings shouldn't be changed.
-        ui->newLayoutForm->setSettings(this->mapToCopy->layout()->settings());
-    } else {
-        ui->newLayoutForm->setSettings(settings->layout);
-    }
+    ui->newLayoutForm->setSettings(settings->layout);
     ui->checkBox_CanFlyTo->setChecked(settings->canFlyTo);
     this->headerForm->setHeaderData(settings->header);
 }
@@ -135,29 +123,22 @@ void NewMapDialog::saveSettings() {
     settings->canFlyTo = ui->checkBox_CanFlyTo->isChecked();
     settings->header = this->headerForm->headerData();
 
-    // This dialog doesn't give users the option to give new layouts a name.
-    // If a new layout is being created we'll generate a unique layout name using the map name and a suffix.
+    // This dialog doesn't give users the option to give new layouts a name, we generate one using the map name.
     //  (an older iteration of this dialog gave users an option to name new layouts, but it's extra clutter for
     //   something the majority of users creating a map won't need. If they want to give a specific name to a layout
     //   they can create the layout first, then create a new map that uses that layout.)
     const Layout *layout = this->project->mapLayouts.value(settings->layout.id);
     if (!layout) {
-        const QString baseLayoutName = QString("%1%2").arg(settings->name).arg(Layout::defaultSuffix());
-        QString newLayoutName = baseLayoutName;
-        int i = 2;
-        while (!this->project->isIdentifierUnique(newLayoutName)) {
-            newLayoutName = QString("%1_%2").arg(baseLayoutName).arg(i++);
-        }
-        settings->layout.name = newLayoutName;
+        const QString newLayoutName = QString("%1%2").arg(settings->name).arg(Layout::defaultSuffix());
+        settings->layout.name = this->project->toUniqueIdentifier(newLayoutName);
     } else {
         // Pre-existing layout. The layout name won't be read, but we'll make sure it's correct anyway.
         settings->layout.name = layout->name;
     }
 
-    // Folders for new layouts created for new maps use the map name, rather than the layout name.
-    // There's no real reason for this, aside from maintaining consistency with the default layout
-    // folder names that do this (i.e., if you create "MyMap", you'll get a 'data/layouts/MyMap/',
-    // rather than 'data/layouts/MyMap_Layout/').
+    // Folders for new layouts created for new maps use the map name, rather than the layout name
+    // (i.e., if you create "MyMap", you'll get a 'data/layouts/MyMap/', rather than 'data/layouts/MyMap_Layout/').
+    // There's no real reason for this, aside from maintaining consistency with the default layout folder names that do this.
     settings->layout.folderName = settings->name;
 
     porymapConfig.newMapHeaderSectionExpanded = this->headerSection->isExpanded();
@@ -216,14 +197,8 @@ bool NewMapDialog::validateLayoutID(bool allowEmpty) {
     QString errorText;
     if (layoutId.isEmpty()) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_LayoutID->text());
-    } else if (!this->project->isIdentifierUnique(layoutId)) {
-        // Layout name is already in use by something. If we're duplicating a map this isn't allowed.
-        if (this->mapToCopy) {
-            errorText = QString("%1 is not unique.").arg(ui->label_LayoutID->text());
-        // If we're not duplicating a map this is ok as long as it's the name of an existing layout.
-        } else if (!this->project->layoutIds.contains(layoutId)) {
-            errorText = QString("%1 must either be the ID for an existing layout, or a unique identifier for a new layout.").arg(ui->label_LayoutID->text());
-        }
+    } else if (!this->project->layoutIds.contains(layoutId) && !this->project->isIdentifierUnique(layoutId)) {
+        errorText = QString("%1 must either be the ID for an existing layout, or a unique identifier for a new layout.").arg(ui->label_LayoutID->text());
     }
 
     bool isValid = errorText.isEmpty();

@@ -6,16 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>255</width>
-    <height>320</height>
+    <width>559</width>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>New Map Options</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Plain</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
+     </property>
      <property name="widgetResizable">
       <bool>true</bool>
      </property>
@@ -24,8 +39,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>229</width>
-        <height>228</height>
+        <width>535</width>
+        <height>550</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
@@ -42,6 +57,9 @@
        <item row="11" column="0" colspan="2">
         <widget class="QWidget" name="widget_HeaderData" native="true">
          <layout class="QVBoxLayout" name="layout_HeaderData">
+          <property name="sizeConstraint">
+           <enum>QLayout::SizeConstraint::SetMinAndMaxSize</enum>
+          </property>
           <property name="leftMargin">
            <number>0</number>
           </property>

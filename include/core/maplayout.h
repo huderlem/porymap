@@ -14,8 +14,6 @@ class LayoutPixmapItem;
 class CollisionPixmapItem;
 class BorderMetatilesPixmapItem;
 
-// TODO: Privatize members as appropriate
-
 class Layout : public QObject {
     Q_OBJECT
 public:

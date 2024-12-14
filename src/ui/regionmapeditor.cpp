@@ -1265,7 +1265,7 @@ void RegionMapEditor::closeEvent(QCloseEvent *event)
     if (this->modified()) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this,
-            "porymap",
+            QApplication::applicationName(),
             "The region map has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
             QMessageBox::Yes);

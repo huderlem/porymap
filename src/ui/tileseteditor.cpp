@@ -57,7 +57,7 @@ void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondar
     if (this->hasUnsavedChanges) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this,
-            "porymap",
+            QApplication::applicationName(),
             "Tileset has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes,
             QMessageBox::Yes);
@@ -726,7 +726,7 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
     if (this->hasUnsavedChanges) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this,
-            "porymap",
+            QApplication::applicationName(),
             "Tileset has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
             QMessageBox::Yes);

@@ -111,7 +111,7 @@ public:
     QStringList secondaryTilesetLabels;
     QStringList tilesetLabelsOrdered;
 
-    Blockdata readBlockdata(QString);
+    Blockdata readBlockdata(QString, bool *ok = nullptr);
     bool loadBlockdata(Layout *);
     bool loadLayoutBorder(Layout *);
 
@@ -121,6 +121,7 @@ public:
 
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
+    QString mapNameToMapGroup(const QString &mapName);
 
     struct NewMapSettings {
         QString name;
@@ -141,6 +142,8 @@ public:
     Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
     Tileset *createNewTileset(const QString &friendlyName, bool secondary, bool checkerboardFill);
     bool isIdentifierUnique(const QString &identifier) const;
+    bool isValidNewIdentifier(const QString &identifier) const;
+    QString toUniqueIdentifier(const QString &identifier) const;
     QString getProjectTitle();
 
     bool readWildMonData();

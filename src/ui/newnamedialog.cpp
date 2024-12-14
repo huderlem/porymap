@@ -10,7 +10,6 @@ NewNameDialog::NewNameDialog(const QString &label, Project* project, QWidget *pa
     ui(new Ui::NewNameDialog)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    setModal(true);
     ui->setupUi(this);
     this->project = project;
 

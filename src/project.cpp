@@ -367,13 +367,7 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     map->setNeedsHealLocation(settings.canFlyTo);
 
     // Generate a unique MAP constant.
-    int suffix = 2;
-    const QString baseMapConstant = Map::mapConstantFromName(map->name());
-    QString mapConstant = baseMapConstant;
-    while (!isIdentifierUnique(mapConstant)) {
-        mapConstant = QString("%1_%2").arg(baseMapConstant).arg(suffix++);
-    }
-    map->setConstantName(mapConstant);
+    map->setConstantName(toUniqueIdentifier(Map::mapConstantFromName(map->name())));
 
     Layout *layout = this->mapLayouts.value(settings.layout.id);
     if (!layout) {
@@ -402,13 +396,15 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     } else {
         // Adding map to a map group that doesn't exist yet.
         // Create the group, and we already know the map will be last in the list.
-        addNewMapGroup(settings.group);
+        if (isValidNewIdentifier(settings.group)) {
+            addNewMapGroup(settings.group);
+        }
         mapNamePos = this->mapNames.length();
     }
 
     const QString location = map->header()->location();
-    if (!this->mapSectionIdNames.contains(location) && isIdentifierUnique(location)) {
-        // Unrecognized MAPSEC value. Add it.
+    if (!this->mapSectionIdNames.contains(location) && isValidNewIdentifier(location)) {
+        // Unrecognized MAPSEC name, we can automatically add a new MAPSEC for it.
         addNewMapsec(location);
     }
 
@@ -555,7 +551,6 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
-    QStringList failedLayoutNames; // TODO: Populate
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
@@ -1124,9 +1119,16 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
 }
 
 bool Project::loadBlockdata(Layout *layout) {
+    bool ok = true;
     QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
-    layout->blockdata = readBlockdata(path);
-    layout->lastCommitBlocks.blocks = layout->blockdata;
+    auto blockdata = readBlockdata(path, &ok);
+    if (!ok) {
+        logError(QString("Failed to load layout blockdata from '%1'").arg(path));
+        return false;
+    }
+
+    layout->blockdata = blockdata;
+    layout->lastCommitBlocks.blocks = blockdata;
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
 
     if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
@@ -1153,9 +1155,16 @@ void Project::setNewLayoutBlockdata(Layout *layout) {
 }
 
 bool Project::loadLayoutBorder(Layout *layout) {
+    bool ok = true;
     QString path = QString("%1/%2").arg(root).arg(layout->border_path);
-    layout->border = readBlockdata(path);
-    layout->lastCommitBlocks.border = layout->border;
+    auto blockdata = readBlockdata(path, &ok);
+    if (!ok) {
+        logError(QString("Failed to load layout border from '%1'").arg(path));
+        return false;
+    }
+
+    layout->border = blockdata;
+    layout->lastCommitBlocks.border = blockdata;
     layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
 
     int borderLength = layout->getBorderWidth() * layout->getBorderHeight();
@@ -1471,7 +1480,6 @@ Tileset *Project::createNewTileset(const QString &friendlyName, bool secondary, 
     // Set default tiles image
     QImage tilesImage(":/images/blank_tileset.png");
     tileset->loadTilesImage(&tilesImage);
-    //exportIndexed4BPPPng(tileset->tilesImage, tileset->tilesImagePath); // TODO: Make sure we can now properly handle the 8bpp images that get written without this.
 
     // Create default metatiles
     const int numMetatiles = tileset->is_secondary ? (Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary()) : Project::getNumMetatilesPrimary();
@@ -1580,7 +1588,7 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     }
 }
 
-Blockdata Project::readBlockdata(QString path) {
+Blockdata Project::readBlockdata(QString path, bool *ok) {
     Blockdata blockdata;
     QFile file(path);
     if (file.open(QIODevice::ReadOnly)) {
@@ -1589,8 +1597,10 @@ Blockdata Project::readBlockdata(QString path) {
             uint16_t word = static_cast<uint16_t>((data[i] & 0xff) + ((data[i + 1] & 0xff) << 8));
             blockdata.append(word);
         }
+        if (ok) *ok = true;
     } else {
-        logError(QString("Failed to open blockdata path '%1'").arg(path));
+        // Failed
+        if (ok) *ok = false;
     }
 
     return blockdata;
@@ -1918,6 +1928,16 @@ void Project::addNewMapGroup(const QString &groupName) {
     emit mapGroupAdded(groupName);
 }
 
+QString Project::mapNameToMapGroup(const QString &mapName) {
+    for (auto it = this->groupNameToMapNames.constBegin(); it != this->groupNameToMapNames.constEnd(); it++) {
+        const QStringList mapNames = it.value();
+        if (mapNames.contains(mapName)) {
+            return it.key();
+        }
+    }
+    return QString();
+}
+
 // When we ask the user to provide a new identifier for something (like a map name or MAPSEC id)
 // we use this to make sure that it doesn't collide with any known identifiers first.
 // Porymap knows of many more identifiers than this, but for simplicity we only check the lists that users can add to via Porymap.
@@ -1946,22 +1966,41 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
     return true;
 }
 
+// For some arbitrary string, return true if it's both a valid identifier name
+// and not one that's already in-use.
+bool Project::isValidNewIdentifier(const QString &identifier) const {
+    static const QRegularExpression re_identifier("[A-Za-z_]+[\\w]*");
+    QRegularExpressionMatch match = re_identifier.match(identifier);
+    return match.hasMatch() && isIdentifierUnique(identifier);
+}
+
+// Assumes 'identifier' is a valid name. If 'identifier' is unique, returns 'identifier'.
+// Otherwise returns the identifier with a numbered suffix added to make it unique.
+QString Project::toUniqueIdentifier(const QString &identifier) const {
+    int suffix = 2;
+    QString uniqueIdentifier = identifier;
+    while (!isIdentifierUnique(uniqueIdentifier)) {
+        uniqueIdentifier = QString("%1_%2").arg(identifier).arg(suffix++);
+    }
+    return uniqueIdentifier;
+}
+
 QString Project::getNewMapName() const {
     // Ensure default name/ID doesn't already exist.
-    int i = 0;
+    int suffix = 1;
     QString newMapName;
     do {
-        newMapName = QString("NewMap%1").arg(++i);
+        newMapName = QString("NewMap%1").arg(suffix++);
     } while (!isIdentifierUnique(newMapName) || !isIdentifierUnique(Map::mapConstantFromName(newMapName)));
     return newMapName;
 }
 
 QString Project::getNewLayoutName() const {
     // Ensure default name/ID doesn't already exist.
-    int i = 0;
+    int suffix = 1;
     QString newLayoutName;
     do {
-        newLayoutName = QString("NewLayout%1").arg(++i);
+        newLayoutName = QString("NewLayout%1").arg(suffix++);
     } while (!isIdentifierUnique(newLayoutName) || !isIdentifierUnique(Layout::layoutConstantFromName(newLayoutName)));
     return newLayoutName;
 }

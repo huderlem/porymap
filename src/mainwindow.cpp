@@ -24,7 +24,6 @@
 #include "config.h"
 #include "filedialog.h"
 #include "newmapdialog.h"
-#include "newlayoutdialog.h"
 #include "newtilesetdialog.h"
 #include "newnamedialog.h"
 
@@ -69,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setOrganizationName("pret");
     QCoreApplication::setApplicationName("porymap");
     QCoreApplication::setApplicationVersion(PORYMAP_VERSION);
-    QApplication::setApplicationDisplayName("porymap");
+    QApplication::setApplicationDisplayName(QApplication::applicationName());
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
     ui->setupUi(this);
 
@@ -448,8 +447,8 @@ void MainWindow::initMapList() {
     connect(ui->mapListToolBar_Layouts, &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentLayout);
 
     // Connect the "add folder" button in each of the map lists
-    connect(ui->mapListToolBar_Groups,  &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddGroup);
-    connect(ui->mapListToolBar_Areas,   &MapListToolBar::addFolderClicked, this, &MainWindow::mapListAddArea);
+    connect(ui->mapListToolBar_Groups,  &MapListToolBar::addFolderClicked, this, &MainWindow::openNewMapGroupDialog);
+    connect(ui->mapListToolBar_Areas,   &MapListToolBar::addFolderClicked, this, &MainWindow::openNewAreaDialog);
     connect(ui->mapListToolBar_Layouts, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
 
     connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::saveMapListTab);
@@ -699,14 +698,14 @@ bool MainWindow::checkProjectSanity() {
 
 void MainWindow::showProjectOpenFailure() {
     QString errorMsg = QString("There was an error opening the project. Please see %1 for full error details.").arg(getLogPath());
-    QMessageBox error(QMessageBox::Critical, "porymap", errorMsg, QMessageBox::Ok, this);
+    QMessageBox error(QMessageBox::Critical, QApplication::applicationName(), errorMsg, QMessageBox::Ok, this);
     error.setDetailedText(getMostRecentError());
     error.exec();
 }
 
 // Alert the user that one or more maps have been excluded while loading the project.
 void MainWindow::showMapsExcludedAlert(const QStringList &excludedMapNames) {
-    QMessageBox msgBox(QMessageBox::Icon::Warning, "porymap", "", QMessageBox::Ok, this);
+    QMessageBox msgBox(QMessageBox::Icon::Warning, QApplication::applicationName(), "", QMessageBox::Ok, this);
 
     QString errorMsg;
     if (excludedMapNames.length() == 1) {
@@ -880,7 +879,7 @@ bool MainWindow::userSetMap(QString map_name) {
 
     if (map_name == editor->project->getDynamicMapName()) {
         QMessageBox msgBox(QMessageBox::Icon::Warning,
-                        "Cannot Open Map",
+                        QApplication::applicationName(),
                         QString("The map '%1' can't be opened, it's a placeholder to indicate the specified map will be set programmatically.").arg(map_name),
                         QMessageBox::Ok,
                         this);
@@ -890,7 +889,7 @@ bool MainWindow::userSetMap(QString map_name) {
 
     if (!setMap(map_name)) {
         QMessageBox msgBox(QMessageBox::Icon::Critical,
-                        "Error Opening Map",
+                        QApplication::applicationName(),
                         QString("There was an error opening map %1.\n\nPlease see %2 for full error details.").arg(map_name).arg(getLogPath()),
                         QMessageBox::Ok,
                         this);
@@ -952,7 +951,7 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
 bool MainWindow::userSetLayout(QString layoutId) {
     if (!setLayout(layoutId)) {
         QMessageBox msgBox(QMessageBox::Icon::Critical,
-                        "Error Opening Layout",
+                        QApplication::applicationName(),
                         QString("There was an error opening layout %1.\n\nPlease see %2 for full error details.").arg(layoutId).arg(getLogPath()),
                         QMessageBox::Ok,
                         this);
@@ -1310,13 +1309,13 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         menu.exec(QCursor::pos());
 }
 
-void MainWindow::mapListAddGroup() {
+void MainWindow::openNewMapGroupDialog() {
     auto dialog = new NewNameDialog("New Group Name", this->editor->project, this);
     connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapGroup);
     dialog->open();
 }
 
-void MainWindow::mapListAddArea() {
+void MainWindow::openNewAreaDialog() {
     auto dialog = new NewNameDialog("New Area Name", this->editor->project, this);
     dialog->setNamePrefix(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix));
     connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapsec);
@@ -1388,9 +1387,11 @@ void MainWindow::setLocationComboBoxes(const QStringList &locations) {
 }
 
 void MainWindow::onNewTilesetCreated(Tileset *tileset) {
-    QString message = QString("Created a new tileset named %1.").arg(tileset->name);
-    logInfo(message);
-    statusBar()->showMessage(message);
+    logInfo(QString("Created a new tileset named %1.").arg(tileset->name));
+
+    // Unlike creating a new map or layout (which immediately opens the new item)
+    // creating a new tileset has no visual feedback that it succeeded, so we show a message.
+    QMessageBox::information(this, QApplication::applicationName(), QString( "New tileset created at '%1'!").arg(tileset->getExpectedDir()));
 
     // Refresh tileset combo boxes
     if (!tileset->is_secondary) {
@@ -1413,24 +1414,40 @@ void MainWindow::openDuplicateMapDialog(const QString &mapName) {
         auto dialog = new NewMapDialog(this->editor->project, map, this);
         dialog->open();
     } else {
-        //TODO
+        QMessageBox msgBox(QMessageBox::Icon::Critical,
+                        QApplication::applicationName(),
+                        QString("Unable to duplicate '%1'.\n\nPlease see %2 for full error details.").arg(mapName).arg(getLogPath()),
+                        QMessageBox::Ok,
+                        this);
+        msgBox.setDetailedText(getMostRecentError());
+        msgBox.exec();
     }
 }
 
-void MainWindow::openNewLayoutDialog() {
-    auto dialog = new NewLayoutDialog(this->editor->project, this);
+NewLayoutDialog* MainWindow::createNewLayoutDialog(const Layout *layoutToCopy) {
+    auto dialog = new NewLayoutDialog(this->editor->project, layoutToCopy, this);
     connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+    return dialog;
+}
+
+void MainWindow::openNewLayoutDialog() {
+    auto dialog = createNewLayoutDialog();
     dialog->open();
 }
 
 void MainWindow::openDuplicateLayoutDialog(const QString &layoutId) {
     auto layout = this->editor->project->loadLayout(layoutId);
     if (layout) {
-        auto dialog = new NewLayoutDialog(this->editor->project, layout, this);
-        connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+        auto dialog = createNewLayoutDialog(layout);
         dialog->open();
     } else {
-        //TODO
+        QMessageBox msgBox(QMessageBox::Icon::Critical,
+                        QApplication::applicationName(),
+                        QString("Unable to duplicate '%1'.\n\nPlease see %2 for full error details.").arg(layoutId).arg(getLogPath()),
+                        QMessageBox::Ok,
+                        this);
+        msgBox.setDetailedText(getMostRecentError());
+        msgBox.exec();
     }
 }
 
@@ -1675,7 +1692,7 @@ void MainWindow::setClipboardData(OrderedJson::object object) {
     QClipboard *clipboard = QGuiApplication::clipboard();
     QString newText;
     int indent = 0;
-    object["application"] = "porymap";
+    object["application"] = QApplication::applicationName();
     OrderedJson data(object);
     data.dump(newText, &indent);
     clipboard->setText(newText);
@@ -1714,7 +1731,7 @@ void MainWindow::paste() {
         QJsonObject pasteObject = pasteJsonDoc.object();
 
         //OrderedJson::object pasteObject = pasteJson.object_items();
-        if (pasteObject["application"].toString() != "porymap") {
+        if (pasteObject["application"].toString() != QApplication::applicationName()) {
             return;
         }
 
@@ -2530,8 +2547,7 @@ void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered() {
         return;
     }
 
-    auto dialog = new NewLayoutDialog(this->editor->project, mapLayout, this);
-    connect(dialog, &NewLayoutDialog::applied, this, &MainWindow::userSetLayout);
+    auto dialog = createNewLayoutDialog(mapLayout);
     connect(dialog, &NewLayoutDialog::finished, [mapLayout] { mapLayout->deleteLater(); });
     dialog->open();
 }
@@ -2858,7 +2874,7 @@ void MainWindow::onWarpBehaviorWarningClicked() {
         "You can disable this warning or edit the list of behaviors that silence this warning under <b>Options -> Project Settings...</b>"
         "<br></html></body></p>"
     );
-    QMessageBox msgBox(QMessageBox::Information, "porymap", text, QMessageBox::Close, this);
+    QMessageBox msgBox(QMessageBox::Information, QApplication::applicationName(), text, QMessageBox::Close, this);
     QPushButton *settings = msgBox.addButton("Open Settings...", QMessageBox::ActionRole);
     msgBox.setDefaultButton(QMessageBox::Close);
     msgBox.setTextFormat(Qt::RichText);
@@ -3074,7 +3090,7 @@ bool MainWindow::closeProject() {
 
     if (this->editor->project->hasUnsavedChanges()) {
         QMessageBox::StandardButton result = QMessageBox::question(
-            this, "porymap", "The project has been modified, save changes?",
+            this, QApplication::applicationName(), "The project has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
 
         if (result == QMessageBox::Yes) {

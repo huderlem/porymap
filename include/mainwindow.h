@@ -31,6 +31,7 @@
 #include "updatepromoter.h"
 #include "aboutporymap.h"
 #include "mapheaderform.h"
+#include "newlayoutdialog.h"
 
 
 
@@ -350,8 +351,11 @@ private:
 
     void openNewMapDialog();
     void openDuplicateMapDialog(const QString &mapName);
+    NewLayoutDialog* createNewLayoutDialog(const Layout *layoutToCopy = nullptr);
     void openNewLayoutDialog();
     void openDuplicateLayoutDialog(const QString &layoutId);
+    void openNewMapGroupDialog();
+    void openNewAreaDialog();
     void openSubWindow(QWidget * window);
     void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
@@ -370,8 +374,6 @@ private:
     void refreshRecentProjectsMenu();
 
     void updateMapList();
-    void mapListAddGroup();
-    void mapListAddArea();
     void openMapListItem(const QModelIndex &index);
     void saveMapListTab(int index);
 

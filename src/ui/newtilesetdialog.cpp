@@ -11,7 +11,6 @@ NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
     symbolPrefix(projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix))
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    setModal(true);
     ui->setupUi(this);
     this->project = project;
 

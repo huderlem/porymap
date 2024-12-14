@@ -119,9 +119,9 @@ void CollapsibleSection::setContentLayout(QLayout* contentLayout)
     updateAnimationTargets();
 }
 
-void CollapsibleSection::setTitle(QString title)
+void CollapsibleSection::setTitle(const QString &title)
 {
-    toggleButton->setText(std::move(title));
+    toggleButton->setText(title);
 }
 
 int CollapsibleSection::getContentHeight() const
