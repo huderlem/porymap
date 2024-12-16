@@ -1166,7 +1166,7 @@ void Editor::setCursorRectVisible(bool visible) {
 void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     int x = pos.x();
     int y = pos.y();
-    if (!layout->isWithinBounds(x, y))
+    if (!layout || !layout->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
@@ -1198,7 +1198,7 @@ void Editor::onHoveredMapMetatileCleared() {
 }
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
-    if (!layout->isWithinBounds(x, y))
+    if (!layout || !layout->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
