@@ -23,7 +23,7 @@ MapHeaderForm::MapHeaderForm(QWidget *parent)
     connect(ui->checkBox_AllowRunning,     &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowRunningChanged);
     connect(ui->checkBox_AllowBiking,      &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowBikingChanged);
     connect(ui->checkBox_AllowEscaping,    &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowEscapingChanged);
-    connect(ui->spinBox_FloorNumber, &QSpinBox::valueChanged, this, &MapHeaderForm::onFloorNumberChanged);
+    connect(ui->spinBox_FloorNumber, QOverload<int>::of(&QSpinBox::valueChanged), this, &MapHeaderForm::onFloorNumberChanged);
 }
 
 MapHeaderForm::~MapHeaderForm()

@@ -29,6 +29,7 @@
 #include <QGridLayout>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
+#include <QSet>
 #include <QScrollArea>
 #include <QToolButton>
 #include <QWidget>

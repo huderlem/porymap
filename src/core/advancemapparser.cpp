@@ -206,9 +206,9 @@ QList<QRgb> AdvanceMapParser::parsePalette(const QString &filepath, bool *error)
     QList<QRgb> palette;
     int i = 0;
     while (i < in.length()) {
-        unsigned char red   = qMin(qMax(static_cast<unsigned char>(in.at(i + 0)), 0u), 255u);
-        unsigned char green = qMin(qMax(static_cast<unsigned char>(in.at(i + 1)), 0u), 255u);
-        unsigned char blue  = qMin(qMax(static_cast<unsigned char>(in.at(i + 2)), 0u), 255u);
+        unsigned char red   = static_cast<unsigned char>(in.at(i + 0));
+        unsigned char green = static_cast<unsigned char>(in.at(i + 1));
+        unsigned char blue  = static_cast<unsigned char>(in.at(i + 2));
         palette.append(qRgb(red, green, blue));
         i += 4;
     }
