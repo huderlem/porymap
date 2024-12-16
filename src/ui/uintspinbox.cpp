@@ -1,4 +1,5 @@
 #include "uintspinbox.h"
+#include <QWheelEvent>
 
 UIntSpinBox::UIntSpinBox(QWidget *parent)
    : QAbstractSpinBox(parent)
@@ -178,8 +179,11 @@ QAbstractSpinBox::StepEnabled UIntSpinBox::stepEnabled() const {
 
 void UIntSpinBox::wheelEvent(QWheelEvent *event) {
     // Only allow scrolling to modify contents when it explicitly has focus.
-    if (hasFocus())
+    if (hasFocus()) {
         QAbstractSpinBox::wheelEvent(event);
+    } else {
+        event->ignore();
+    }
 }
 
 void UIntSpinBox::focusOutEvent(QFocusEvent *event) {

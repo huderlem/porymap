@@ -596,7 +596,7 @@ bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
 tsl::ordered_map<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> &memberMap) {
     QString filePath = this->root + "/" + filename;
     auto cParser = fex::Parser();
-    auto tokens = fex::Lexer().LexFile(filePath.toStdString());
+    auto tokens = fex::Lexer().LexFile(filePath);
     auto topLevelObjects = cParser.ParseTopLevelObjects(tokens);
     tsl::ordered_map<QString, QHash<QString, QString>> structs;
     for (auto it = topLevelObjects.begin(); it != topLevelObjects.end(); it++) {

@@ -337,7 +337,7 @@ namespace fex
         return DefineStatement(identifer, value);
     }
 
-    tsl::ordered_map<std::string, int> Parser::ReadDefines(const std::string &filename, std::vector<std::string> matching)
+    tsl::ordered_map<std::string, int> Parser::ReadDefines(const QString &filename, std::vector<std::string> matching)
     {
         tsl::ordered_map<std::string, int> out;
 

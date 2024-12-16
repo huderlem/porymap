@@ -22,7 +22,7 @@ namespace fex
         std::vector<Array> ParseTopLevelArrays(std::vector<Token> tokens);
         tsl::ordered_map<std::string, ArrayValue> ParseTopLevelObjects(std::vector<Token> tokens);
 
-        tsl::ordered_map<std::string, int> ReadDefines(const std::string &filename, std::vector<std::string> matching);
+        tsl::ordered_map<std::string, int> ReadDefines(const QString &filename, std::vector<std::string> matching);
 
     private:
         int EvaluateExpression(std::vector<Token> tokens);

@@ -45,7 +45,6 @@ SOURCES += src/core/advancemapparser.cpp \
     src/core/editcommands.cpp \
     src/lib/fex/lexer.cpp \
     src/lib/fex/parser.cpp \
-    src/lib/fex/parser_util.cpp \
     src/lib/collapsiblesection.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
@@ -157,7 +156,6 @@ HEADERS  += include/core/advancemapparser.h \
     include/lib/fex/define_statement.h \
     include/lib/fex/lexer.h \
     include/lib/fex/parser.h \
-    include/lib/fex/parser_util.h \
     include/lib/collapsiblesection.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \

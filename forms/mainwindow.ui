@@ -2832,6 +2832,10 @@
                     <property name="text">
                      <string>Summary Chart...</string>
                     </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/chart_bar.ico</normaloff>:/icons/chart_bar.ico</iconset>
+                    </property>
                    </widget>
                   </item>
                   <item>

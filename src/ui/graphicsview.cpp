@@ -46,9 +46,9 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
     // Draw map grid
     if (editor->mapGrid && editor->mapGrid->isVisible()) {
         painter->save();
-        if (editor->map) {
+        if (editor->layout) {
             // We're clipping here to hide parts of the grid that are outside the map.
-            const QRectF mapRect(-0.5, -0.5, editor->map->getWidth() * 16 + 1.5, editor->map->getHeight() * 16 + 1.5);
+            const QRectF mapRect(-0.5, -0.5, editor->layout->getWidth() * 16 + 1.5, editor->layout->getHeight() * 16 + 1.5);
             painter->setClipping(true);
             painter->setClipRect(mapRect);
         }
