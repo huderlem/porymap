@@ -78,7 +78,6 @@ private:
 
 // As of writing our static Qt build for Windows doesn't include the QtCharts module, so we dummy the class out here.
 // The charts module is additionally excluded from Windows in porymap.pro
-#define DISABLE_CHARTS_MODULE
 
 class WildMonChart : public QWidget
 {

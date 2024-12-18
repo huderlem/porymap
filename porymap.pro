@@ -6,8 +6,10 @@
 
 QT       += core gui qml network
 
-!win32 {
+qtHaveModule(charts) {
     QT += charts
+} else {
+    warning("Qt module 'charts' not found, disabling chart features.")
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

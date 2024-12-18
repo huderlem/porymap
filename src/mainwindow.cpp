@@ -127,7 +127,7 @@ void MainWindow::initWindow() {
     ui->actionCheck_for_Updates->setVisible(false);
 #endif
 
-#ifdef DISABLE_CHARTS_MODULE
+#ifdef QT_CHARTS_LIB
     ui->pushButton_SummaryChart->setVisible(false);
 #endif
 
