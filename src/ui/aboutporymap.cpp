@@ -16,6 +16,8 @@ AboutPorymap::AboutPorymap(QWidget *parent) :
                                         .arg(QSysInfo::buildCpuArchitecture())
                                         .arg(QStringLiteral(__DATE__))
                                     );
+
+    layout()->setSizeConstraint(QLayout::SetFixedSize);
 }
 
 AboutPorymap::~AboutPorymap()
