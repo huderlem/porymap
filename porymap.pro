@@ -20,10 +20,12 @@ QMAKE_CXXFLAGS += -std=c++17 -Wall
 QMAKE_TARGET_BUNDLE_PREFIX = com.pret
 
 # Get latest commit hash if we can (to display alongside version information).
-GIT_PATH = $$system(which git)
-!isEmpty(GIT_PATH) {
-    LATEST_COMMIT = $$system($$GIT_PATH rev-parse --short HEAD 2>/dev/null)
+win32 {
+    LATEST_COMMIT = $$system(git rev-parse --short HEAD 2> nul)
+} else {
+    LATEST_COMMIT = $$system(git rev-parse --short HEAD 2>/dev/null)
 }
+
 DEFINES += PORYMAP_LATEST_COMMIT=\\\"$$LATEST_COMMIT\\\"
 
 VERSION = 5.4.1
