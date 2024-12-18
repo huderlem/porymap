@@ -2,12 +2,13 @@
 #include "ui_tileseteditor.h"
 #include "log.h"
 #include "imageproviders.h"
-#include "metatileparser.h"
+#include "advancemapparser.h"
 #include "paletteutil.h"
 #include "imageexport.h"
 #include "config.h"
 #include "shortcut.h"
 #include "filedialog.h"
+#include "validator.h"
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QCloseEvent>
@@ -20,9 +21,25 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     layout(layout),
     hasUnsavedChanges(false)
 {
-    this->setAttribute(Qt::WA_DeleteOnClose);
-    this->setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
-    this->initUi();
+    setAttribute(Qt::WA_DeleteOnClose);
+    setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
+    ui->setupUi(this);
+
+    this->tileXFlip = ui->checkBox_xFlip->isChecked();
+    this->tileYFlip = ui->checkBox_yFlip->isChecked();
+    this->paletteId = ui->spinBox_paletteSelector->value();
+    ui->spinBox_paletteSelector->setMinimum(0);
+    ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+    ui->lineEdit_metatileLabel->setValidator(new IdentifierValidator(this));
+
+    setAttributesUi();
+    initMetatileSelector();
+    initMetatileLayersItem();
+    initTileSelector();
+    initSelectedTileItem();
+    initShortcuts();
+    this->metatileSelector->select(0);
+    restoreWindowState();
 }
 
 TilesetEditor::~TilesetEditor()
@@ -57,7 +74,7 @@ void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondar
     if (this->hasUnsavedChanges) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this,
-            "porymap",
+            QApplication::applicationName(),
             "Tileset has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes,
             QMessageBox::Yes);
@@ -90,26 +107,6 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     this->secondaryTileset = new Tileset(*secondaryTileset);
     if (paletteEditor) paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->initMetatileHistory();
-}
-
-void TilesetEditor::initUi() {
-    ui->setupUi(this);
-    this->tileXFlip = ui->checkBox_xFlip->isChecked();
-    this->tileYFlip = ui->checkBox_yFlip->isChecked();
-    this->paletteId = ui->spinBox_paletteSelector->value();
-    this->ui->spinBox_paletteSelector->setMinimum(0);
-    this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
-
-    this->setAttributesUi();
-    this->setMetatileLabelValidator();
-
-    this->initMetatileSelector();
-    this->initMetatileLayersItem();
-    this->initTileSelector();
-    this->initSelectedTileItem();
-    this->initShortcuts();
-    this->metatileSelector->select(0);
-    this->restoreWindowState();
 }
 
 void TilesetEditor::setAttributesUi() {
@@ -169,13 +166,6 @@ void TilesetEditor::setAttributesUi() {
         this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
     this->ui->frame_Properties->adjustSize();
-}
-
-void TilesetEditor::setMetatileLabelValidator() {
-    //only allow characters valid for a symbol
-    static const QRegularExpression expression("[_A-Za-z0-9]*$");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
-    this->ui->lineEdit_metatileLabel->setValidator(validator);
 }
 
 void TilesetEditor::initMetatileSelector()
@@ -716,22 +706,9 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         image = image.convertToFormat(QImage::Format::Format_Indexed8, colorTable);
     }
 
-    // Validate image is properly indexed to 16 colors.
-    int colorCount = image.colorCount();
-    if (colorCount > 16) {
-        flattenTo4bppImage(&image);
-    } else if (colorCount < 16) {
-        QVector<QRgb> colorTable = image.colorTable();
-        for (int i = colorTable.length(); i < 16; i++) {
-            colorTable.append(Qt::black);
-        }
-        image.setColorTable(colorTable);
-    }
-
-    this->project->loadTilesetTiles(tileset, image);
+    tileset->loadTilesImage(&image);
     this->refresh();
     this->hasUnsavedChanges = true;
-    tileset->hasUnsavedTilesImage = true;
 }
 
 void TilesetEditor::closeEvent(QCloseEvent *event)
@@ -739,7 +716,7 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
     if (this->hasUnsavedChanges) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this,
-            "porymap",
+            QApplication::applicationName(),
             "Tileset has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
             QMessageBox::Yes);
@@ -978,7 +955,7 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     }
 
     bool error = false;
-    QList<Metatile*> metatiles = MetatileParser::parse(filepath, &error, primary);
+    QList<Metatile*> metatiles = AdvanceMapParser::parseMetatiles(filepath, &error, primary);
     if (error) {
         QMessageBox msgBox(this);
         msgBox.setText("Failed to import metatiles from Advance Map 1.92 .bvd file.");
@@ -987,6 +964,7 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Icon::Critical);
         msgBox.exec();
+        qDeleteAll(metatiles);
         return;
     }
 

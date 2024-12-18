@@ -33,7 +33,7 @@ NewMapConnectionDialog::NewMapConnectionDialog(QWidget *parent, Map* map, const 
     QString defaultMapName;
     if (mapNames.isEmpty()) {
         defaultMapName = QString();
-    } else if (mapNames.first() == map->name && mapNames.length() > 1) {
+    } else if (mapNames.first() == map->name() && mapNames.length() > 1) {
         // Prefer not to connect the map to itself
         defaultMapName = mapNames.at(1);
     } else {

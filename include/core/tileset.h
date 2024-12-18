@@ -38,8 +38,6 @@ public:
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
-    bool hasUnsavedTilesImage;
-
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
@@ -56,9 +54,24 @@ public:
     static QHash<int, QString> getHeaderMemberMap(bool usingAsm);
     static QString getExpectedDir(QString tilesetName, bool isSecondary);
     QString getExpectedDir();
+
+    void load();
+    void loadMetatiles();
+    void loadMetatileAttributes();
+    void loadTilesImage(QImage *importedImage = nullptr);
+    void loadPalettes();
+
+    void save();
+    void saveMetatileAttributes();
+    void saveMetatiles();
+    void saveTilesImage();
+    void savePalettes();
+
     bool appendToHeaders(QString root, QString friendlyName, bool usingAsm);
     bool appendToGraphics(QString root, QString friendlyName, bool usingAsm);
     bool appendToMetatiles(QString root, QString friendlyName, bool usingAsm);
+
+    void setTilesImage(const QImage &image);
 
     void setMetatiles(const QList<Metatile*> &metatiles);
     void addMetatile(Metatile* metatile);
@@ -72,6 +85,7 @@ public:
 
 private:
     QList<Metatile*> m_metatiles;
+    bool m_hasUnsavedTilesImage = false;
 };
 
 #endif // TILESET_H

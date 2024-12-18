@@ -44,6 +44,8 @@ public:
 
     bool reconfigure();
 
+    void setLocations(const QStringList &locations);
+
     QObjectList shortcutableObjects() const;
 
 public slots:

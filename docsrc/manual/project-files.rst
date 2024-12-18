@@ -45,7 +45,6 @@ The filepath that Porymap expects for each file can be overridden on the ``Files
    src/data/region_map/region_map_sections.json, yes, yes, ``json_region_map_entries``,
    src/data/region_map/porymap_config.json, yes, yes, ``json_region_porymap_cfg``,
    include/constants/global.h, yes, no, ``constants_global``, reads ``define_obj_event_count``
-   include/constants/map_groups.h, no, yes, ``constants_map_groups``,
    include/constants/items.h, yes, no, ``constants_items``, for Hidden Item events
    include/constants/flags.h, yes, no, ``constants_flags``, for Object and Hidden Item events
    include/constants/vars.h, yes, no, ``constants_vars``, for Trigger events
@@ -93,6 +92,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``symbol_spawn_npcs``, ``u8 sWhiteoutRespawnHealerNpcIds``, the type and table name for Heal Location ``Respawn NPC`` values
    ``symbol_attribute_table``, ``sMetatileAttrMasks``, optionally read to get settings on ``Tilesets`` tab
    ``symbol_tilesets_prefix``, ``gTileset_``, for new tileset names and to extract base tileset names
+   ``symbol_dynamic_map_name``, ``Dynamic``, reserved map name to display for ``define_map_dynamic``
    ``define_obj_event_count``, ``OBJECT_EVENT_TEMPLATES_COUNT``, to limit total Object Events
    ``define_min_level``, ``MIN_LEVEL``, minimum wild encounters level
    ``define_max_level``, ``MAX_LEVEL``, maximum wild encounters level

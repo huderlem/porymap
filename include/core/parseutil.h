@@ -5,6 +5,7 @@
 #include "heallocation.h"
 #include "log.h"
 #include "orderedjson.h"
+#include "orderedmap.h"
 
 #include <QString>
 #include <QList>
@@ -57,7 +58,7 @@ public:
     QMap<QString, int> readCDefinesByRegex(const QString &filename, const QStringList &regexList);
     QMap<QString, int> readCDefinesByName(const QString &filename, const QStringList &names);
     QStringList readCDefineNames(const QString &filename, const QStringList &regexList);
-    QMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString> = { });
+    tsl::ordered_map<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString>& = {});
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
     bool tryParseJsonFile(QJsonDocument *out, const QString &filepath);

@@ -18,8 +18,11 @@ class Layout : public QObject {
     Q_OBJECT
 public:
     Layout() {}
+    Layout(const Layout &other);
 
     static QString layoutConstantFromName(QString mapName);
+    static QString defaultSuffix();
+
 
     bool loaded = false;
 
@@ -70,24 +73,28 @@ public:
     QUndoStack editHistory;
 
     // to simplify new layout settings transfer between functions
-    struct SimpleSettings {
+    struct Settings {
         QString id;
         QString name;
+        // The name of a new layout's folder in `data/layouts/` is not always the same as the layout's name
+        // (e.g. the majority of the default layouts use the name of their associated map).
+        QString folderName;
         int width;
         int height;
-        QString tileset_primary_label;
-        QString tileset_secondary_label;
-        QString from_id = QString();
+        int borderWidth;
+        int borderHeight;
+        QString primaryTilesetLabel;
+        QString secondaryTilesetLabel;
     };
+    Settings settings() const;
 
-public:
-    Layout *copy();
-    void copyFrom(Layout *other);
+    Layout *copy() const;
+    void copyFrom(const Layout *other);
 
-    int getWidth();
-    int getHeight();
-    int getBorderWidth();
-    int getBorderHeight();
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+    int getBorderWidth() const { return border_width; }
+    int getBorderHeight() const { return border_height; }
 
     bool isWithinBounds(int x, int y);
     bool isWithinBorderBounds(int x, int y);

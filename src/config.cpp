@@ -2,6 +2,7 @@
 #include "log.h"
 #include "shortcut.h"
 #include "map.h"
+#include "validator.h"
 #include <QDir>
 #include <QFile>
 #include <QFormLayout>
@@ -81,6 +82,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::symbol_spawn_npcs,             {"symbol_spawn_npcs",             "u8 sWhiteoutRespawnHealerNpcIds"}},
     {ProjectIdentifier::symbol_attribute_table,        {"symbol_attribute_table",        "sMetatileAttrMasks"}},
     {ProjectIdentifier::symbol_tilesets_prefix,        {"symbol_tilesets_prefix",        "gTileset_"}},
+    {ProjectIdentifier::symbol_dynamic_map_name,       {"symbol_dynamic_map_name",       "Dynamic"}},
     // Defines
     {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
     {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
@@ -152,7 +154,6 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::data_pokemon_gfx,                 { "data_pokemon_gfx",                "src/data/graphics/pokemon.h"}},
     {ProjectFilePath::data_heal_locations,              { "data_heal_locations",             "src/data/heal_locations.h"}},
     {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
-    {ProjectFilePath::constants_map_groups,             { "constants_map_groups",            "include/constants/map_groups.h"}},
     {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
     {ProjectFilePath::constants_flags,                  { "constants_flags",                 "include/constants/flags.h"}},
     {ProjectFilePath::constants_vars,                   { "constants_vars",                  "include/constants/vars.h"}},
@@ -372,6 +373,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
         this->tilesetCheckerboardFill = getConfigBool(key, value);
+    } else if (key == "new_map_header_section_expanded") {
+        this->newMapHeaderSectionExpanded = getConfigBool(key, value);
     } else if (key == "theme") {
         this->theme = value;
     } else if (key == "wild_mon_chart_theme") {
@@ -454,6 +457,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
+    map.insert("new_map_header_section_expanded", this->newMapHeaderSectionExpanded ? "1" : "0");
     map.insert("theme", this->theme);
     map.insert("wild_mon_chart_theme", this->wildMonChartTheme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
@@ -939,13 +943,23 @@ QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
 
 }
 
-void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString &text) {
-    if (!defaultIdentifiers.contains(id)) return;
-    QString copy(text);
-    if (copy.isEmpty()) {
+void ProjectConfig::setIdentifier(ProjectIdentifier id, QString text) {
+    if (!defaultIdentifiers.contains(id))
+        return;
+
+    if (text.isEmpty()) {
         this->identifiers.remove(id);
     } else {
-        this->identifiers[id] = copy;
+        const QString idName = defaultIdentifiers.value(id).first;
+        if (idName.startsWith("define_") || idName.startsWith("symbol_")) {
+            // Validate the input for the identifier, depending on the type.
+            IdentifierValidator validator;
+            if (!validator.isValid(text)) {
+                logError(QString("The name '%1' for project identifier '%2' is invalid. It must only contain word characters, and cannot start with a digit.").arg(text).arg(idName));
+                return;
+            }
+        }
+        this->identifiers[id] = text;
     }
 }
 
