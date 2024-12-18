@@ -33,6 +33,7 @@ public:
 
     QVector<uint16_t> usedTiles;
     bool showUnused = false;
+    bool showDivider = false;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);

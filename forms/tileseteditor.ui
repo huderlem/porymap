@@ -647,6 +647,7 @@
     </property>
     <addaction name="actionLayer_Grid"/>
     <addaction name="actionMetatile_Grid"/>
+    <addaction name="actionShow_Tileset_Divider"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Counts"/>
     <addaction name="actionShow_Unused"/>
@@ -797,6 +798,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="actionShow_Tileset_Divider">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Tileset Divider</string>
    </property>
   </action>
  </widget>

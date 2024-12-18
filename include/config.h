@@ -68,6 +68,7 @@ public:
         this->showGrid = false;
         this->showTilesetEditorMetatileGrid = false;
         this->showTilesetEditorLayerGrid = true;
+        this->showTilesetEditorDivider = false;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
         this->theme = "default";
@@ -119,6 +120,7 @@ public:
     bool showGrid;
     bool showTilesetEditorMetatileGrid;
     bool showTilesetEditorLayerGrid;
+    bool showTilesetEditorDivider;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     QString theme;

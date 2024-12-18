@@ -13,6 +13,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add a `Close Project` option
 - Add charts to the `Wild Pokémon` tab that show species and level distributions.
 - Add options for customizing the map grid under `View -> Grid Settings`.
+- Add an option to display a dividing line between tilesets in the Tileset Editor.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
 - Add button to enable editing map groups including renaming groups and rearranging the maps within them.

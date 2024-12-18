@@ -46,6 +46,17 @@ void TilesetEditorTileSelector::draw() {
         painter.drawImage(origin, tileImage);
     }
 
+    if (this->showDivider) {
+        int row = this->primaryTileset->tiles.length() / this->numTilesWide;
+        if (this->primaryTileset->tiles.length() % this->numTilesWide != 0) {
+            // Round up height for incomplete last row
+            row++;
+        }
+        const int y = row * 16;
+        painter.setPen(Qt::white);
+        painter.drawLine(0, y, this->numTilesWide * 16, y);
+    }
+
     painter.end();
     this->setPixmap(QPixmap::fromImage(image));
 

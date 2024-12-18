@@ -99,6 +99,7 @@ void TilesetEditor::initUi() {
     this->paletteId = ui->spinBox_paletteSelector->value();
     this->ui->spinBox_paletteSelector->setMinimum(0);
     this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
+    this->ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
 
     this->setAttributesUi();
     this->setMetatileLabelValidator();
@@ -191,6 +192,7 @@ void TilesetEditor::initMetatileSelector()
     bool showGrid = porymapConfig.showTilesetEditorMetatileGrid;
     this->ui->actionMetatile_Grid->setChecked(showGrid);
     this->metatileSelector->showGrid = showGrid;
+    this->metatileSelector->showDivider = this->ui->actionShow_Tileset_Divider->isChecked();
 
     this->metatilesScene = new QGraphicsScene;
     this->metatilesScene->addItem(this->metatileSelector);
@@ -231,6 +233,8 @@ void TilesetEditor::initTileSelector()
             this, &TilesetEditor::onHoveredTileCleared);
     connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged,
             this, &TilesetEditor::onSelectedTilesChanged);
+
+    this->tileSelector->showDivider = this->ui->actionShow_Tileset_Divider->isChecked();
 
     this->tilesScene = new QGraphicsScene;
     this->tilesScene->addItem(this->tileSelector);
@@ -1046,6 +1050,16 @@ void TilesetEditor::on_actionLayer_Grid_triggered(bool checked) {
     this->metatileLayersItem->showGrid = checked;
     this->metatileLayersItem->draw();
     porymapConfig.showTilesetEditorLayerGrid = checked;
+}
+
+void TilesetEditor::on_actionShow_Tileset_Divider_triggered(bool checked) {
+    this->metatileSelector->showDivider = checked;
+    this->metatileSelector->draw();
+
+    this->tileSelector->showDivider = checked;
+    this->tileSelector->draw();
+
+    porymapConfig.showTilesetEditorDivider = checked;
 }
 
 void TilesetEditor::countMetatileUsage() {

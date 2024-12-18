@@ -23,7 +23,8 @@ public:
     QVector<uint16_t> usedMetatiles;
     bool selectorShowUnused = false;
     bool selectorShowCounts = false;
-    bool showGrid;
+    bool showGrid = false;
+    bool showDivider = false;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -44,6 +45,7 @@ private:
     int numRows(int numMetatiles);
     int numRows();
     void drawGrid();
+    void drawDivider();
     void drawFilters();
     void drawUnused();
     void drawCounts();
