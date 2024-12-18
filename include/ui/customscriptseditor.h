@@ -31,7 +31,6 @@ private:
     Ui::CustomScriptsEditor *ui;
 
     bool hasUnsavedChanges = false;
-    QString fileDialogDir;
     const QString baseDir;
 
     void displayScript(const QString &filepath, bool enabled);
@@ -50,6 +49,7 @@ private:
     void restoreWindowState();
     void initShortcuts();
     QObjectList shortcutableObjects() const;
+    void openManual();
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

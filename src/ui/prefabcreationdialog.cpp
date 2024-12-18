@@ -6,16 +6,16 @@
 
 #include <QObject>
 
-PrefabCreationDialog::PrefabCreationDialog(QWidget *parent, MetatileSelector *metatileSelector, Map *map) :
+PrefabCreationDialog::PrefabCreationDialog(QWidget *parent, MetatileSelector *metatileSelector, Layout *layout) :
     QDialog(parent),
     ui(new Ui::PrefabCreationDialog)
 {
     ui->setupUi(this);
 
-    this->map = map;
+    this->layout = layout;
     this->selection = metatileSelector->getMetatileSelection();
     QGraphicsScene *scene = new QGraphicsScene;
-    QGraphicsPixmapItem *pixmapItem = scene->addPixmap(drawMetatileSelection(this->selection, map));
+    QGraphicsPixmapItem *pixmapItem = scene->addPixmap(drawMetatileSelection(this->selection, layout));
     scene->setSceneRect(scene->itemsBoundingRect());
     this->ui->graphicsView_Prefab->setScene(scene);
     this->ui->graphicsView_Prefab->setFixedSize(scene->itemsBoundingRect().width() + 2,
@@ -35,7 +35,7 @@ PrefabCreationDialog::PrefabCreationDialog(QWidget *parent, MetatileSelector *me
         if (this->selection.hasCollision) {
             this->selection.collisionItems[index].enabled = toggledState;
         }
-        pixmapItem->setPixmap(drawMetatileSelection(this->selection, map));
+        pixmapItem->setPixmap(drawMetatileSelection(this->selection, layout));
     });
 }
 
@@ -45,5 +45,5 @@ PrefabCreationDialog::~PrefabCreationDialog()
 }
 
 void PrefabCreationDialog::savePrefab() {
-    prefab.addPrefab(this->selection, this->map, this->ui->lineEdit_PrefabName->text());
+    prefab.addPrefab(this->selection, this->layout, this->ui->lineEdit_PrefabName->text());
 }

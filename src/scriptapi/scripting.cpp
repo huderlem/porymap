@@ -29,8 +29,6 @@ void Scripting::stop() {
 }
 
 void Scripting::init(MainWindow *mainWindow) {
-    if (mainWindow->ui->graphicsView_Map)
-        mainWindow->ui->graphicsView_Map->clearOverlayMap();
     Scripting::stop();
     instance = new Scripting(mainWindow);
 }
@@ -50,6 +48,7 @@ Scripting::Scripting(MainWindow *mainWindow) {
 }
 
 Scripting::~Scripting() {
+    if (mainWindow) mainWindow->clearOverlay();
     this->engine->setInterrupted(true);
     qDeleteAll(this->imageCache);
     delete this->engine;

@@ -10,6 +10,7 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
     ui(new Ui::ConnectionsListItem)
 {
     ui->setupUi(this);
+    setFocusPolicy(Qt::StrongFocus);
 
     const QSignalBlocker blocker1(ui->comboBox_Direction);
     const QSignalBlocker blocker2(ui->comboBox_Map);
@@ -100,4 +101,17 @@ void ConnectionsListItem::on_button_Delete_clicked() {
 
 void ConnectionsListItem::on_button_OpenMap_clicked() {
     emit openMapClicked(this->connection);
+}
+
+void ConnectionsListItem::focusInEvent(QFocusEvent* event) {
+    this->setSelected(true);
+    QFrame::focusInEvent(event);
+}
+
+void ConnectionsListItem::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
+        on_button_Delete_clicked();
+    } else {
+        QFrame::keyPressEvent(event);
+    }
 }

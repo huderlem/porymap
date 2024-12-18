@@ -21,7 +21,7 @@ namespace fex
         std::vector<Array> ParseTopLevelArrays(std::vector<Token> tokens);
         std::map<std::string, ArrayValue> ParseTopLevelObjects(std::vector<Token> tokens);
 
-        std::map<std::string, int> ReadDefines(const std::string &filename, std::vector<std::string> matching);
+        std::map<std::string, int> ReadDefines(const QString &filename, std::vector<std::string> matching);
 
     private:
         int EvaluateExpression(std::vector<Token> tokens);

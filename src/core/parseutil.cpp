@@ -49,10 +49,10 @@ void ParseUtil::recordErrors(const QStringList &errors) {
 }
 
 void ParseUtil::logRecordedErrors() {
-    QStringList errors = this->errorMap.value(this->curDefine);
+    const QStringList errors = this->errorMap.value(this->curDefine);
     if (errors.isEmpty()) return;
     QString message = QString("Failed to parse '%1':").arg(this->curDefine);
-    for (const auto error : errors)
+    for (const auto &error : errors)
         message.append(QString("\n%1").arg(error));
     logError(message);
 }
@@ -370,13 +370,14 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     return paths;
 }
 
-bool ParseUtil::defineNameMatchesFilter(const QString &name, const QStringList &filterList, bool useRegex) {
+bool ParseUtil::defineNameMatchesFilter(const QString &name, const QStringList &filterList) const {
+    return filterList.contains(name);
+}
+
+bool ParseUtil::defineNameMatchesFilter(const QString &name, const QList<QRegularExpression> &filterList) const {
     for (auto filter : filterList) {
-        if (useRegex) {
-            // TODO: These QRegularExpression should probably be constructed beforehand,
-            // otherwise we recreate them for every define we check.
-            if (QRegularExpression(filter).match(name).hasMatch()) return true;
-        } else if (name == filter) return true;
+        if (filter.match(name).hasMatch())
+            return true;
     }
     return false;
 }
@@ -404,6 +405,21 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
 
     if (this->text.isEmpty())
         return result;
+
+    // If necessary, construct regular expressions from filter list
+    QList<QRegularExpression> filterList_Regex;
+    if (useRegex) {
+        for (auto filter : filterList) {
+            filterList_Regex.append(QRegularExpression(filter));
+        }
+    }
+
+    // Create lambda function to match the define name to the filter, depending on the filter type
+    auto matchesFilter = [this, &filterList, &filterList_Regex, useRegex](const QString &name) {
+        if (useRegex)
+            return defineNameMatchesFilter(name, filterList_Regex);
+        return defineNameMatchesFilter(name, filterList);
+    };
 
     // Capture either the name and value of a #define, or everything between the braces of 'enum { }'
     static const QRegularExpression re("#define\\s+(?<defineName>\\w+)[\\s\\n][^\\S\\n]*(?<defineValue>.+)?"
@@ -437,14 +453,14 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
                     baseNum = 1;
                 }
                 result.expressions.insert(name, expression);
-                if (defineNameMatchesFilter(name, filterList, useRegex))
+                if (matchesFilter(name))
                     result.filteredNames.append(name);
             }
         } else {
             // Encountered a #define
             const QString name = match.captured("defineName");
             result.expressions.insert(name, match.captured("defineValue"));
-            if (defineNameMatchesFilter(name, filterList, useRegex))
+            if (matchesFilter(name))
                 result.filteredNames.append(name);
         }
     }
@@ -580,7 +596,7 @@ bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
 QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
     QString filePath = this->root + "/" + filename;
     auto cParser = fex::Parser();
-    auto tokens = fex::Lexer().LexFile(filePath.toStdString());
+    auto tokens = fex::Lexer().LexFile(filePath);
     auto structs = cParser.ParseTopLevelObjects(tokens);
     QMap<QString, QHash<QString, QString>> structMaps;
     for (auto it = structs.begin(); it != structs.end(); it++) {

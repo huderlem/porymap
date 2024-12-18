@@ -32,8 +32,6 @@ public slots:
     void deactivateTab(int tabIndex);
 
 private:
-    bool eventFilter(QObject *object, QEvent *event);
-
     void actionCopyTab(int index);
     void actionAddDeleteTab(int index);
 

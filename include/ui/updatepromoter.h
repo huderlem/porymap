@@ -17,7 +17,7 @@ class UpdatePromoter : public QDialog
 
 public:
     explicit UpdatePromoter(QWidget *parent, NetworkAccessManager *manager);
-    ~UpdatePromoter() {};
+    ~UpdatePromoter();
 
     void checkForUpdates();
     void updatePreferences();

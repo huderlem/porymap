@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/add.ico</file>
+        <file>icons/chart_bar.ico</file>
         <file>icons/collapse_all.ico</file>
         <file>icons/cursor.ico</file>
         <file>icons/delete.ico</file>
@@ -10,16 +11,24 @@
         <file>icons/file_put.ico</file>
         <file>icons/fill_color_cursor.ico</file>
         <file>icons/fill_color.ico</file>
+        <file>icons/folder_add.ico</file>
         <file>icons/folder_closed_map.ico</file>
         <file>icons/folder_closed.ico</file>
+        <file>icons/folder_eye_closed.ico</file>
+        <file>icons/folder_eye_open.ico</file>
         <file>icons/folder_map_edited.ico</file>
         <file>icons/folder_map_opened.ico</file>
         <file>icons/folder_map.ico</file>
         <file>icons/folder.ico</file>
+        <file>icons/lock_edit.ico</file>
+        <file>icons/unlock_edit.ico</file>
         <file>icons/help.ico</file>
+        <file>icons/link_broken.ico</file>
+        <file>icons/link.ico</file>
         <file>icons/map_edited.ico</file>
         <file>icons/map_opened.ico</file>
         <file>icons/map.ico</file>
+        <file>icons/map_grayed.ico</file>
         <file>icons/move.ico</file>
         <file>icons/pencil_cursor.ico</file>
         <file>icons/pencil.ico</file>
@@ -35,7 +44,10 @@
         <file>icons/sort_map.ico</file>
         <file>icons/sort_number.ico</file>
         <file>icons/tall_grass.ico</file>
+        <file>icons/minimap.ico</file>
         <file>icons/viewsprites.ico</file>
+        <file>icons/application_form_edit.ico</file>
+        <file>icons/connections.ico</file>
         <file>icons/ui/dark_checkbox_checked_disabled.png</file>
         <file>icons/ui/dark_checkbox_checked_disabled@2x.png</file>
         <file>icons/ui/dark_checkbox_checked.png</file>

@@ -110,7 +110,6 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "UNDEFINED"}},
     {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
     {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
-    {ProjectIdentifier::define_map_section_count,      {"define_map_section_count",      "COUNT"}},
     {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
     // Regex
     {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
@@ -167,7 +166,6 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::constants_obj_event_movement,     { "constants_obj_event_movement",    "include/constants/event_object_movement.h"}},
     {ProjectFilePath::constants_obj_events,             { "constants_obj_events",            "include/constants/event_objects.h"}},
     {ProjectFilePath::constants_event_bg,               { "constants_event_bg",              "include/constants/event_bg.h"}},
-    {ProjectFilePath::constants_region_map_sections,    { "constants_region_map_sections",   "include/constants/region_map_sections.h"}},
     {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
     {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
     {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},
@@ -208,7 +206,6 @@ void KeyValueConfigBase::load() {
     }
 
     QTextStream in(&file);
-    QList<QString> configLines;
     static const QRegularExpression re("^(?<key>[^=]+)=(?<value>.*)$");
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
@@ -279,18 +276,6 @@ uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_
     return qMin(max, qMax(min, result));
 }
 
-const QMap<MapSortOrder, QString> mapSortOrderMap = {
-    {MapSortOrder::Group, "group"},
-    {MapSortOrder::Layout, "layout"},
-    {MapSortOrder::Area, "area"},
-};
-
-const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
-    {"group", MapSortOrder::Group},
-    {"layout", MapSortOrder::Layout},
-    {"area", MapSortOrder::Area},
-};
-
 PorymapConfig porymapConfig;
 
 QString PorymapConfig::getConfigFilepath() {
@@ -315,14 +300,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->reopenOnLaunch = getConfigBool(key, value);
     } else if (key == "pretty_cursors") {
         this->prettyCursors = getConfigBool(key, value);
-    } else if (key == "map_sort_order") {
-        QString sortOrder = value.toLower();
-        if (mapSortOrderReverseMap.contains(sortOrder)) {
-            this->mapSortOrder = mapSortOrderReverseMap.value(sortOrder);
-        } else {
-            this->mapSortOrder = MapSortOrder::Group;
-            logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
-        }
+    } else if (key == "map_list_tab") {
+        this->mapListTab = getConfigInteger(key, value, 0, 2, 0);
     } else if (key == "main_window_geometry") {
         this->mainWindowGeometry = bytesFromString(value);
     } else if (key == "main_window_state") {
@@ -439,7 +418,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_manually_closed", this->projectManuallyClosed ? "1" : "0");
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
-    map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
+    map.insert("map_list_tab", QString::number(this->mapListTab));
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
@@ -741,8 +720,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "enable_map_allow_flags") {
         this->mapAllowFlagsEnabled = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
-    } else if (key == "recent_map") {
-        userConfig.recentMap = value;
+    } else if (key == "recent_map_or_layout") {
+        userConfig.recentMapOrLayout = value;
     } else if (key == "use_encounter_json") {
         userConfig.useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
@@ -1036,8 +1015,8 @@ QString UserConfig::getConfigFilepath() {
 }
 
 void UserConfig::parseConfigKeyValue(QString key, QString value) {
-    if (key == "recent_map") {
-        this->recentMap = value;
+    if (key == "recent_map_or_layout") {
+        this->recentMapOrLayout = value;
     } else if (key == "use_encounter_json") {
         this->useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
@@ -1053,14 +1032,13 @@ void UserConfig::setUnreadKeys() {
 
 QMap<QString, QString> UserConfig::getKeyValueMap() {
     QMap<QString, QString> map;
-    map.insert("recent_map", this->recentMap);
+    map.insert("recent_map_or_layout", this->recentMapOrLayout);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("custom_scripts", this->outputCustomScripts());
     return map;
 }
 
 void UserConfig::init() {
-    QString dirName = QDir(this->projectDir).dirName().toLower();
     this->useEncounterJson = true;
     this->customScripts.clear();
 }

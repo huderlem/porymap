@@ -7,21 +7,21 @@
 #include "imageexport.h"
 #include "config.h"
 #include "shortcut.h"
-#include <QFileDialog>
+#include "filedialog.h"
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QCloseEvent>
 #include <QImageReader>
 
-TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
+TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::TilesetEditor),
     project(project),
-    map(map),
+    layout(layout),
     hasUnsavedChanges(false)
 {
     this->setAttribute(Qt::WA_DeleteOnClose);
-    this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
+    this->setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
     this->initUi();
 }
 
@@ -32,7 +32,6 @@ TilesetEditor::~TilesetEditor()
     delete tileSelector;
     delete metatileLayersItem;
     delete paletteEditor;
-    delete metatile;
     delete primaryTileset;
     delete secondaryTileset;
     delete metatilesScene;
@@ -41,16 +40,17 @@ TilesetEditor::~TilesetEditor()
     delete selectedTileScene;
     delete metatileLayersScene;
     delete copiedMetatile;
+    this->metatileHistory.clear();
 }
 
-void TilesetEditor::update(Map *map, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
-    this->updateMap(map);
+void TilesetEditor::update(Layout *layout, QString primaryTilesetLabel, QString secondaryTilesetLabel) {
+    this->updateLayout(layout);
     this->updateTilesets(primaryTilesetLabel, secondaryTilesetLabel);
 }
 
-void TilesetEditor::updateMap(Map *map) {
-    this->map = map;
-    this->metatileSelector->map = map;
+void TilesetEditor::updateLayout(Layout *layout) {
+    this->layout = layout;
+    this->metatileSelector->layout = layout;
 }
 
 void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
@@ -180,7 +180,7 @@ void TilesetEditor::setMetatileLabelValidator() {
 
 void TilesetEditor::initMetatileSelector()
 {
-    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->map);
+    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->layout);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,
             this, &TilesetEditor::onHoveredMetatileChanged);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,
@@ -387,7 +387,7 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     // The Tileset Editor (if open) needs to reflect these changes when the metatile is next displayed.
     if (this->metatileReloadQueue.contains(metatileId)) {
         this->metatileReloadQueue.remove(metatileId);
-        Metatile *updatedMetatile = Tileset::getMetatile(metatileId, this->map->layout->tileset_primary, this->map->layout->tileset_secondary);
+        Metatile *updatedMetatile = Tileset::getMetatile(metatileId, this->layout->tileset_primary, this->layout->tileset_secondary);
         if (updatedMetatile) *this->metatile = *updatedMetatile;
     }
 
@@ -637,15 +637,11 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     QString descriptor = primary ? "primary" : "secondary";
     QString descriptorCaps = primary ? "Primary" : "Secondary";
 
-    QString filepath = QFileDialog::getOpenFileName(
-                this,
-                QString("Import %1 Tileset Tiles Image").arg(descriptorCaps),
-                this->project->importExportPath,
-                "Image Files (*.png *.bmp *.jpg *.dib)");
+    QString filepath = FileDialog::getOpenFileName(this, QString("Import %1 Tileset Tiles Image").arg(descriptorCaps), "", "Image Files (*.png *.bmp *.jpg *.dib)");
     if (filepath.isEmpty()) {
         return;
     }
-    this->project->setImportExportPath(filepath);
+
     logInfo(QString("Importing %1 tileset tiles '%2'").arg(descriptor).arg(filepath));
 
     // Read image data from buffer so that the built-in QImage doesn't try to detect file format
@@ -698,15 +694,11 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         msgBox.setIcon(QMessageBox::Icon::Warning);
         msgBox.exec();
 
-        QString filepath = QFileDialog::getOpenFileName(
-            this,
-            QString("Select Palette for Tiles Image").arg(descriptorCaps),
-            this->project->importExportPath,
-            "Palette Files (*.pal *.act *tpl *gpl)");
+        QString filepath = FileDialog::getOpenFileName(this, "Select Palette for Tiles Image", "", "Palette Files (*.pal *.act *tpl *gpl)");
         if (filepath.isEmpty()) {
             return;
         }
-        this->project->setImportExportPath(filepath);
+
         bool error = false;
         QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
         if (error) {
@@ -789,8 +781,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     secondarySpinBox->setMinimum(1);
     primarySpinBox->setMaximum(Project::getNumMetatilesPrimary());
     secondarySpinBox->setMaximum(Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary());
-    primarySpinBox->setValue(this->primaryTileset->metatiles.length());
-    secondarySpinBox->setValue(this->secondaryTileset->metatiles.length());
+    primarySpinBox->setValue(this->primaryTileset->numMetatiles());
+    secondarySpinBox->setValue(this->secondaryTileset->numMetatiles());
     form.addRow(new QLabel("Primary Tileset"), primarySpinBox);
     form.addRow(new QLabel("Secondary Tileset"), secondarySpinBox);
 
@@ -800,22 +792,8 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
-        int numPrimaryMetatiles = primarySpinBox->value();
-        int numSecondaryMetatiles = secondarySpinBox->value();
-        int numTiles = projectConfig.getNumTilesInMetatile();
-        while (this->primaryTileset->metatiles.length() > numPrimaryMetatiles) {
-            delete this->primaryTileset->metatiles.takeLast();
-        }
-        while (this->primaryTileset->metatiles.length() < numPrimaryMetatiles) {
-            this->primaryTileset->metatiles.append(new Metatile(numTiles));
-        }
-        while (this->secondaryTileset->metatiles.length() > numSecondaryMetatiles) {
-            delete this->secondaryTileset->metatiles.takeLast();
-        }
-        while (this->secondaryTileset->metatiles.length() < numSecondaryMetatiles) {
-            this->secondaryTileset->metatiles.append(new Metatile(numTiles));
-        }
-
+        this->primaryTileset->resizeMetatiles(primarySpinBox->value());
+        this->secondaryTileset->resizeMetatiles(secondarySpinBox->value());
         this->metatileSelector->updateSelectedMetatile();
         this->refresh();
         this->hasUnsavedChanges = true;
@@ -939,10 +917,9 @@ void TilesetEditor::pasteMetatile(const Metatile * toPaste, QString newLabel)
 void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
 {
     QString defaultName = QString("%1_Tiles_Pal%2").arg(this->primaryTileset->name).arg(this->paletteId);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
-    QString filepath = QFileDialog::getSaveFileName(this, "Export Primary Tiles Image", defaultFilepath, "Image Files (*.png)");
+    QString defaultFilepath = QString("%1/%2.png").arg(FileDialog::getDirectory()).arg(defaultName);
+    QString filepath = FileDialog::getSaveFileName(this, "Export Primary Tiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
-        this->project->setImportExportPath(filepath);
         QImage image = this->tileSelector->buildPrimaryTilesIndexedImage();
         exportIndexed4BPPPng(image, filepath);
     }
@@ -951,10 +928,9 @@ void TilesetEditor::on_actionExport_Primary_Tiles_Image_triggered()
 void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
 {
     QString defaultName = QString("%1_Tiles_Pal%2").arg(this->secondaryTileset->name).arg(this->paletteId);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
-    QString filepath = QFileDialog::getSaveFileName(this, "Export Secondary Tiles Image", defaultFilepath, "Image Files (*.png)");
+    QString defaultFilepath = QString("%1/%2.png").arg(FileDialog::getDirectory()).arg(defaultName);
+    QString filepath = FileDialog::getSaveFileName(this, "Export Secondary Tiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
-        this->project->setImportExportPath(filepath);
         QImage image = this->tileSelector->buildSecondaryTilesIndexedImage();
         exportIndexed4BPPPng(image, filepath);
     }
@@ -963,10 +939,9 @@ void TilesetEditor::on_actionExport_Secondary_Tiles_Image_triggered()
 void TilesetEditor::on_actionExport_Primary_Metatiles_Image_triggered()
 {
     QString defaultName = QString("%1_Metatiles").arg(this->primaryTileset->name);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
-    QString filepath = QFileDialog::getSaveFileName(this, "Export Primary Metatiles Image", defaultFilepath, "Image Files (*.png)");
+    QString defaultFilepath = QString("%1/%2.png").arg(FileDialog::getDirectory()).arg(defaultName);
+    QString filepath = FileDialog::getSaveFileName(this, "Export Primary Metatiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
-        this->project->setImportExportPath(filepath);
         QImage image = this->metatileSelector->buildPrimaryMetatilesImage();
         image.save(filepath, "PNG");
     }
@@ -975,10 +950,9 @@ void TilesetEditor::on_actionExport_Primary_Metatiles_Image_triggered()
 void TilesetEditor::on_actionExport_Secondary_Metatiles_Image_triggered()
 {
     QString defaultName = QString("%1_Metatiles").arg(this->secondaryTileset->name);
-    QString defaultFilepath = QString("%1/%2.png").arg(this->project->importExportPath).arg(defaultName);
-    QString filepath = QFileDialog::getSaveFileName(this, "Export Secondary Metatiles Image", defaultFilepath, "Image Files (*.png)");
+    QString defaultFilepath = QString("%1/%2.png").arg(FileDialog::getDirectory()).arg(defaultName);
+    QString filepath = FileDialog::getSaveFileName(this, "Export Secondary Metatiles Image", defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
-        this->project->setImportExportPath(filepath);
         QImage image = this->metatileSelector->buildSecondaryMetatilesImage();
         image.save(filepath, "PNG");
     }
@@ -996,18 +970,13 @@ void TilesetEditor::on_actionImport_Secondary_Metatiles_triggered()
 
 void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
 {
-    QString descriptor = primary ? "primary" : "secondary";
     QString descriptorCaps = primary ? "Primary" : "Secondary";
 
-    QString filepath = QFileDialog::getOpenFileName(
-                this,
-                QString("Import %1 Tileset Metatiles from Advance Map 1.92").arg(descriptorCaps),
-                this->project->importExportPath,
-                "Advance Map 1.92 Metatile Files (*.bvd)");
+    QString filepath = FileDialog::getOpenFileName(this, QString("Import %1 Tileset Metatiles from Advance Map 1.92").arg(descriptorCaps), "", "Advance Map 1.92 Metatile Files (*.bvd)");
     if (filepath.isEmpty()) {
         return;
     }
-    this->project->setImportExportPath(filepath);
+
     bool error = false;
     QList<Metatile*> metatiles = MetatileParser::parse(filepath, &error, primary);
     if (error) {
@@ -1025,20 +994,20 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     //       Revisit this when tiles and num metatiles are added to tileset editory history.
     int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
     for (int i = 0; i < metatiles.length(); i++) {
-        if (i >= tileset->metatiles.length()) {
+        if (i >= tileset->numMetatiles()) {
             break;
         }
 
         uint16_t metatileId = static_cast<uint16_t>(metatileIdBase + i);
         QString prevLabel = Tileset::getOwnedMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
-        Metatile *prevMetatile = new Metatile(*tileset->metatiles.at(i));
+        Metatile *prevMetatile = new Metatile(*tileset->metatileAt(i));
         MetatileHistoryItem *commit = new MetatileHistoryItem(metatileId,
                                                               prevMetatile, new Metatile(*metatiles.at(i)),
                                                               prevLabel, prevLabel);
         metatileHistory.push(commit);
     }
 
-    tileset->metatiles = metatiles;
+    tileset->setMetatiles(metatiles);
     this->refresh();
     this->hasUnsavedChanges = true;
 }
@@ -1142,9 +1111,9 @@ void TilesetEditor::countTileUsage() {
 
     // check primary tilesets that are used with this secondary tileset for
     // reference to secondary tiles in primary metatiles
-    for (Tileset *tileset : primaryTilesets) {
-        for (Metatile *metatile : tileset->metatiles) {
-            for (Tile tile : metatile->tiles) {
+    for (const auto &tileset : primaryTilesets) {
+        for (const auto &metatile : tileset->metatiles()) {
+            for (const auto &tile : metatile->tiles) {
                 if (tile.tileId >= Project::getNumTilesPrimary())
                     this->tileSelector->usedTiles[tile.tileId]++;
             }
@@ -1153,8 +1122,8 @@ void TilesetEditor::countTileUsage() {
 
     // do the opposite for primary tiles in secondary metatiles
     for (Tileset *tileset : secondaryTilesets) {
-        for (Metatile *metatile : tileset->metatiles) {
-            for (Tile tile : metatile->tiles) {
+        for (const auto &metatile : tileset->metatiles()) {
+            for (const auto &tile : metatile->tiles) {
                 if (tile.tileId < Project::getNumTilesPrimary())
                     this->tileSelector->usedTiles[tile.tileId]++;
             }
@@ -1162,15 +1131,15 @@ void TilesetEditor::countTileUsage() {
     }
 
     // check this primary tileset metatiles
-    for (Metatile *metatile : this->primaryTileset->metatiles) {
-        for (Tile tile : metatile->tiles) {
+    for (const auto &metatile : this->primaryTileset->metatiles()) {
+        for (const auto &tile : metatile->tiles) {
             this->tileSelector->usedTiles[tile.tileId]++;
         }
     }
 
     // and the secondary metatiles
-    for (Metatile *metatile : this->secondaryTileset->metatiles) {
-        for (Tile tile : metatile->tiles) {
+    for (const auto &metatile : this->secondaryTileset->metatiles()) {
+        for (const auto &tile : metatile->tiles) {
             this->tileSelector->usedTiles[tile.tileId]++;
         }
     }

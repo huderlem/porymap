@@ -48,7 +48,6 @@ void ColorPicker::hover(int mouseX, int mouseY) {
         return;
 
     // 15 X 15 box with 8x magnification = 120px square)
-    QRect zoomRect(mouseX - zoom_box_dimensions / 2, mouseY - zoom_box_dimensions / 2, zoom_box_dimensions, zoom_box_dimensions);
     QPixmap grab = screen->grabWindow(0, mouseX - zoom_box_dimensions / 2, mouseY - zoom_box_dimensions / 2, zoom_box_dimensions, zoom_box_dimensions);
     int pixelRatio = grab.devicePixelRatio();
 

@@ -24,17 +24,40 @@ void GraphicsView::moveEvent(QMoveEvent *event) {
         label_MapRulerStatus->move(mapToGlobal(QPoint(6, 6)));
 }
 
+void MapView::keyPressEvent(QKeyEvent *event) {
+    if (editor && (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)) {
+        editor->deleteSelectedEvents();
+    } else {
+        QGraphicsView::keyPressEvent(event);
+    }
+}
+
 void MapView::drawForeground(QPainter *painter, const QRectF&) {
-    foreach (Overlay * overlay, this->overlayMap)
-        overlay->renderItems(painter);
+    for (auto i = this->overlayMap.constBegin(); i != this->overlayMap.constEnd(); i++) {
+        i.value()->renderItems(painter);
+    }
 
     if (!editor) return;
 
     QStyleOptionGraphicsItem option;
-    for (QGraphicsLineItem* line : editor->gridLines) {
-        if (line && line->isVisible())
-            line->paint(painter, &option, this);
+
+    // Draw elements of the map view that should always render on top of anything added by the user with the scripting API.
+
+    // Draw map grid
+    if (editor->mapGrid && editor->mapGrid->isVisible()) {
+        painter->save();
+        if (editor->layout) {
+            // We're clipping here to hide parts of the grid that are outside the map.
+            const QRectF mapRect(-0.5, -0.5, editor->layout->getWidth() * 16 + 1.5, editor->layout->getHeight() * 16 + 1.5);
+            painter->setClipping(true);
+            painter->setClipRect(mapRect);
+        }
+        for (auto item : editor->mapGrid->childItems())
+            item->paint(painter, &option, this);
+        painter->restore();
     }
+
+    // Draw cursor rectangles
     if (editor->playerViewRect && editor->playerViewRect->isVisible())
         editor->playerViewRect->paint(painter, &option, this);
     if (editor->cursorMapTileRect && editor->cursorMapTileRect->isVisible())
@@ -42,9 +65,8 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
 }
 
 void MapView::clearOverlayMap() {
-    foreach (Overlay * overlay, this->overlayMap) {
-        overlay->clearItems();
-        delete overlay;
+    for (auto i = this->overlayMap.constBegin(); i != this->overlayMap.constEnd(); i++) {
+        delete i.value();
     }
     this->overlayMap.clear();
 }

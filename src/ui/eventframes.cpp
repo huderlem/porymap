@@ -12,11 +12,6 @@ static inline QSpacerItem *createSpacerH() {
     return new QSpacerItem(2, 1, QSizePolicy::Expanding, QSizePolicy::Minimum);
 }
 
-static inline QSpacerItem *createSpacerV() {
-    return new QSpacerItem(1, 2, QSizePolicy::Minimum, QSizePolicy::Expanding);
-}
-
-
 
 void EventFrame::setup() {
     // delete default layout due to lack of parent at initialization

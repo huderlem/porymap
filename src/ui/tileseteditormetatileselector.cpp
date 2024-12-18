@@ -3,11 +3,11 @@
 #include "project.h"
 #include <QPainter>
 
-TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Map *map)
+TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout)
   : SelectablePixmapItem(32, 32, 1, 1) {
     this->setTilesets(primaryTileset, secondaryTileset, false);
     this->numMetatilesWide = 8;
-    this->map = map;
+    this->layout = layout;
     setAcceptHoverEvents(true);
     this->usedMetatiles.resize(Project::getNumMetatilesTotal());
 }
@@ -22,24 +22,24 @@ int TilesetEditorMetatileSelector::numRows(int numMetatiles) {
 }
 
 int TilesetEditorMetatileSelector::numRows() {
-    return this->numRows(this->primaryTileset->metatiles.length() + this->secondaryTileset->metatiles.length());
+    return this->numRows(this->primaryTileset->numMetatiles() + this->secondaryTileset->numMetatiles());
 }
 
 QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
-    return this->buildImage(0, this->primaryTileset->metatiles.length() + this->secondaryTileset->metatiles.length());
+    return this->buildImage(0, this->primaryTileset->numMetatiles() + this->secondaryTileset->numMetatiles());
 }
 
 QImage TilesetEditorMetatileSelector::buildPrimaryMetatilesImage() {
-    return this->buildImage(0, this->primaryTileset->metatiles.length());
+    return this->buildImage(0, this->primaryTileset->numMetatiles());
 }
 
 QImage TilesetEditorMetatileSelector::buildSecondaryMetatilesImage() {
-    return this->buildImage(Project::getNumMetatilesPrimary(), this->secondaryTileset->metatiles.length());
+    return this->buildImage(Project::getNumMetatilesPrimary(), this->secondaryTileset->numMetatiles());
 }
 
 QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMetatiles) {
     int numMetatilesHigh = this->numRows(numMetatiles);
-    int numPrimary = this->primaryTileset->metatiles.length();
+    int numPrimary = this->primaryTileset->numMetatiles();
     int maxPrimary = Project::getNumMetatilesPrimary();
     bool includesPrimary = metatileIdStart < maxPrimary;
 
@@ -54,8 +54,8 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
                     metatileId,
                     this->primaryTileset,
                     this->secondaryTileset,
-                    map->metatileLayerOrder,
-                    map->metatileLayerOpacity,
+                    this->layout->metatileLayerOrder,
+                    this->layout->metatileLayerOpacity,
                     true)
                 .scaled(32, 32);
         int map_y = i / this->numMetatilesWide;
@@ -96,7 +96,7 @@ void TilesetEditorMetatileSelector::updateSelectedMetatile() {
     if (Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
         this->selectedMetatile = metatileId;
     else
-        this->selectedMetatile = Project::getNumMetatilesPrimary() + this->secondaryTileset->metatiles.length() - 1;
+        this->selectedMetatile = Project::getNumMetatilesPrimary() + this->secondaryTileset->numMetatiles() - 1;
     emit selectedMetatileChanged(this->selectedMetatile);
 }
 
@@ -106,10 +106,10 @@ uint16_t TilesetEditorMetatileSelector::getSelectedMetatileId() {
 
 uint16_t TilesetEditorMetatileSelector::getMetatileId(int x, int y) {
     int index = y * this->numMetatilesWide + x;
-    if (index < this->primaryTileset->metatiles.length()) {
+    if (index < this->primaryTileset->numMetatiles()) {
         return static_cast<uint16_t>(index);
     } else {
-        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - this->primaryTileset->metatiles.length());
+        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - this->primaryTileset->numMetatiles());
     }
 }
 
@@ -155,7 +155,7 @@ QPoint TilesetEditorMetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
     }
     int index = metatileId < Project::getNumMetatilesPrimary()
                 ? metatileId
-                : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->metatiles.length();
+                : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->numMetatiles();
     return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
 }
 
@@ -232,12 +232,8 @@ void TilesetEditorMetatileSelector::drawUnused() {
     QPainter unusedPainter(&metatilesPixmap);
     unusedPainter.setOpacity(0.5);
 
-    int primaryLength = this->primaryTileset->metatiles.length();
-    int length_ = primaryLength + this->secondaryTileset->metatiles.length();
-    int height_ = length_ / this->numMetatilesWide;
-    if (length_ % this->numMetatilesWide != 0) {
-        height_++;
-    }
+    int primaryLength = this->primaryTileset->numMetatiles();
+    int length_ = primaryLength + this->secondaryTileset->numMetatiles();
 
     for (int i = 0; i < length_; i++) {
         int tile = i;
@@ -275,12 +271,8 @@ void TilesetEditorMetatileSelector::drawCounts() {
     whitePen.setWidth(1);
     countPainter.setPen(whitePen);
 
-    int primaryLength = this->primaryTileset->metatiles.length();
-    int length_ = primaryLength + this->secondaryTileset->metatiles.length();
-    int height_ = length_ / this->numMetatilesWide;
-    if (length_ % this->numMetatilesWide != 0) {
-        height_++;
-    }
+    int primaryLength = this->primaryTileset->numMetatiles();
+    int length_ = primaryLength + this->secondaryTileset->numMetatiles();
 
     for (int i = 0; i < length_; i++) {
         int tile = i;

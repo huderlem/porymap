@@ -2,6 +2,7 @@
 
 #include <QCompleter>
 #include <QLineEdit>
+#include <QWheelEvent>
 
 NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     : QComboBox(parent)
@@ -19,7 +20,7 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     this->completer()->setFilterMode(Qt::MatchContains);
 
     static const QRegularExpression re("[^\\s]*");
-    QValidator *validator = new QRegularExpressionValidator(re);
+    QValidator *validator = new QRegularExpressionValidator(re, this);
     this->setValidator(validator);
 }
 
@@ -39,8 +40,11 @@ void NoScrollComboBox::wheelEvent(QWheelEvent *event)
 {
     // By default NoScrollComboBoxes will allow scrolling to modify its contents only when it explicitly has focus.
     // If focusedScrollingEnabled is false it won't allow scrolling even with focus.
-    if (this->focusedScrollingEnabled && hasFocus())
+    if (this->focusedScrollingEnabled && hasFocus()) {
         QComboBox::wheelEvent(event);
+    } else {
+        event->ignore();
+    }
 }
 
 void NoScrollComboBox::setFocusedScrollingEnabled(bool enabled)

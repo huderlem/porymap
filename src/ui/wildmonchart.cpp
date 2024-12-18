@@ -31,6 +31,8 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
     connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
 
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &WildMonChart::limitChartAnimation);
+
     // Set up Theme combo box
     for (auto i : themes)
         ui->comboBox_Theme->addItem(i.first, i.second);
@@ -80,6 +82,7 @@ void WildMonChart::clearTableData() {
     ui->comboBox_Species->clear();
     ui->comboBox_Group->clear();
     ui->comboBox_Group->setEnabled(false);
+    ui->label_Group->setEnabled(false);
 }
 
 // Extract all the data from the table that we need for the charts
@@ -150,7 +153,9 @@ void WildMonChart::readTable() {
     ui->comboBox_Species->addItems(getSpeciesNamesAlphabetical());
     ui->comboBox_Group->clear();
     ui->comboBox_Group->addItems(this->groupNames);
-    ui->comboBox_Group->setEnabled(usesGroupLabels());
+    bool enableGroupSelection = usesGroupLabels();
+    ui->comboBox_Group->setEnabled(enableGroupSelection);
+    ui->label_Group->setEnabled(enableGroupSelection);
 }
 
 void WildMonChart::refresh() {
@@ -176,14 +181,16 @@ void WildMonChart::refreshSpeciesDistributionChart() {
     if (ui->chartView_SpeciesDistribution->chart())
         ui->chartView_SpeciesDistribution->chart()->deleteLater();
     ui->chartView_SpeciesDistribution->setChart(createSpeciesDistributionChart());
-    limitChartAnimation(ui->chartView_SpeciesDistribution->chart());
+    if (ui->tabWidget->currentWidget() == ui->tabSpecies)
+        limitChartAnimation();
 }
 
 void WildMonChart::refreshLevelDistributionChart() {
     if (ui->chartView_LevelDistribution->chart())
         ui->chartView_LevelDistribution->chart()->deleteLater();
     ui->chartView_LevelDistribution->setChart(createLevelDistributionChart());
-    limitChartAnimation(ui->chartView_LevelDistribution->chart());
+    if (ui->tabWidget->currentWidget() == ui->tabLevels)
+        limitChartAnimation();
 }
 
 QStringList WildMonChart::getSpeciesNamesAlphabetical() const {
@@ -218,7 +225,7 @@ bool WildMonChart::usesGroupLabels() const {
 
 QChart* WildMonChart::createSpeciesDistributionChart() {
     QList<QBarSet*> barSets;
-    for (const auto species : getSpeciesNamesAlphabetical()) {
+    for (const auto &species : getSpeciesNamesAlphabetical()) {
         // Add encounter chance data
         auto set = new QBarSet(species);
         for (auto groupName : this->groupNamesReversed)
@@ -326,7 +333,7 @@ QChart* WildMonChart::createLevelDistributionChart() {
         levelRange = getLevelRange(species, groupName);
     } else {
         // Species box is inactive, we display data for all species in the table.
-        for (const auto species : this->speciesInLegendOrder)
+        for (const auto &species : this->speciesInLegendOrder)
             barSets.append(createLevelDistributionBarSet(species, groupName, false));
         levelRange = this->groupedLevelRanges.value(groupName);
     }
@@ -408,39 +415,59 @@ void WildMonChart::applySpeciesColors(const QList<QBarSet*> &barSets) {
         set->setColor(this->speciesToColor.value(set->label()));
 }
 
-// Turn off the animation once it's played, otherwise it replays any time the window changes size.
-void WildMonChart::limitChartAnimation(QChart *chart) {
+// Turn off the chart animation once it's played, otherwise it replays any time the window changes size.
+// The animation only begins when it's first displayed, so we'll only ever consider the chart for the current tab,
+// and when the tab changes we'll call this again.
+void WildMonChart::limitChartAnimation() {
     // Chart may be destroyed before the animation finishes
-    QPointer<QChart> safeChart = chart;
+    QPointer<QChart> chart;
+    if (ui->tabWidget->currentWidget() == ui->tabSpecies) {
+        chart = ui->chartView_SpeciesDistribution->chart();
+    } else if (ui->tabWidget->currentWidget() == ui->tabLevels) {
+        chart = ui->chartView_LevelDistribution->chart();
+    }
+
+    if (!chart || chart->animationOptions() == QChart::NoAnimation)
+        return;
 
     // QChart has no signal for when the animation is finished, so we use a timer to stop the animation.
     // It is technically possible to get the chart to freeze mid-animation by resizing the window after
     // the timer starts but before it finishes, but 1. animations are short so this is difficult to do,
     // and 2. the issue resolves if the window is resized afterwards, so it's probably fine.
-    QTimer::singleShot(chart->animationDuration() + 500, [safeChart] {
-        if (safeChart) safeChart->setAnimationOptions(QChart::NoAnimation);
+    QTimer::singleShot(chart->animationDuration(), Qt::PreciseTimer, [chart] {
+        if (chart) chart->setAnimationOptions(QChart::NoAnimation);
     });
 }
 
 void WildMonChart::showHelpDialog() {
     static const QString text = "This window provides some visualizations of the data in your current Wild Pokémon tab";
-    static const QString informative =
-        "The <b>Species Distribution</b> tab shows the cumulative encounter chance for each species "
+
+    // Describe the Species Distribution tab
+    static const QString speciesTabInfo =
+       "The <b>Species Distribution</b> tab shows the cumulative encounter chance for each species "
        "in the table. In other words, it answers the question \"What is the likelihood of encountering "
-       "each species in a single encounter?\""
-       "<br><br>"
+       "each species in a single encounter?\"";
+
+    // Describe the Level Distribution tab
+    static const QString levelTabInfo =
        "The <b>Level Distribution</b> tab shows the chance of encountering each species at a particular level. "
        "In the top left under <b>Group</b> you can select which encounter group to show data for. "
-       "In the top right under <b>Species</b> you can select which species to show data for. "
+       "In the top right you can enable <b>Individual Mode</b>. When enabled data will be shown for only the selected species."
        "<br><br>"
-       "<b>Individual Mode</b> on the <b>Level Distribution</b> tab toggles whether data is shown for all species in the table. "
-       "The percentages will update to reflect whether you're showing all species or just that individual species. "
        "In other words, while <b>Individual Mode</b> is checked the chart is answering the question \"If a species x "
        "is encountered, what is the likelihood that it will be level y\", and while <b>Individual Mode</b> is not checked, "
        "it answers the question \"For a single encounter, what is the likelihood of encountering a species x at level y.\"";
+
+    QString informativeText;
+    if (ui->tabWidget->currentWidget() == ui->tabSpecies) {
+        informativeText = speciesTabInfo;
+    } else if (ui->tabWidget->currentWidget() == ui->tabLevels) {
+        informativeText = levelTabInfo;
+    }
+
     QMessageBox msgBox(QMessageBox::Information, "porymap", text, QMessageBox::Close, this);
     msgBox.setTextFormat(Qt::RichText);
-    msgBox.setInformativeText(informative);
+    msgBox.setInformativeText(informativeText);
     msgBox.exec();
 }
 

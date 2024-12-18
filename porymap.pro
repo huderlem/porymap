@@ -33,6 +33,7 @@ SOURCES += src/core/block.cpp \
     src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
+    src/core/filedialog.cpp \
     src/core/heallocation.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
@@ -51,7 +52,6 @@ SOURCES += src/core/block.cpp \
     src/core/editcommands.cpp \
     src/lib/fex/lexer.cpp \
     src/lib/fex/parser.cpp \
-    src/lib/fex/parser_util.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
     src/scriptapi/apimap.cpp \
@@ -59,6 +59,7 @@ SOURCES += src/core/block.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/colorinputwidget.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
@@ -68,6 +69,7 @@ SOURCES += src/core/block.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
     src/ui/currentselectedmetatilespixmapitem.cpp \
+    src/ui/gridsettings.cpp \
     src/ui/newmapconnectiondialog.cpp \
     src/ui/overlay.cpp \
     src/ui/prefab.cpp \
@@ -77,14 +79,16 @@ SOURCES += src/core/block.cpp \
     src/ui/cursortilerect.cpp \
     src/ui/customattributestable.cpp \
     src/ui/eventframes.cpp \
+    src/ui/eventfilters.cpp \
     src/ui/filterchildrenproxymodel.cpp \
+    src/ui/maplistmodels.cpp \
+    src/ui/maplisttoolbar.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
-    src/ui/mappixmapitem.cpp \
+    src/ui/layoutpixmapitem.cpp \
     src/ui/prefabcreationdialog.cpp \
     src/ui/regionmappixmapitem.cpp \
     src/ui/citymappixmapitem.cpp \
-    src/ui/mapsceneeventfilter.cpp \
     src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
@@ -129,6 +133,7 @@ HEADERS  += include/core/block.h \
     include/core/bitpacker.h \
     include/core/blockdata.h \
     include/core/events.h \
+    include/core/filedialog.h \
     include/core/heallocation.h \
     include/core/history.h \
     include/core/imageexport.h \
@@ -152,7 +157,6 @@ HEADERS  += include/core/block.h \
     include/lib/fex/define_statement.h \
     include/lib/fex/lexer.h \
     include/lib/fex/parser.h \
-    include/lib/fex/parser_util.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
@@ -165,6 +169,7 @@ HEADERS  += include/core/block.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
+    include/ui/gridsettings.h \
     include/ui/newmapconnectiondialog.h \
     include/ui/prefabframe.h \
     include/ui/projectsettingseditor.h \
@@ -173,15 +178,18 @@ HEADERS  += include/core/block.h \
     include/ui/cursortilerect.h \
     include/ui/customattributestable.h \
     include/ui/eventframes.h \
+    include/ui/eventfilters.h \
     include/ui/filterchildrenproxymodel.h \
+    include/ui/maplistmodels.h \
+    include/ui/maplisttoolbar.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
-    include/ui/mappixmapitem.h \
+    include/ui/layoutpixmapitem.h \
     include/ui/mapview.h \
     include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
     include/ui/citymappixmapitem.h \
-    include/ui/mapsceneeventfilter.h \
+    include/ui/colorinputwidget.h \
     include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \
     include/ui/movablerect.h \
@@ -226,7 +234,10 @@ HEADERS  += include/core/block.h \
     include/ui/wildmonchart.h
 
 FORMS    += forms/mainwindow.ui \
+    forms/colorinputwidget.ui \
     forms/connectionslistitem.ui \
+    forms/gridsettingsdialog.ui \
+    forms/maplisttoolbar.ui \
     forms/newmapconnectiondialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \

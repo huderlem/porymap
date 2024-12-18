@@ -59,7 +59,6 @@ The filepath that Porymap expects for each file can be overridden on the ``Files
    include/constants/event_object_movement.h, yes, no, ``constants_obj_event_movement``,
    include/constants/event_objects.h, yes, no, ``constants_obj_events``,
    include/constants/event_bg.h, yes, no, ``constants_event_bg``,
-   include/constants/region_map_sections.h, yes, no, ``constants_region_map_sections``,
    include/constants/metatile_labels.h, yes, yes, ``constants_metatile_labels``,
    include/constants/metatile_behaviors.h, yes, no, ``constants_metatile_behaviors``,
    include/constants/species.h, yes, no, ``constants_metatile_behaviors``, for the Wild Pokémon tab
@@ -122,7 +121,6 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_map_empty``, ``UNDEFINED``, macro name after prefix for empty maps
    ``define_map_section_prefix``, ``MAPSEC_``, expected prefix for location macro names
    ``define_map_section_empty``, ``NONE``, macro name after prefix for empty region map sections
-   ``define_map_section_count``, ``COUNT``, macro name after prefix for total number of region map sections
    ``define_species_prefix``, ``SPECIES_``, expected prefix for species macro names
    ``regex_behaviors``, ``\bMB_``, regex to find metatile behavior macro names
    ``regex_obj_event_gfx``, ``\bOBJ_EVENT_GFX_``, regex to find Object Event graphics ID macro names

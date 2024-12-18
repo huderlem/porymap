@@ -19,8 +19,7 @@ using std::make_shared;
 
 RegionMap::RegionMap(Project *project) : 
     section_prefix(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix)),
-    default_map_section(section_prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty)),
-    count_map_section(section_prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_count))
+    default_map_section(project->getEmptyMapsecName())
 {
     this->project = project;
 }
@@ -157,7 +156,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                 for (int x = 0; x < this->layout_width; x++) {
                     int bin_index = x + y * this->layout_width;
                     uint8_t square_section_id = mapBinData.at(bin_index);
-                    QString square_section_name = project->mapSectionValueToName.value(square_section_id);
+                    QString square_section_name = project->mapSectionIdNames.value(square_section_id, this->default_map_section);
 
                     LayoutSquare square;
                     square.map_section = square_section_name;
@@ -401,7 +400,7 @@ void RegionMap::saveLayout() {
             for (int m = 0; m < this->layout_height; m++) {
                 for (int n = 0; n < this->layout_width; n++) {
                     int i = n + this->layout_width * m;
-                    data.append(this->project->mapSectionNameToValue.value(this->layouts["main"][i].map_section));
+                    data.append(this->project->mapSectionIdNames.indexOf(this->layouts["main"][i].map_section));
                 }
             }
             QFile bfile(fullPath(this->layout_path));
@@ -760,18 +759,15 @@ bool RegionMap::squareInLayout(int x, int y) {
 }
 
 MapSectionEntry RegionMap::getEntry(QString section) {
-    if (this->region_map_entries->contains(section))
-        return this->region_map_entries->operator[](section);
-    else
-        return MapSectionEntry();
+    return this->region_map_entries->value(section, MapSectionEntry());
 }
 
 void RegionMap::setEntry(QString section, MapSectionEntry entry) {
-    this->region_map_entries->operator[](section) = entry;
+    this->region_map_entries->insert(section, entry);
 }
 
 void RegionMap::removeEntry(QString section) {
-    this->region_map_entries->erase(section);
+    this->region_map_entries->remove(section);
 }
 
 QString RegionMap::palPath() {
@@ -786,27 +782,6 @@ QString RegionMap::pngPath() {
 int RegionMap::getMapSquareIndex(int x, int y) {
     int index = (x + y * this->tilemap_width);
     return ((index < tilemap.length()) && (index >= 0)) ? index : 0;
-}
-
-// For turning a MAPSEC_NAME into a unique identifier sMapName-style variable.
-// CAPS_WITH_UNDERSCORE to CamelCase
-QString RegionMap::fixCase(QString caps) {
-    bool big = true;
-    QString camel;
-
-    static const QRegularExpression re_braced("({.*})");
-    for (auto ch : caps.remove(re_braced).remove(this->section_prefix)) {
-        if (ch == '_' || ch == ' ') {
-            big = true;
-            continue;
-        }
-        if (big) {
-            camel += ch.toUpper();
-            big = false;
-        }
-        else camel += ch.toLower();
-    }
-    return camel;
 }
 
 QString RegionMap::fullPath(QString local) {

@@ -4,9 +4,9 @@
 #include "config.h"
 #include "editor.h"
 #include "shortcut.h"
+#include "filedialog.h"
 
 #include <QDir>
-#include <QFileDialog>
 
 CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     QMainWindow(parent),
@@ -23,8 +23,7 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     for (int i = 0; i < paths.length(); i++)
         this->displayScript(paths.at(i), enabled.at(i));
 
-    this->fileDialogDir = userConfig.projectDir;
-
+    connect(ui->button_Help, &QAbstractButton::clicked, this, &CustomScriptsEditor::openManual);
     connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);
     connect(ui->button_LoadScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::loadScript);
     connect(ui->button_RefreshScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::userRefreshScripts);
@@ -147,19 +146,13 @@ bool CustomScriptsEditor::getScriptEnabled(QListWidgetItem * item) const {
 }
 
 QString CustomScriptsEditor::chooseScript(QString dir) {
-    return QFileDialog::getOpenFileName(this, "Choose Custom Script File", dir, "JavaScript Files (*.js)");
+    return FileDialog::getOpenFileName(this, "Choose Custom Script File", dir, "JavaScript Files (*.js)");
 }
 
 void CustomScriptsEditor::createNewScript() {
-    QString filepath = QFileDialog::getSaveFileName(this, "Create New Script File", this->fileDialogDir + "/new_script.js", "JavaScript Files (*.js)");
-
-    // QFileDialog::getSaveFileName returns focus to the main editor window when closed. Workaround for this below
-    this->raise();
-    this->activateWindow();
-
+    const QString filepath = FileDialog::getSaveFileName(this, "Create New Script File", FileDialog::getDirectory() + "/new_script.js", "JavaScript Files (*.js)");
     if (filepath.isEmpty())
         return;
-    this->fileDialogDir = filepath;
 
     QFile scriptFile(filepath);
     if (!scriptFile.open(QIODevice::WriteOnly)) {
@@ -179,10 +172,9 @@ void CustomScriptsEditor::createNewScript() {
 }
 
 void CustomScriptsEditor::loadScript() {
-    QString filepath = this->chooseScript(this->fileDialogDir);
+    QString filepath = this->chooseScript(FileDialog::getDirectory());
     if (filepath.isEmpty())
         return;
-    this->fileDialogDir = filepath;
     this->displayNewScript(filepath);
 }
 
@@ -236,6 +228,11 @@ void CustomScriptsEditor::openScript(QListWidgetItem * item) {
 void CustomScriptsEditor::openSelectedScripts() {
     for (auto item : ui->list->selectedItems())
         this->openScript(item);
+}
+
+void CustomScriptsEditor::openManual() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/scripting-capabilities.html");
+    QDesktopServices::openUrl(url);
 }
 
 // When the user refreshes the scripts we show a little tooltip as feedback.

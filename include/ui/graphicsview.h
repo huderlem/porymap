@@ -34,6 +34,7 @@ signals:
 
 class Editor;
 
+// TODO: This should just be MapView. It makes map-based assumptions, and no other class inherits GraphicsView.
 class GraphicsView : public QGraphicsView
 {
 public:
@@ -44,10 +45,10 @@ public:
 //    GraphicsView_Object object;
     Editor *editor;
 protected:
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void moveEvent(QMoveEvent *event);
+    virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+    virtual void mouseReleaseEvent(QMouseEvent *event) override;
+    virtual void moveEvent(QMoveEvent *event) override;
 };
 
 //Q_DECLARE_METATYPE(GraphicsView)

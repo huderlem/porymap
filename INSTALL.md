@@ -39,3 +39,14 @@ qmake
 make
 ./porymap
 ```
+
+## Arch Linux
+
+You need to install Qt. You can check the version of your Qt packages with `qtdiag` or `qmake --version`.
+
+```bash
+sudo pacman -S qt6-declarative qt6-charts
+qmake
+make
+./porymap
+```

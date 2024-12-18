@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <QFile>
 
 namespace fex
 {
@@ -155,46 +156,24 @@ namespace fex
         return Token(Token::Type::kDefine, filename_, line_number_);
     }
 
-    std::vector<Token> Lexer::LexString(const std::string &data)
+    std::vector<Token> Lexer::LexFile(const QString &path)
     {
-        filename_ = "string literal";
-        line_number_ = 1;
-        index_ = 0;
-        data_ = data;
-
-        return Lex();
-    }
-
-    std::vector<Token> Lexer::LexFile(const std::string &path)
-    {
-        filename_ = path;
+        filename_ = path.toStdString();
         line_number_ = 1;
 
-        std::ifstream file;
-        file.open(path);
+        // Note: Using QFile instead of ifstream to handle encoding differences between platforms
+        //       (specifically to handle accented characters on Windows)
+        QFile file(path);
+        file.open(QIODevice::ReadOnly);
 
-        std::stringstream stream;
-        stream << file.rdbuf();
+        const QByteArray data = file.readAll();
 
         index_ = 0;
-        data_ = stream.str();
+        data_ = data.toStdString();
 
         file.close();
 
         return Lex();
-    }
-
-    void Lexer::LexFileDumpTokens(const std::string &path, const std::string &out)
-    {
-        std::ofstream file;
-        file.open(out);
-
-        for (Token token : LexFile(path))
-        {
-            file << token.ToString() << std::endl;
-        }
-
-        file.close();
     }
 
     std::vector<Token> Lexer::Lex()

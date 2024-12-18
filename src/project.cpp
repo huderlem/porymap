@@ -7,6 +7,7 @@
 #include "tile.h"
 #include "tileset.h"
 #include "map.h"
+#include "filedialog.h"
 
 #include "orderedjson.h"
 
@@ -34,60 +35,23 @@ int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_size = 20;
 int Project::max_object_events = 64;
 
-Project::Project(QWidget *parent) :
+Project::Project(QObject *parent) :
     QObject(parent)
 {
-    initSignals();
+    QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::fileChanged);
 }
 
 Project::~Project()
 {
     clearMapCache();
     clearTilesetCache();
-}
-
-void Project::initSignals() {
-    // detect changes to specific filepaths being monitored
-    QObject::connect(&fileWatcher, &QFileSystemWatcher::fileChanged, [this](QString changed){
-        if (!porymapConfig.monitorFiles) return;
-        if (modifiedFileTimestamps.contains(changed)) {
-            if (QDateTime::currentMSecsSinceEpoch() < modifiedFileTimestamps[changed]) {
-                return;
-            }
-            modifiedFileTimestamps.remove(changed);
-        }
-
-        static bool showing = false;
-        if (showing) return;
-
-        QMessageBox notice(this->parentWidget());
-        notice.setText("File Changed");
-        notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
-                                  .arg(changed.remove(this->root + "/")));
-        notice.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
-        notice.setDefaultButton(QMessageBox::No);
-        notice.setIcon(QMessageBox::Question);
-
-        QCheckBox showAgainCheck("Do not ask again.");
-        notice.setCheckBox(&showAgainCheck);
-
-        showing = true;
-        int choice = notice.exec();
-        if (choice == QMessageBox::Yes) {
-            emit reloadProject();
-        } else if (choice == QMessageBox::No) {
-            if (showAgainCheck.isChecked()) {
-                porymapConfig.monitorFiles = false;
-                emit uncheckMonitorFilesAction();
-            }
-        }
-        showing = false;
-    });
+    clearMapLayouts();
+    clearEventGraphics();
 }
 
 void Project::set_root(QString dir) {
     this->root = dir;
-    this->importExportPath = dir;
+    FileDialog::setDirectory(dir);
     this->parser.set_root(dir);
 }
 
@@ -160,7 +124,6 @@ void Project::clearMapCache() {
             delete map;
     }
     mapCache.clear();
-    emit mapCacheCleared();
 }
 
 void Project::clearTilesetCache() {
@@ -362,6 +325,7 @@ bool Project::loadMapData(Map* map) {
                 heal->setRespawnNPC(loc.respawnNPC);
             }
             map->events[Event::Group::Heal].append(heal);
+            map->ownedEvents.append(heal);
         }
     }
 
@@ -425,15 +389,87 @@ QString Project::readMapLocation(QString map_name) {
     return ParseUtil::jsonToQString(mapObj["region_map_section"]);
 }
 
-bool Project::loadLayout(MapLayout *layout) {
-    // Force these to run even if one fails
-    bool loadedTilesets = loadLayoutTilesets(layout);
-    bool loadedBlockdata = loadBlockdata(layout);
-    bool loadedBorder = loadLayoutBorder(layout);
+Layout *Project::createNewLayout(Layout::SimpleSettings &layoutSettings) {
+    QString basePath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders);
+    Layout *layout;
 
-    return loadedTilesets 
-        && loadedBlockdata 
-        && loadedBorder;
+    // Handle the case where we are copying from an existing layout first.
+    if (!layoutSettings.from_id.isEmpty()) {
+        // load from layout
+        loadLayout(mapLayouts[layoutSettings.from_id]);
+
+        layout = mapLayouts[layoutSettings.from_id]->copy();
+        layout->name = layoutSettings.name;
+        layout->id = layoutSettings.id;
+        layout->border_path = QString("%1%2/border.bin").arg(basePath, layoutSettings.name);
+        layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layoutSettings.name);
+    }
+    else {
+        layout = new Layout;
+
+        layout->name = layoutSettings.name;
+        layout->id = layoutSettings.id;
+        layout->width = layoutSettings.width;
+        layout->height = layoutSettings.height;
+        layout->border_width = DEFAULT_BORDER_WIDTH;
+        layout->border_height = DEFAULT_BORDER_HEIGHT;
+        layout->tileset_primary_label = layoutSettings.tileset_primary_label;
+        layout->tileset_secondary_label = layoutSettings.tileset_secondary_label;
+        layout->border_path = QString("%1%2/border.bin").arg(basePath, layoutSettings.name);
+        layout->blockdata_path = QString("%1%2/map.bin").arg(basePath, layoutSettings.name);
+
+        setNewLayoutBlockdata(layout);
+        setNewLayoutBorder(layout);
+    }
+
+    // Create a new directory for the layout
+    QString newLayoutDir = QString(root + "/%1%2").arg(projectConfig.getFilePath(ProjectFilePath::data_layouts_folders), layout->name);
+    if (!QDir::root().mkdir(newLayoutDir)) {
+        logError(QString("Error: failed to create directory for new layout: '%1'").arg(newLayoutDir));
+        delete layout;
+        return nullptr;
+    }
+
+    mapLayouts.insert(layout->id, layout);
+    mapLayoutsMaster.insert(layout->id, layout->copy());
+    mapLayoutsTable.append(layout->id);
+    mapLayoutsTableMaster.append(layout->id);
+    layoutIdsToNames.insert(layout->id, layout->name);
+
+    saveLayout(layout);
+
+    this->loadLayout(layout);
+
+    return layout;
+}
+
+bool Project::loadLayout(Layout *layout) {
+    if (!layout->loaded) {
+        // Force these to run even if one fails
+        bool loadedTilesets = loadLayoutTilesets(layout);
+        bool loadedBlockdata = loadBlockdata(layout);
+        bool loadedBorder = loadLayoutBorder(layout);
+
+        if (loadedTilesets && loadedBlockdata && loadedBorder) {
+            layout->loaded = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+Layout *Project::loadLayout(QString layoutId) {
+    if (mapLayouts.contains(layoutId)) {
+        Layout *layout = mapLayouts[layoutId];
+        if (loadLayout(layout)) {
+            return layout;
+        }
+    }
+
+    logError(QString("Error: Failed to load layout '%1'").arg(layoutId));
+    return nullptr;
 }
 
 bool Project::loadMapLayout(Map* map) {
@@ -455,9 +491,17 @@ bool Project::loadMapLayout(Map* map) {
     }
 }
 
-bool Project::readMapLayouts() {
+void Project::clearMapLayouts() {
+    qDeleteAll(mapLayouts);
     mapLayouts.clear();
+    qDeleteAll(mapLayoutsMaster);
+    mapLayoutsMaster.clear();
     mapLayoutsTable.clear();
+    layoutIdsToNames.clear();
+}
+
+bool Project::readMapLayouts() {
+    clearMapLayouts();
 
     QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
     QString fullFilepath = QString("%1/%2").arg(root).arg(layoutsFilepath);
@@ -483,7 +527,7 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
-    QList<QString> requiredFields = QList<QString>{
+    static const QList<QString> requiredFields = QList<QString>{
         "id",
         "name",
         "width",
@@ -501,7 +545,7 @@ bool Project::readMapLayouts() {
             logError(QString("Layout %1 is missing field(s) in %2.").arg(i).arg(layoutsFilepath));
             return false;
         }
-        MapLayout *layout = new MapLayout();
+        Layout *layout = new Layout();
         layout->id = ParseUtil::jsonToQString(layoutObj["id"]);
         if (layout->id.isEmpty()) {
             logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
@@ -577,14 +621,12 @@ bool Project::readMapLayouts() {
             return false;
         }
         mapLayouts.insert(layout->id, layout);
+        mapLayoutsMaster.insert(layout->id, layout->copy());
         mapLayoutsTable.append(layout->id);
+        mapLayoutsTableMaster.append(layout->id);
+        layoutIdsToNames.insert(layout->id, layout->name);
     }
 
-    // Deep copy
-    mapLayoutsMaster = mapLayouts;
-    mapLayoutsMaster.detach();
-    mapLayoutsTableMaster = mapLayoutsTable;
-    mapLayoutsTableMaster.detach();
     return true;
 }
 
@@ -601,7 +643,7 @@ void Project::saveMapLayouts() {
 
     OrderedJson::array layoutsArr;
     for (QString layoutId : mapLayoutsTableMaster) {
-        MapLayout *layout = mapLayouts.value(layoutId);
+        Layout *layout = mapLayoutsMaster.value(layoutId);
         OrderedJson::object layoutObj;
         layoutObj["id"] = layout->id;
         layoutObj["name"] = layout->name;
@@ -664,6 +706,47 @@ void Project::saveMapGroups() {
     OrderedJsonDoc jsonDoc(&mapGroupJson);
     jsonDoc.dump(&mapGroupsFile);
     mapGroupsFile.close();
+}
+
+void Project::saveRegionMapSections() {
+    const QString filepath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
+    QFile file(filepath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        logError(QString("Could not open '%1' for writing").arg(filepath));
+        return;
+    }
+
+    const QString emptyMapsecName = getEmptyMapsecName();
+    OrderedJson::array mapSectionArray;
+    for (const auto &idName : this->mapSectionIdNames) {
+        // The 'empty' map section (MAPSEC_NONE) isn't normally present in the region map sections data file.
+        // We append this name to mapSectionIdNames ourselves if it isn't present, in which case we don't want to output data for it here.
+        if (!this->saveEmptyMapsec && idName == emptyMapsecName)
+            continue;
+
+        OrderedJson::object mapSectionObj;
+        mapSectionObj["id"] = idName;
+
+        if (this->regionMapEntries.contains(idName)) {
+            MapSectionEntry entry = this->regionMapEntries.value(idName);
+            mapSectionObj["name"] = entry.name;
+            mapSectionObj["x"] = entry.x;
+            mapSectionObj["y"] = entry.y;
+            mapSectionObj["width"] = entry.width;
+            mapSectionObj["height"] = entry.height;
+        }
+
+        mapSectionArray.append(mapSectionObj);
+    }
+
+    OrderedJson::object object;
+    object["map_sections"] = mapSectionArray;
+
+    ignoreWatchedFileTemporarily(filepath);
+    OrderedJson json(object);
+    OrderedJsonDoc jsonDoc(&json);
+    jsonDoc.dump(&file);
+    file.close();
 }
 
 void Project::saveWildMonData() {
@@ -1004,7 +1087,7 @@ void Project::saveTilesetMetatileAttributes(Tileset *tileset) {
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
-        for (Metatile *metatile : tileset->metatiles) {
+        for (const auto &metatile : tileset->metatiles()) {
             uint32_t attributes = metatile->getAttributes();
             for (int i = 0; i < projectConfig.metatileAttributesSize; i++)
                 data.append(static_cast<char>(attributes >> (8 * i)));
@@ -1020,7 +1103,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
     if (metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QByteArray data;
         int numTiles = projectConfig.getNumTilesInMetatile();
-        for (Metatile *metatile : tileset->metatiles) {
+        for (const auto &metatile : tileset->metatiles()) {
             for (int i = 0; i < numTiles; i++) {
                 uint16_t tile = metatile->tiles.at(i).rawValue();
                 data.append(static_cast<char>(tile));
@@ -1029,7 +1112,7 @@ void Project::saveTilesetMetatiles(Tileset *tileset) {
         }
         metatiles_file.write(data);
     } else {
-        tileset->metatiles.clear();
+        tileset->clearMetatiles();
         logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 }
@@ -1047,13 +1130,14 @@ void Project::saveTilesetTilesImage(Tileset *tileset) {
 }
 
 void Project::saveTilesetPalettes(Tileset *tileset) {
-    for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
+    int numPalettes = qMin(tileset->palettePaths.length(), tileset->palettes.length());
+    for (int i = 0; i < numPalettes; i++) {
         QString filepath = tileset->palettePaths.at(i);
         PaletteUtil::writeJASC(filepath, tileset->palettes.at(i).toVector(), 0, 16);
     }
 }
 
-bool Project::loadLayoutTilesets(MapLayout *layout) {
+bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
         QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
@@ -1121,11 +1205,11 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     return tileset;
 }
 
-bool Project::loadBlockdata(MapLayout *layout) {
+bool Project::loadBlockdata(Layout *layout) {
     QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
     layout->blockdata = readBlockdata(path);
     layout->lastCommitBlocks.blocks = layout->blockdata;
-    layout->lastCommitBlocks.mapDimensions = QSize(layout->getWidth(), layout->getHeight());
+    layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
 
     if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
         logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
@@ -1138,19 +1222,19 @@ bool Project::loadBlockdata(MapLayout *layout) {
     return true;
 }
 
-void Project::setNewMapBlockdata(Map *map) {
-    map->layout->blockdata.clear();
-    int width = map->getWidth();
-    int height = map->getHeight();
+void Project::setNewLayoutBlockdata(Layout *layout) {
+    layout->blockdata.clear();
+    int width = layout->getWidth();
+    int height = layout->getHeight();
     Block block(projectConfig.defaultMetatileId, projectConfig.defaultCollision, projectConfig.defaultElevation);
     for (int i = 0; i < width * height; i++) {
-        map->layout->blockdata.append(block);
+        layout->blockdata.append(block);
     }
-    map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
-    map->layout->lastCommitBlocks.mapDimensions = QSize(width, height);
+    layout->lastCommitBlocks.blocks = layout->blockdata;
+    layout->lastCommitBlocks.layoutDimensions = QSize(width, height);
 }
 
-bool Project::loadLayoutBorder(MapLayout *layout) {
+bool Project::loadLayoutBorder(Layout *layout) {
     QString path = QString("%1/%2").arg(root).arg(layout->border_path);
     layout->border = readBlockdata(path);
     layout->lastCommitBlocks.border = layout->border;
@@ -1166,36 +1250,36 @@ bool Project::loadLayoutBorder(MapLayout *layout) {
     return true;
 }
 
-void Project::setNewMapBorder(Map *map) {
-    map->layout->border.clear();
-    int width = map->getBorderWidth();
-    int height = map->getBorderHeight();
+void Project::setNewLayoutBorder(Layout *layout) {
+    layout->border.clear();
+    int width = layout->getBorderWidth();
+    int height = layout->getBorderHeight();
 
     if (projectConfig.newMapBorderMetatileIds.length() != width * height) {
         // Border size doesn't match the number of default border metatiles.
         // Fill the border with empty metatiles.
         for (int i = 0; i < width * height; i++) {
-            map->layout->border.append(0);
+            layout->border.append(0);
         }
     } else {
         // Fill the border with the default metatiles from the config.
         for (int i = 0; i < width * height; i++) {
-            map->layout->border.append(projectConfig.newMapBorderMetatileIds.at(i));
+            layout->border.append(projectConfig.newMapBorderMetatileIds.at(i));
         }
     }
 
-    map->layout->lastCommitBlocks.border = map->layout->border;
-    map->layout->lastCommitBlocks.borderDimensions = QSize(width, height);
+    layout->lastCommitBlocks.border = layout->border;
+    layout->lastCommitBlocks.borderDimensions = QSize(width, height);
 }
 
-void Project::saveLayoutBorder(Map *map) {
-    QString path = QString("%1/%2").arg(root).arg(map->layout->border_path);
-    writeBlockdata(path, map->layout->border);
+void Project::saveLayoutBorder(Layout *layout) {
+    QString path = QString("%1/%2").arg(root).arg(layout->border_path);
+    writeBlockdata(path, layout->border);
 }
 
-void Project::saveLayoutBlockdata(Map* map) {
-    QString path = QString("%1/%2").arg(root).arg(map->layout->blockdata_path);
-    writeBlockdata(path, map->layout->blockdata);
+void Project::saveLayoutBlockdata(Layout *layout) {
+    QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
+    writeBlockdata(path, layout->blockdata);
 }
 
 void Project::writeBlockdata(QString path, const Blockdata &blockdata) {
@@ -1350,36 +1434,46 @@ void Project::saveMap(Map *map) {
     jsonDoc.dump(&mapFile);
     mapFile.close();
 
-    saveLayoutBorder(map);
-    saveLayoutBlockdata(map);
+    saveLayout(map->layout);
     saveHealLocations(map);
-
-    // Update global data structures with current map data.
-    updateMapLayout(map);
 
     map->isPersistedToFile = true;
     map->hasUnsavedDataChanges = false;
     map->editHistory.setClean();
 }
 
-void Project::updateMapLayout(Map* map) {
-    if (!mapLayoutsTableMaster.contains(map->layoutId)) {
-        mapLayoutsTableMaster.append(map->layoutId);
+void Project::saveLayout(Layout *layout) {
+    //
+    saveLayoutBorder(layout);
+    saveLayoutBlockdata(layout);
+
+    // Update global data structures with current map data.
+    updateLayout(layout);
+
+    layout->editHistory.setClean();
+}
+
+void Project::updateLayout(Layout *layout) {
+    if (!mapLayoutsTableMaster.contains(layout->id)) {
+        mapLayoutsTableMaster.append(layout->id);
     }
 
-    // Deep copy
-    MapLayout *layout = mapLayouts.value(map->layoutId);
-    MapLayout *newLayout = new MapLayout();
-    *newLayout = *layout;
-    mapLayoutsMaster.insert(map->layoutId, newLayout);
+    if (mapLayoutsMaster.contains(layout->id)) {
+        mapLayoutsMaster[layout->id]->copyFrom(layout);
+    }
+    else {
+        mapLayoutsMaster.insert(layout->id, layout->copy());
+    }
 }
 
 void Project::saveAllDataStructures() {
     saveMapLayouts();
     saveMapGroups();
+    saveRegionMapSections();
     saveMapConstantsHeader();
     saveWildMonData();
     saveConfig();
+    this->hasUnsavedDataChanges = false;
 }
 
 void Project::saveConfig() {
@@ -1513,16 +1607,16 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             }
             metatiles.append(metatile);
         }
-        tileset->metatiles = metatiles;
+        tileset->setMetatiles(metatiles);
     } else {
-        tileset->metatiles.clear();
+        tileset->clearMetatiles();
         logError(QString("Could not open tileset metatiles file '%1'").arg(tileset->metatiles_path));
     }
 
     QFile attrs_file(tileset->metatile_attrs_path);
     if (attrs_file.open(QIODevice::ReadOnly)) {
         QByteArray data = attrs_file.readAll();
-        int num_metatiles = tileset->metatiles.count();
+        int num_metatiles = tileset->numMetatiles();
         int attrSize = projectConfig.metatileAttributesSize;
         int num_metatileAttrs = data.length() / attrSize;
         if (num_metatiles != num_metatileAttrs) {
@@ -1535,7 +1629,7 @@ void Project::loadTilesetMetatiles(Tileset* tileset) {
             uint32_t attributes = 0;
             for (int j = 0; j < attrSize; j++)
                 attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
-            tileset->metatiles.at(i)->setAttributes(attributes);
+            tileset->metatileAt(i)->setAttributes(attributes);
         }
     } else {
         logError(QString("Could not open tileset metatile attributes file '%1'").arg(tileset->metatile_attrs_path));
@@ -1863,11 +1957,12 @@ Map* Project::addNewMapToGroup(QString mapName, int groupNum, Map *newMap, bool 
     if (!existingLayout) {
         this->mapLayouts.insert(newMap->layoutId, newMap->layout);
         this->mapLayoutsTable.append(newMap->layoutId);
+        this->layoutIdsToNames.insert(newMap->layout->id, newMap->layout->name);
         if (!importedMap) {
-            setNewMapBlockdata(newMap);
+            setNewLayoutBlockdata(newMap->layout);
         }
         if (newMap->layout->border.isEmpty()) {
-            setNewMapBorder(newMap);
+            setNewLayoutBorder(newMap->layout);
         }
     }
 
@@ -1933,8 +2028,6 @@ void Project::appendTilesetLabel(QString label, QString isSecondaryStr) {
 }
 
 bool Project::readTilesetLabels() {
-    QStringList primaryTilesets;
-    QStringList secondaryTilesets;
     this->primaryTilesetLabels.clear();
     this->secondaryTilesetLabels.clear();
     this->tilesetLabelsOrdered.clear();
@@ -1963,9 +2056,9 @@ bool Project::readTilesetLabels() {
     } else {
         this->usingAsmTilesets = false;
         const auto structs = parser.readCStructs(filename, "", Tileset::getHeaderMemberMap(this->usingAsmTilesets));
-        QStringList labels = structs.keys();
+        const QStringList labels = structs.keys();
         // TODO: This is alphabetical, AdvanceMap import wants the vanilla order in tilesetLabelsOrdered
-        for (const auto tilesetLabel : labels){
+        for (const auto &tilesetLabel : labels){
             appendTilesetLabel(tilesetLabel, structs[tilesetLabel].value("isSecondary"));
         }
     }
@@ -2159,22 +2252,97 @@ bool Project::readFieldmapMasks() {
 }
 
 bool Project::readRegionMapSections() {
-    this->mapSectionNameToValue.clear();
-    this->mapSectionValueToName.clear();
+    this->mapSectionIdNames.clear();
+    this->regionMapEntries.clear();
+    this->saveEmptyMapsec = false;
+    const QString defaultName = getEmptyMapsecName();
+    const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
 
-    const QStringList regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix))};
-    QString filename = projectConfig.getFilePath(ProjectFilePath::constants_region_map_sections);
-    fileWatcher.addPath(root + "/" + filename);
-    this->mapSectionNameToValue = parser.readCDefinesByRegex(filename, regexList);
-    if (this->mapSectionNameToValue.isEmpty()) {
-        logError(QString("Failed to read region map sections from %1.").arg(filename));
+    QJsonDocument doc;
+    const QString filepath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
+    if (!parser.tryParseJsonFile(&doc, filepath)) {
+        logError(QString("Failed to read region map sections from '%1'").arg(filepath));
         return false;
     }
+    fileWatcher.addPath(filepath);
 
-    for (QString defineName : this->mapSectionNameToValue.keys()) {
-        this->mapSectionValueToName.insert(this->mapSectionNameToValue[defineName], defineName);
+    QJsonArray mapSections = doc.object()["map_sections"].toArray();
+    for (int i = 0; i < mapSections.size(); i++) {
+        QJsonObject mapSectionObj = mapSections.at(i).toObject();
+
+        // For each map section, "id" is the only required field. This is the field we use to display the location names in various drop-downs.
+        const QString idField = "id";
+        if (!mapSectionObj.contains(idField)) {
+            logWarn(QString("Ignoring data for map section %1. Missing required field \"%2\"").arg(i).arg(idField));
+            continue;
+        }
+        const QString idName = ParseUtil::jsonToQString(mapSectionObj[idField]);
+        if (!idName.startsWith(requiredPrefix)) {
+            logWarn(QString("Ignoring data for map section '%1'. IDs must start with the prefix '%2'").arg(idName).arg(requiredPrefix));
+            continue;
+        }
+
+        this->mapSectionIdNames.append(idName);
+        if (idName == defaultName) {
+            // If the user has data for the 'empty' MAPSEC we need to know to output it later,
+            // because we will otherwise add a dummy entry for this value.
+            this->saveEmptyMapsec = true;
+        }
+
+        // Map sections may have additional data indicating their position on the region map.
+        // If they have this data, we can add them to the region map entry list.
+        bool hasRegionMapData = true;
+        static const QSet<QString> regionMapFieldNames = { "name", "x", "y", "width", "height" };
+        for (auto fieldName : regionMapFieldNames) {
+            if (!mapSectionObj.contains(fieldName)) {
+                hasRegionMapData = false;
+                break;
+            }
+        }
+        if (!hasRegionMapData)
+            continue;
+
+        MapSectionEntry entry;
+        entry.name = ParseUtil::jsonToQString(mapSectionObj["name"]);
+        entry.x = ParseUtil::jsonToInt(mapSectionObj["x"]);
+        entry.y = ParseUtil::jsonToInt(mapSectionObj["y"]);
+        entry.width = ParseUtil::jsonToInt(mapSectionObj["width"]);
+        entry.height = ParseUtil::jsonToInt(mapSectionObj["height"]);
+        entry.valid = true;
+        this->regionMapEntries[idName] = entry;
     }
+
+    // Make sure the default name is present in the list.
+    if (!this->mapSectionIdNames.contains(defaultName)) {
+        this->mapSectionIdNames.append(defaultName);
+    }
+
     return true;
+}
+
+QString Project::getEmptyMapsecName() {
+    return projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty);
+}
+
+// This function assumes a valid and unique name
+void Project::addNewMapsec(const QString &name) {
+    if (!this->mapSectionIdNames.isEmpty() && this->mapSectionIdNames.last() == getEmptyMapsecName()) {
+        // If the default map section name (MAPSEC_NONE) is last in the list we'll keep it last in the list.
+        this->mapSectionIdNames.insert(this->mapSectionIdNames.length() - 1, name);
+    } else {
+        this->mapSectionIdNames.append(name);
+    }
+    this->hasUnsavedDataChanges = true;
+    emit mapSectionIdNamesChanged();
+}
+
+void Project::removeMapsec(const QString &name) {
+    if (!this->mapSectionIdNames.contains(name) || name == getEmptyMapsecName())
+        return;
+
+    this->mapSectionIdNames.removeOne(name);
+    this->hasUnsavedDataChanges = true;
+    emit mapSectionIdNamesChanged();
 }
 
 // Read the constants to preserve any "unused" heal locations when writing the file later
@@ -2242,7 +2410,7 @@ bool Project::readHealLocations() {
     // Pattern for an x, y number pair
     const QString coordPattern = "\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)"; 
 
-    for (const auto idName : constants) {
+    for (const auto &idName : constants) {
         // Create regex pattern for e.g. "SPAWN_PALLET_TOWN - 1] = "
         const QString initializerPattern = QString("%1\\s*-\\s*1\\s*\\]\\s*=\\s*").arg(idName);
 
@@ -2556,7 +2724,14 @@ void Project::setEventPixmap(Event *event, bool forceLoad) {
         event->loadPixmap(this);
 }
 
+void Project::clearEventGraphics() {
+    qDeleteAll(eventGraphicsMap);
+    eventGraphicsMap.clear();
+}
+
 bool Project::readEventGraphics() {
+    clearEventGraphics();
+
     fileWatcher.addPaths(QStringList() << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers)
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)
                                        << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables)
@@ -2566,8 +2741,6 @@ bool Project::readEventGraphics() {
     const QString pointersName = projectConfig.getIdentifier(ProjectIdentifier::symbol_obj_event_gfx_pointers);
     QMap<QString, QString> pointerHash = parser.readNamedIndexCArray(pointersFilepath, pointersName);
 
-    qDeleteAll(eventGraphicsMap);
-    eventGraphicsMap.clear();
     QStringList gfxNames = gfxDefines.keys();
 
     // The positions of each of the required members for the gfx info struct.
@@ -2586,14 +2759,13 @@ bool Project::readEventGraphics() {
     QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
 
     for (QString gfxName : gfxNames) {
-        EventGraphics * eventGraphics = new EventGraphics;
-
         QString info_label = pointerHash[gfxName].replace("&", "");
         if (!gfxInfos.contains(info_label))
             continue;
 
         const auto gfxInfoAttributes = gfxInfos[info_label];
 
+        auto eventGraphics = new EventGraphics;
         eventGraphics->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));
         QString pic_label = gfxInfoAttributes.value("images");
         QString dimensions_label = gfxInfoAttributes.value("oam");
@@ -2819,11 +2991,6 @@ QString Project::getDynamicMapDefineName() {
     return prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
 }
 
-void Project::setImportExportPath(QString filename)
-{
-    this->importExportPath = QFileInfo(filename).absolutePath();
-}
-
 // If the provided filepath is an absolute path to an existing file, return filepath.
 // If not, and the provided filepath is a relative path from the project dir to an existing file, return the relative path.
 // Otherwise return empty string.
@@ -2859,4 +3026,24 @@ void Project::applyParsedLimits() {
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
     projectConfig.collisionSheetHeight = qMin(projectConfig.collisionSheetHeight, Block::getMaxElevation() + 1);
     projectConfig.collisionSheetWidth = qMin(projectConfig.collisionSheetWidth, Block::getMaxCollision() + 1);
+}
+
+bool Project::hasUnsavedChanges() {
+    if (this->hasUnsavedDataChanges)
+        return true;
+
+    // Check layouts for unsaved changes
+    for (auto i = this->mapLayouts.constBegin(); i != this->mapLayouts.constEnd(); i++) {
+        auto layout = i.value();
+        if (layout && layout->hasUnsavedChanges())
+            return true;
+    }
+
+    // Check loaded maps for unsaved changes
+    for (auto i = this->mapCache.constBegin(); i != this->mapCache.constEnd(); i++) {
+        auto map = i.value();
+        if (map && map->hasUnsavedChanges())
+            return true;
+    }
+    return false;
 }

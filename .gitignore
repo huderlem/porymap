@@ -8,9 +8,11 @@ porymap.app*
 porymap
 porymap.cfg
 porymap.log
+build/
 
 # Qt generated files
 ui_*.h
 moc_*.h
 moc_*.cpp
 qrc_*.cpp
+.qtc_clangd

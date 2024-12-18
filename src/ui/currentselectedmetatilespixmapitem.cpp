@@ -2,7 +2,7 @@
 #include "imageproviders.h"
 #include <QPainter>
 
-QPixmap drawMetatileSelection(MetatileSelection selection, Map *map) {
+QPixmap drawMetatileSelection(MetatileSelection selection, Layout *layout) {
     int width = selection.dimensions.x() * 16;
     int height = selection.dimensions.y() * 16;
     QImage image(width, height, QImage::Format_RGBA8888);
@@ -19,10 +19,10 @@ QPixmap drawMetatileSelection(MetatileSelection selection, Map *map) {
             if (item.enabled) {
                 QImage metatile_image = getMetatileImage(
                             item.metatileId,
-                            map->layout->tileset_primary,
-                            map->layout->tileset_secondary,
-                            map->metatileLayerOrder,
-                            map->metatileLayerOpacity);
+                            layout->tileset_primary,
+                            layout->tileset_secondary,
+                            layout->metatileLayerOrder,
+                            layout->metatileLayerOpacity);
                 painter.drawImage(metatile_origin, metatile_image);
             }
         }
@@ -34,5 +34,5 @@ QPixmap drawMetatileSelection(MetatileSelection selection, Map *map) {
 
 void CurrentSelectedMetatilesPixmapItem::draw() {
     MetatileSelection selection = metatileSelector->getMetatileSelection();
-    setPixmap(drawMetatileSelection(selection, this->map));
+    setPixmap(drawMetatileSelection(selection, this->layout));
 }

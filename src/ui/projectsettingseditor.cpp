@@ -2,6 +2,7 @@
 #include "config.h"
 #include "noscrollcombobox.h"
 #include "prefab.h"
+#include "filedialog.h"
 
 #include <QAbstractButton>
 #include <QFormLayout>
@@ -36,6 +37,8 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
 }
 
 void ProjectSettingsEditor::connectSignals() {
+    connect(ui->button_HelpFiles, &QAbstractButton::clicked, this, &ProjectSettingsEditor::openFilesHelp);
+    connect(ui->button_HelpIdentifiers, &QAbstractButton::clicked, this, &ProjectSettingsEditor::openIdentifiersHelp);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
@@ -383,10 +386,10 @@ QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath)
     QString path;
     if (defaultFilepath.endsWith("/")){
         // Default filepath is a folder, choose a new folder
-        path = QFileDialog::getExistingDirectory(this, "Choose Project File Folder", startDir) + QDir::separator();
+        path = FileDialog::getExistingDirectory(this, "Choose Project File Folder", startDir) + QDir::separator();
     } else{
         // Default filepath is not a folder, choose a new file
-        path = QFileDialog::getOpenFileName(this, "Choose Project File", startDir);
+        path = FileDialog::getOpenFileName(this, "Choose Project File", startDir);
     }
 
     if (!path.startsWith(this->baseDir)){
@@ -573,10 +576,9 @@ void ProjectSettingsEditor::chooseImageFile(QLineEdit * filepathEdit) {
 }
 
 void ProjectSettingsEditor::chooseFile(QLineEdit * filepathEdit, const QString &description, const QString &extensions) {
-    QString filepath = QFileDialog::getOpenFileName(this, description, this->project->importExportPath, extensions);
+    QString filepath = FileDialog::getOpenFileName(this, description, "", extensions);
     if (filepath.isEmpty())
         return;
-    this->project->setImportExportPath(filepath);
 
     if (filepathEdit)
         filepathEdit->setText(this->stripProjectDir(filepath));
@@ -656,6 +658,16 @@ void ProjectSettingsEditor::dialogButtonClicked(QAbstractButton *button) {
         // "Restore Defaults" button
         this->promptRestoreDefaults();
     }
+}
+
+void ProjectSettingsEditor::openFilesHelp() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/project-files.html#files");
+    QDesktopServices::openUrl(url);
+}
+
+void ProjectSettingsEditor::openIdentifiersHelp() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/project-files.html#identifiers");
+    QDesktopServices::openUrl(url);
 }
 
 // Close event triggered by a project reload. User doesn't need any prompts, just close the window.
