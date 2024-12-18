@@ -1,5 +1,6 @@
 #include "noscrollspinbox.h"
 #include <QWheelEvent>
+#include <QLineEdit>
 
 unsigned actionId = 0xffff;
 
@@ -23,6 +24,10 @@ void NoScrollSpinBox::wheelEvent(QWheelEvent *event)
 void NoScrollSpinBox::focusOutEvent(QFocusEvent *event) {
     actionId++;
     QSpinBox::focusOutEvent(event);
+}
+
+void NoScrollSpinBox::setLineEditEnabled(bool enabled) {
+    this->lineEdit()->setReadOnly(!enabled);
 }
 
 unsigned NoScrollSpinBox::getActionId() {
