@@ -1,5 +1,17 @@
 #include "tile.h"
 #include "project.h"
+#include "bitpacker.h"
+
+// Upper limit for raw value (i.e., uint16_t max).
+const uint16_t Tile::maxValue = 0xFFFF;
+
+// At the moment these are fixed, and not exposed to the user.
+// We're only using them for convenience when converting between raw values.
+// The actual job of clamping Tile's members to correct values is handled by the widths in the bit field.
+const BitPacker bitsTileId = BitPacker(0x03FF);
+const BitPacker bitsXFlip = BitPacker(0x0400);
+const BitPacker bitsYFlip = BitPacker(0x0800);
+const BitPacker bitsPalette = BitPacker(0xF000);
 
  Tile::Tile() :
         tileId(0),
@@ -16,18 +28,17 @@
     {  }
 
  Tile::Tile(uint16_t raw) :
-        tileId(raw & 0x3FF),
-        xflip((raw >> 10) & 1),
-        yflip((raw >> 11) & 1),
-        palette((raw >> 12) & 0xF)
+        tileId(bitsTileId.unpack(raw)),
+        xflip(bitsXFlip.unpack(raw)),
+        yflip(bitsYFlip.unpack(raw)),
+        palette(bitsPalette.unpack(raw))
     {  }
 
 uint16_t Tile::rawValue() const {
-    return static_cast<uint16_t>(
-            (this->tileId & 0x3FF)
-         | ((this->xflip & 1) << 10)
-         | ((this->yflip & 1) << 11)
-         | ((this->palette & 0xF) << 12));
+    return bitsTileId.pack(this->tileId)
+         | bitsXFlip.pack(this->xflip)
+         | bitsYFlip.pack(this->yflip)
+         | bitsPalette.pack(this->palette);
 }
 
 int Tile::getIndexInTileset(int tileId) {

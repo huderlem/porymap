@@ -82,6 +82,8 @@ void ProjectSettingsEditor::connectSignals() {
     }
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
         connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
+     for (auto radioButton : ui->centralwidget->findChildren<QRadioButton *>())
+        connect(radioButton, &QRadioButton::toggled, this, &ProjectSettingsEditor::markEdited);
     for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
         connect(lineEdit, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);
     for (auto spinBox : ui->centralwidget->findChildren<NoScrollSpinBox *>())
@@ -135,6 +137,9 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_MetatileIdMask->setMaximum(Block::maxValue);
     ui->spinBox_CollisionMask->setMaximum(Block::maxValue);
     ui->spinBox_ElevationMask->setMaximum(Block::maxValue);
+    ui->spinBox_UnusedTileNormal->setMaximum(Tile::maxValue);
+    ui->spinBox_UnusedTileCovered->setMaximum(Tile::maxValue);
+    ui->spinBox_UnusedTileSplit->setMaximum(Tile::maxValue);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -442,6 +447,12 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_OutputIsCompressed->setChecked(projectConfig.tilesetsHaveIsCompressed);
     ui->checkBox_DisableWarning->setChecked(porymapConfig.warpBehaviorWarningDisabled);
 
+    // Radio buttons
+    if (projectConfig.setTransparentPixelsBlack)
+        ui->radioButton_RenderBlack->setChecked(true);
+    else
+        ui->radioButton_RenderFirstPalColor->setChecked(true);
+
     // Set spin box values
     ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
     ui->spinBox_Collision->setValue(projectConfig.defaultCollision);
@@ -455,6 +466,9 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_MetatileIdMask->setValue(projectConfig.blockMetatileIdMask & ui->spinBox_MetatileIdMask->maximum());
     ui->spinBox_CollisionMask->setValue(projectConfig.blockCollisionMask & ui->spinBox_CollisionMask->maximum());
     ui->spinBox_ElevationMask->setValue(projectConfig.blockElevationMask & ui->spinBox_ElevationMask->maximum());
+    ui->spinBox_UnusedTileNormal->setValue(projectConfig.unusedTileNormal);
+    ui->spinBox_UnusedTileCovered->setValue(projectConfig.unusedTileCovered);
+    ui->spinBox_UnusedTileSplit->setValue(projectConfig.unusedTileSplit);
 
     // Set (and sync) border metatile IDs
     this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
@@ -511,6 +525,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.tilesetsHaveCallback = ui->checkBox_OutputCallback->isChecked();
     projectConfig.tilesetsHaveIsCompressed = ui->checkBox_OutputIsCompressed->isChecked();
     porymapConfig.warpBehaviorWarningDisabled = ui->checkBox_DisableWarning->isChecked();
+    projectConfig.setTransparentPixelsBlack = ui->radioButton_RenderBlack->isChecked();
 
     // Save spin box settings
     projectConfig.defaultElevation = ui->spinBox_Elevation->value();
@@ -525,6 +540,9 @@ void ProjectSettingsEditor::save() {
     projectConfig.blockMetatileIdMask = ui->spinBox_MetatileIdMask->value();
     projectConfig.blockCollisionMask = ui->spinBox_CollisionMask->value();
     projectConfig.blockElevationMask = ui->spinBox_ElevationMask->value();
+    projectConfig.unusedTileNormal = ui->spinBox_UnusedTileNormal->value();
+    projectConfig.unusedTileCovered = ui->spinBox_UnusedTileCovered->value();
+    projectConfig.unusedTileSplit = ui->spinBox_UnusedTileSplit->value();
 
     // Save line edit settings
     projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();

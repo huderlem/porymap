@@ -301,6 +301,7 @@ public:
         this->prefabImportPrompted = false;
         this->tilesetsHaveCallback = true;
         this->tilesetsHaveIsCompressed = true;
+        this->setTransparentPixelsBlack = true;
         this->filePaths.clear();
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
@@ -310,6 +311,9 @@ public:
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
+        this->unusedTileNormal = 0x3014;
+        this->unusedTileCovered = 0x0000;
+        this->unusedTileSplit = 0x0000;
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -362,6 +366,7 @@ public:
     bool prefabImportPrompted;
     bool tilesetsHaveCallback;
     bool tilesetsHaveIsCompressed;
+    bool setTransparentPixelsBlack;
     int metatileAttributesSize;
     uint32_t metatileBehaviorMask;
     uint32_t metatileTerrainTypeMask;
@@ -370,6 +375,9 @@ public:
     uint16_t blockMetatileIdMask;
     uint16_t blockCollisionMask;
     uint16_t blockElevationMask;
+    uint16_t unusedTileNormal;
+    uint16_t unusedTileCovered;
+    uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
     QString collisionSheetPath;
     int collisionSheetWidth;
