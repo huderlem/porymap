@@ -43,6 +43,10 @@ QImage getMetatileImage(
         metatile_image.fill(Qt::magenta);
         return metatile_image;
     }
+
+    // The GBA renders transparent pixels using palette 0 color 0. We have access to that color (palettes.value(0).value(0))
+    // but all 3 games actually overwrite this color with black when loading the tileset palettes, so we fill the metatile
+    // image with black so that any pixels we don't render will reveal the correct color.
     metatile_image.fill(Qt::black);
 
     QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset, useTruePalettes);
@@ -54,7 +58,6 @@ QImage getMetatileImage(
     for (int y = 0; y < 2; y++)
     for (int x = 0; x < 2; x++) {
         int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
-        int bottomLayer = layerOrder.size() >= numLayers ? layerOrder[0] : 0;
 
         // Get the tile to render next
         Tile tile;
@@ -91,12 +94,8 @@ QImage getMetatileImage(
         QImage tile_image = getTileImage(tile.tileId, primaryTileset, secondaryTileset);
         if (tile_image.isNull()) {
             // Some metatiles specify tiles that are outside the valid range.
-            // These are treated as completely transparent, so they can be skipped without
-            // being drawn unless they're on the bottom layer, in which case we need
-            // a placeholder because garbage will be drawn otherwise.
-            if (l == bottomLayer) {
-                metatile_painter.fillRect(x * 8, y * 8, 8, 8, palettes.value(0).value(0));
-            }
+            // The way the GBA will render these depends on what's in memory (which Porymap can't know)
+            // so we treat them as if they were transparent.
             continue;
         }
 
@@ -121,12 +120,10 @@ QImage getMetatileImage(
             }
         }
 
-        // The top layer of the metatile has its first color displayed at transparent.
-        if (l != bottomLayer) {
-            QColor color(tile_image.color(0));
-            color.setAlpha(0);
-            tile_image.setColor(0, color.rgba());
-        }
+        // Color 0 is displayed as transparent.
+        QColor color(tile_image.color(0));
+        color.setAlpha(0);
+        tile_image.setColor(0, color.rgba());
 
         metatile_painter.drawImage(origin, tile_image.mirrored(tile.xflip, tile.yflip));
     }
