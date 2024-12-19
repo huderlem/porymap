@@ -17,8 +17,8 @@ QImage getMetatileImage(
         uint16_t metatileId,
         Tileset *primaryTileset,
         Tileset *secondaryTileset,
-        QList<int> layerOrder,
-        QList<float> layerOpacity,
+        const QList<int> &layerOrder,
+        const QList<float> &layerOpacity,
         bool useTruePalettes)
 {
     Metatile* metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
@@ -34,8 +34,8 @@ QImage getMetatileImage(
         Metatile *metatile,
         Tileset *primaryTileset,
         Tileset *secondaryTileset,
-        QList<int> layerOrder,
-        QList<float> layerOpacity,
+        const QList<int> &layerOrder,
+        const QList<float> &layerOpacity,
         bool useTruePalettes)
 {
     QImage metatile_image(16, 16, QImage::Format_RGBA8888);
@@ -44,12 +44,14 @@ QImage getMetatileImage(
         return metatile_image;
     }
 
-    // The GBA renders transparent pixels using palette 0 color 0. We have access to that color (palettes.value(0).value(0))
-    // but all 3 games actually overwrite this color with black when loading the tileset palettes, so we fill the metatile
-    // image with black so that any pixels we don't render will reveal the correct color.
-    metatile_image.fill(Qt::black);
-
     QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset, useTruePalettes);
+
+    // We need to fill the metatile image with something so that if any transparent
+    // tile pixels line up across layers we will still have something to render.
+    // The GBA renders transparent pixels using palette 0 color 0. We have this color,
+    // but all 3 games actually overwrite it with black when loading the tileset palettes,
+    // so we have a setting to choose between these two behaviors.
+    metatile_image.fill(projectConfig.setTransparentPixelsBlack ? QColor("black") : QColor(palettes.value(0).value(0)));
 
     QPainter metatile_painter(&metatile_image);
     const int numLayers = 3; // When rendering, metatiles always have 3 layers
@@ -66,25 +68,25 @@ QImage getMetatileImage(
             tile = metatile->tiles.value(tileOffset + (l * 4));
         } else {
             // "Vanilla" metatiles only have 8 tiles, but render 12.
-            // The remaining 4 tiles are rendered either as tile 0 or 0x3014 (tile 20, palette 3) depending on layer type.
+            // The remaining 4 tiles are rendered using user-specified tiles depending on layer type.
             switch (layerType)
             {
             default:
             case METATILE_LAYER_MIDDLE_TOP:
                 if (l == 0)
-                    tile = Tile(0x3014);
+                    tile = Tile(projectConfig.unusedTileNormal);
                 else // Tiles are on layers 1 and 2
                     tile = metatile->tiles.value(tileOffset + ((l - 1) * 4));
                 break;
             case METATILE_LAYER_BOTTOM_MIDDLE:
                 if (l == 2)
-                    tile = Tile();
+                    tile = Tile(projectConfig.unusedTileCovered);
                 else // Tiles are on layers 0 and 1
                     tile = metatile->tiles.value(tileOffset + (l * 4));
                 break;
             case METATILE_LAYER_BOTTOM_TOP:
                 if (l == 1)
-                    tile = Tile();
+                    tile = Tile(projectConfig.unusedTileSplit);
                 else // Tiles are on layers 0 and 2
                     tile = metatile->tiles.value(tileOffset + ((l == 0 ? 0 : 1) * 4));
                 break;
@@ -101,7 +103,7 @@ QImage getMetatileImage(
 
         // Colorize the metatile tiles with its palette.
         if (tile.palette < palettes.length()) {
-            QList<QRgb> palette = palettes.value(tile.palette);
+            const QList<QRgb> palette = palettes.value(tile.palette);
             for (int j = 0; j < palette.length(); j++) {
                 tile_image.setColor(j, palette.value(j));
             }
@@ -141,7 +143,7 @@ QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondary
     return tileset->tiles.value(index, QImage());
 }
 
-QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, QList<QRgb> palette) {
+QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette) {
     QImage tileImage = getTileImage(tileId, primaryTileset, secondaryTileset);
     if (tileImage.isNull()) {
         tileImage = QImage(8, 8, QImage::Format_RGBA8888);
