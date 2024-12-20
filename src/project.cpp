@@ -107,9 +107,14 @@ bool Project::load() {
                 && readSongNames()
                 && readMapGroups();
 
-    initNewLayoutSettings();
-    initNewMapSettings();
-    applyParsedLimits();
+    if (success) {
+        // No need to do this if something failed to load.
+        // (and in fact we shouldn't, because they contain
+        //  assumptions that some things have loaded correctly).
+        initNewLayoutSettings();
+        initNewMapSettings();
+        applyParsedLimits();
+    }
     return success;
 }
 

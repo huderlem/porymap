@@ -26,6 +26,7 @@
 #include "newmapdialog.h"
 #include "newtilesetdialog.h"
 #include "newnamedialog.h"
+#include "message.h"
 
 #include <QClipboard>
 #include <QDirIterator>
@@ -36,7 +37,6 @@
 #include <QFont>
 #include <QScrollBar>
 #include <QPushButton>
-#include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QScroller>
 #include <math.h>
@@ -151,6 +151,7 @@ void MainWindow::initWindow() {
 #endif
 
     setWindowDisabled(true);
+    show();
 }
 
 void MainWindow::initShortcuts() {
@@ -678,14 +679,10 @@ bool MainWindow::checkProjectSanity() {
 
     logWarn(QString("The directory '%1' failed the project sanity check.").arg(editor->project->root));
 
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Critical);
-    msgBox.setText(QString("The selected directory appears to be invalid."));
+    ErrorMessage msgBox(QStringLiteral("The selected directory appears to be invalid."), this);
     msgBox.setInformativeText(QString("The directory '%1' is missing key files.\n\n"
                                       "Make sure you selected the correct project directory "
                                       "(the one used to make your .gba file, e.g. 'pokeemerald').").arg(editor->project->root));
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
     auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
     msgBox.exec();
     if (msgBox.clickedButton() == tryAnyway) {
@@ -697,25 +694,18 @@ bool MainWindow::checkProjectSanity() {
 }
 
 void MainWindow::showProjectOpenFailure() {
-    QString errorMsg = QString("There was an error opening the project. Please see %1 for full error details.").arg(getLogPath());
-    QMessageBox error(QMessageBox::Critical, QApplication::applicationName(), errorMsg, QMessageBox::Ok, this);
-    error.setDetailedText(getMostRecentError());
-    error.exec();
+    RecentErrorMessage::show(QStringLiteral("There was an error opening the project."), this);
 }
 
 // Alert the user that one or more maps have been excluded while loading the project.
 void MainWindow::showMapsExcludedAlert(const QStringList &excludedMapNames) {
-    QMessageBox msgBox(QMessageBox::Icon::Warning, QApplication::applicationName(), "", QMessageBox::Ok, this);
-
-    QString errorMsg;
+    RecentErrorMessage msgBox("", this);
     if (excludedMapNames.length() == 1) {
-        errorMsg = QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first());
+        msgBox.setText(QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first()));
     } else {
-        errorMsg = QString("Failed to load the maps listed below. Saving will exclude these maps from your project.");
-        msgBox.setDetailedText(excludedMapNames.join("\n"));
+        msgBox.setText(QStringLiteral("Failed to load the maps listed below. Saving will exclude these maps from your project."));
+        msgBox.setDetailedText(excludedMapNames.join("\n")); // Overwrites error details text, user will need to check the log.
     }
-    errorMsg.append(QString("\n\nPlease see %1 for full error details.").arg(getLogPath()));
-    msgBox.setText(errorMsg);
     msgBox.exec();
 }
 
@@ -812,22 +802,15 @@ void MainWindow::showFileWatcherWarning(QString filepath) {
     static bool showing = false;
     if (showing) return;
 
-    QMessageBox notice(this);
-    notice.setText("File Changed");
-    notice.setInformativeText(QString("The file %1 has changed on disk. Would you like to reload the project?")
-                              .arg(filepath.remove(project->root + "/")));
-    notice.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
-    notice.setDefaultButton(QMessageBox::No);
-    notice.setIcon(QMessageBox::Question);
-
+    QuestionMessage msgBox(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(filepath.remove(project->root + "/")), this);
     QCheckBox showAgainCheck("Do not ask again.");
-    notice.setCheckBox(&showAgainCheck);
+    msgBox.setCheckBox(&showAgainCheck);
 
     showing = true;
-    int choice = notice.exec();
-    if (choice == QMessageBox::Yes) {
+    auto reply = msgBox.exec();
+    if (reply == QMessageBox::Yes) {
         on_action_Reload_Project_triggered();
-    } else if (choice == QMessageBox::No) {
+    } else if (reply == QMessageBox::No) {
         if (showAgainCheck.isChecked()) {
             porymapConfig.monitorFiles = false;
             if (this->preferenceEditor)
@@ -850,14 +833,10 @@ void MainWindow::on_action_Open_Project_triggered()
 
 void MainWindow::on_action_Reload_Project_triggered() {
     // TODO: when undo history is complete show only if has unsaved changes
-    QMessageBox warning(this);
-    warning.setText("WARNING");
-    warning.setInformativeText("Reloading this project will discard any unsaved changes.");
-    warning.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    warning.setDefaultButton(QMessageBox::Cancel);
-    warning.setIcon(QMessageBox::Warning);
-
-    if (warning.exec() == QMessageBox::Ok)
+    WarningMessage msgBox(QStringLiteral("Reloading this project will discard any unsaved changes."), this);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    if (msgBox.exec() == QMessageBox::Ok)
         openProject(editor->project->root);
 }
 
@@ -878,23 +857,14 @@ bool MainWindow::userSetMap(QString map_name) {
         return true; // Already set
 
     if (map_name == editor->project->getDynamicMapName()) {
-        QMessageBox msgBox(QMessageBox::Icon::Warning,
-                        QApplication::applicationName(),
-                        QString("The map '%1' can't be opened, it's a placeholder to indicate the specified map will be set programmatically.").arg(map_name),
-                        QMessageBox::Ok,
-                        this);
+        WarningMessage msgBox(QString("Cannot open map '%1'.").arg(map_name), this);
+        msgBox.setInformativeText(QStringLiteral("This map name is a placeholder to indicate that the warp's map will be set programmatically."));
         msgBox.exec();
         return false;
     }
 
     if (!setMap(map_name)) {
-        QMessageBox msgBox(QMessageBox::Icon::Critical,
-                        QApplication::applicationName(),
-                        QString("There was an error opening map %1.\n\nPlease see %2 for full error details.").arg(map_name).arg(getLogPath()),
-                        QMessageBox::Ok,
-                        this);
-        msgBox.setDetailedText(getMostRecentError());
-        msgBox.exec();
+        RecentErrorMessage::show(QString("There was an error opening map '%1'.").arg(map_name), this);
         return false;
     }
     return true;
@@ -950,13 +920,7 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
 // Use when the user is specifically requesting a layout to open.
 bool MainWindow::userSetLayout(QString layoutId) {
     if (!setLayout(layoutId)) {
-        QMessageBox msgBox(QMessageBox::Icon::Critical,
-                        QApplication::applicationName(),
-                        QString("There was an error opening layout %1.\n\nPlease see %2 for full error details.").arg(layoutId).arg(getLogPath()),
-                        QMessageBox::Ok,
-                        this);
-        msgBox.setDetailedText(getMostRecentError());
-        msgBox.exec();
+        RecentErrorMessage::show(QString("There was an error opening layout '%1'.").arg(layoutId), this);
         return false;
     }
 
@@ -1390,7 +1354,7 @@ void MainWindow::onNewTilesetCreated(Tileset *tileset) {
 
     // Unlike creating a new map or layout (which immediately opens the new item)
     // creating a new tileset has no visual feedback that it succeeded, so we show a message.
-    QMessageBox::information(this, QApplication::applicationName(), QString( "New tileset created at '%1'!").arg(tileset->getExpectedDir()));
+    InfoMessage::show(QString("New tileset created at '%1'!").arg(tileset->getExpectedDir()), this);
 
     // Refresh tileset combo boxes
     if (!tileset->is_secondary) {
@@ -1413,13 +1377,7 @@ void MainWindow::openDuplicateMapDialog(const QString &mapName) {
         auto dialog = new NewMapDialog(this->editor->project, map, this);
         dialog->open();
     } else {
-        QMessageBox msgBox(QMessageBox::Icon::Critical,
-                        QApplication::applicationName(),
-                        QString("Unable to duplicate '%1'.\n\nPlease see %2 for full error details.").arg(mapName).arg(getLogPath()),
-                        QMessageBox::Ok,
-                        this);
-        msgBox.setDetailedText(getMostRecentError());
-        msgBox.exec();
+        RecentErrorMessage::show(QString("Unable to duplicate '%1'.").arg(mapName), this);
     }
 }
 
@@ -1440,13 +1398,7 @@ void MainWindow::openDuplicateLayoutDialog(const QString &layoutId) {
         auto dialog = createNewLayoutDialog(layout);
         dialog->open();
     } else {
-        QMessageBox msgBox(QMessageBox::Icon::Critical,
-                        QApplication::applicationName(),
-                        QString("Unable to duplicate '%1'.\n\nPlease see %2 for full error details.").arg(layoutId).arg(getLogPath()),
-                        QMessageBox::Ok,
-                        this);
-        msgBox.setDetailedText(getMostRecentError());
-        msgBox.exec();
+        RecentErrorMessage::show(QString("Unable to duplicate '%1'.").arg(layoutId), this);
     }
 }
 
@@ -1999,8 +1951,7 @@ void MainWindow::addNewEvent(Event::Type type) {
             updateObjects();
             editor->selectMapEvent(object);
         } else {
-            QMessageBox msgBox(this);
-            msgBox.setText("Failed to add new event");
+            WarningMessage msgBox(QStringLiteral("Failed to add new event."), this);
             if (Event::typeToGroup(type) == Event::Group::Object) {
                 msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
                                                   "This limit can be adjusted with %2 in '%3'.")
@@ -2008,8 +1959,6 @@ void MainWindow::addNewEvent(Event::Type type) {
                                           .arg(projectConfig.getIdentifier(ProjectIdentifier::define_obj_event_count))
                                           .arg(projectConfig.getFilePath(ProjectFilePath::constants_global)));
             }
-            msgBox.setDefaultButton(QMessageBox::Ok);
-            msgBox.setIcon(QMessageBox::Icon::Warning);
             msgBox.exec();
         }
     }
@@ -2509,14 +2458,7 @@ void MainWindow::on_action_Export_Map_Image_triggered() {
 
 void MainWindow::on_actionExport_Stitched_Map_Image_triggered() {
     if (!this->editor->map) {
-        QMessageBox warning(this);
-        warning.setText("Notice");
-        warning.setInformativeText("Map stitch images are not possible without a map selected.");
-        warning.setStandardButtons(QMessageBox::Ok);
-        warning.setDefaultButton(QMessageBox::Cancel);
-        warning.setIcon(QMessageBox::Warning);
-
-        warning.exec();
+        WarningMessage::show(QStringLiteral("Map stitch images are not possible without a map selected."), this);
         return;
     }
     showExportMapImageWindow(ImageExporterMode::Stitch);
@@ -2535,13 +2477,7 @@ void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered() {
     bool error = false;
     Layout *mapLayout = AdvanceMapParser::parseLayout(filepath, &error, editor->project);
     if (error) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import map from Advance Map 1.92 .map file.");
-        QString message = QString("The .map file could not be processed. View porymap.log for specific errors.");
-        msgBox.setInformativeText(message);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
+        RecentErrorMessage::show(QStringLiteral("Failed to import map from Advance Map 1.92 .map file."), this);
         delete mapLayout;
         return;
     }
@@ -2858,8 +2794,7 @@ void MainWindow::on_actionProject_Settings_triggered() {
 }
 
 void MainWindow::onWarpBehaviorWarningClicked() {
-    static const QString text = QString("Warp Events only function as exits on certain metatiles");
-    static const QString informative = QString(
+    static const QString informative = QStringLiteral(
         "<html><head/><body><p>"
         "For instance, most floor metatiles in a cave have the metatile behavior <b>MB_CAVE</b>, but the floor space in front of an exit "
         "will have <b>MB_SOUTH_ARROW_WARP</b>, which is treated specially in your project's code to allow a Warp Event to warp the player. "
@@ -2873,13 +2808,13 @@ void MainWindow::onWarpBehaviorWarningClicked() {
         "You can disable this warning or edit the list of behaviors that silence this warning under <b>Options -> Project Settings...</b>"
         "<br></html></body></p>"
     );
-    QMessageBox msgBox(QMessageBox::Information, QApplication::applicationName(), text, QMessageBox::Close, this);
-    QPushButton *settings = msgBox.addButton("Open Settings...", QMessageBox::ActionRole);
-    msgBox.setDefaultButton(QMessageBox::Close);
+
+    InfoMessage msgBox(QStringLiteral("Warp Events only function as exits on certain metatiles"), this);
+    auto settingsButton = msgBox.addButton("Open Settings...", QMessageBox::ActionRole);
     msgBox.setTextFormat(Qt::RichText);
     msgBox.setInformativeText(informative);
     msgBox.exec();
-    if (msgBox.clickedButton() == settings)
+    if (msgBox.clickedButton() == settingsButton)
         this->openProjectSettingsEditor(ProjectSettingsEditor::eventsTab);
 }
 
@@ -3013,12 +2948,7 @@ bool MainWindow::initRegionMapEditor(bool silent) {
 }
 
 bool MainWindow::askToFixRegionMapEditor() {
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Critical);
-    msgBox.setText(QString("There was an error opening the region map data. Please see %1 for full error details.").arg(getLogPath()));
-    msgBox.setDetailedText(getMostRecentError());
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
+    RecentErrorMessage msgBox(QStringLiteral("There was an error opening the region map data."), this);
     auto reconfigButton = msgBox.addButton("Reconfigure", QMessageBox::ActionRole);
     msgBox.exec();
     if (msgBox.clickedButton() == reconfigButton) {
@@ -3088,15 +3018,16 @@ bool MainWindow::closeProject() {
         return true;
 
     if (this->editor->project->hasUnsavedChanges()) {
-        QMessageBox::StandardButton result = QMessageBox::question(
-            this, QApplication::applicationName(), "The project has been modified, save changes?",
-            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
+        QuestionMessage msgBox(QStringLiteral("The project has been modified, save changes?"), this);
+        msgBox.addButton(QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Yes);
 
-        if (result == QMessageBox::Yes) {
+        auto reply = msgBox.exec();
+        if (reply == QMessageBox::Yes) {
             editor->saveProject();
-        } else if (result == QMessageBox::No) {
+        } else if (reply == QMessageBox::No) {
             logWarn("Closing project with unsaved changes.");
-        } else if (result == QMessageBox::Cancel) {
+        } else if (reply == QMessageBox::Cancel) {
             return false;
         }
     }

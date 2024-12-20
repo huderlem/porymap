@@ -365,6 +365,7 @@ private:
     QString getExistingDirectory(QString);
     bool openProject(QString dir, bool initial = false);
     bool closeProject();
+    void showRecentError(const QString &baseMessage);
     void showProjectOpenFailure();
     void showMapsExcludedAlert(const QStringList &excludedMapNames);
 

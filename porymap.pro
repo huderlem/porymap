@@ -77,6 +77,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/filterchildrenproxymodel.cpp \
     src/ui/maplistmodels.cpp \
     src/ui/maplisttoolbar.cpp \
+    src/ui/message.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/layoutpixmapitem.cpp \
@@ -183,6 +184,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/filterchildrenproxymodel.h \
     include/ui/maplistmodels.h \
     include/ui/maplisttoolbar.h \
+    include/ui/message.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/layoutpixmapitem.h \
