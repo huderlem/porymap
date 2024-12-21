@@ -49,6 +49,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix a visual issue when quickly dragging map connections around.
 - Fix map connections rendering incorrectly if their direction name was unknown.
 - Fix map connections rendering incorrectly if their dimensions were smaller than the border draw distance.
+- Fix metatile/collision selection images skewing off-center after opening a map from the Connections tab.
 - Fix the map list filter retaining text between project open/close.
 - Fix the map list mishandling value gaps when sorting by Area.
 - Fix a freeze on startup if project values are defined with mismatched parentheses.
