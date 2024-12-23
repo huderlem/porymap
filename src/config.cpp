@@ -720,6 +720,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->blockCollisionMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "block_elevation_mask") {
         this->blockElevationMask = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "unused_tile_normal") {
+        this->unusedTileNormal = getConfigUint32(key, value, 0, Tile::maxValue);
+    } else if (key == "unused_tile_covered") {
+        this->unusedTileCovered = getConfigUint32(key, value, 0, Tile::maxValue);
+    } else if (key == "unused_tile_split") {
+        this->unusedTileSplit = getConfigUint32(key, value, 0, Tile::maxValue);
     } else if (key == "enable_map_allow_flags") {
         this->mapAllowFlagsEnabled = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
@@ -752,6 +758,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
+    } else if (key == "set_transparent_pixels_black") {
+        this->setTransparentPixelsBlack = getConfigBool(key, value);
     } else if (key == "event_icon_path_object") {
         this->eventIconPaths[Event::Group::Object] = value;
     } else if (key == "event_icon_path_warp") {
@@ -839,6 +847,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     }
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
+    map.insert("set_transparent_pixels_black", QString::number(this->setTransparentPixelsBlack));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
     map.insert("metatile_behavior_mask", "0x" + QString::number(this->metatileBehaviorMask, 16).toUpper());
     map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
@@ -847,6 +856,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("block_metatile_id_mask", "0x" + QString::number(this->blockMetatileIdMask, 16).toUpper());
     map.insert("block_collision_mask", "0x" + QString::number(this->blockCollisionMask, 16).toUpper());
     map.insert("block_elevation_mask", "0x" + QString::number(this->blockElevationMask, 16).toUpper());
+    map.insert("unused_tile_normal", "0x" + QString::number(this->unusedTileNormal, 16).toUpper());
+    map.insert("unused_tile_covered", "0x" + QString::number(this->unusedTileCovered, 16).toUpper());
+    map.insert("unused_tile_split", "0x" + QString::number(this->unusedTileSplit, 16).toUpper());
     map.insert("enable_map_allow_flags", QString::number(this->mapAllowFlagsEnabled));
     map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
     map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);
