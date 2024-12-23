@@ -342,6 +342,8 @@ private:
     bool userSetMap(QString);
     void redrawMapScene();
     void refreshMapScene();
+    void refreshMetatileViews();
+    void refreshCollisionSelector();
     void setLayoutOnlyMode(bool layoutOnly);
 
     bool checkProjectSanity();

@@ -146,7 +146,7 @@ void MainWindow::initWindow() {
     ui->actionCheck_for_Updates->setVisible(false);
 #endif
 
-#ifdef DISABLE_CHARTS_MODULE
+#ifndef QT_CHARTS_LIB
     ui->pushButton_SummaryChart->setVisible(false);
 #endif
 
@@ -964,8 +964,6 @@ void MainWindow::redrawMapScene() {
 }
 
 void MainWindow::refreshMapScene() {
-    on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
-
     ui->graphicsView_Map->setScene(editor->scene);
     ui->graphicsView_Map->setSceneRect(editor->scene->sceneRect());
     ui->graphicsView_Map->editor = editor;
@@ -987,7 +985,14 @@ void MainWindow::refreshMapScene() {
     //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
     ui->graphicsView_Collision->setFixedSize(editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
 
+    on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
+}
+
+void MainWindow::refreshMetatileViews() {
     on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
+}
+
+void MainWindow::refreshCollisionSelector() {
     on_horizontalSlider_CollisionZoom_valueChanged(ui->horizontalSlider_CollisionZoom->value());
 }
 
@@ -1766,8 +1771,10 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
 
     if (index == MapViewTab::Metatiles) {
         editor->setEditingMetatiles();
+        refreshMetatileViews();
     } else if (index == MapViewTab::Collision) {
         editor->setEditingCollision();
+        refreshCollisionSelector();
     } else if (index == MapViewTab::Prefabs) {
         editor->setEditingMetatiles();
         if (projectConfig.prefabFilepath.isEmpty() && !projectConfig.prefabImportPrompted) {
@@ -2555,7 +2562,6 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
     if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
         editor->updatePrimaryTileset(tilesetLabel);
         redrawMapScene();
-        on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
         markMapEdited();
@@ -2567,7 +2573,6 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
     if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
         editor->updateSecondaryTileset(tilesetLabel);
         redrawMapScene();
-        on_horizontalSlider_MetatileZoom_valueChanged(ui->horizontalSlider_MetatileZoom->value());
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
         markMapEdited();

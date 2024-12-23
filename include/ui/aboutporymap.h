@@ -2,13 +2,13 @@
 #define ABOUTPORYMAP_H
 
 #include <QString>
-#include <QMainWindow>
+#include <QDialog>
 
 namespace Ui {
 class AboutPorymap;
 }
 
-class AboutPorymap : public QMainWindow
+class AboutPorymap : public QDialog
 {
 public:
     explicit AboutPorymap(QWidget *parent = nullptr);

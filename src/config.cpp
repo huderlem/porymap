@@ -369,6 +369,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showTilesetEditorMetatileGrid = getConfigBool(key, value);
     } else if (key == "show_tileset_editor_layer_grid") {
         this->showTilesetEditorLayerGrid = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_divider") {
+        this->showTilesetEditorDivider = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
@@ -455,6 +457,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_grid", this->showGrid ? "1" : "0");
     map.insert("show_tileset_editor_metatile_grid", this->showTilesetEditorMetatileGrid ? "1" : "0");
     map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
+    map.insert("show_tileset_editor_divider", this->showTilesetEditorDivider ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("new_map_header_section_expanded", this->newMapHeaderSectionExpanded ? "1" : "0");

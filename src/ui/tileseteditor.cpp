@@ -28,6 +28,14 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     this->tileXFlip = ui->checkBox_xFlip->isChecked();
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();
+
+    // TODO: The dividing line at the moment is only accurate if the number of primary metatiles is divisible by 8.
+    //       If it's not, the secondary metatiles will wrap above the line. This has other problems (like skewing
+    //       metatile groups the user may have designed) so this should be fixed by filling the primary metatiles
+    //       image with invalid magenta metatiles until it's divisible by 8. Then the line can be re-enabled as-is.
+    ui->actionShow_Tileset_Divider->setChecked(/*porymapConfig.showTilesetEditorDivider*/false);
+    ui->actionShow_Tileset_Divider->setVisible(false);
+
     ui->spinBox_paletteSelector->setMinimum(0);
     ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
     ui->lineEdit_metatileLabel->setValidator(new IdentifierValidator(this));
@@ -181,6 +189,7 @@ void TilesetEditor::initMetatileSelector()
     bool showGrid = porymapConfig.showTilesetEditorMetatileGrid;
     this->ui->actionMetatile_Grid->setChecked(showGrid);
     this->metatileSelector->showGrid = showGrid;
+    this->metatileSelector->showDivider = this->ui->actionShow_Tileset_Divider->isChecked();
 
     this->metatilesScene = new QGraphicsScene;
     this->metatilesScene->addItem(this->metatileSelector);
@@ -221,6 +230,8 @@ void TilesetEditor::initTileSelector()
             this, &TilesetEditor::onHoveredTileCleared);
     connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged,
             this, &TilesetEditor::onSelectedTilesChanged);
+
+    this->tileSelector->showDivider = this->ui->actionShow_Tileset_Divider->isChecked();
 
     this->tilesScene = new QGraphicsScene;
     this->tilesScene->addItem(this->tileSelector);
@@ -1024,6 +1035,16 @@ void TilesetEditor::on_actionLayer_Grid_triggered(bool checked) {
     this->metatileLayersItem->showGrid = checked;
     this->metatileLayersItem->draw();
     porymapConfig.showTilesetEditorLayerGrid = checked;
+}
+
+void TilesetEditor::on_actionShow_Tileset_Divider_triggered(bool checked) {
+    this->metatileSelector->showDivider = checked;
+    this->metatileSelector->draw();
+
+    this->tileSelector->showDivider = checked;
+    this->tileSelector->draw();
+
+    porymapConfig.showTilesetEditorDivider = checked;
 }
 
 void TilesetEditor::countMetatileUsage() {

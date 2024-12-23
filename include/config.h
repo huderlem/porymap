@@ -68,6 +68,7 @@ public:
         this->showGrid = false;
         this->showTilesetEditorMetatileGrid = false;
         this->showTilesetEditorLayerGrid = true;
+        this->showTilesetEditorDivider = false;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
         this->newMapHeaderSectionExpanded = false;
@@ -120,6 +121,7 @@ public:
     bool showGrid;
     bool showTilesetEditorMetatileGrid;
     bool showTilesetEditorLayerGrid;
+    bool showTilesetEditorDivider;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     bool newMapHeaderSectionExpanded;

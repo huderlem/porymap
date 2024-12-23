@@ -6,8 +6,10 @@
 
 QT       += core gui qml network
 
-!win32 {
+qtHaveModule(charts) {
     QT += charts
+} else {
+    warning("Qt module 'charts' not found, disabling chart features.")
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -18,6 +20,16 @@ RC_ICONS = resources/icons/porymap-icon-2.ico
 ICON = resources/icons/porymap.icns
 QMAKE_CXXFLAGS += -std=c++17 -Wall
 QMAKE_TARGET_BUNDLE_PREFIX = com.pret
+
+# Get latest commit hash if we can (to display alongside version information).
+win32 {
+    LATEST_COMMIT = $$system(git rev-parse --short HEAD 2> nul)
+} else {
+    LATEST_COMMIT = $$system(git rev-parse --short HEAD 2>/dev/null)
+}
+
+DEFINES += PORYMAP_LATEST_COMMIT=\\\"$$LATEST_COMMIT\\\"
+
 VERSION = 5.4.1
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 

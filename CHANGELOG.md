@@ -13,6 +13,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add a `Close Project` option
 - Add charts to the `Wild Pokémon` tab that show species and level distributions.
 - Add options for customizing the map grid under `View -> Grid Settings`.
+- Add an option to display a dividing line between tilesets in the Tileset Editor.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
 - Add button to enable editing map groups including renaming groups and rearranging the maps within them.
@@ -48,6 +49,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix a visual issue when quickly dragging map connections around.
 - Fix map connections rendering incorrectly if their direction name was unknown.
 - Fix map connections rendering incorrectly if their dimensions were smaller than the border draw distance.
+- Fix metatile/collision selection images skewing off-center after opening a map from the Connections tab.
 - Fix the map list filter retaining text between project open/close.
 - Fix the map list mishandling value gaps when sorting by Area.
 - Fix a freeze on startup if project values are defined with mismatched parentheses.
@@ -60,6 +62,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix bug where layout json and blockdata could be saved separately leading to inconsistent data.
 - Fix crash when saving tilesets with fewer palettes than the maximum.
 - Fix projects not opening on Windows if the project filepath contains certain characters.
+- Fix exported tile images containing garbage pixels after the end of the tiles.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

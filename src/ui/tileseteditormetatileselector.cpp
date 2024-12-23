@@ -70,6 +70,7 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
 void TilesetEditorMetatileSelector::draw() {
     this->setPixmap(QPixmap::fromImage(this->buildAllMetatilesImage()));
     this->drawGrid();
+    this->drawDivider();
     this->drawSelection();
     this->drawFilters();
 }
@@ -182,6 +183,20 @@ void TilesetEditorMetatileSelector::drawGrid() {
         int y = row * 32;
         painter.drawLine(0, y, numColumns * 32, y);
     }
+    painter.end();
+    this->setPixmap(pixmap);
+}
+
+void TilesetEditorMetatileSelector::drawDivider() {
+    if (!this->showDivider)
+        return;
+
+    const int y = this->numRows(this->primaryTileset->numMetatiles()) * 32;
+
+    QPixmap pixmap = this->pixmap();
+    QPainter painter(&pixmap);
+    painter.setPen(Qt::white);
+    painter.drawLine(0, y, this->numMetatilesWide * 32, y);
     painter.end();
     this->setPixmap(pixmap);
 }
