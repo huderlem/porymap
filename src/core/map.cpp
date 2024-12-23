@@ -13,25 +13,51 @@
 
 Map::Map(QObject *parent) : QObject(parent)
 {
-    editHistory.setClean();
+    m_editHistory = new QUndoStack(this);
+    resetEvents();
+
+    m_header = new MapHeader(this);
+    connect(m_header, &MapHeader::modified, this, &Map::modified);
+}
+
+Map::Map(const Map &other, QObject *parent) : Map(parent) {
+    m_name = other.m_name;
+    m_constantName = other.m_constantName;
+    m_layoutId = other.m_layoutId;
+    m_sharedEventsMap = other.m_sharedEventsMap;
+    m_sharedScriptsMap = other.m_sharedScriptsMap;
+    m_customAttributes = other.m_customAttributes;
+    *m_header = *other.m_header;
+    m_layout = other.m_layout;
+    m_isPersistedToFile = false;
+    m_metatileLayerOrder = other.m_metatileLayerOrder;
+    m_metatileLayerOpacity = other.m_metatileLayerOpacity;
+
+    // Copy events
+    for (auto i = other.m_events.constBegin(); i != other.m_events.constEnd(); i++) {
+        QList<Event*> newEvents;
+        for (const auto &event : i.value()) {
+            auto newEvent = event->duplicate();
+            m_ownedEvents.insert(newEvent);
+            newEvents.append(newEvent);
+        }
+        m_events[i.key()] = newEvents;
+    }
+
+    // Duplicating the map connections is probably not desirable, so we skip them.
 }
 
 Map::~Map() {
-    qDeleteAll(ownedEvents);
-    ownedEvents.clear();
+    qDeleteAll(m_ownedEvents);
+    m_ownedEvents.clear();
     deleteConnections();
 }
 
-void Map::setName(QString mapName) {
-    name = mapName;
-    constantName = mapConstantFromName(mapName);
-    scriptsLoaded = false;
-}
-
+// Note: Map does not take ownership of layout
 void Map::setLayout(Layout *layout) {
-    this->layout = layout;
+    m_layout = layout;
     if (layout) {
-        this->layoutId = layout->id;
+        m_layoutId = layout->id;
     }
 }
 
@@ -42,29 +68,23 @@ QString Map::mapConstantFromName(QString mapName, bool includePrefix) {
     const QString prefix = includePrefix ? projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) : "";
     QString withMapAndUppercase = prefix + nameWithUnderscores.toUpper();
     static const QRegularExpression underscores("_+");
-    QString constantName = withMapAndUppercase.replace(underscores, "_");
-
-    // Handle special cases.
-    // SSTidal needs to be SS_TIDAL, rather than SSTIDAL
-    constantName = constantName.replace("SSTIDAL", "SS_TIDAL");
-
-    return constantName;
+    return withMapAndUppercase.replace(underscores, "_");
 }
 
-int Map::getWidth() {
-    return layout->getWidth();
+int Map::getWidth() const {
+    return m_layout->getWidth();
 }
 
-int Map::getHeight() {
-    return layout->getHeight();
+int Map::getHeight() const {
+    return m_layout->getHeight();
 }
 
-int Map::getBorderWidth() {
-    return layout->getBorderWidth();
+int Map::getBorderWidth() const {
+    return m_layout->getBorderWidth();
 }
 
-int Map::getBorderHeight() {
-    return layout->getBorderHeight();
+int Map::getBorderHeight() const {
+    return m_layout->getBorderHeight();
 }
 
 // Get the portion of the map that can be rendered when rendered as a map connection.
@@ -106,7 +126,7 @@ QPixmap Map::renderConnection(const QString &direction, Layout * fromLayout) {
     if (MapConnection::isDiving(direction))
         fromLayout = nullptr;
 
-    QPixmap connectionPixmap = this->layout->render(true, fromLayout, bounds);
+    QPixmap connectionPixmap = m_layout->render(true, fromLayout, bounds);
     return connectionPixmap.copy(bounds.x() * 16, bounds.y() * 16, bounds.width() * 16, bounds.height() * 16);
 }
 
@@ -114,18 +134,10 @@ void Map::openScript(QString label) {
     emit openScriptRequested(label);
 }
 
-QList<Event *> Map::getAllEvents() const {
-    QList<Event *> all_events;
-    for (const auto &event_list : events) {
-        all_events << event_list;
-    }
-    return all_events;
-}
-
 QStringList Map::getScriptLabels(Event::Group group) {
-    if (!this->scriptsLoaded) {
-        this->scriptsFileLabels = ParseUtil::getGlobalScriptLabels(this->getScriptsFilePath());
-        this->scriptsLoaded = true;
+    if (!m_scriptsLoaded) {
+        m_scriptsFileLabels = ParseUtil::getGlobalScriptLabels(getScriptsFilePath());
+        m_scriptsLoaded = true;
     }
 
     QStringList scriptLabels;
@@ -133,20 +145,20 @@ QStringList Map::getScriptLabels(Event::Group group) {
     // Get script labels currently in-use by the map's events
     if (group == Event::Group::None) {
         ScriptTracker scriptTracker;
-        for (Event *event : this->getAllEvents()) {
+        for (const auto &event : getEvents()) {
             event->accept(&scriptTracker);
         }
         scriptLabels = scriptTracker.getScripts();
     } else {
         ScriptTracker scriptTracker;
-        for (Event *event : events.value(group)) {
+        for (const auto &event : m_events.value(group)) {
             event->accept(&scriptTracker);
         }
         scriptLabels = scriptTracker.getScripts();
     }
 
     // Add scripts from map's scripts file, and empty names.
-    scriptLabels.append(this->scriptsFileLabels);
+    scriptLabels.append(m_scriptsFileLabels);
     scriptLabels.sort(Qt::CaseInsensitive);
     scriptLabels.prepend("0x0");
     scriptLabels.prepend("NULL");
@@ -162,7 +174,7 @@ QString Map::getScriptsFilePath() const {
     auto path = QDir::cleanPath(QString("%1/%2/%3/scripts")
                                         .arg(projectConfig.projectDir)
                                         .arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders))
-                                        .arg(this->name));
+                                        .arg(m_name));
     auto extension = Project::getScriptFileExtension(usePoryscript);
     if (usePoryscript && !QFile::exists(path + extension))
         extension = Project::getScriptFileExtension(false);
@@ -170,37 +182,77 @@ QString Map::getScriptsFilePath() const {
     return path;
 }
 
+void Map::resetEvents() {
+    m_events[Event::Group::Object].clear();
+    m_events[Event::Group::Warp].clear();
+    m_events[Event::Group::Coord].clear();
+    m_events[Event::Group::Bg].clear();
+    m_events[Event::Group::Heal].clear();
+}
+
+QList<Event *> Map::getEvents(Event::Group group) const {
+    if (group == Event::Group::None) {
+        // Get all events
+        QList<Event *> all_events;
+        for (const auto &event_list : m_events) {
+            all_events << event_list;
+        }
+        return all_events;
+    }
+    return m_events[group];
+}
+
+Event* Map::getEvent(Event::Group group, int index) const {
+    return m_events[group].value(index, nullptr);
+}
+
+int Map::getNumEvents(Event::Group group) const {
+    if (group == Event::Group::None) {
+        // Total number of events
+        int numEvents = 0;
+        for (auto i = m_events.constBegin(); i != m_events.constEnd(); i++) {
+            numEvents += i.value().length();
+        }
+        return numEvents;
+    }
+    return m_events[group].length();
+}
+
 void Map::removeEvent(Event *event) {
-    for (Event::Group key : events.keys()) {
-        events[key].removeAll(event);
+    for (auto i = m_events.begin(); i != m_events.end(); i++) {
+        i.value().removeAll(event);
     }
 }
 
 void Map::addEvent(Event *event) {
     event->setMap(this);
-    events[event->getEventGroup()].append(event);
-    if (!ownedEvents.contains(event)) ownedEvents.append(event);
+    m_events[event->getEventGroup()].append(event);
+    if (!m_ownedEvents.contains(event)) m_ownedEvents.insert(event);
+}
+
+int Map::getIndexOfEvent(Event *event) const {
+    return m_events.value(event->getEventGroup()).indexOf(event);
 }
 
 void Map::deleteConnections() {
-    qDeleteAll(this->ownedConnections);
-    this->ownedConnections.clear();
-    this->connections.clear();
+    qDeleteAll(m_ownedConnections);
+    m_ownedConnections.clear();
+    m_connections.clear();
 }
 
 QList<MapConnection*> Map::getConnections() const {
-    return this->connections;
+    return m_connections;
 }
 
 void Map::addConnection(MapConnection *connection) {
-    if (!connection || this->connections.contains(connection))
+    if (!connection || m_connections.contains(connection))
         return;
 
     // Maps should only have one Dive/Emerge connection at a time.
     // (Users can technically have more by editing their data manually, but we will only display one at a time)
     // Any additional connections being added (this can happen via mirroring) are tracked for deleting but otherwise ignored.
     if (MapConnection::isDiving(connection->direction())) {
-        for (auto i : this->connections) {
+        for (const auto &i : m_connections) {
             if (i->direction() == connection->direction()) {
                 trackConnection(connection);
                 return;
@@ -218,8 +270,8 @@ void Map::loadConnection(MapConnection *connection) {
     if (!connection)
         return;
 
-    if (!this->connections.contains(connection))
-        this->connections.append(connection);
+    if (!m_connections.contains(connection))
+        m_connections.append(connection);
 
     trackConnection(connection);
 }
@@ -227,12 +279,12 @@ void Map::loadConnection(MapConnection *connection) {
 void Map::trackConnection(MapConnection *connection) {
     connection->setParentMap(this, false);
 
-    if (!this->ownedConnections.contains(connection)) {
-        this->ownedConnections.insert(connection);
+    if (!m_ownedConnections.contains(connection)) {
+        m_ownedConnections.insert(connection);
         connect(connection, &MapConnection::parentMapChanged, [=](Map *, Map *after) {
             if (after != this && after != nullptr) {
                 // MapConnection's parent has been reassigned, it's no longer our responsibility
-                this->ownedConnections.remove(connection);
+                m_ownedConnections.remove(connection);
                 QObject::disconnect(connection, &MapConnection::parentMapChanged, this, nullptr);
             }
         });
@@ -241,23 +293,29 @@ void Map::trackConnection(MapConnection *connection) {
 
 // We retain ownership of this MapConnection until it's assigned to a new parent map.
 void Map::removeConnection(MapConnection *connection) {
-    if (!this->connections.removeOne(connection))
+    if (!m_connections.removeOne(connection))
         return;
     connection->setParentMap(nullptr, false);
     modify();
     emit connectionRemoved(connection);
 }
 
+void Map::commit(QUndoCommand *cmd) {
+    m_editHistory->push(cmd);
+}
+
 void Map::modify() {
     emit modified();
 }
 
-void Map::clean() {
-    this->hasUnsavedDataChanges = false;
+void Map::setClean() {
+    m_editHistory->setClean();
+    m_hasUnsavedDataChanges = false;
+    m_isPersistedToFile = true;
 }
 
 bool Map::hasUnsavedChanges() const {
-    return !editHistory.isClean() || this->layout->hasUnsavedChanges() || hasUnsavedDataChanges || !isPersistedToFile;
+    return !m_editHistory->isClean() || m_layout->hasUnsavedChanges() || m_hasUnsavedDataChanges || !m_isPersistedToFile;
 }
 
 void Map::pruneEditHistory() {
@@ -271,11 +329,11 @@ void Map::pruneEditHistory() {
         ID_MapConnectionAdd,
         ID_MapConnectionRemove
     };
-    for (int i = 0; i < this->editHistory.count(); i++) {
+    for (int i = 0; i < m_editHistory->count(); i++) {
         // Qt really doesn't expect editing commands in the stack to be valid (fair).
         // A better future design might be to have separate edit histories per map tab,
         // and dumping the entire Connections tab history with QUndoStack::clear.
-        auto command = const_cast<QUndoCommand*>(this->editHistory.command(i));
+        auto command = const_cast<QUndoCommand*>(m_editHistory->command(i));
         if (mapConnectionIds.contains(command->id()))
             command->setObsolete(true);
     }

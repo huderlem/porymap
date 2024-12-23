@@ -44,7 +44,7 @@ void Event::setPixmapItem(DraggablePixmapItem *item) {
 }
 
 int Event::getEventIndex() {
-    return this->map->events.value(this->getEventGroup()).indexOf(this);
+    return this->map->getIndexOfEvent(this);
 }
 
 void Event::setDefaultValues(Project *) {
@@ -392,7 +392,8 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     cloneJson["x"] = this->getX();
     cloneJson["y"] = this->getY();
     cloneJson["target_local_id"] = this->getTargetID();
-    cloneJson["target_map"] = project->mapNamesToMapConstants.value(this->getTargetMap());
+    const QString mapName = this->getTargetMap();
+    cloneJson["target_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
     this->addCustomValuesTo(&cloneJson);
 
     return cloneJson;
@@ -404,17 +405,11 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
     this->setTargetID(ParseUtil::jsonToInt(json["target_local_id"]));
 
-    // Ensure the target map constant is valid before adding it to the events.
-    const QString dynamicMapConstant = project->getDynamicMapDefineName();
-    QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
-    if (project->mapConstantsToMapNames.contains(mapConstant)) {
-        this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == dynamicMapConstant) {
-        this->setTargetMap(DYNAMIC_MAP_NAME);
-    } else {
-        logWarn(QString("Target Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(dynamicMapConstant));
-        this->setTargetMap(DYNAMIC_MAP_NAME);
-    }
+    // Log a warning if "target_map" isn't a known map ID, but don't overwrite user data.
+    const QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
+    if (!project->mapConstantsToMapNames.contains(mapConstant))
+        logWarn(QString("Unknown Target Map constant '%1'.").arg(mapConstant));
+    this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
 
     this->readCustomValues(json);
 
@@ -424,7 +419,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
 void CloneObjectEvent::setDefaultValues(Project *project) {
     this->setGfx(project->gfxDefines.keys().value(0, "0"));
     this->setTargetID(1);
-    if (this->getMap()) this->setTargetMap(this->getMap()->name);
+    if (this->getMap()) this->setTargetMap(this->getMap()->name());
 }
 
 const QSet<QString> expectedCloneObjectFields = {
@@ -445,7 +440,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
     // Try to get the targeted object to clone
     int eventIndex = this->targetID - 1;
     Map *clonedMap = project->getMap(this->targetMap);
-    Event *clonedEvent = clonedMap ? clonedMap->events[Event::Group::Object].value(eventIndex, nullptr) : nullptr;
+    Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, eventIndex) : nullptr;
 
     if (clonedEvent && clonedEvent->getEventType() == Event::Type::Object) {
         // Get graphics data from cloned object
@@ -502,7 +497,8 @@ OrderedJson::object WarpEvent::buildEventJson(Project *project) {
     warpJson["x"] = this->getX();
     warpJson["y"] = this->getY();
     warpJson["elevation"] = this->getElevation();
-    warpJson["dest_map"] = project->mapNamesToMapConstants.value(this->getDestinationMap());
+    const QString mapName = this->getDestinationMap();
+    warpJson["dest_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
     warpJson["dest_warp_id"] = this->getDestinationWarpID();
 
     this->addCustomValuesTo(&warpJson);
@@ -516,17 +512,11 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
     this->setDestinationWarpID(ParseUtil::jsonToQString(json["dest_warp_id"]));
 
-    // Ensure the warp destination map constant is valid before adding it to the warps.
-    const QString dynamicMapConstant = project->getDynamicMapDefineName();
-    QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
-    if (project->mapConstantsToMapNames.contains(mapConstant)) {
-        this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant));
-    } else if (mapConstant == dynamicMapConstant) {
-        this->setDestinationMap(DYNAMIC_MAP_NAME);
-    } else {
-        logWarn(QString("Destination Map constant '%1' is invalid. Using default '%2'.").arg(mapConstant).arg(dynamicMapConstant));
-        this->setDestinationMap(DYNAMIC_MAP_NAME);
-    }
+    // Log a warning if "dest_map" isn't a known map ID, but don't overwrite user data.
+    const QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
+    if (!project->mapConstantsToMapNames.contains(mapConstant))
+        logWarn(QString("Unknown Destination Map constant '%1'.").arg(mapConstant));
+    this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
 
     this->readCustomValues(json);
 
@@ -534,7 +524,7 @@ bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
 }
 
 void WarpEvent::setDefaultValues(Project *) {
-    if (this->getMap()) this->setDestinationMap(this->getMap()->name);
+    if (this->getMap()) this->setDestinationMap(this->getMap()->name());
     this->setDestinationWarpID("0");
     this->setElevation(0);
 }
@@ -949,16 +939,16 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *) {
 
 void HealLocationEvent::setDefaultValues(Project *) {
     this->setElevation(projectConfig.defaultElevation);
-    if (!this->getMap())
+    if (!this->map)
         return;
+
     bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
-    const QString mapConstant = Map::mapConstantFromName(this->getMap()->name, false);
     const QString prefix = projectConfig.getIdentifier(respawnEnabled ? ProjectIdentifier::define_spawn_prefix
                                                                       : ProjectIdentifier::define_heal_locations_prefix);
-    this->setLocationName(mapConstant);
-    this->setIdName(prefix + mapConstant);
+    this->setLocationName(this->map->constantName());
+    this->setIdName(prefix + this->map->constantName());
     if (respawnEnabled) {
-        this->setRespawnMap(this->getMap()->name);
+        this->setRespawnMap(this->map->name());
         this->setRespawnNPC(1);
     }
 }

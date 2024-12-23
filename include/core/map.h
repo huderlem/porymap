@@ -7,6 +7,7 @@
 #include "maplayout.h"
 #include "tileset.h"
 #include "events.h"
+#include "mapheader.h"
 
 #include <QUndoStack>
 #include <QPixmap>
@@ -34,61 +35,56 @@ class Map : public QObject
     Q_OBJECT
 public:
     explicit Map(QObject *parent = nullptr);
+    explicit Map(const Map &other, QObject *parent = nullptr);
     ~Map();
 
 public:
-    QString name;
-    QString constantName;
+    void setName(const QString &mapName) { m_name = mapName; }
+    QString name() const { return m_name; }
 
-    QString song;
-    QString layoutId;
-    QString location;
-    bool requiresFlash;
-    QString weather;
-    QString type;
-    bool show_location;
-    bool allowRunning;
-    bool allowBiking;
-    bool allowEscaping;
-    int floorNumber = 0;
-    QString battle_scene;
+    void setConstantName(const QString &constantName) { m_constantName = constantName; }
+    QString constantName() const { return m_constantName; }
 
-    QString sharedEventsMap = "";
-    QString sharedScriptsMap = "";
-
-    QStringList scriptsFileLabels;
-    QMap<QString, QJsonValue> customHeaders;
-
-    Layout *layout = nullptr;
-    void setLayout(Layout *layout);
-
-    bool isPersistedToFile = true;
-    bool hasUnsavedDataChanges = false;
-
-    bool needsLayoutDir = true;
-    bool needsHealLocation = false;
-    bool scriptsLoaded = false;
-
-    QMap<Event::Group, QList<Event *>> events;
-    QList<Event *> ownedEvents; // for memory management
-
-    QList<int> metatileLayerOrder;
-    QList<float> metatileLayerOpacity;
-
-    void setName(QString mapName);
     static QString mapConstantFromName(QString mapName, bool includePrefix = true);
 
-    int getWidth();
-    int getHeight();
-    int getBorderWidth();
-    int getBorderHeight();
+    void setLayout(Layout *layout);
+    Layout* layout() const { return m_layout; }
 
-    QList<Event *> getAllEvents() const;
+    void setLayoutId(const QString &layoutId) { m_layoutId = layoutId; }
+    QString layoutId() const { return m_layoutId; }
+
+    int getWidth() const;
+    int getHeight() const;
+    int getBorderWidth() const;
+    int getBorderHeight() const;
+
+    void setHeader(const MapHeader &header) { *m_header = header; }
+    MapHeader* header() const { return m_header; }
+
+    void setSharedEventsMap(const QString &sharedEventsMap) { m_sharedEventsMap = sharedEventsMap; }
+    void setSharedScriptsMap(const QString &sharedScriptsMap) { m_sharedScriptsMap = sharedScriptsMap; }
+
+    QString sharedEventsMap() const { return m_sharedEventsMap; }
+    QString sharedScriptsMap() const { return m_sharedScriptsMap; }
+
+    void setNeedsHealLocation(bool needsHealLocation) { m_needsHealLocation = needsHealLocation; }
+    void setIsPersistedToFile(bool persistedToFile) { m_isPersistedToFile = persistedToFile; }
+    void setHasUnsavedDataChanges(bool unsavedDataChanges) { m_hasUnsavedDataChanges = unsavedDataChanges; }
+
+    bool needsHealLocation() const { return m_needsHealLocation; }
+    bool isPersistedToFile() const { return m_isPersistedToFile; }
+    bool hasUnsavedDataChanges() const { return m_hasUnsavedDataChanges; }
+
+    void resetEvents();
+    QList<Event *> getEvents(Event::Group group = Event::Group::None) const;
+    Event* getEvent(Event::Group group, int index) const;
+    int getNumEvents(Event::Group group = Event::Group::None) const;
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
     QString getScriptsFilePath() const;
     void openScript(QString label);
     void removeEvent(Event *);
     void addEvent(Event *);
+    int getIndexOfEvent(Event *) const;
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const;
@@ -98,18 +94,47 @@ public:
     QRect getConnectionRect(const QString &direction, Layout *fromLayout = nullptr);
     QPixmap renderConnection(const QString &direction, Layout *fromLayout = nullptr);
 
-    QUndoStack editHistory;
+    QUndoStack* editHistory() const { return m_editHistory; }
+    void commit(QUndoCommand*);
     void modify();
-    void clean();
+    void setClean();
     bool hasUnsavedChanges() const;
     void pruneEditHistory();
 
+    void setCustomAttributes(const QMap<QString, QJsonValue> &attributes) { m_customAttributes = attributes; }
+    QMap<QString, QJsonValue> customAttributes() const { return m_customAttributes; }
+
 private:
+    QString m_name;
+    QString m_constantName;
+    QString m_layoutId;
+    QString m_sharedEventsMap = "";
+    QString m_sharedScriptsMap = "";
+
+    QStringList m_scriptsFileLabels;
+    QMap<QString, QJsonValue> m_customAttributes;
+
+    MapHeader *m_header = nullptr;
+    Layout *m_layout = nullptr;
+
+    bool m_isPersistedToFile = true;
+    bool m_hasUnsavedDataChanges = false;
+    bool m_needsHealLocation = false;
+    bool m_scriptsLoaded = false;
+
+    QMap<Event::Group, QList<Event *>> m_events;
+    QSet<Event *> m_ownedEvents; // for memory management
+
+    QList<int> m_metatileLayerOrder;
+    QList<float> m_metatileLayerOpacity;
+
     void trackConnection(MapConnection*);
 
     // MapConnections in 'ownedConnections' but not 'connections' persist in the edit history.
-    QList<MapConnection*> connections;
-    QSet<MapConnection*> ownedConnections;
+    QList<MapConnection*> m_connections;
+    QSet<MapConnection*> m_ownedConnections;
+
+    QUndoStack *m_editHistory = nullptr;
 
 signals:
     void modified();

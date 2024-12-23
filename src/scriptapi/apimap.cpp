@@ -337,7 +337,7 @@ void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
     this->editor->map_item->draw(true);
     this->editor->updateMapBorder();
     this->editor->updateMapConnections();
-    this->editor->project->saveTilesetPalettes(tileset);
+    tileset->savePalettes();
 }
 
 void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QList<int>> colors) {
@@ -576,14 +576,14 @@ void MainWindow::setSecondaryTileset(QString tileset) {
 
 void MainWindow::saveMetatilesByMetatileId(int metatileId) {
     Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
-    if (this->editor->project && tileset)
-        this->editor->project->saveTilesetMetatiles(tileset);
+    if (tileset)
+        tileset->saveMetatiles();
 }
 
 void MainWindow::saveMetatileAttributesByMetatileId(int metatileId) {
     Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
-    if (this->editor->project && tileset)
-        this->editor->project->saveTilesetMetatileAttributes(tileset);
+    if (tileset)
+        tileset->saveMetatileAttributes();
 
     // If the tileset editor is open it needs to be refreshed with the new changes.
     // Rather than do a full refresh (which is costly) we tell the editor it will need
@@ -814,156 +814,132 @@ QJSValue MainWindow::getTilePixels(int tileId) {
 QString MainWindow::getSong() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->song;
+    return this->editor->map->header()->song();
 }
 
 void MainWindow::setSong(QString song) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->songNames.contains(song)) {
-        logError(QString("Unknown song '%1'").arg(song));
-        return;
-    }
-    this->ui->comboBox_Song->setCurrentText(song);
+    this->editor->map->header()->setSong(song);
 }
 
 QString MainWindow::getLocation() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->location;
+    return this->editor->map->header()->location();
 }
 
 void MainWindow::setLocation(QString location) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->mapSectionIdNames.contains(location)) {
-        logError(QString("Unknown location '%1'").arg(location));
-        return;
-    }
-    this->ui->comboBox_Location->setCurrentText(location);
+    this->editor->map->header()->setLocation(location);
 }
 
 bool MainWindow::getRequiresFlash() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->requiresFlash;
+    return this->editor->map->header()->requiresFlash();
 }
 
 void MainWindow::setRequiresFlash(bool require) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_Visibility->setChecked(require);
+    this->editor->map->header()->setRequiresFlash(require);
 }
 
 QString MainWindow::getWeather() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->weather;
+    return this->editor->map->header()->weather();
 }
 
 void MainWindow::setWeather(QString weather) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->weatherNames.contains(weather)) {
-        logError(QString("Unknown weather '%1'").arg(weather));
-        return;
-    }
-    this->ui->comboBox_Weather->setCurrentText(weather);
+    this->editor->map->header()->setWeather(weather);
 }
 
 QString MainWindow::getType() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->type;
+    return this->editor->map->header()->type();
 }
 
 void MainWindow::setType(QString type) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->mapTypes.contains(type)) {
-        logError(QString("Unknown map type '%1'").arg(type));
-        return;
-    }
-    this->ui->comboBox_Type->setCurrentText(type);
+    this->editor->map->header()->setType(type);
 }
 
 QString MainWindow::getBattleScene() {
     if (!this->editor || !this->editor->map)
         return QString();
-    return this->editor->map->battle_scene;
+    return this->editor->map->header()->battleScene();
 }
 
 void MainWindow::setBattleScene(QString battleScene) {
-    if (!this->ui || !this->editor || !this->editor->project)
+    if (!this->editor || !this->editor->map || !this->editor->project)
         return;
-    if (!this->editor->project->mapBattleScenes.contains(battleScene)) {
-        logError(QString("Unknown battle scene '%1'").arg(battleScene));
-        return;
-    }
-    this->ui->comboBox_BattleScene->setCurrentText(battleScene);
+    this->editor->map->header()->setBattleScene(battleScene);
 }
 
 bool MainWindow::getShowLocationName() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->show_location;
+    return this->editor->map->header()->showsLocationName();
 }
 
 void MainWindow::setShowLocationName(bool show) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_ShowLocation->setChecked(show);
+    this->editor->map->header()->setShowsLocationName(show);
 }
 
 bool MainWindow::getAllowRunning() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowRunning;
+    return this->editor->map->header()->allowsRunning();
 }
 
 void MainWindow::setAllowRunning(bool allow) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_AllowRunning->setChecked(allow);
+    this->editor->map->header()->setAllowsRunning(allow);
 }
 
 bool MainWindow::getAllowBiking() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowBiking;
+    return this->editor->map->header()->allowsBiking();
 }
 
 void MainWindow::setAllowBiking(bool allow) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_AllowBiking->setChecked(allow);
+    this->editor->map->header()->setAllowsBiking(allow);
 }
 
 bool MainWindow::getAllowEscaping() {
     if (!this->editor || !this->editor->map)
         return false;
-    return this->editor->map->allowEscaping;
+    return this->editor->map->header()->allowsEscaping();
 }
 
 void MainWindow::setAllowEscaping(bool allow) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    this->ui->checkBox_AllowEscaping->setChecked(allow);
+    this->editor->map->header()->setAllowsEscaping(allow);
 }
 
 int MainWindow::getFloorNumber() {
     if (!this->editor || !this->editor->map)
         return 0;
-    return this->editor->map->floorNumber;
+    return this->editor->map->header()->floorNumber();
 }
 
 void MainWindow::setFloorNumber(int floorNumber) {
-    if (!this->ui)
+    if (!this->editor || !this->editor->map)
         return;
-    if (floorNumber < -128 || floorNumber > 127) {
-        logError(QString("Invalid floor number '%1'").arg(floorNumber));
-        return;
-    }
-    this->ui->spinBox_FloorNumber->setValue(floorNumber);
+    this->editor->map->header()->setFloorNumber(floorNumber);
 }
 

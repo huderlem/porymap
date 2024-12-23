@@ -91,7 +91,7 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     } else {
         selectedEvents.append(this->event);
     }
-    editor->map->editHistory.push(new EventMove(selectedEvents, moveDistance.x(), moveDistance.y(), currentActionId));
+    editor->map->commit(new EventMove(selectedEvents, moveDistance.x(), moveDistance.y(), currentActionId));
     this->releaseSelectionQueued = false;
 }
 

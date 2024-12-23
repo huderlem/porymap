@@ -303,7 +303,7 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
     // into their project.
      QMessageBox::StandardButton prompt =
              QMessageBox::question(parent,
-                                   "Import Default Prefabs",
+                                   QApplication::applicationName(),
                                    QString("Would you like to import the default prefabs for %1? %2.")
                                                .arg(projectConfig.getBaseGameVersionString(version))
                                                .arg(fileWarning),
