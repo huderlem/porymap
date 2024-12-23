@@ -1242,10 +1242,10 @@ QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation
 void Editor::unsetMap() {
     // disconnect previous map's signals so they are not firing
     // multiple times if set again in the future
-    if (map) {
-        map->pruneEditHistory();
-        map->disconnect(this);
-        for (auto connection : map->getConnections())
+    if (this->map) {
+        this->map->pruneEditHistory();
+        this->map->disconnect(this);
+        for (const auto &connection : this->map->getConnections())
             disconnectMapConnection(connection);
     }
     clearMapConnections();
@@ -1258,13 +1258,12 @@ bool Editor::setMap(QString map_name) {
         return false;
     }
 
-    unsetMap();
-
     Map *loadedMap = project->loadMap(map_name);
     if (!loadedMap) {
         return false;
     }
 
+    unsetMap();
     this->map = loadedMap;
 
     setLayout(map->layout()->id);
@@ -1291,13 +1290,17 @@ bool Editor::setLayout(QString layoutId) {
         return false;
     }
 
-    this->layout = this->project->loadLayout(layoutId);
+    Layout *loadedLayout = this->project->loadLayout(layoutId);
+    if (!loadedLayout) {
+        return false;
+    }
 
+    this->layout = loadedLayout;
     if (!displayLayout()) {
         return false;
     }
 
-    editGroup.addStack(&layout->editHistory);
+    editGroup.addStack(&this->layout->editHistory);
 
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
     connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
