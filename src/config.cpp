@@ -16,7 +16,7 @@
 #include <QAction>
 #include <QAbstractButton>
 
-const QSet<uint32_t> defaultWarpBehaviors_RSE = {
+const QList<uint32_t> defaultWarpBehaviors_RSE = {
     0x0E, // MB_MOSSDEEP_GYM_WARP
     0x0F, // MB_MT_PYRE_HOLE
     0x1B, // MB_STAIRS_OUTSIDE_ABANDONED_SHIP
@@ -47,7 +47,7 @@ const QSet<uint32_t> defaultWarpBehaviors_RSE = {
     0x9D, // MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN
 };
 
-const QSet<uint32_t> defaultWarpBehaviors_FRLG = {
+const QList<uint32_t> defaultWarpBehaviors_FRLG = {
     0x60, // MB_CAVE_DOOR
     0x61, // MB_LADDER
     0x62, // MB_EAST_ARROW_WARP
@@ -773,9 +773,9 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "warp_behaviors") {
         this->warpBehaviors.clear();
         value.remove(" ");
-        QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
+        const QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
         for (auto s : behaviorList)
-            this->warpBehaviors.insert(getConfigUint32(key, s));
+            this->warpBehaviors.append(getConfigUint32(key, s));
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -864,7 +864,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
     QStringList warpBehaviorStrs;
-    for (auto value : this->warpBehaviors)
+    for (const auto &value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
 
@@ -1006,7 +1006,7 @@ QString ProjectConfig::getPokemonIconPath(const QString &species) {
     return this->pokemonIconPaths.value(species);
 }
 
-QHash<QString, QString> ProjectConfig::getPokemonIconPaths() {
+QMap<QString, QString> ProjectConfig::getPokemonIconPaths() {
     return this->pokemonIconPaths;
 }
 

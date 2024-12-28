@@ -475,7 +475,7 @@ void ProjectSettingsEditor::refresh() {
 
     // Set warp behaviors
     QStringList behaviorNames;
-    for (auto value : projectConfig.warpBehaviors) {
+    for (const auto &value : projectConfig.warpBehaviors) {
         if (project->metatileBehaviorMapInverse.contains(value))
             behaviorNames.append(project->metatileBehaviorMapInverse.value(value));
     }
@@ -541,9 +541,9 @@ void ProjectSettingsEditor::save() {
 
     // Save warp behaviors
     projectConfig.warpBehaviors.clear();
-    QStringList behaviorNames = this->getWarpBehaviorsList();
+    const QStringList behaviorNames = this->getWarpBehaviorsList();
     for (auto name : behaviorNames)
-        projectConfig.warpBehaviors.insert(project->metatileBehaviorMap.value(name));
+        projectConfig.warpBehaviors.append(project->metatileBehaviorMap.value(name));
 
     // Save border metatile IDs
     projectConfig.newMapBorderMetatileIds = this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked());

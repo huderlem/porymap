@@ -337,7 +337,7 @@ public:
     QString getEventIconPath(Event::Group group);
     void setPokemonIconPath(const QString &species, const QString &path);
     QString getPokemonIconPath(const QString &species);
-    QHash<QString, QString> getPokemonIconPaths();
+    QMap<QString, QString> getPokemonIconPaths();
 
     BaseGameVersion baseGameVersion;
     QString projectDir;
@@ -374,7 +374,7 @@ public:
     QString collisionSheetPath;
     int collisionSheetWidth;
     int collisionSheetHeight;
-    QSet<uint32_t> warpBehaviors;
+    QList<uint32_t> warpBehaviors;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -388,7 +388,7 @@ private:
     QMap<ProjectIdentifier, QString> identifiers;
     QMap<ProjectFilePath, QString> filePaths;
     QMap<Event::Group, QString> eventIconPaths;
-    QHash<QString, QString> pokemonIconPaths;
+    QMap<QString, QString> pokemonIconPaths;
 };
 
 extern ProjectConfig projectConfig;

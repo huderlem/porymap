@@ -36,7 +36,7 @@ private:
     bool projectNeedsReload = false;
     bool refreshing = false;
     const QString baseDir;
-    QHash<QString, QString> editedPokemonIconPaths;
+    QMap<QString, QString> editedPokemonIconPaths;
     QString prevIconSpecies;
 
     void initUi();
