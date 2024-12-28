@@ -18,6 +18,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add support for defining project values with `enum` where `#define` was expected.
 - Add button to enable editing map groups including renaming groups and rearranging the maps within them.
 - Add buttons to hide and show empty folders in each map tree view.
+- Add a setting to specify the tile values to use for the unused metatile layer.
 
 ### Changed
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
@@ -63,6 +64,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix crash when saving tilesets with fewer palettes than the maximum.
 - Fix projects not opening on Windows if the project filepath contains certain characters.
 - Fix exported tile images containing garbage pixels after the end of the tiles.
+- Fix fully transparent pixels rendering with the incorrect color.
+- Fix the values for some config fields shuffling their order every save.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

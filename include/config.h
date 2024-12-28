@@ -303,6 +303,7 @@ public:
         this->prefabImportPrompted = false;
         this->tilesetsHaveCallback = true;
         this->tilesetsHaveIsCompressed = true;
+        this->setTransparentPixelsBlack = true;
         this->filePaths.clear();
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
@@ -312,6 +313,9 @@ public:
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
+        this->unusedTileNormal = 0x3014;
+        this->unusedTileCovered = 0x0000;
+        this->unusedTileSplit = 0x0000;
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -339,7 +343,7 @@ public:
     QString getEventIconPath(Event::Group group);
     void setPokemonIconPath(const QString &species, const QString &path);
     QString getPokemonIconPath(const QString &species);
-    QHash<QString, QString> getPokemonIconPaths();
+    QMap<QString, QString> getPokemonIconPaths();
 
     BaseGameVersion baseGameVersion;
     QString projectDir;
@@ -364,6 +368,7 @@ public:
     bool prefabImportPrompted;
     bool tilesetsHaveCallback;
     bool tilesetsHaveIsCompressed;
+    bool setTransparentPixelsBlack;
     int metatileAttributesSize;
     uint32_t metatileBehaviorMask;
     uint32_t metatileTerrainTypeMask;
@@ -372,11 +377,14 @@ public:
     uint16_t blockMetatileIdMask;
     uint16_t blockCollisionMask;
     uint16_t blockElevationMask;
+    uint16_t unusedTileNormal;
+    uint16_t unusedTileCovered;
+    uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
     QString collisionSheetPath;
     int collisionSheetWidth;
     int collisionSheetHeight;
-    QSet<uint32_t> warpBehaviors;
+    QList<uint32_t> warpBehaviors;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -390,7 +398,7 @@ private:
     QMap<ProjectIdentifier, QString> identifiers;
     QMap<ProjectFilePath, QString> filePaths;
     QMap<Event::Group, QString> eventIconPaths;
-    QHash<QString, QString> pokemonIconPaths;
+    QMap<QString, QString> pokemonIconPaths;
 };
 
 extern ProjectConfig projectConfig;

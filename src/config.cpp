@@ -17,7 +17,7 @@
 #include <QAction>
 #include <QAbstractButton>
 
-const QSet<uint32_t> defaultWarpBehaviors_RSE = {
+const QList<uint32_t> defaultWarpBehaviors_RSE = {
     0x0E, // MB_MOSSDEEP_GYM_WARP
     0x0F, // MB_MT_PYRE_HOLE
     0x1B, // MB_STAIRS_OUTSIDE_ABANDONED_SHIP
@@ -48,7 +48,7 @@ const QSet<uint32_t> defaultWarpBehaviors_RSE = {
     0x9D, // MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN
 };
 
-const QSet<uint32_t> defaultWarpBehaviors_FRLG = {
+const QList<uint32_t> defaultWarpBehaviors_FRLG = {
     0x60, // MB_CAVE_DOOR
     0x61, // MB_LADDER
     0x62, // MB_EAST_ARROW_WARP
@@ -724,6 +724,12 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->blockCollisionMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "block_elevation_mask") {
         this->blockElevationMask = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "unused_tile_normal") {
+        this->unusedTileNormal = getConfigUint32(key, value, 0, Tile::maxValue);
+    } else if (key == "unused_tile_covered") {
+        this->unusedTileCovered = getConfigUint32(key, value, 0, Tile::maxValue);
+    } else if (key == "unused_tile_split") {
+        this->unusedTileSplit = getConfigUint32(key, value, 0, Tile::maxValue);
     } else if (key == "enable_map_allow_flags") {
         this->mapAllowFlagsEnabled = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
@@ -756,6 +762,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
+    } else if (key == "set_transparent_pixels_black") {
+        this->setTransparentPixelsBlack = getConfigBool(key, value);
     } else if (key == "event_icon_path_object") {
         this->eventIconPaths[Event::Group::Object] = value;
     } else if (key == "event_icon_path_warp") {
@@ -777,9 +785,9 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "warp_behaviors") {
         this->warpBehaviors.clear();
         value.remove(" ");
-        QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
+        const QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
         for (auto s : behaviorList)
-            this->warpBehaviors.insert(getConfigUint32(key, s));
+            this->warpBehaviors.append(getConfigUint32(key, s));
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -843,6 +851,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     }
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
+    map.insert("set_transparent_pixels_black", QString::number(this->setTransparentPixelsBlack));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
     map.insert("metatile_behavior_mask", "0x" + QString::number(this->metatileBehaviorMask, 16).toUpper());
     map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
@@ -851,6 +860,9 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("block_metatile_id_mask", "0x" + QString::number(this->blockMetatileIdMask, 16).toUpper());
     map.insert("block_collision_mask", "0x" + QString::number(this->blockCollisionMask, 16).toUpper());
     map.insert("block_elevation_mask", "0x" + QString::number(this->blockElevationMask, 16).toUpper());
+    map.insert("unused_tile_normal", "0x" + QString::number(this->unusedTileNormal, 16).toUpper());
+    map.insert("unused_tile_covered", "0x" + QString::number(this->unusedTileCovered, 16).toUpper());
+    map.insert("unused_tile_split", "0x" + QString::number(this->unusedTileSplit, 16).toUpper());
     map.insert("enable_map_allow_flags", QString::number(this->mapAllowFlagsEnabled));
     map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
     map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);
@@ -868,7 +880,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
     QStringList warpBehaviorStrs;
-    for (auto value : this->warpBehaviors)
+    for (const auto &value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
 
@@ -1020,7 +1032,7 @@ QString ProjectConfig::getPokemonIconPath(const QString &species) {
     return this->pokemonIconPaths.value(species);
 }
 
-QHash<QString, QString> ProjectConfig::getPokemonIconPaths() {
+QMap<QString, QString> ProjectConfig::getPokemonIconPaths() {
     return this->pokemonIconPaths;
 }
 

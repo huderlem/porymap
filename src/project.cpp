@@ -2165,19 +2165,29 @@ bool Project::readFieldmapProperties() {
     fileWatcher.addPath(root + "/" + filename);
     const QMap<QString, int> defines = parser.readCDefinesByName(filename, names);
 
-    auto loadDefine = [defines](const QString name, int * dest) {
+    auto loadDefine = [defines](const QString name, int * dest, int min, int max) {
         auto it = defines.find(name);
         if (it != defines.end()) {
             *dest = it.value();
+            if (*dest < min) {
+                logWarn(QString("Value for tileset property '%1' (%2) is below the minimum (%3). Defaulting to minimum.").arg(name).arg(*dest).arg(min));
+                *dest = min;
+            } else if (*dest > max) {
+                logWarn(QString("Value for tileset property '%1' (%2) is above the maximum (%3). Defaulting to maximum.").arg(name).arg(*dest).arg(max));
+                *dest = max;
+            }
         } else {
             logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
         }
     };
-    loadDefine(numTilesPrimaryName,     &Project::num_tiles_primary);
-    loadDefine(numTilesTotalName,       &Project::num_tiles_total);
-    loadDefine(numMetatilesPrimaryName, &Project::num_metatiles_primary);
-    loadDefine(numPalsPrimaryName,      &Project::num_pals_primary);
-    loadDefine(numPalsTotalName,        &Project::num_pals_total);
+    loadDefine(numPalsTotalName,        &Project::num_pals_total, 2, INT_MAX); // In reality the max would be 16, but as far as Porymap is concerned it doesn't matter.
+    loadDefine(numTilesTotalName,       &Project::num_tiles_total, 2, 1024); // 1024 is fixed because we store tile IDs in a 10-bit field.
+    loadDefine(numPalsPrimaryName,      &Project::num_pals_primary, 1, Project::num_pals_total - 1);
+    loadDefine(numTilesPrimaryName,     &Project::num_tiles_primary, 1, Project::num_tiles_total - 1);
+
+    // This maximum is overly generous, because until we parse the appropriate masks from the project
+    // we don't actually know what the maximum number of metatiles is.
+    loadDefine(numMetatilesPrimaryName, &Project::num_metatiles_primary, 1, 0xFFFF - 1);
 
     auto it = defines.find(maxMapSizeName);
     if (it != defines.end()) {
@@ -3102,12 +3112,12 @@ void Project::applyParsedLimits() {
     Block::setLayout();
     Metatile::setLayout(this);
 
-    Project::num_metatiles_primary = qMin(Project::num_metatiles_primary, Block::getMaxMetatileId() + 1);
+    Project::num_metatiles_primary = qMin(qMax(Project::num_metatiles_primary, 1), Block::getMaxMetatileId() + 1);
     projectConfig.defaultMetatileId = qMin(projectConfig.defaultMetatileId, Block::getMaxMetatileId());
     projectConfig.defaultElevation = qMin(projectConfig.defaultElevation, Block::getMaxElevation());
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
-    projectConfig.collisionSheetHeight = qMin(projectConfig.collisionSheetHeight, Block::getMaxElevation() + 1);
-    projectConfig.collisionSheetWidth = qMin(projectConfig.collisionSheetWidth, Block::getMaxCollision() + 1);
+    projectConfig.collisionSheetHeight = qMin(qMax(projectConfig.collisionSheetHeight, 1), Block::getMaxElevation() + 1);
+    projectConfig.collisionSheetWidth = qMin(qMax(projectConfig.collisionSheetWidth, 1), Block::getMaxCollision() + 1);
 }
 
 bool Project::hasUnsavedChanges() {
