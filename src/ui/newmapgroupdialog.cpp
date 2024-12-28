@@ -1,48 +1,43 @@
-#include "newnamedialog.h"
-#include "ui_newnamedialog.h"
+#include "newmapgroupdialog.h"
+#include "ui_newmapgroupdialog.h"
 #include "project.h"
-#include "imageexport.h"
 #include "validator.h"
 
 const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
 
-NewNameDialog::NewNameDialog(const QString &label, const QString &prefix, Project* project, QWidget *parent) :
+NewMapGroupDialog::NewMapGroupDialog(Project* project, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::NewNameDialog),
-    namePrefix(prefix)
+    ui(new Ui::NewMapGroupDialog)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     this->project = project;
 
-    if (!label.isEmpty())
-        ui->label_Name->setText(label);
+    ui->lineEdit_Name->setValidator(new IdentifierValidator(this));
+    ui->lineEdit_Name->setText(Project::getMapGroupPrefix());
 
-    ui->lineEdit_Name->setValidator(new IdentifierValidator(namePrefix, this));
-    ui->lineEdit_Name->setText(namePrefix);
-
-    connect(ui->lineEdit_Name, &QLineEdit::textChanged, this, &NewNameDialog::onNameChanged);
-    connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewNameDialog::dialogButtonClicked);
+    connect(ui->lineEdit_Name, &QLineEdit::textChanged, this, &NewMapGroupDialog::onNameChanged);
+    connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewMapGroupDialog::dialogButtonClicked);
 
     adjustSize();
 }
 
-NewNameDialog::~NewNameDialog()
+NewMapGroupDialog::~NewMapGroupDialog()
 {
     delete ui;
 }
 
-void NewNameDialog::onNameChanged(const QString &) {
+void NewMapGroupDialog::onNameChanged(const QString &) {
     validateName(true);
 }
 
-bool NewNameDialog::validateName(bool allowEmpty) {
+bool NewMapGroupDialog::validateName(bool allowEmpty) {
     const QString name = ui->lineEdit_Name->text();
 
     QString errorText;
-    if (name.isEmpty() || name == namePrefix) {
+    if (name.isEmpty()) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_Name->text());
-    } else if (this->project && !this->project->isIdentifierUnique(name)) {
+    } else if (!this->project->isIdentifierUnique(name)) {
         errorText = QString("%1 '%2' is not unique.").arg(ui->label_Name->text()).arg(name);
     }
 
@@ -53,7 +48,7 @@ bool NewNameDialog::validateName(bool allowEmpty) {
     return isValid;
 }
 
-void NewNameDialog::dialogButtonClicked(QAbstractButton *button) {
+void NewMapGroupDialog::dialogButtonClicked(QAbstractButton *button) {
     auto role = ui->buttonBox->buttonRole(button);
     if (role == QDialogButtonBox::RejectRole){
         reject();
@@ -62,10 +57,11 @@ void NewNameDialog::dialogButtonClicked(QAbstractButton *button) {
     }
 }
 
-void NewNameDialog::accept() {
+void NewMapGroupDialog::accept() {
     if (!validateName())
         return;
 
-    emit applied(ui->lineEdit_Name->text());
+    this->project->addNewMapGroup(ui->lineEdit_Name->text());
+
     QDialog::accept();
 }

@@ -293,7 +293,7 @@ QStringList ProjectSettingsEditor::getWarpBehaviorsList() {
 
 void ProjectSettingsEditor::setWarpBehaviorsList(QStringList list) {
     list.removeDuplicates();
-    list.sort();
+    Project::numericalModeSort(list);
     ui->textEdit_WarpBehaviors->setText(list.join("\n"));
 }
 

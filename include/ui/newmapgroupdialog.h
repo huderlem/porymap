@@ -1,5 +1,5 @@
-#ifndef NEWNAMEDIALOG_H
-#define NEWNAMEDIALOG_H
+#ifndef NEWMAPGROUPDIALOG_H
+#define NEWMAPGROUPDIALOG_H
 
 /*
     This is a generic dialog for requesting a new unique name from the user.
@@ -11,30 +11,26 @@
 class Project;
 
 namespace Ui {
-class NewNameDialog;
+class NewMapGroupDialog;
 }
 
-class NewNameDialog : public QDialog
+class NewMapGroupDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit NewNameDialog(const QString &label, const QString &prefix = "", Project *project = nullptr, QWidget *parent = nullptr);
-    ~NewNameDialog();
+    explicit NewMapGroupDialog(Project *project = nullptr, QWidget *parent = nullptr);
+    ~NewMapGroupDialog();
 
     virtual void accept() override;
 
-signals:
-    void applied(const QString &newName);
-
 private:
-    Ui::NewNameDialog *ui;
+    Ui::NewMapGroupDialog *ui;
     Project *project = nullptr;
-    const QString namePrefix;
 
     bool validateName(bool allowEmpty = false);
     void onNameChanged(const QString &name);
     void dialogButtonClicked(QAbstractButton *button);
 };
 
-#endif // NEWNAMEDIALOG_H
+#endif // NEWMAPGROUPDIALOG_H

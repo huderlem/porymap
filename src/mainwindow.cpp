@@ -25,7 +25,8 @@
 #include "filedialog.h"
 #include "newmapdialog.h"
 #include "newtilesetdialog.h"
-#include "newnamedialog.h"
+#include "newmapgroupdialog.h"
+#include "newlocationdialog.h"
 #include "message.h"
 
 #include <QClipboard>
@@ -425,32 +426,32 @@ void MainWindow::initMapList() {
 
     // Connect tool bars to lists
     ui->mapListToolBar_Groups->setList(ui->mapList);
-    ui->mapListToolBar_Areas->setList(ui->areaList);
+    ui->mapListToolBar_Locations->setList(ui->locationList);
     ui->mapListToolBar_Layouts->setList(ui->layoutList);
 
     // Left-clicking on items in the map list opens the corresponding map/layout.
-    connect(ui->mapList,    &QAbstractItemView::activated, this, &MainWindow::openMapListItem);
-    connect(ui->areaList,   &QAbstractItemView::activated, this, &MainWindow::openMapListItem);
-    connect(ui->layoutList, &QAbstractItemView::activated, this, &MainWindow::openMapListItem);
+    connect(ui->mapList,      &QAbstractItemView::activated, this, &MainWindow::openMapListItem);
+    connect(ui->locationList, &QAbstractItemView::activated, this, &MainWindow::openMapListItem);
+    connect(ui->layoutList,   &QAbstractItemView::activated, this, &MainWindow::openMapListItem);
 
     // Right-clicking on items in the map list brings up a context menu.
-    connect(ui->mapList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
-    connect(ui->areaList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
-    connect(ui->layoutList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
+    connect(ui->mapList,      &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
+    connect(ui->locationList, &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
+    connect(ui->layoutList,   &QTreeView::customContextMenuRequested, this, &MainWindow::onOpenMapListContextMenu);
 
     // Only the groups list allows reorganizing folder contents, editing folder names, etc.
-    ui->mapListToolBar_Areas->setEditsAllowedButtonVisible(false);
+    ui->mapListToolBar_Locations->setEditsAllowedButtonVisible(false);
     ui->mapListToolBar_Layouts->setEditsAllowedButtonVisible(false);
 
     // When map list search filter is cleared we want the current map/layout in the editor to be visible in the list.
-    connect(ui->mapListToolBar_Groups,  &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);
-    connect(ui->mapListToolBar_Areas,   &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);
-    connect(ui->mapListToolBar_Layouts, &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentLayout);
+    connect(ui->mapListToolBar_Groups,    &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);
+    connect(ui->mapListToolBar_Locations, &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);
+    connect(ui->mapListToolBar_Layouts,   &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentLayout);
 
     // Connect the "add folder" button in each of the map lists
-    connect(ui->mapListToolBar_Groups,  &MapListToolBar::addFolderClicked, this, &MainWindow::openNewMapGroupDialog);
-    connect(ui->mapListToolBar_Areas,   &MapListToolBar::addFolderClicked, this, &MainWindow::openNewAreaDialog);
-    connect(ui->mapListToolBar_Layouts, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
+    connect(ui->mapListToolBar_Groups,    &MapListToolBar::addFolderClicked, this, &MainWindow::openNewMapGroupDialog);
+    connect(ui->mapListToolBar_Locations, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLocationDialog);
+    connect(ui->mapListToolBar_Layouts,   &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
 
     connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::saveMapListTab);
 }
@@ -628,7 +629,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     connect(project, &Project::tilesetCreated, this, &MainWindow::onNewTilesetCreated);
     connect(project, &Project::mapGroupAdded, this, &MainWindow::onNewMapGroupCreated);
     connect(project, &Project::mapSectionAdded, this, &MainWindow::onNewMapSectionCreated);
-    connect(project, &Project::mapSectionIdNamesChanged, this, &MainWindow::setLocationComboBoxes);
+    connect(project, &Project::mapSectionDisplayNameChanged, this, &MainWindow::onMapSectionDisplayNameChanged);
     connect(project, &Project::mapsExcluded, this, &MainWindow::showMapsExcludedAlert);
     this->editor->setProject(project);
 
@@ -1058,7 +1059,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
 bool MainWindow::setProjectUI() {
     Project *project = editor->project;
 
-    this->mapHeaderForm->init(project);
+    this->mapHeaderForm->setProject(project);
 
     // Set up project comboboxes
     const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
@@ -1108,10 +1109,10 @@ bool MainWindow::setProjectUI() {
     this->ui->mapList->setItemDelegateForColumn(0, new GroupNameDelegate(this->editor->project, this));
     connect(this->mapGroupModel, &MapGroupModel::dragMoveCompleted, this->ui->mapList, &MapTree::removeSelected);
 
-    this->mapAreaModel = new MapAreaModel(editor->project);
-    this->areaListProxyModel = new FilterChildrenProxyModel();
-    areaListProxyModel->setSourceModel(this->mapAreaModel);
-    ui->areaList->setModel(areaListProxyModel);
+    this->mapLocationModel = new MapLocationModel(editor->project);
+    this->locationListProxyModel = new FilterChildrenProxyModel();
+    locationListProxyModel->setSourceModel(this->mapLocationModel);
+    ui->locationList->setModel(locationListProxyModel);
 
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
@@ -1143,8 +1144,8 @@ void MainWindow::clearProjectUI() {
     // Clear map models
     delete this->mapGroupModel;
     delete this->groupListProxyModel;
-    delete this->mapAreaModel;
-    delete this->areaListProxyModel;
+    delete this->mapLocationModel;
+    delete this->locationListProxyModel;
     delete this->layoutTreeModel;
     delete this->layoutListProxyModel;
     resetMapListFilters();
@@ -1197,14 +1198,14 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     QAction* addToFolderAction = nullptr;
     QAction* deleteFolderAction = nullptr;
     QAction* openItemAction = nullptr;
-    QAction* copyDisplayNameAction = nullptr;
+    QAction* copyListNameAction = nullptr;
     QAction* copyToolTipAction = nullptr;
 
     if (itemType == "map_name") {
         // Right-clicking on a map.
         openItemAction = menu.addAction("Open Map");
         menu.addSeparator();
-        copyDisplayNameAction = menu.addAction("Copy Map Name");
+        copyListNameAction = menu.addAction("Copy Map Name");
         copyToolTipAction = menu.addAction("Copy Map ID");
         menu.addSeparator();
         connect(menu.addAction("Duplicate Map"), &QAction::triggered, [this, itemName] {
@@ -1219,18 +1220,19 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         deleteFolderAction = menu.addAction("Delete Map Group");
     } else if (itemType == "map_section") {
         // Right-clicking on a MAPSEC folder
-        addToFolderAction = menu.addAction("Add New Map to Area");
+        addToFolderAction = menu.addAction("Add New Map to Location");
         menu.addSeparator();
-        copyDisplayNameAction = menu.addAction("Copy Area Name");
+        copyListNameAction = menu.addAction("Copy Location ID Name");
+        copyToolTipAction = menu.addAction("Copy Location In-Game Name");
         menu.addSeparator();
-        deleteFolderAction = menu.addAction("Delete Area");
+        deleteFolderAction = menu.addAction("Delete Location");
         if (itemName == this->editor->project->getEmptyMapsecName())
             deleteFolderAction->setEnabled(false); // Disallow deleting the default name
     } else if (itemType == "map_layout") {
         // Right-clicking on a map layout
         openItemAction = menu.addAction("Open Layout");
         menu.addSeparator();
-        copyDisplayNameAction = menu.addAction("Copy Layout Name");
+        copyListNameAction = menu.addAction("Copy Layout Name");
         copyToolTipAction = menu.addAction("Copy Layout ID");
         menu.addSeparator();
         connect(menu.addAction("Duplicate Layout"), &QAction::triggered, [this, itemName] {
@@ -1263,8 +1265,8 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
             openMapListItem(index);
         });
     }
-    if (copyDisplayNameAction) {
-        connect(copyDisplayNameAction, &QAction::triggered, [this, selectedItem] {
+    if (copyListNameAction) {
+        connect(copyListNameAction, &QAction::triggered, [this, selectedItem] {
             setClipboardData(selectedItem->text());
         });
     }
@@ -1278,18 +1280,6 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         menu.exec(QCursor::pos());
 }
 
-void MainWindow::openNewMapGroupDialog() {
-    auto dialog = new NewNameDialog("New Group Name", "", this->editor->project, this);
-    connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapGroup);
-    dialog->open();
-}
-
-void MainWindow::openNewAreaDialog() {
-    auto dialog = new NewNameDialog("New Area Name", projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix), this->editor->project, this);
-    connect(dialog, &NewNameDialog::applied, this->editor->project, &Project::addNewMapsec);
-    dialog->open();
-}
-
 void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     logInfo(QString("Created a new map named %1.").arg(newMap->name()));
 
@@ -1301,7 +1291,7 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
 
     // Add new map to the map lists
     this->mapGroupModel->insertMapItem(newMap->name(), groupName);
-    this->mapAreaModel->insertMapItem(newMap->name(), newMap->header()->location());
+    this->mapLocationModel->insertMapItem(newMap->name(), newMap->header()->location());
     this->layoutTreeModel->insertMapItem(newMap->name(), newMap->layout()->id);
 
     // Refresh any combo box that displays map names and persists between maps
@@ -1344,14 +1334,14 @@ void MainWindow::onNewMapGroupCreated(const QString &groupName) {
 }
 
 void MainWindow::onNewMapSectionCreated(const QString &idName) {
-    // Add new map section to the Areas map list view
-    this->mapAreaModel->insertMapFolderItem(idName);
+    // Add new map section to the Locations map list view
+    this->mapLocationModel->insertMapFolderItem(idName);
 }
 
-void MainWindow::setLocationComboBoxes(const QStringList &locations) {
-    this->mapHeaderForm->setLocations(locations);
-    if (this->regionMapEditor)
-        this->regionMapEditor->setLocations(locations);
+void MainWindow::onMapSectionDisplayNameChanged(const QString &idName, const QString &displayName) {
+    // Update the tool tip in the map list that shows the MAPSEC's in-game name.
+    QStandardItem *item = this->mapLocationModel->itemAt(idName);
+    if (item) item->setToolTip(displayName);
 }
 
 void MainWindow::onNewTilesetCreated(Tileset *tileset) {
@@ -1369,6 +1359,16 @@ void MainWindow::onNewTilesetCreated(Tileset *tileset) {
         int index = this->editor->project->secondaryTilesetLabels.indexOf(tileset->name);
         ui->comboBox_SecondaryTileset->insertItem(index, tileset->name);
     }
+}
+
+void MainWindow::openNewMapGroupDialog() {
+    auto dialog = new NewMapGroupDialog(this->editor->project, this);
+    dialog->open();
+}
+
+void MainWindow::openNewLocationDialog() {
+    auto dialog = new NewLocationDialog(this->editor->project, this);
+    dialog->open();
 }
 
 void MainWindow::openNewMapDialog() {
@@ -1505,7 +1505,7 @@ void MainWindow::updateMapList() {
         activeItemName = this->editor->map->name();
     } else {
         ui->mapList->clearSelection();
-        ui->areaList->clearSelection();
+        ui->locationList->clearSelection();
 
         if (this->editor->layout) {
             activeItemName = this->editor->layout->id;
@@ -1515,11 +1515,11 @@ void MainWindow::updateMapList() {
     }
 
     this->mapGroupModel->setActiveItem(activeItemName);
-    this->mapAreaModel->setActiveItem(activeItemName);
+    this->mapLocationModel->setActiveItem(activeItemName);
     this->layoutTreeModel->setActiveItem(activeItemName);
 
     this->groupListProxyModel->layoutChanged();
-    this->areaListProxyModel->layoutChanged();
+    this->locationListProxyModel->layoutChanged();
     this->layoutListProxyModel->layoutChanged();
 }
 
@@ -1813,6 +1813,7 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         clickToolButtonFromEditAction(editor->objectEditAction);
     } else if (index == MainTab::Connections) {
         editor->setEditingConnections();
+        ui->graphicsView_Connections->setFocus(); // Avoid opening tab with focus on something editable
     } else if (index == MainTab::WildPokemon) {
         editor->setEditingEncounters();
     }
@@ -2706,9 +2707,9 @@ void MainWindow::initTilesetEditor() {
 
 MapListToolBar* MainWindow::getCurrentMapListToolBar() {
     switch (ui->mapListContainer->currentIndex()) {
-    case MapListTab::Groups:  return ui->mapListToolBar_Groups;
-    case MapListTab::Areas:   return ui->mapListToolBar_Areas;
-    case MapListTab::Layouts: return ui->mapListToolBar_Layouts;
+    case MapListTab::Groups:    return ui->mapListToolBar_Groups;
+    case MapListTab::Locations: return ui->mapListToolBar_Locations;
+    case MapListTab::Layouts:   return ui->mapListToolBar_Layouts;
     default: return nullptr;
     }
 }
@@ -2724,7 +2725,7 @@ MapTree* MainWindow::getCurrentMapList() {
 // When the search filter is cleared the map lists will (if possible) display the currently-selected map/layout.
 void MainWindow::resetMapListFilters() {
     ui->mapListToolBar_Groups->clearFilter();
-    ui->mapListToolBar_Areas->clearFilter();
+    ui->mapListToolBar_Locations->clearFilter();
     ui->mapListToolBar_Layouts->clearFilter();
 }
 

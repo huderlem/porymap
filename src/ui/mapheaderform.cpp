@@ -12,18 +12,24 @@ MapHeaderForm::MapHeaderForm(QWidget *parent)
     ui->spinBox_FloorNumber->setMinimum(INT_MIN);
     ui->spinBox_FloorNumber->setMaximum(INT_MAX);
 
-    // When the UI is updated, sync those changes to the tracked MapHeader (if there is one)
+    // The layout for this UI keeps fields at their size hint, which is a little short for the line edit.
+    ui->lineEdit_LocationName->setMinimumWidth(ui->comboBox_Location->sizeHint().width());
+
     connect(ui->comboBox_Song,        &QComboBox::currentTextChanged, this, &MapHeaderForm::onSongUpdated);
     connect(ui->comboBox_Location,    &QComboBox::currentTextChanged, this, &MapHeaderForm::onLocationChanged);
     connect(ui->comboBox_Weather,     &QComboBox::currentTextChanged, this, &MapHeaderForm::onWeatherChanged);
     connect(ui->comboBox_Type,        &QComboBox::currentTextChanged, this, &MapHeaderForm::onTypeChanged);
     connect(ui->comboBox_BattleScene, &QComboBox::currentTextChanged, this, &MapHeaderForm::onBattleSceneChanged);
+
     connect(ui->checkBox_RequiresFlash,    &QCheckBox::stateChanged, this, &MapHeaderForm::onRequiresFlashChanged);
     connect(ui->checkBox_ShowLocationName, &QCheckBox::stateChanged, this, &MapHeaderForm::onShowLocationNameChanged);
     connect(ui->checkBox_AllowRunning,     &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowRunningChanged);
     connect(ui->checkBox_AllowBiking,      &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowBikingChanged);
     connect(ui->checkBox_AllowEscaping,    &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowEscapingChanged);
+
     connect(ui->spinBox_FloorNumber, QOverload<int>::of(&QSpinBox::valueChanged), this, &MapHeaderForm::onFloorNumberChanged);
+
+    connect(ui->lineEdit_LocationName, &QLineEdit::textChanged, this, &MapHeaderForm::onLocationNameChanged);
 }
 
 MapHeaderForm::~MapHeaderForm()
@@ -31,35 +37,39 @@ MapHeaderForm::~MapHeaderForm()
     delete ui;
 }
 
-void MapHeaderForm::init(const Project * project) {
+void MapHeaderForm::setProject(Project * project, bool allowChanges) {
     clear();
 
-    if (!project)
+    if (m_project) {
+        m_project->disconnect(this);
+    }
+    m_project = project;
+    m_allowProjectChanges = allowChanges;
+
+    if (!m_project)
         return;
 
     // Populate combo boxes
 
     const QSignalBlocker b_Song(ui->comboBox_Song);
     ui->comboBox_Song->clear();
-    ui->comboBox_Song->addItems(project->songNames);
+    ui->comboBox_Song->addItems(m_project->songNames);
 
     const QSignalBlocker b_Weather(ui->comboBox_Weather);
     ui->comboBox_Weather->clear();
-    ui->comboBox_Weather->addItems(project->weatherNames);
+    ui->comboBox_Weather->addItems(m_project->weatherNames);
 
     const QSignalBlocker b_Type(ui->comboBox_Type);
     ui->comboBox_Type->clear();
-    ui->comboBox_Type->addItems(project->mapTypes);
+    ui->comboBox_Type->addItems(m_project->mapTypes);
 
     const QSignalBlocker b_BattleScene(ui->comboBox_BattleScene);
     ui->comboBox_BattleScene->clear();
-    ui->comboBox_BattleScene->addItems(project->mapBattleScenes);
+    ui->comboBox_BattleScene->addItems(m_project->mapBattleScenes);
 
-    QStringList locations = project->mapSectionIdNames;
-    locations.sort();
     const QSignalBlocker b_Locations(ui->comboBox_Location);
     ui->comboBox_Location->clear();
-    ui->comboBox_Location->addItems(locations);
+    ui->comboBox_Location->addItems(m_project->mapSectionIdNames);
 
     // Hide config-specific settings
 
@@ -74,12 +84,13 @@ void MapHeaderForm::init(const Project * project) {
     bool floorNumEnabled = projectConfig.floorNumberEnabled;
     ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
     ui->label_FloorNumber->setVisible(floorNumEnabled);
+
+    // If the project changes any of the displayed data, update it accordingly.
+    connect(m_project, &Project::mapSectionIdNamesChanged, this, &MapHeaderForm::setLocations);
+    connect(m_project, &Project::mapSectionDisplayNameChanged, this, &MapHeaderForm::updateLocationName);
 }
 
-// Unlike other combo boxes in the map header form, locations can be added or removed externally.
-void MapHeaderForm::setLocations(QStringList locations) {
-    locations.sort();
-
+void MapHeaderForm::setLocations(const QStringList &locations) {
     const QSignalBlocker b(ui->comboBox_Location);
     const QString before = ui->comboBox_Location->currentText();
     ui->comboBox_Location->clear();
@@ -136,6 +147,7 @@ void MapHeaderForm::setHeaderData(const MapHeader &header) {
     setAllowsBiking(header.allowsBiking());
     setAllowsEscaping(header.allowsEscaping());
     setFloorNumber(header.floorNumber());
+    updateLocationName();
 }
 
 MapHeader MapHeaderForm::headerData() const {
@@ -158,9 +170,14 @@ MapHeader MapHeaderForm::headerData() const {
     return header;
 }
 
+void MapHeaderForm::updateLocationName() {
+    setLocationName(m_project ? m_project->getMapsecDisplayName(location()) : QString());
+}
+
 // Set data in UI
 void MapHeaderForm::setSong(const QString &song) {                 ui->comboBox_Song->setCurrentText(song); }
 void MapHeaderForm::setLocation(const QString &location) {         ui->comboBox_Location->setCurrentText(location); }
+void MapHeaderForm::setLocationName(const QString &locationName) { ui->lineEdit_LocationName->setText(locationName); }
 void MapHeaderForm::setRequiresFlash(bool requiresFlash) {         ui->checkBox_RequiresFlash->setChecked(requiresFlash); }
 void MapHeaderForm::setWeather(const QString &weather) {           ui->comboBox_Weather->setCurrentText(weather); }
 void MapHeaderForm::setType(const QString &type) {                 ui->comboBox_Type->setCurrentText(type); }
@@ -174,6 +191,7 @@ void MapHeaderForm::setFloorNumber(int floorNumber) {              ui->spinBox_F
 // Read data from UI
 QString MapHeaderForm::song() const {           return ui->comboBox_Song->currentText(); }
 QString MapHeaderForm::location() const {       return ui->comboBox_Location->currentText(); }
+QString MapHeaderForm::locationName() const {   return ui->lineEdit_LocationName->text(); }
 bool MapHeaderForm::requiresFlash() const {     return ui->checkBox_RequiresFlash->isChecked(); }
 QString MapHeaderForm::weather() const {        return ui->comboBox_Weather->currentText(); }
 QString MapHeaderForm::type() const {           return ui->comboBox_Type->currentText(); }
@@ -186,7 +204,6 @@ int MapHeaderForm::floorNumber() const {        return ui->spinBox_FloorNumber->
 
 // Send changes in UI to tracked MapHeader (if there is one)
 void MapHeaderForm::onSongUpdated(const QString &song) {               if (m_header) m_header->setSong(song); }
-void MapHeaderForm::onLocationChanged(const QString &location) {       if (m_header) m_header->setLocation(location); }
 void MapHeaderForm::onWeatherChanged(const QString &weather) {         if (m_header) m_header->setWeather(weather); }
 void MapHeaderForm::onTypeChanged(const QString &type) {               if (m_header) m_header->setType(type); }
 void MapHeaderForm::onBattleSceneChanged(const QString &battleScene) { if (m_header) m_header->setBattleScene(battleScene); }
@@ -196,3 +213,14 @@ void MapHeaderForm::onAllowRunningChanged(int selected) {              if (m_hea
 void MapHeaderForm::onAllowBikingChanged(int selected) {               if (m_header) m_header->setAllowsBiking(selected == Qt::Checked); }
 void MapHeaderForm::onAllowEscapingChanged(int selected) {             if (m_header) m_header->setAllowsEscaping(selected == Qt::Checked); }
 void MapHeaderForm::onFloorNumberChanged(int offset) {                 if (m_header) m_header->setFloorNumber(offset); }
+void MapHeaderForm::onLocationChanged(const QString &location) {
+    if (m_header) m_header->setLocation(location);
+    updateLocationName();
+}
+void MapHeaderForm::onLocationNameChanged(const QString &locationName) {
+    if (m_project && m_allowProjectChanges) {
+        // The location name is actually part of the project, not the map header.
+        // If the field is changed in the UI we can push these changes to the project.
+        m_project->setMapsecDisplayName(location(), locationName);
+    }
+}

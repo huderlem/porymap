@@ -56,13 +56,20 @@ MapListModel::MapListModel(Project *project, QObject *parent) : QStandardItemMod
     this->emptyMapFolderIcon.addFile(QStringLiteral(":/icons/folder.ico"), QSize(), QIcon::Normal, QIcon::On);
 }
 
-QStandardItem *MapListModel::getItem(const QModelIndex &index) const {
+QStandardItem *MapListModel::itemAt(const QModelIndex &index) const {
     if (index.isValid()) {
         QStandardItem *item = static_cast<QStandardItem*>(index.internalPointer());
         if (item)
             return item;
     }
     return this->root;
+}
+
+QStandardItem *MapListModel::itemAt(const QString &itemName) const {
+    QModelIndex index = this->indexOf(itemName);
+    if (!index.isValid())
+        return nullptr;
+    return this->itemAt(index)->child(index.row(), index.column());
 }
 
 QModelIndex MapListModel::indexOf(const QString &itemName) const {
@@ -76,7 +83,7 @@ QModelIndex MapListModel::indexOf(const QString &itemName) const {
 }
 
 void MapListModel::removeItemAt(const QModelIndex &index) {
-    QStandardItem *item = this->getItem(index)->child(index.row(), index.column());
+    QStandardItem *item = this->itemAt(index)->child(index.row(), index.column());
     if (!item)
         return;
 
@@ -153,7 +160,7 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
     int row = index.row();
     int col = index.column();
 
-    const QStandardItem *item = this->getItem(index)->child(row, col);
+    const QStandardItem *item = this->itemAt(index)->child(row, col);
     const QString type = item->data(MapListUserRoles::TypeRole).toString();
     const QString name = item->data(MapListUserRoles::NameRole).toString();
 
@@ -179,7 +186,7 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
 
 QWidget *GroupNameDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
     QLineEdit *editor = new QLineEdit(parent);
-    editor->setPlaceholderText("gMapGroup_");
+    editor->setPlaceholderText(Project::getMapGroupPrefix());
     editor->setValidator(new IdentifierValidator(parent));
     editor->setFrame(false);
     return editor;
@@ -388,13 +395,13 @@ QVariant MapGroupModel::data(const QModelIndex &index, int role) const {
     int row = index.row();
     int col = index.column();
 
-    const QStandardItem *item = this->getItem(index)->child(row, col);
+    const QStandardItem *item = this->itemAt(index)->child(row, col);
     const QString type = item->data(MapListUserRoles::TypeRole).toString();
     const QString name = item->data(MapListUserRoles::NameRole).toString();
 
     if (role == Qt::DisplayRole) {
         if (type == "map_name") {
-            return QString("[%1.%2] ").arg(this->getItem(index)->row()).arg(row, 2, 10, QLatin1Char('0')) + name;
+            return QString("[%1.%2] ").arg(this->itemAt(index)->row()).arg(row, 2, 10, QLatin1Char('0')) + name;
         }
         else if (type == this->folderTypeName) {
             return name;
@@ -417,7 +424,7 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
 
 
 
-MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(project, parent) {
+MapLocationModel::MapLocationModel(Project *project, QObject *parent) : MapListModel(project, parent) {
     this->folderTypeName = "map_section";
 
     for (const auto &idName : this->project->mapSectionIdNames) {
@@ -431,9 +438,15 @@ MapAreaModel::MapAreaModel(Project *project, QObject *parent) : MapListModel(pro
     sort(0, Qt::AscendingOrder);
 }
 
-void MapAreaModel::removeItem(QStandardItem *item) {
+void MapLocationModel::removeItem(QStandardItem *item) {
     this->project->removeMapsec(item->data(MapListUserRoles::NameRole).toString());
     this->removeRow(item->row());
+}
+
+QStandardItem *MapLocationModel::createMapFolderItem(const QString &folderName, QStandardItem *folder) {
+    folder = MapListModel::createMapFolderItem(folderName, folder);
+    folder->setToolTip(this->project->getMapsecDisplayName(folderName));
+    return folder;
 }
 
 
@@ -477,7 +490,7 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
     int row = index.row();
     int col = index.column();
 
-    const QStandardItem *item = this->getItem(index)->child(row, col);
+    const QStandardItem *item = this->itemAt(index)->child(row, col);
     const QString type = item->data(MapListUserRoles::TypeRole).toString();
     const QString name = item->data(MapListUserRoles::NameRole).toString();
 

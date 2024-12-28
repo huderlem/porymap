@@ -95,11 +95,11 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="mapListPage_Areas">
+       <widget class="QWidget" name="mapListPage_Locations">
         <attribute name="title">
-         <string>Areas</string>
+         <string>Locations</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_Areas">
+        <layout class="QVBoxLayout" name="verticalLayout_Locations">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -116,10 +116,10 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="MapListToolBar" name="mapListToolBar_Areas"/>
+          <widget class="MapListToolBar" name="mapListToolBar_Locations"/>
          </item>
          <item>
-          <widget class="MapTree" name="areaList">
+          <widget class="MapTree" name="locationList">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -3101,7 +3101,7 @@
     <string>Ctrl+T</string>
    </property>
   </action>
-  <action name="actionSort_by_Area">
+  <action name="actionSort_by_Location">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -3110,7 +3110,7 @@
      <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
    </property>
    <property name="text">
-    <string>Sort by &amp;Area</string>
+    <string>Sort by &amp;Location</string>
    </property>
   </action>
   <action name="actionSort_by_Group">

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NewNameDialog</class>
- <widget class="QDialog" name="NewNameDialog">
+ <class>NewLocationDialog</class>
+ <widget class="QDialog" name="NewLocationDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>252</width>
-    <height>87</height>
+    <height>124</height>
    </rect>
   </property>
   <property name="modal">
@@ -30,21 +30,21 @@
        <number>0</number>
       </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_Name">
+       <widget class="QLabel" name="label_IdName">
         <property name="text">
-         <string>Name</string>
+         <string>Location ID</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEdit_Name">
+       <widget class="QLineEdit" name="lineEdit_IdName">
         <property name="clearButtonEnabled">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLabel" name="label_NameError">
+       <widget class="QLabel" name="label_IdNameError">
         <property name="visible">
          <bool>false</bool>
         </property>
@@ -53,6 +53,16 @@
         </property>
         <property name="text">
          <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="lineEdit_DisplayName"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_DisplayName">
+        <property name="text">
+         <string>Location Name</string>
         </property>
        </widget>
       </item>

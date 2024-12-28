@@ -68,7 +68,8 @@ public:
 
     virtual QModelIndex indexOf(const QString &itemName) const;
     virtual void removeItemAt(const QModelIndex &index);
-    virtual QStandardItem *getItem(const QModelIndex &index) const;
+    virtual QStandardItem *itemAt(const QModelIndex &index) const;
+    virtual QStandardItem *itemAt(const QString &itemName) const;
 
     virtual QVariant data(const QModelIndex &index, int role) const override;
 
@@ -124,12 +125,14 @@ signals:
 
 
 
-class MapAreaModel : public MapListModel {
+class MapLocationModel : public MapListModel {
     Q_OBJECT
 
 public:
-    MapAreaModel(Project *project, QObject *parent = nullptr);
-    ~MapAreaModel() {}
+    MapLocationModel(Project *project, QObject *parent = nullptr);
+    ~MapLocationModel() {}
+
+    QStandardItem *createMapFolderItem(const QString &folderName, QStandardItem *folder) override;
 
 protected:
     void removeItem(QStandardItem *item) override;

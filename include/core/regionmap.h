@@ -33,7 +33,6 @@ struct LayoutSquare
 
 struct MapSectionEntry
 {
-    QString name = "";
     int x = 0;
     int y = 0;
     int width = 1;

@@ -727,16 +727,16 @@ void Project::saveRegionMapSections() {
 
     const QString emptyMapsecName = getEmptyMapsecName();
     OrderedJson::array mapSectionArray;
-    for (const auto &idName : this->mapSectionIdNames) {
-        if (!this->saveEmptyMapsec && idName == emptyMapsecName)
-            continue;
-
+    for (const auto &idName : this->mapSectionIdNamesSaveOrder) {
         OrderedJson::object mapSectionObj;
         mapSectionObj["id"] = idName;
 
+        if (this->mapSectionDisplayNames.contains(idName)) {
+            mapSectionObj["name"] = this->mapSectionDisplayNames.value(idName);
+        }
+
         if (this->regionMapEntries.contains(idName)) {
             MapSectionEntry entry = this->regionMapEntries.value(idName);
-            mapSectionObj["name"] = entry.name;
             mapSectionObj["x"] = entry.x;
             mapSectionObj["y"] = entry.y;
             mapSectionObj["width"] = entry.width;
@@ -2129,8 +2129,8 @@ bool Project::readTilesetLabels() {
         }
     }
 
-    this->primaryTilesetLabels.sort();
-    this->secondaryTilesetLabels.sort();
+    numericalModeSort(this->primaryTilesetLabels);
+    numericalModeSort(this->secondaryTilesetLabels);
 
     bool success = true;
     if (this->secondaryTilesetLabels.isEmpty()) {
@@ -2332,8 +2332,9 @@ bool Project::readFieldmapMasks() {
 
 bool Project::readRegionMapSections() {
     this->mapSectionIdNames.clear();
+    this->mapSectionIdNamesSaveOrder.clear();
+    this->mapSectionDisplayNames.clear();
     this->regionMapEntries.clear();
-    this->saveEmptyMapsec = false;
     const QString defaultName = getEmptyMapsecName();
     const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
 
@@ -2371,17 +2372,15 @@ bool Project::readRegionMapSections() {
         }
 
         this->mapSectionIdNames.append(idName);
-        if (idName == defaultName) {
-            // The default map section (MAPSEC_NONE) isn't normally present in the region map sections data file.
-            // We append this name to mapSectionIdNames ourselves if it isn't present.
-            // We need to record whether we found it in the data file, so that we can preserve the data when we save the file later.
-            this->saveEmptyMapsec = true;
-        }
+        this->mapSectionIdNamesSaveOrder.append(idName);
+
+        if (mapSectionObj.contains("name"))
+            this->mapSectionDisplayNames.insert(idName, ParseUtil::jsonToQString(mapSectionObj["name"]));
 
         // Map sections may have additional data indicating their position on the region map.
         // If they have this data, we can add them to the region map entry list.
         bool hasRegionMapData = true;
-        static const QSet<QString> regionMapFieldNames = { "name", "x", "y", "width", "height" };
+        static const QSet<QString> regionMapFieldNames = { "x", "y", "width", "height" };
         for (auto fieldName : regionMapFieldNames) {
             if (!mapSectionObj.contains(fieldName)) {
                 hasRegionMapData = false;
@@ -2392,7 +2391,6 @@ bool Project::readRegionMapSections() {
             continue;
 
         MapSectionEntry entry;
-        entry.name = ParseUtil::jsonToQString(mapSectionObj["name"]);
         entry.x = ParseUtil::jsonToInt(mapSectionObj["x"]);
         entry.y = ParseUtil::jsonToInt(mapSectionObj["y"]);
         entry.width = ParseUtil::jsonToInt(mapSectionObj["width"]);
@@ -2405,6 +2403,7 @@ bool Project::readRegionMapSections() {
     if (!this->mapSectionIdNames.contains(defaultName)) {
         this->mapSectionIdNames.append(defaultName);
     }
+    numericalModeSort(this->mapSectionIdNames);
 
     return true;
 }
@@ -2413,27 +2412,45 @@ QString Project::getEmptyMapsecName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty);
 }
 
+QString Project::getMapGroupPrefix() {
+    // We could expose this to users, but it's never enforced so it probably won't affect anyone.
+    return QStringLiteral("gMapGroup_");
+}
+
 // This function assumes a valid and unique name
-void Project::addNewMapsec(const QString &name) {
-    if (this->mapSectionIdNames.last() == getEmptyMapsecName()) {
+void Project::addNewMapsec(const QString &idName) {
+    if (this->mapSectionIdNamesSaveOrder.last() == getEmptyMapsecName()) {
         // If the default map section name (MAPSEC_NONE) is last in the list we'll keep it last in the list.
-        this->mapSectionIdNames.insert(this->mapSectionIdNames.length() - 1, name);
+        this->mapSectionIdNamesSaveOrder.insert(this->mapSectionIdNames.length() - 1, idName);
     } else {
-        this->mapSectionIdNames.append(name);
+        this->mapSectionIdNamesSaveOrder.append(idName);
     }
+
+    this->mapSectionIdNames.append(idName);
+    numericalModeSort(this->mapSectionIdNames);
+
     this->hasUnsavedDataChanges = true;
 
-    emit mapSectionAdded(name);
+    emit mapSectionAdded(idName);
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
 }
 
-void Project::removeMapsec(const QString &name) {
-    if (!this->mapSectionIdNames.contains(name) || name == getEmptyMapsecName())
+void Project::removeMapsec(const QString &idName) {
+    if (!this->mapSectionIdNames.contains(idName) || idName == getEmptyMapsecName())
         return;
 
-    this->mapSectionIdNames.removeOne(name);
+    this->mapSectionIdNames.removeOne(idName);
+    this->mapSectionIdNamesSaveOrder.removeOne(idName);
     this->hasUnsavedDataChanges = true;
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
+}
+
+void Project::setMapsecDisplayName(const QString &idName, const QString &displayName) {
+    if (this->mapSectionDisplayNames[idName] == displayName)
+        return;
+    this->mapSectionDisplayNames[idName] = displayName;
+    this->hasUnsavedDataChanges = true;
+    emit mapSectionDisplayNameChanged(idName, displayName);
 }
 
 // Read the constants to preserve any "unused" heal locations when writing the file later
@@ -2704,7 +2721,7 @@ bool Project::readSongNames() {
     // Song names don't have a very useful order (esp. if we include SE_* values), so sort them alphabetically.
     // The default song should be the first in the list, not the first alphabetically, so save that before sorting.
     this->defaultSong = this->songNames.value(0, "0");
-    this->songNames.sort();
+    numericalModeSort(this->songNames);
     return true;
 }
 
@@ -3138,4 +3155,15 @@ bool Project::hasUnsavedChanges() {
             return true;
     }
     return false;
+}
+
+// TODO: This belongs in a more general utility file, once we have one.
+// Sometimes we want to sort names alphabetically to make them easier to find in large combo box lists.
+// QStringList::sort (as of writing) can only sort numbers in lexical order, which has an undesirable
+// effect (e.g. MAPSEC_ROUTE_10 comes after MAPSEC_ROUTE_1, rather than MAPSEC_ROUTE_9).
+// We can use QCollator to sort these lists with better handling for numbers.
+void Project::numericalModeSort(QStringList &list) {
+    QCollator collator;
+    collator.setNumericMode(true);
+    std::sort(list.begin(), list.end(), collator);
 }

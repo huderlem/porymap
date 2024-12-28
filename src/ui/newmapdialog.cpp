@@ -53,7 +53,7 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
 
     // Create a collapsible section that has all the map header data.
     this->headerForm = new MapHeaderForm();
-    this->headerForm->init(project);
+    this->headerForm->setProject(project, false);
     auto sectionLayout = new QVBoxLayout();
     sectionLayout->addWidget(this->headerForm);
 
@@ -77,13 +77,13 @@ NewMapDialog::NewMapDialog(Project *project, int mapListTab, const QString &mapL
     case MapListTab::Groups:
         ui->comboBox_Group->setTextItem(mapListItem);
         break;
-    case MapListTab::Areas:
+    case MapListTab::Locations:
         this->headerForm->setLocation(mapListItem);
         break;
     case MapListTab::Layouts:
         // We specifically lock the layout ID because otherwise the setting would be overwritten when
         // the user changes the map name (which will normally automatically update the layout ID to match).
-        // For the Group/Area settings above we don't care if the user changes them afterwards.
+        // For the Group/Location settings above we don't care if the user changes them afterwards.
         ui->comboBox_LayoutID->setTextItem(mapListItem);
         ui->comboBox_LayoutID->setDisabled(true);
         break;
@@ -252,5 +252,9 @@ void NewMapDialog::accept() {
         return;
     }
     ui->label_GenericError->setVisible(false);
+
+    // If the location name field was changed, update the project for that too.
+    this->project->setMapsecDisplayName(this->headerForm->location(), this->headerForm->locationName());
+
     QDialog::accept();
 }

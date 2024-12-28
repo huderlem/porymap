@@ -62,6 +62,7 @@ public:
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
     QStringList globalScriptLabels;
+    QStringList mapSectionIdNamesSaveOrder;
     QStringList mapSectionIdNames;
     QMap<QString, MapSectionEntry> regionMapEntries;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
@@ -79,7 +80,6 @@ public:
     int pokemonMaxLevel;
     int maxEncounterRate;
     bool wildEncountersLoaded;
-    bool saveEmptyMapsec;
 
     void set_root(QString);
 
@@ -156,8 +156,10 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
-    void addNewMapsec(const QString &name);
-    void removeMapsec(const QString &name);
+    void addNewMapsec(const QString &idName);
+    void removeMapsec(const QString &idName);
+    QString getMapsecDisplayName(const QString &idName) const { return this->mapSectionDisplayNames.value(idName); }
+    void setMapsecDisplayName(const QString &idName, const QString &displayName);
 
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
@@ -253,8 +255,13 @@ public:
     bool calculateDefaultMapSize();
     static int getMaxObjectEvents();
     static QString getEmptyMapsecName();
+    static QString getMapGroupPrefix();
+
+    static void numericalModeSort(QStringList &list);
 
 private:
+    QMap<QString, QString> mapSectionDisplayNames;
+
     void updateLayout(Layout *);
 
     void setNewLayoutBlockdata(Layout *layout);
@@ -282,6 +289,7 @@ signals:
     void tilesetCreated(Tileset *newTileset);
     void mapGroupAdded(const QString &groupName);
     void mapSectionAdded(const QString &idName);
+    void mapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
     void mapSectionIdNamesChanged(const QStringList &idNames);
     void mapsExcluded(const QStringList &excludedMapNames);
 };

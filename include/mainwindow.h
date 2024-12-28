@@ -190,6 +190,7 @@ private slots:
     void onNewMapCreated(Map *newMap, const QString &groupName);
     void onNewMapGroupCreated(const QString &groupName);
     void onNewMapSectionCreated(const QString &idName);
+    void onMapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
     void onNewLayoutCreated(Layout *layout);
     void onNewTilesetCreated(Tileset *tileset);
     void onMapLoaded(Map *map);
@@ -311,8 +312,8 @@ private:
 
     QPointer<FilterChildrenProxyModel> groupListProxyModel = nullptr;
     QPointer<MapGroupModel> mapGroupModel = nullptr;
-    QPointer<FilterChildrenProxyModel> areaListProxyModel = nullptr;
-    QPointer<MapAreaModel> mapAreaModel = nullptr;
+    QPointer<FilterChildrenProxyModel> locationListProxyModel = nullptr;
+    QPointer<MapLocationModel> mapLocationModel = nullptr;
     QPointer<FilterChildrenProxyModel> layoutListProxyModel = nullptr;
     QPointer<LayoutTreeModel> layoutTreeModel = nullptr;
 
@@ -357,7 +358,7 @@ private:
     void openNewLayoutDialog();
     void openDuplicateLayoutDialog(const QString &layoutId);
     void openNewMapGroupDialog();
-    void openNewAreaDialog();
+    void openNewLocationDialog();
     void openSubWindow(QWidget * window);
     void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
@@ -446,7 +447,7 @@ struct MapViewTab {
 
 struct MapListTab {
     enum {
-        Groups = 0, Areas, Layouts
+        Groups = 0, Locations, Layouts
     };
 };
 

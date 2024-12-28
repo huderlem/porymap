@@ -25,7 +25,7 @@ public:
     explicit MapHeaderForm(QWidget *parent = nullptr);
     ~MapHeaderForm();
 
-    void init(const Project * project);
+    void setProject(Project * project, bool allowProjectChanges = true);
     void clear();
 
     void setHeader(MapHeader *header);
@@ -34,6 +34,7 @@ public:
 
     void setSong(const QString &song);
     void setLocation(const QString &location);
+    void setLocationName(const QString &locationName);
     void setRequiresFlash(bool requiresFlash);
     void setWeather(const QString &weather);
     void setType(const QString &type);
@@ -46,6 +47,7 @@ public:
 
     QString song() const;
     QString location() const;
+    QString locationName() const;
     bool requiresFlash() const;
     QString weather() const;
     QString type() const;
@@ -56,14 +58,18 @@ public:
     bool allowsEscaping() const;
     int floorNumber() const;
 
-    void setLocations(QStringList locations);
-
 private:
     Ui::MapHeaderForm *ui;
     QPointer<MapHeader> m_header = nullptr;
+    QPointer<Project> m_project = nullptr;
+    bool m_allowProjectChanges = true;
+
+    void setLocations(const QStringList &locations);
+    void updateLocationName();
 
     void onSongUpdated(const QString &song);
     void onLocationChanged(const QString &location);
+    void onLocationNameChanged(const QString &locationName);
     void onWeatherChanged(const QString &weather);
     void onTypeChanged(const QString &type);
     void onBattleSceneChanged(const QString &battleScene);
