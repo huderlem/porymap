@@ -99,7 +99,13 @@ void TilesetEditor::initUi() {
     this->paletteId = ui->spinBox_paletteSelector->value();
     this->ui->spinBox_paletteSelector->setMinimum(0);
     this->ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
-    this->ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
+
+    // TODO: The dividing line at the moment is only accurate if the number of primary metatiles is divisible by 8.
+    //       If it's not, the secondary metatiles will wrap above the line. This has other problems (like skewing
+    //       metatile groups the user may have designed) so this should be fixed by filling the primary metatiles
+    //       image with invalid magenta metatiles until it's divisible by 8. Then the line can be re-enabled as-is.
+    this->ui->actionShow_Tileset_Divider->setChecked(/*porymapConfig.showTilesetEditorDivider*/false);
+    this->ui->actionShow_Tileset_Divider->setVisible(false);
 
     this->setAttributesUi();
     this->setMetatileLabelValidator();
