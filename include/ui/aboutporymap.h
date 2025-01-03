@@ -2,7 +2,6 @@
 #define ABOUTPORYMAP_H
 
 #include <QString>
-#include <QRegularExpression>
 #include <QDialog>
 
 namespace Ui {

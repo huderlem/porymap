@@ -66,7 +66,7 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
 
         // This is convoluted because of how our edit history works; this would otherwise just be 'this->connection->setOffset(newOffset);'
         if (this->connection->parentMap() && newOffset != this->connection->offset())
-            this->connection->parentMap()->editHistory.push(new MapConnectionMove(this->connection, newOffset, this->actionId));
+            this->connection->parentMap()->commit(new MapConnectionMove(this->connection, newOffset, this->actionId));
 
         return QPointF(x, y);
     }
