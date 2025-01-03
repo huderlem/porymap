@@ -34,6 +34,7 @@ VERSION = 5.4.1
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/core/block.cpp \
+    src/ui/resizelayoutpopup.cpp \
     src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
@@ -235,7 +236,8 @@ HEADERS  += include/core/block.h \
     include/log.h \
     include/ui/uintspinbox.h \
     include/ui/updatepromoter.h \
-    include/ui/wildmonchart.h
+    include/ui/wildmonchart.h \
+    include/ui/resizelayoutpopup.h
 
 FORMS    += forms/mainwindow.ui \
     forms/colorinputwidget.ui \
@@ -260,7 +262,8 @@ FORMS    += forms/mainwindow.ui \
     forms/customscriptseditor.ui \
     forms/customscriptslistitem.ui \
     forms/updatepromoter.ui \
-    forms/wildmonchart.ui
+    forms/wildmonchart.ui \
+    forms/resizelayoutpopup.ui
 
 RESOURCES += \
     resources/images.qrc \

@@ -177,7 +177,7 @@ bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
     ************************************************************************
  ******************************************************************************/
 
-ResizeLayout::ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QSize newLayoutDimensions,
+ResizeLayout::ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QMargins newLayoutMargins,
     const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     QSize oldBorderDimensions, QSize newBorderDimensions,
     const Blockdata &oldBorder, const Blockdata &newBorder,
@@ -189,8 +189,7 @@ ResizeLayout::ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QSize newL
     this->oldLayoutWidth = oldLayoutDimensions.width();
     this->oldLayoutHeight = oldLayoutDimensions.height();
 
-    this->newLayoutWidth = newLayoutDimensions.width();
-    this->newLayoutHeight = newLayoutDimensions.height();
+    this->newLayoutMargins = newLayoutMargins;
 
     this->oldMetatiles = oldMetatiles;
     this->newMetatiles = newMetatiles;
@@ -210,11 +209,13 @@ void ResizeLayout::redo() {
 
     if (!layout) return;
 
-    layout->blockdata = newMetatiles;
-    layout->setDimensions(newLayoutWidth, newLayoutHeight, false, true);
-
     layout->border = newBorder;
     layout->setBorderDimensions(newBorderWidth, newBorderHeight, false, true);
+
+    layout->width = oldLayoutWidth;
+    layout->height = oldLayoutHeight;
+    layout->adjustDimensions(this->newLayoutMargins, false, true);
+    layout->blockdata = newMetatiles;
 
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
     layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
@@ -225,11 +226,13 @@ void ResizeLayout::redo() {
 void ResizeLayout::undo() {
     if (!layout) return;
 
-    layout->blockdata = oldMetatiles;
-    layout->setDimensions(oldLayoutWidth, oldLayoutHeight, false, true);
-
     layout->border = oldBorder;
     layout->setBorderDimensions(oldBorderWidth, oldBorderHeight, false, true);
+
+    layout->width = oldLayoutWidth + newLayoutMargins.left() + newLayoutMargins.right();
+    layout->height = oldLayoutHeight + newLayoutMargins.top() + newLayoutMargins.bottom();
+    layout->adjustDimensions(-this->newLayoutMargins, false, true);
+    layout->blockdata = oldMetatiles;
 
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
     layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
