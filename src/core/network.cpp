@@ -9,15 +9,10 @@
 static const int DefaultWaitTime = 120;
 
 NetworkAccessManager::NetworkAccessManager(QObject * parent) : QNetworkAccessManager(parent) {
-    // We store rate limit end times in the user's config so that Porymap will still respect them after a restart.
-    // To avoid reading/writing to a local file during network operations, we only read/write the file when the
-    // manager is created/destroyed respectively.
-    this->rateLimitTimes = porymapConfig.getRateLimitTimes();
     this->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
 };
 
 NetworkAccessManager::~NetworkAccessManager() {
-    porymapConfig.setRateLimitTimes(this->rateLimitTimes);
     qDeleteAll(this->cache);
 }
 
@@ -47,8 +42,9 @@ NetworkReplyData * NetworkAccessManager::get(const QUrl &url) {
     data->m_url = url;
 
     // If we are rate-limited, don't send a new request.
-    if (this->rateLimitTimes.contains(url)) {
-        auto time = this->rateLimitTimes.value(url);
+    // We store rate limit end times in the user's config so that Porymap will still respect them after a restart.
+    if (porymapConfig.rateLimitTimes.contains(url)) {
+        auto time = porymapConfig.rateLimitTimes.value(url);
         if (!time.isNull() && time > QDateTime::currentDateTime()) {
             data->m_retryAfter = time;
             data->m_error = QString("Rate limit reached. Please try again after %1.").arg(data->m_retryAfter.toString());
@@ -56,7 +52,7 @@ NetworkReplyData * NetworkAccessManager::get(const QUrl &url) {
             return data;
         }
         // Rate limiting expired
-        this->rateLimitTimes.remove(url);
+        porymapConfig.rateLimitTimes.remove(url);
     }
 
     QNetworkReply * reply = QNetworkAccessManager::get(this->getRequest(url));
@@ -117,7 +113,7 @@ void NetworkAccessManager::processReply(QNetworkReply * reply, NetworkReplyData 
             data->m_error = "Service busy or unavailable. ";
         }
         data->m_error.append(QString("Please try again after %1.").arg(data->m_retryAfter.toString()));
-        this->rateLimitTimes.insert(url, data->m_retryAfter);
+        porymapConfig.rateLimitTimes.insert(url, data->m_retryAfter);
         return;
     }
 
@@ -129,7 +125,7 @@ void NetworkAccessManager::processReply(QNetworkReply * reply, NetworkReplyData 
         data->m_retryAfter = ok ? QDateTime::fromSecsSinceEpoch(limitReset).toLocalTime()
                                 : QDateTime::currentDateTime().addSecs(DefaultWaitTime);;
         data->m_error = QString("Too many requests. Please try again after %1.").arg(data->m_retryAfter.toString());
-        this->rateLimitTimes.insert(url, data->m_retryAfter);
+        porymapConfig.rateLimitTimes.insert(url, data->m_retryAfter);
         return;
     }
 

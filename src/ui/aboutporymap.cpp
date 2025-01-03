@@ -7,6 +7,7 @@ AboutPorymap::AboutPorymap(QWidget *parent) :
     ui(new Ui::AboutPorymap)
 {
     ui->setupUi(this);
+    setAttribute(Qt::WA_DeleteOnClose);
 
     this->ui->label_Version->setText(QString("Version %1 - %2").arg(QCoreApplication::applicationVersion()).arg(QStringLiteral(__DATE__)));
     this->ui->textBrowser->setSource(QUrl("qrc:/CHANGELOG.md"));

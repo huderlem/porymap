@@ -28,7 +28,9 @@ public:
         Slot, Group, Species, MinLevel, MaxLevel, EncounterChance, SlotRatio, EncounterRate, Count
     };
 
-    WildMonInfo encounterData();
+    WildMonInfo encounterData() const { return this->monInfo; }
+    EncounterField encounterField() const { return this->encounterFields.at(this->fieldIndex); }
+    QList<double> percentages() const { return this->slotPercentages; }
     void resize(int rows, int cols);
 
 private:

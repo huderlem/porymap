@@ -20,6 +20,7 @@ TilesetEditor::TilesetEditor(Project *project, Map *map, QWidget *parent) :
     map(map),
     hasUnsavedChanges(false)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     this->setTilesets(this->map->layout->tileset_primary_label, this->map->layout->tileset_secondary_label);
     this->initUi();
 }
@@ -113,7 +114,7 @@ void TilesetEditor::initUi() {
 
 void TilesetEditor::setAttributesUi() {
     // Behavior
-    if (projectConfig.getMetatileBehaviorMask()) {
+    if (projectConfig.metatileBehaviorMask) {
         for (int num : project->metatileBehaviorMapInverse.keys()) {
             this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
         }
@@ -124,7 +125,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Terrain Type
-    if (projectConfig.getMetatileTerrainTypeMask()) {
+    if (projectConfig.metatileTerrainTypeMask) {
         this->ui->comboBox_terrainType->addItem("Normal", TERRAIN_NONE);
         this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
         this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
@@ -137,7 +138,7 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Encounter Type
-    if (projectConfig.getMetatileEncounterTypeMask()) {
+    if (projectConfig.metatileEncounterTypeMask) {
         this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
         this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
         this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
@@ -149,13 +150,13 @@ void TilesetEditor::setAttributesUi() {
     }
 
     // Layer Type
-    if (!projectConfig.getTripleLayerMetatilesEnabled()) {
+    if (!projectConfig.tripleLayerMetatilesEnabled) {
         this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
         this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
         this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
         this->ui->comboBox_layerType->setEditable(false);
         this->ui->comboBox_layerType->setMinimumContentsLength(0);
-        if (!projectConfig.getMetatileLayerTypeMask()) {
+        if (!projectConfig.metatileLayerTypeMask) {
             // User doesn't have triple layer metatiles, but has no layer type attribute.
             // Porymap is still using the layer type value to render metatiles, and with
             // no mask set every metatile will be "Middle/Top", so just display the combo
@@ -187,7 +188,7 @@ void TilesetEditor::initMetatileSelector()
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::selectedMetatileChanged,
             this, &TilesetEditor::onSelectedMetatileChanged);
 
-    bool showGrid = porymapConfig.getShowTilesetEditorMetatileGrid();
+    bool showGrid = porymapConfig.showTilesetEditorMetatileGrid;
     this->ui->actionMetatile_Grid->setChecked(showGrid);
     this->metatileSelector->showGrid = showGrid;
 
@@ -197,7 +198,7 @@ void TilesetEditor::initMetatileSelector()
 
     this->ui->graphicsView_Metatiles->setScene(this->metatilesScene);
     this->ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-    this->ui->horizontalSlider_MetatilesZoom->setValue(porymapConfig.getTilesetEditorMetatilesZoom());
+    this->ui->horizontalSlider_MetatilesZoom->setValue(porymapConfig.tilesetEditorMetatilesZoom);
 }
 
 void TilesetEditor::initMetatileLayersItem() {
@@ -212,7 +213,7 @@ void TilesetEditor::initMetatileLayersItem() {
     connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileCleared,
             this, &TilesetEditor::onHoveredTileCleared);
 
-    bool showGrid = porymapConfig.getShowTilesetEditorLayerGrid();
+    bool showGrid = porymapConfig.showTilesetEditorLayerGrid;
     this->ui->actionLayer_Grid->setChecked(showGrid);
     this->metatileLayersItem->showGrid = showGrid;
 
@@ -238,7 +239,7 @@ void TilesetEditor::initTileSelector()
 
     this->ui->graphicsView_Tiles->setScene(this->tilesScene);
     this->ui->graphicsView_Tiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-    this->ui->horizontalSlider_TilesZoom->setValue(porymapConfig.getTilesetEditorTilesZoom());
+    this->ui->horizontalSlider_TilesZoom->setValue(porymapConfig.tilesetEditorTilesZoom);
 }
 
 void TilesetEditor::initSelectedTileItem() {
@@ -1069,13 +1070,13 @@ void TilesetEditor::on_actionShow_UnusedTiles_toggled(bool checked) {
 void TilesetEditor::on_actionMetatile_Grid_triggered(bool checked) {
     this->metatileSelector->showGrid = checked;
     this->metatileSelector->draw();
-    porymapConfig.setShowTilesetEditorMetatileGrid(checked);
+    porymapConfig.showTilesetEditorMetatileGrid = checked;
 }
 
 void TilesetEditor::on_actionLayer_Grid_triggered(bool checked) {
     this->metatileLayersItem->showGrid = checked;
     this->metatileLayersItem->draw();
-    porymapConfig.setShowTilesetEditorLayerGrid(checked);
+    porymapConfig.showTilesetEditorLayerGrid = checked;
 }
 
 void TilesetEditor::countMetatileUsage() {
@@ -1187,7 +1188,7 @@ void TilesetEditor::on_copyButton_metatileLabel_clicked() {
 }
 
 void TilesetEditor::on_horizontalSlider_MetatilesZoom_valueChanged(int value) {
-    porymapConfig.setTilesetEditorMetatilesZoom(value);
+    porymapConfig.tilesetEditorMetatilesZoom = value;
     this->redrawMetatileSelector();
 }
 
@@ -1195,7 +1196,7 @@ void TilesetEditor::redrawMetatileSelector() {
     QSize size(this->metatileSelector->pixmap().width(), this->metatileSelector->pixmap().height());
     this->ui->graphicsView_Metatiles->setSceneRect(0, 0, size.width(), size.height());
 
-    double scale = pow(3.0, static_cast<double>(porymapConfig.getTilesetEditorMetatilesZoom() - 30) / 30.0);
+    double scale = pow(3.0, static_cast<double>(porymapConfig.tilesetEditorMetatilesZoom - 30) / 30.0);
     QTransform transform;
     transform.scale(scale, scale);
     size *= scale;
@@ -1212,7 +1213,7 @@ void TilesetEditor::redrawMetatileSelector() {
 }
 
 void TilesetEditor::on_horizontalSlider_TilesZoom_valueChanged(int value) {
-    porymapConfig.setTilesetEditorTilesZoom(value);
+    porymapConfig.tilesetEditorTilesZoom = value;
     this->redrawTileSelector();
 }
 
@@ -1220,7 +1221,7 @@ void TilesetEditor::redrawTileSelector() {
     QSize size(this->tileSelector->pixmap().width(), this->tileSelector->pixmap().height());
     this->ui->graphicsView_Tiles->setSceneRect(0, 0, size.width(), size.height());
 
-    double scale = pow(3.0, static_cast<double>(porymapConfig.getTilesetEditorTilesZoom() - 30) / 30.0);
+    double scale = pow(3.0, static_cast<double>(porymapConfig.tilesetEditorTilesZoom - 30) / 30.0);
     QTransform transform;
     transform.scale(scale, scale);
     size *= scale;

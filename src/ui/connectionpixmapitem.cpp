@@ -1,30 +1,48 @@
 #include "connectionpixmapitem.h"
+#include "editcommands.h"
+#include "map.h"
 
 #include <math.h>
 
-void ConnectionPixmapItem::render(qreal opacity) {
-    QPixmap newPixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
-    if (opacity < 1) {
-        QPainter painter(&newPixmap);
-        int alpha = static_cast<int>(255 * (1 - opacity));
-        painter.fillRect(0, 0, newPixmap.width(), newPixmap.height(), QColor(0, 0, 0, alpha));
-        painter.end();
+ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, int x, int y)
+    : QGraphicsPixmapItem(connection->getPixmap()),
+      connection(connection)
+{
+    this->setEditable(true);
+    this->basePixmap = pixmap();
+    this->setOrigin(x, y);
+}
+
+ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, QPoint pos)
+    : ConnectionPixmapItem(connection, pos.x(), pos.y())
+{}
+
+// Render additional visual effects on top of the base map image.
+void ConnectionPixmapItem::render(bool ignoreCache) {
+    if (ignoreCache)
+        this->basePixmap = this->connection->getPixmap();
+
+    QPixmap pixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
+    this->setZValue(-1);
+
+    // When editing is inactive the current selection is ignored, all connections should appear normal.
+    if (this->getEditable()) {
+        if (this->selected) {
+            // Draw highlight
+            QPainter painter(&pixmap);
+            painter.setPen(QColor(255, 0, 255));
+            painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
+            painter.end();
+        } else {
+            // Darken the image
+            this->setZValue(-2);
+            QPainter painter(&pixmap);
+            int alpha = static_cast<int>(255 * 0.25);
+            painter.fillRect(0, 0, pixmap.width(), pixmap.height(), QColor(0, 0, 0, alpha));
+            painter.end();
+        }
     }
-    this->setPixmap(newPixmap);
-}
-
-int ConnectionPixmapItem::getMinOffset() {
-    if (this->connection->direction == "up" || this->connection->direction == "down")
-        return -(this->pixmap().width() / 16) - 6;
-    else
-        return -(this->pixmap().height() / 16) - 6;
-}
-
-int ConnectionPixmapItem::getMaxOffset() {
-    if (this->connection->direction == "up" || this->connection->direction == "down")
-        return this->baseMapWidth + 6;
-    else
-        return this->baseMapHeight + 6;
+    this->setPixmap(pixmap);
 }
 
 QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -32,37 +50,54 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
     if (change == ItemPositionChange) {
         QPointF newPos = value.toPointF();
 
-        qreal x, y;
-        int newOffset = this->initialOffset;
-        if (this->connection->direction == "up" || this->connection->direction == "down") {
-            x = round(newPos.x() / 16) * 16;
-            newOffset += (x - initialX) / 16;
-            newOffset = qMin(newOffset, this->getMaxOffset());
-            newOffset = qMax(newOffset, this->getMinOffset());
-            x = newOffset * 16;
-        }
-        else {
-            x = this->initialX;
+        qreal x = this->originX;
+        qreal y = this->originY;
+        int newOffset = this->connection->offset();
+
+        // Restrict movement to the metatile grid and perpendicular to the connection direction.
+        if (MapConnection::isVertical(this->connection->direction())) {
+            x = (round(newPos.x() / this->mWidth) * this->mWidth) - this->originX;
+            newOffset = x / this->mWidth;
+        } else if (MapConnection::isHorizontal(this->connection->direction())) {
+            y = (round(newPos.y() / this->mHeight) * this->mHeight) - this->originY;
+            newOffset = y / this->mHeight;
         }
 
-        if (this->connection->direction == "right" || this->connection->direction == "left") {
-            y = round(newPos.y() / 16) * 16;
-            newOffset += (y - this->initialY) / 16;
-            newOffset = qMin(newOffset, this->getMaxOffset());
-            newOffset = qMax(newOffset, this->getMinOffset());
-            y = newOffset * 16;
-        }
-        else {
-            y = this->initialY;
-        }
+        // This is convoluted because of how our edit history works; this would otherwise just be 'this->connection->setOffset(newOffset);'
+        if (this->connection->parentMap() && newOffset != this->connection->offset())
+            this->connection->parentMap()->editHistory.push(new MapConnectionMove(this->connection, newOffset, this->actionId));
 
-        this->connection->offset = newOffset;
-        emit connectionMoved(this->connection);
         return QPointF(x, y);
     }
     else {
         return QGraphicsItem::itemChange(change, value);
     }
+}
+
+// If connection->offset changed externally we call this to correct our position.
+void ConnectionPixmapItem::updatePos() {
+    const QSignalBlocker blocker(this);
+
+    qreal x = this->originX;
+    qreal y = this->originY;
+
+    if (MapConnection::isVertical(this->connection->direction())) {
+        x += this->connection->offset() * this->mWidth;
+    } else if (MapConnection::isHorizontal(this->connection->direction())) {
+        y += this->connection->offset() * this->mHeight;
+    }
+
+    this->setPos(x, y);
+}
+
+// Set the pixmap's external origin point, i.e. the pixmap's position when connection->offset == 0
+void ConnectionPixmapItem::setOrigin(int x, int y) {
+    this->originX = x;
+    this->originY = y;
+    updatePos();
+}
+void ConnectionPixmapItem::setOrigin(QPoint pos) {
+    this->setOrigin(pos.x(), pos.y());
 }
 
 void ConnectionPixmapItem::setEditable(bool editable) {
@@ -74,28 +109,25 @@ bool ConnectionPixmapItem::getEditable() {
     return (this->flags() & ItemIsMovable) != 0;
 }
 
-void ConnectionPixmapItem::updateHighlight(bool selected) {
-    bool editable = this->getEditable();
-    int zValue = (selected || !editable) ? -1 : -2;
-    qreal opacity = (selected || !editable) ? 1 : 0.75;
-    this->setZValue(zValue);
-    this->render(opacity);
-    if (editable && selected) {
-        QPixmap pixmap = this->pixmap();
-        QPainter painter(&pixmap);
-        painter.setPen(QColor(255, 0, 255));
-        painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
-        painter.end();
-        this->setPixmap(pixmap);
-    }
+void ConnectionPixmapItem::setSelected(bool selected) {
+    if (this->selected == selected)
+        return;
+    this->selected = selected;
+    this->render();
+    emit selectionChanged(selected);
 }
 
 void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
     if (!this->getEditable())
         return;
-    emit connectionItemSelected(this);
+    this->setSelected(true);
+}
+
+void ConnectionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    this->actionId++; // Distinguish between move actions for the edit history
+    QGraphicsPixmapItem::mouseReleaseEvent(event);
 }
 
 void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
-    emit connectionItemDoubleClicked(this);
+    emit connectionItemDoubleClicked(this->connection);
 }

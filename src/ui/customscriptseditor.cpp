@@ -11,7 +11,7 @@
 CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CustomScriptsEditor),
-    baseDir(userConfig.getProjectDir() + QDir::separator())
+    baseDir(userConfig.projectDir + QDir::separator())
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -23,11 +23,11 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     for (int i = 0; i < paths.length(); i++)
         this->displayScript(paths.at(i), enabled.at(i));
 
-    this->fileDialogDir = userConfig.getProjectDir();
+    this->fileDialogDir = userConfig.projectDir;
 
     connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);
     connect(ui->button_LoadScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::loadScript);
-    connect(ui->button_RefreshScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::refreshScripts);
+    connect(ui->button_RefreshScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::userRefreshScripts);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &CustomScriptsEditor::dialogButtonClicked);
 
     this->initShortcuts();
@@ -57,7 +57,7 @@ void CustomScriptsEditor::initShortcuts() {
     shortcut_load->setObjectName("shortcut_load");
     shortcut_load->setWhatsThis("Load Script...");
 
-    auto *shortcut_refresh = new Shortcut(QKeySequence(), this, SLOT(refreshScripts()));
+    auto *shortcut_refresh = new Shortcut(QKeySequence(), this, SLOT(userRefreshScripts()));
     shortcut_refresh->setObjectName("shortcut_refresh");
     shortcut_refresh->setWhatsThis("Refresh Scripts");
 
@@ -238,14 +238,21 @@ void CustomScriptsEditor::openSelectedScripts() {
         this->openScript(item);
 }
 
-void CustomScriptsEditor::refreshScripts() {
+// When the user refreshes the scripts we show a little tooltip as feedback.
+// We don't want this tooltip to display when we refresh programmatically, like when changes are saved.
+void CustomScriptsEditor::userRefreshScripts() {
+    if (refreshScripts())
+        QToolTip::showText(ui->button_RefreshScripts->mapToGlobal(QPoint(0, 0)), "Refreshed!");
+}
+
+bool CustomScriptsEditor::refreshScripts() {
     if (this->hasUnsavedChanges) {
         if (this->prompt("Scripts have been modified, save changes and reload the script engine?", QMessageBox::Yes) == QMessageBox::No)
-            return;
+            return false;
         this->save();
     }
-    QToolTip::showText(ui->button_RefreshScripts->mapToGlobal(QPoint(0, 0)), "Refreshed!");
     emit reloadScriptEngine();
+    return true;
 }
 
 void CustomScriptsEditor::save() {
@@ -264,6 +271,7 @@ void CustomScriptsEditor::save() {
     }
 
     userConfig.setCustomScripts(paths, enabledStates);
+    userConfig.save();
     this->hasUnsavedChanges = false;
     this->refreshScripts();
 }

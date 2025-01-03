@@ -1,5 +1,5 @@
 #include "eventframes.h"
-#include "customattributestable.h"
+#include "customattributesframe.h"
 #include "editcommands.h"
 #include "draggablepixmapitem.h"
 
@@ -102,8 +102,11 @@ void EventFrame::setup() {
 }
 
 void EventFrame::initCustomAttributesTable() {
-    CustomAttributesTable *customAttributes = new CustomAttributesTable(this->event, this);
-    this->layout_contents->addWidget(customAttributes);
+    this->custom_attributes = new CustomAttributesFrame(this);
+    QStringList keys = projectConfig.getDefaultEventCustomAttributes(this->event->getEventType()).keys();
+    this->custom_attributes->table->setDefaultKeys(QSet<QString>(keys.begin(), keys.end()));
+    this->custom_attributes->table->setRestrictedKeys(this->event->getExpectedFields());
+    this->layout_contents->addWidget(this->custom_attributes);
 }
 
 void EventFrame::connectSignals(MainWindow *) {
@@ -133,6 +136,18 @@ void EventFrame::connectSignals(MainWindow *) {
         this->event->setZ(value);
         this->event->modify();
     });
+
+    this->custom_attributes->disconnect();
+    connect(this->custom_attributes->table, &CustomAttributesTable::edited, [this]() {
+        this->event->setCustomAttributes(this->custom_attributes->table->getAttributes());
+        this->event->modify();
+    });
+    connect(this->custom_attributes->table, &CustomAttributesTable::defaultSet, [this](QString key, QJsonValue value) {
+        projectConfig.insertDefaultEventCustomAttribute(this->event->getEventType(), key, value);
+    });
+    connect(this->custom_attributes->table, &CustomAttributesTable::defaultRemoved, [this](QString key) {
+        projectConfig.removeDefaultEventCustomAttribute(this->event->getEventType(), key);
+    });
 }
 
 void EventFrame::initialize() {
@@ -143,6 +158,8 @@ void EventFrame::initialize() {
     this->spinner_x->setValue(this->event->getX());
     this->spinner_y->setValue(this->event->getY());
     this->spinner_z->setValue(this->event->getZ());
+
+    this->custom_attributes->table->setAttributes(this->event->getCustomAttributes());
 
     this->label_icon->setPixmap(this->event->getPixmap());
 }
@@ -360,7 +377,7 @@ void ObjectFrame::initialize() {
 
     // script
     this->combo_script->setCurrentText(this->object->getScript());
-    if (porymapConfig.getTextEditorGotoLine().isEmpty())
+    if (porymapConfig.textEditorGotoLine.isEmpty())
         this->button_script->hide();
 
     // flag
@@ -858,16 +875,16 @@ void HiddenItemFrame::initialize() {
     this->combo_flag->setTextItem(this->hiddenItem->getFlag());
 
     // quantity
-    if (projectConfig.getHiddenItemQuantityEnabled()) {
+    if (projectConfig.hiddenItemQuantityEnabled) {
         this->spinner_quantity->setValue(this->hiddenItem->getQuantity());
     }
-    this->hideable_quantity->setVisible(projectConfig.getHiddenItemQuantityEnabled());
+    this->hideable_quantity->setVisible(projectConfig.hiddenItemQuantityEnabled);
 
     // underfoot
-    if (projectConfig.getHiddenItemRequiresItemfinderEnabled()) {
+    if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         this->check_itemfinder->setChecked(this->hiddenItem->getUnderfoot());
     }
-    this->hideable_itemfinder->setVisible(projectConfig.getHiddenItemRequiresItemfinderEnabled());
+    this->hideable_itemfinder->setVisible(projectConfig.hiddenItemRequiresItemfinderEnabled);
 }
 
 void HiddenItemFrame::populate(Project *project) {
@@ -971,7 +988,7 @@ void HealLocationFrame::connectSignals(MainWindow *window) {
 
     EventFrame::connectSignals(window);
 
-    if (projectConfig.getHealLocationRespawnDataEnabled()) {
+    if (projectConfig.healLocationRespawnDataEnabled) {
         this->combo_respawn_map->disconnect();
         connect(this->combo_respawn_map, &QComboBox::currentTextChanged, [this](const QString &text) {
             this->healLocation->setRespawnMap(text);
@@ -992,7 +1009,7 @@ void HealLocationFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
-    bool respawnEnabled = projectConfig.getHealLocationRespawnDataEnabled();
+    bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
     if (respawnEnabled) {
         this->combo_respawn_map->setTextItem(this->healLocation->getRespawnMap());
         this->spinner_respawn_npc->setValue(this->healLocation->getRespawnNPC());
@@ -1008,6 +1025,6 @@ void HealLocationFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    if (projectConfig.getHealLocationRespawnDataEnabled())
+    if (projectConfig.healLocationRespawnDataEnabled)
         this->combo_respawn_map->addItems(project->mapNames);
 }

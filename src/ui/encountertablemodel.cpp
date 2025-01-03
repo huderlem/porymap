@@ -142,45 +142,57 @@ QVariant EncounterTableModel::headerData(int section, Qt::Orientation orientatio
 }
 
 bool EncounterTableModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (role == Qt::EditRole) {
-        if (!checkIndex(index))
-            return false;
+    if (role != Qt::EditRole)
+        return false;
+    if (!checkIndex(index))
+        return false;
 
-        int row = index.row();
-        int col = index.column();
+    int row = index.row();
+    int col = index.column();
 
-        switch (col) {
-        case ColumnType::Species:
-            this->monInfo.wildPokemon[row].species = value.toString();
-            break;
-
-        case ColumnType::MinLevel: {
-            int minLevel = value.toInt();
-            this->monInfo.wildPokemon[row].minLevel = minLevel;
-            if (minLevel > this->monInfo.wildPokemon[row].maxLevel)
-                this->monInfo.wildPokemon[row].maxLevel = minLevel;
-            break;
+    switch (col) {
+    case ColumnType::Species: {
+        QString species = value.toString();
+        if (this->monInfo.wildPokemon[row].species != species) {
+            this->monInfo.wildPokemon[row].species = species;
+            emit edited();
         }
-
-        case ColumnType::MaxLevel: {
-            int maxLevel = value.toInt();
-            this->monInfo.wildPokemon[row].maxLevel = maxLevel;
-            if (maxLevel < this->monInfo.wildPokemon[row].minLevel)
-                this->monInfo.wildPokemon[row].minLevel = maxLevel;
-            break;
-        }
-
-        case ColumnType::EncounterRate:
-            this->monInfo.encounterRate = value.toInt();
-            break;
-
-        default:
-            return false;
-        }
-        emit edited();
-        return true;
+        break;
     }
-    return false;
+
+    case ColumnType::MinLevel: {
+        int minLevel = value.toInt();
+        if (this->monInfo.wildPokemon[row].minLevel != minLevel) {
+            this->monInfo.wildPokemon[row].minLevel = minLevel;
+            this->monInfo.wildPokemon[row].maxLevel = qMax(minLevel, this->monInfo.wildPokemon[row].maxLevel);
+            emit edited();
+        }
+        break;
+    }
+
+    case ColumnType::MaxLevel: {
+        int maxLevel = value.toInt();
+        if (this->monInfo.wildPokemon[row].maxLevel != maxLevel) {
+            this->monInfo.wildPokemon[row].maxLevel = maxLevel;
+            this->monInfo.wildPokemon[row].minLevel = qMin(maxLevel, this->monInfo.wildPokemon[row].minLevel);
+            emit edited();
+        }
+        break;
+    }
+
+    case ColumnType::EncounterRate: {
+        int encounterRate = value.toInt();
+        if (this->monInfo.encounterRate != encounterRate) {
+            this->monInfo.encounterRate = encounterRate;
+            emit edited();
+        }
+        break;
+    }
+
+    default:
+        return false;
+    }
+    return true;
 }
 
 Qt::ItemFlags EncounterTableModel::flags(const QModelIndex &index) const {
@@ -198,8 +210,4 @@ Qt::ItemFlags EncounterTableModel::flags(const QModelIndex &index) const {
             break;
     }
     return flags | QAbstractTableModel::flags(index);
-}
-
-WildMonInfo EncounterTableModel::encounterData() {
-    return this->monInfo;
 }

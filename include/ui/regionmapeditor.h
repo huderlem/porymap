@@ -27,6 +27,7 @@ public:
     ~RegionMapEditor();
 
     bool load(bool silent = false);
+    bool setupErrored() const { return setupError; }
 
     void onRegionMapTileSelectorSelectedTileChanged(unsigned id);
     void onRegionMapTileSelectorHoveredTileChanged(unsigned id);
@@ -41,6 +42,8 @@ public:
 
     void resizeTilemap(int width, int height);
 
+    bool reconfigure();
+
     QObjectList shortcutableObjects() const;
 
 public slots:
@@ -53,9 +56,13 @@ private:
     RegionMap *region_map = nullptr;
     tsl::ordered_map<QString, RegionMap *> region_maps;
 
+    QString configFilepath;
+    QString mapSectionFilepath;
+
     poryjson::Json rmConfigJson;
 
     bool configSaved = false;
+    bool setupError = false;
 
     QUndoGroup history;
 

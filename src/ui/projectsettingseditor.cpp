@@ -18,7 +18,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) 
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
     project(project),
-    baseDir(userConfig.getProjectDir() + QDir::separator())
+    baseDir(projectConfig.projectDir + QDir::separator())
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -109,7 +109,7 @@ void ProjectSettingsEditor::initUi() {
     static const QRegularExpression expression_HexList(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
     QRegularExpressionValidator *validator_HexList = new QRegularExpressionValidator(expression_HexList);
     ui->lineEdit_BorderMetatiles->setValidator(validator_HexList);
-    this->setBorderMetatilesUi(projectConfig.getUseCustomBorderSize());
+    this->setBorderMetatilesUi(projectConfig.useCustomBorderSize);
 
     // Validate that the text added to the warp behavior list could be a valid define
     // (we don't care whether it actually is a metatile behavior define)
@@ -133,63 +133,50 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_CollisionMask->setMaximum(Block::maxValue);
     ui->spinBox_ElevationMask->setMaximum(Block::maxValue);
 
-    // Some settings can be determined by constants in the project.
-    // We reflect that here by disabling their UI elements.
-    if (project) {
-        const QString maskFilepath = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
-        const QString attrTableFilepath = projectConfig.getFilePath(ProjectFilePath::fieldmap);
-        const QString metatileIdMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_metatile);
-        const QString collisionMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_collision);
-        const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
-        const QString behaviorMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior);
-        const QString layerTypeMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer);
-        const QString behaviorTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior);
-        const QString layerTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer);
-        const QString encounterTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter);
-        const QString terrainTypeTableName = projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain);
-        const QString attrTableName = projectConfig.getIdentifier(ProjectIdentifier::symbol_attribute_table);
+    // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
+    // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
+    const QString globalFieldmapPath = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
+    const QString constantsFieldmapPath = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
+    const QString fieldmapPath = projectConfig.getFilePath(ProjectFilePath::fieldmap);
 
-        // Block masks
-        if (project->disabledSettingsNames.contains(metatileIdMaskName))
-            this->disableParsedSetting(ui->spinBox_MetatileIdMask, metatileIdMaskName, maskFilepath);
-        if (project->disabledSettingsNames.contains(collisionMaskName))
-            this->disableParsedSetting(ui->spinBox_CollisionMask, collisionMaskName, maskFilepath);
-        if (project->disabledSettingsNames.contains(elevationMaskName))
-            this->disableParsedSetting(ui->spinBox_ElevationMask, elevationMaskName, maskFilepath);
+    // Block masks
+    this->disableParsedSetting(ui->spinBox_MetatileIdMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_metatile), globalFieldmapPath);
+    this->disableParsedSetting(ui->spinBox_CollisionMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_collision), globalFieldmapPath);
+    this->disableParsedSetting(ui->spinBox_ElevationMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation), globalFieldmapPath);
 
-        // Behavior mask
-        if (project->disabledSettingsNames.contains(behaviorMaskName))
-            this->disableParsedSetting(ui->spinBox_BehaviorMask, behaviorMaskName, maskFilepath);
-        else if (project->disabledSettingsNames.contains(behaviorTableName))
-            this->disableParsedSetting(ui->spinBox_BehaviorMask, attrTableName, attrTableFilepath);
+    // Behavior mask
+    if (!this->disableParsedSetting(ui->spinBox_BehaviorMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior), globalFieldmapPath))
+        this->disableParsedSetting(ui->spinBox_BehaviorMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_behavior), fieldmapPath);
 
-        // Layer type mask
-        if (project->disabledSettingsNames.contains(layerTypeMaskName))
-            this->disableParsedSetting(ui->spinBox_LayerTypeMask, layerTypeMaskName, maskFilepath);
-        else if (project->disabledSettingsNames.contains(layerTypeTableName))
-            this->disableParsedSetting(ui->spinBox_LayerTypeMask, attrTableName, attrTableFilepath);
+    // Layer type mask
+    if (!this->disableParsedSetting(ui->spinBox_LayerTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer), globalFieldmapPath))
+        this->disableParsedSetting(ui->spinBox_LayerTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_layer), fieldmapPath);
 
-        // Encounter and terrain type masks
-        if (project->disabledSettingsNames.contains(encounterTypeTableName))
-            this->disableParsedSetting(ui->spinBox_EncounterTypeMask, attrTableName, attrTableFilepath);
-        if (project->disabledSettingsNames.contains(terrainTypeTableName))
-            this->disableParsedSetting(ui->spinBox_TerrainTypeMask, attrTableName, attrTableFilepath);
-    }
+    // Encounter and terrain type masks
+    this->disableParsedSetting(ui->spinBox_EncounterTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_encounter), fieldmapPath);
+    this->disableParsedSetting(ui->spinBox_TerrainTypeMask, projectConfig.getIdentifier(ProjectIdentifier::define_attribute_terrain), fieldmapPath);
+
+    // Tripe layer metatiles
+    this->disableParsedSetting(ui->checkBox_EnableTripleLayerMetatiles, projectConfig.getIdentifier(ProjectIdentifier::define_tiles_per_metatile), constantsFieldmapPath);
 }
 
-void ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &name, const QString &filepath) {
-    widget->setEnabled(false);
-    widget->setToolTip(QString("This value has been read from '%1' in %2").arg(name).arg(filepath));
+bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &identifier, const QString &filepath) {
+    if (project && project->disabledSettingsNames.contains(identifier)) {
+        widget->setEnabled(false);
+        widget->setToolTip(QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath));
+        return true;
+    }
+    return false;
 }
 
 // Remember the current settings tab for future sessions
 void ProjectSettingsEditor::on_mainTabs_tabBarClicked(int index) {
-    porymapConfig.setProjectSettingsTab(index);
+    porymapConfig.projectSettingsTab = index;
 }
 
 void ProjectSettingsEditor::setTab(int index) {
     ui->mainTabs->setCurrentIndex(index);
-    porymapConfig.setProjectSettingsTab(index);
+    porymapConfig.projectSettingsTab = index;
 }
 
 void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {
@@ -424,10 +411,10 @@ void ProjectSettingsEditor::refresh() {
     this->refreshing = true; // Block signals
 
     // Set combo box texts
-    ui->comboBox_DefaultPrimaryTileset->setTextItem(projectConfig.getDefaultPrimaryTileset());
-    ui->comboBox_DefaultSecondaryTileset->setTextItem(projectConfig.getDefaultSecondaryTileset());
+    ui->comboBox_DefaultPrimaryTileset->setTextItem(projectConfig.defaultPrimaryTileset);
+    ui->comboBox_DefaultSecondaryTileset->setTextItem(projectConfig.defaultSecondaryTileset);
     ui->comboBox_BaseGameVersion->setTextItem(projectConfig.getBaseGameVersionString());
-    ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.getMetatileAttributesSize()));
+    ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.metatileAttributesSize));
     this->updateAttributeLimits(ui->comboBox_AttributesSize->currentText());
 
     this->prevIconSpecies = QString();
@@ -435,45 +422,44 @@ void ProjectSettingsEditor::refresh() {
     this->updatePokemonIconPath(ui->comboBox_IconSpecies->currentText());
 
     // Set check box states
-    ui->checkBox_UsePoryscript->setChecked(projectConfig.getUsePoryScript());
-    ui->checkBox_ShowWildEncounterTables->setChecked(userConfig.getEncounterJsonActive());
-    ui->checkBox_CreateTextFile->setChecked(projectConfig.getCreateMapTextFileEnabled());
-    ui->checkBox_EnableTripleLayerMetatiles->setChecked(projectConfig.getTripleLayerMetatilesEnabled());
-    ui->checkBox_EnableRequiresItemfinder->setChecked(projectConfig.getHiddenItemRequiresItemfinderEnabled());
-    ui->checkBox_EnableQuantity->setChecked(projectConfig.getHiddenItemQuantityEnabled());
-    ui->checkBox_EnableCloneObjects->setChecked(projectConfig.getEventCloneObjectEnabled());
-    ui->checkBox_EnableWeatherTriggers->setChecked(projectConfig.getEventWeatherTriggerEnabled());
-    ui->checkBox_EnableSecretBases->setChecked(projectConfig.getEventSecretBaseEnabled());
-    ui->checkBox_EnableRespawn->setChecked(projectConfig.getHealLocationRespawnDataEnabled());
-    ui->checkBox_EnableAllowFlags->setChecked(projectConfig.getMapAllowFlagsEnabled());
-    ui->checkBox_EnableFloorNumber->setChecked(projectConfig.getFloorNumberEnabled());
-    ui->checkBox_EnableCustomBorderSize->setChecked(projectConfig.getUseCustomBorderSize());
-    ui->checkBox_OutputCallback->setChecked(projectConfig.getTilesetsHaveCallback());
-    ui->checkBox_OutputIsCompressed->setChecked(projectConfig.getTilesetsHaveIsCompressed());
-    ui->checkBox_DisableWarning->setChecked(porymapConfig.getWarpBehaviorWarningDisabled());
+    ui->checkBox_UsePoryscript->setChecked(projectConfig.usePoryScript);
+    ui->checkBox_ShowWildEncounterTables->setChecked(userConfig.useEncounterJson);
+    ui->checkBox_CreateTextFile->setChecked(projectConfig.createMapTextFileEnabled);
+    ui->checkBox_EnableTripleLayerMetatiles->setChecked(projectConfig.tripleLayerMetatilesEnabled);
+    ui->checkBox_EnableRequiresItemfinder->setChecked(projectConfig.hiddenItemRequiresItemfinderEnabled);
+    ui->checkBox_EnableQuantity->setChecked(projectConfig.hiddenItemQuantityEnabled);
+    ui->checkBox_EnableCloneObjects->setChecked(projectConfig.eventCloneObjectEnabled);
+    ui->checkBox_EnableWeatherTriggers->setChecked(projectConfig.eventWeatherTriggerEnabled);
+    ui->checkBox_EnableSecretBases->setChecked(projectConfig.eventSecretBaseEnabled);
+    ui->checkBox_EnableRespawn->setChecked(projectConfig.healLocationRespawnDataEnabled);
+    ui->checkBox_EnableAllowFlags->setChecked(projectConfig.mapAllowFlagsEnabled);
+    ui->checkBox_EnableFloorNumber->setChecked(projectConfig.floorNumberEnabled);
+    ui->checkBox_EnableCustomBorderSize->setChecked(projectConfig.useCustomBorderSize);
+    ui->checkBox_OutputCallback->setChecked(projectConfig.tilesetsHaveCallback);
+    ui->checkBox_OutputIsCompressed->setChecked(projectConfig.tilesetsHaveIsCompressed);
+    ui->checkBox_DisableWarning->setChecked(porymapConfig.warpBehaviorWarningDisabled);
 
     // Set spin box values
-    ui->spinBox_Elevation->setValue(projectConfig.getDefaultElevation());
-    ui->spinBox_Collision->setValue(projectConfig.getDefaultCollision());
-    ui->spinBox_FillMetatile->setValue(projectConfig.getDefaultMetatileId());
-    ui->spinBox_MaxElevation->setValue(projectConfig.getCollisionSheetHeight() - 1);
-    ui->spinBox_MaxCollision->setValue(projectConfig.getCollisionSheetWidth() - 1);
-    ui->spinBox_BehaviorMask->setValue(projectConfig.getMetatileBehaviorMask() & ui->spinBox_BehaviorMask->maximum());
-    ui->spinBox_EncounterTypeMask->setValue(projectConfig.getMetatileEncounterTypeMask() & ui->spinBox_EncounterTypeMask->maximum());
-    ui->spinBox_LayerTypeMask->setValue(projectConfig.getMetatileLayerTypeMask() & ui->spinBox_LayerTypeMask->maximum());
-    ui->spinBox_TerrainTypeMask->setValue(projectConfig.getMetatileTerrainTypeMask() & ui->spinBox_TerrainTypeMask->maximum());
-    ui->spinBox_MetatileIdMask->setValue(projectConfig.getBlockMetatileIdMask() & ui->spinBox_MetatileIdMask->maximum());
-    ui->spinBox_CollisionMask->setValue(projectConfig.getBlockCollisionMask() & ui->spinBox_CollisionMask->maximum());
-    ui->spinBox_ElevationMask->setValue(projectConfig.getBlockElevationMask() & ui->spinBox_ElevationMask->maximum());
+    ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
+    ui->spinBox_Collision->setValue(projectConfig.defaultCollision);
+    ui->spinBox_FillMetatile->setValue(projectConfig.defaultMetatileId);
+    ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetHeight - 1);
+    ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetWidth - 1);
+    ui->spinBox_BehaviorMask->setValue(projectConfig.metatileBehaviorMask & ui->spinBox_BehaviorMask->maximum());
+    ui->spinBox_EncounterTypeMask->setValue(projectConfig.metatileEncounterTypeMask & ui->spinBox_EncounterTypeMask->maximum());
+    ui->spinBox_LayerTypeMask->setValue(projectConfig.metatileLayerTypeMask & ui->spinBox_LayerTypeMask->maximum());
+    ui->spinBox_TerrainTypeMask->setValue(projectConfig.metatileTerrainTypeMask & ui->spinBox_TerrainTypeMask->maximum());
+    ui->spinBox_MetatileIdMask->setValue(projectConfig.blockMetatileIdMask & ui->spinBox_MetatileIdMask->maximum());
+    ui->spinBox_CollisionMask->setValue(projectConfig.blockCollisionMask & ui->spinBox_CollisionMask->maximum());
+    ui->spinBox_ElevationMask->setValue(projectConfig.blockElevationMask & ui->spinBox_ElevationMask->maximum());
 
     // Set (and sync) border metatile IDs
-    auto metatileIds = projectConfig.getNewMapBorderMetatileIds();
-    this->setBorderMetatileIds(false, metatileIds);
-    this->setBorderMetatileIds(true, metatileIds);
+    this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
+    this->setBorderMetatileIds(true, projectConfig.newMapBorderMetatileIds);
 
     // Set line edit texts
-    ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath());
-    ui->lineEdit_CollisionGraphics->setText(projectConfig.getCollisionSheetPath());
+    ui->lineEdit_PrefabsPath->setText(projectConfig.prefabFilepath);
+    ui->lineEdit_CollisionGraphics->setText(projectConfig.collisionSheetPath);
     ui->lineEdit_ObjectsIcon->setText(projectConfig.getEventIconPath(Event::Group::Object));
     ui->lineEdit_WarpsIcon->setText(projectConfig.getEventIconPath(Event::Group::Warp));
     ui->lineEdit_TriggersIcon->setText(projectConfig.getEventIconPath(Event::Group::Coord));
@@ -485,9 +471,8 @@ void ProjectSettingsEditor::refresh() {
         lineEdit->setText(projectConfig.getCustomIdentifier(lineEdit->objectName()));
 
     // Set warp behaviors
-    auto behaviorValues = projectConfig.getWarpBehaviors();
     QStringList behaviorNames;
-    for (auto value : behaviorValues) {
+    for (auto value : projectConfig.warpBehaviors) {
         if (project->metatileBehaviorMapInverse.contains(value))
             behaviorNames.append(project->metatileBehaviorMapInverse.value(value));
     }
@@ -500,50 +485,47 @@ void ProjectSettingsEditor::save() {
     if (!this->hasUnsavedChanges)
         return;
 
-    // Prevent a call to save() for each of the config settings
-    projectConfig.setSaveDisabled(true);
-
     // Save combo box settings
-    projectConfig.setDefaultPrimaryTileset(ui->comboBox_DefaultPrimaryTileset->currentText());
-    projectConfig.setDefaultSecondaryTileset(ui->comboBox_DefaultSecondaryTileset->currentText());
-    projectConfig.setBaseGameVersion(projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText()));
-    projectConfig.setMetatileAttributesSize(ui->comboBox_AttributesSize->currentText().toInt());
+    projectConfig.defaultPrimaryTileset = ui->comboBox_DefaultPrimaryTileset->currentText();
+    projectConfig.defaultSecondaryTileset = ui->comboBox_DefaultSecondaryTileset->currentText();
+    projectConfig.baseGameVersion = projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText());
+    projectConfig.metatileAttributesSize = ui->comboBox_AttributesSize->currentText().toInt();
 
     // Save check box settings
-    projectConfig.setUsePoryScript(ui->checkBox_UsePoryscript->isChecked());
-    userConfig.setEncounterJsonActive(ui->checkBox_ShowWildEncounterTables->isChecked());
-    projectConfig.setCreateMapTextFileEnabled(ui->checkBox_CreateTextFile->isChecked());
-    projectConfig.setTripleLayerMetatilesEnabled(ui->checkBox_EnableTripleLayerMetatiles->isChecked());
-    projectConfig.setHiddenItemRequiresItemfinderEnabled(ui->checkBox_EnableRequiresItemfinder->isChecked());
-    projectConfig.setHiddenItemQuantityEnabled(ui->checkBox_EnableQuantity->isChecked());
-    projectConfig.setEventCloneObjectEnabled(ui->checkBox_EnableCloneObjects->isChecked());
-    projectConfig.setEventWeatherTriggerEnabled(ui->checkBox_EnableWeatherTriggers->isChecked());
-    projectConfig.setEventSecretBaseEnabled(ui->checkBox_EnableSecretBases->isChecked());
-    projectConfig.setHealLocationRespawnDataEnabled(ui->checkBox_EnableRespawn->isChecked());
-    projectConfig.setMapAllowFlagsEnabled(ui->checkBox_EnableAllowFlags->isChecked());
-    projectConfig.setFloorNumberEnabled(ui->checkBox_EnableFloorNumber->isChecked());
-    projectConfig.setUseCustomBorderSize(ui->checkBox_EnableCustomBorderSize->isChecked());
-    projectConfig.setTilesetsHaveCallback(ui->checkBox_OutputCallback->isChecked());
-    projectConfig.setTilesetsHaveIsCompressed(ui->checkBox_OutputIsCompressed->isChecked());
-    porymapConfig.setWarpBehaviorWarningDisabled(ui->checkBox_DisableWarning->isChecked());
+    projectConfig.usePoryScript = ui->checkBox_UsePoryscript->isChecked();
+    userConfig.useEncounterJson = ui->checkBox_ShowWildEncounterTables->isChecked();
+    projectConfig.createMapTextFileEnabled = ui->checkBox_CreateTextFile->isChecked();
+    projectConfig.tripleLayerMetatilesEnabled = ui->checkBox_EnableTripleLayerMetatiles->isChecked();
+    projectConfig.hiddenItemRequiresItemfinderEnabled = ui->checkBox_EnableRequiresItemfinder->isChecked();
+    projectConfig.hiddenItemQuantityEnabled = ui->checkBox_EnableQuantity->isChecked();
+    projectConfig.eventCloneObjectEnabled = ui->checkBox_EnableCloneObjects->isChecked();
+    projectConfig.eventWeatherTriggerEnabled = ui->checkBox_EnableWeatherTriggers->isChecked();
+    projectConfig.eventSecretBaseEnabled = ui->checkBox_EnableSecretBases->isChecked();
+    projectConfig.healLocationRespawnDataEnabled = ui->checkBox_EnableRespawn->isChecked();
+    projectConfig.mapAllowFlagsEnabled = ui->checkBox_EnableAllowFlags->isChecked();
+    projectConfig.floorNumberEnabled = ui->checkBox_EnableFloorNumber->isChecked();
+    projectConfig.useCustomBorderSize = ui->checkBox_EnableCustomBorderSize->isChecked();
+    projectConfig.tilesetsHaveCallback = ui->checkBox_OutputCallback->isChecked();
+    projectConfig.tilesetsHaveIsCompressed = ui->checkBox_OutputIsCompressed->isChecked();
+    porymapConfig.warpBehaviorWarningDisabled = ui->checkBox_DisableWarning->isChecked();
 
     // Save spin box settings
-    projectConfig.setDefaultElevation(ui->spinBox_Elevation->value());
-    projectConfig.setDefaultCollision(ui->spinBox_Collision->value());
-    projectConfig.setDefaultMetatileId(ui->spinBox_FillMetatile->value());
-    projectConfig.setCollisionSheetHeight(ui->spinBox_MaxElevation->value() + 1);
-    projectConfig.setCollisionSheetWidth(ui->spinBox_MaxCollision->value() + 1);
-    projectConfig.setMetatileBehaviorMask(ui->spinBox_BehaviorMask->value());
-    projectConfig.setMetatileTerrainTypeMask(ui->spinBox_TerrainTypeMask->value());
-    projectConfig.setMetatileEncounterTypeMask(ui->spinBox_EncounterTypeMask->value());
-    projectConfig.setMetatileLayerTypeMask(ui->spinBox_LayerTypeMask->value());
-    projectConfig.setBlockMetatileIdMask(ui->spinBox_MetatileIdMask->value());
-    projectConfig.setBlockCollisionMask(ui->spinBox_CollisionMask->value());
-    projectConfig.setBlockElevationMask(ui->spinBox_ElevationMask->value());
+    projectConfig.defaultElevation = ui->spinBox_Elevation->value();
+    projectConfig.defaultCollision = ui->spinBox_Collision->value();
+    projectConfig.defaultMetatileId = ui->spinBox_FillMetatile->value();
+    projectConfig.collisionSheetHeight = ui->spinBox_MaxElevation->value() + 1;
+    projectConfig.collisionSheetWidth = ui->spinBox_MaxCollision->value() + 1;
+    projectConfig.metatileBehaviorMask = ui->spinBox_BehaviorMask->value();
+    projectConfig.metatileTerrainTypeMask = ui->spinBox_TerrainTypeMask->value();
+    projectConfig.metatileEncounterTypeMask = ui->spinBox_EncounterTypeMask->value();
+    projectConfig.metatileLayerTypeMask = ui->spinBox_LayerTypeMask->value();
+    projectConfig.blockMetatileIdMask = ui->spinBox_MetatileIdMask->value();
+    projectConfig.blockCollisionMask = ui->spinBox_CollisionMask->value();
+    projectConfig.blockElevationMask = ui->spinBox_ElevationMask->value();
 
     // Save line edit settings
-    projectConfig.setPrefabFilepath(ui->lineEdit_PrefabsPath->text());
-    projectConfig.setCollisionSheetPath(ui->lineEdit_CollisionGraphics->text());
+    projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();
+    projectConfig.collisionSheetPath = ui->lineEdit_CollisionGraphics->text();
     projectConfig.setEventIconPath(Event::Group::Object, ui->lineEdit_ObjectsIcon->text());
     projectConfig.setEventIconPath(Event::Group::Warp, ui->lineEdit_WarpsIcon->text());
     projectConfig.setEventIconPath(Event::Group::Coord, ui->lineEdit_TriggersIcon->text());
@@ -555,14 +537,13 @@ void ProjectSettingsEditor::save() {
         projectConfig.setIdentifier(lineEdit->objectName(), lineEdit->text());
 
     // Save warp behaviors
+    projectConfig.warpBehaviors.clear();
     QStringList behaviorNames = this->getWarpBehaviorsList();
-    QSet<uint32_t> behaviorValues;
     for (auto name : behaviorNames)
-        behaviorValues.insert(project->metatileBehaviorMap.value(name));
-    projectConfig.setWarpBehaviors(behaviorValues);
+        projectConfig.warpBehaviors.insert(project->metatileBehaviorMap.value(name));
 
     // Save border metatile IDs
-    projectConfig.setNewMapBorderMetatileIds(this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked()));
+    projectConfig.newMapBorderMetatileIds = this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked());
 
     // Save pokemon icon paths
     const QString species = ui->comboBox_IconSpecies->currentText();
@@ -571,8 +552,10 @@ void ProjectSettingsEditor::save() {
     for (auto i = this->editedPokemonIconPaths.cbegin(), end = this->editedPokemonIconPaths.cend(); i != end; i++)
         projectConfig.setPokemonIconPath(i.key(), i.value());
 
-    projectConfig.setSaveDisabled(false);
     projectConfig.save();
+    userConfig.save();
+    porymapConfig.save();
+
     this->hasUnsavedChanges = false;
 
     // Technically, a reload is not required for several of the config settings.
@@ -611,7 +594,7 @@ void ProjectSettingsEditor::importDefaultPrefabsClicked(bool) {
     // If the prompt is accepted the prefabs file will be created and its filepath will be saved in the config.
     BaseGameVersion version = projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText());
     if (prefab.tryImportDefaultPrefabs(this, version, ui->lineEdit_PrefabsPath->text())) {
-        ui->lineEdit_PrefabsPath->setText(projectConfig.getPrefabFilepath()); // Refresh with new filepath
+        ui->lineEdit_PrefabsPath->setText(projectConfig.prefabFilepath); // Refresh with new filepath
         this->hasUnsavedChanges = true;
     }
 }

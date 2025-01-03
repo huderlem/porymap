@@ -26,8 +26,11 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
     QMainWindow(parent),
     ui(new Ui::RegionMapEditor)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose);
     this->ui->setupUi(this);
     this->project = project;
+    this->configFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
+    this->mapSectionFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
     this->initShortcuts();
     this->restoreWindowState();
 }
@@ -110,12 +113,10 @@ void RegionMapEditor::applyUserShortcuts() {
 bool RegionMapEditor::loadRegionMapEntries() {
     this->region_map_entries.clear();
 
-    QString regionMapSectionFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
-
     ParseUtil parser;
     QJsonDocument sectionsDoc;
-    if (!parser.tryParseJsonFile(&sectionsDoc, regionMapSectionFilepath)) {
-        logError(QString("Failed to read map data from %1").arg(regionMapSectionFilepath));
+    if (!parser.tryParseJsonFile(&sectionsDoc, this->mapSectionFilepath)) {
+        logError(QString("Failed to read map data from %1").arg(this->mapSectionFilepath));
         return false;
     }
 
@@ -140,11 +141,9 @@ bool RegionMapEditor::loadRegionMapEntries() {
 }
 
 bool RegionMapEditor::saveRegionMapEntries() {
-    QString regionMapSectionFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
-
-    QFile sectionsFile(regionMapSectionFilepath);
+    QFile sectionsFile(this->mapSectionFilepath);
     if (!sectionsFile.open(QIODevice::WriteOnly)) {
-        logError(QString("Error: Could not open %1 for writing").arg(regionMapSectionFilepath));
+        logError(QString("Could not open %1 for writing").arg(this->mapSectionFilepath));
         return false;
     }
 
@@ -203,17 +202,17 @@ void buildFireredDefaults(poryjson::Json &json) {
 
 poryjson::Json RegionMapEditor::buildDefaultJson() {
     poryjson::Json defaultJson;
-    switch (projectConfig.getBaseGameVersion()) {
+    switch (projectConfig.baseGameVersion) {
         case BaseGameVersion::pokeemerald:
             buildEmeraldDefaults(defaultJson);
             break;
-
         case BaseGameVersion::pokeruby:
             buildRubyDefaults(defaultJson);
             break;
-
         case BaseGameVersion::pokefirered:
             buildFireredDefaults(defaultJson);
+            break;
+        default:
             break;
     }
 
@@ -298,7 +297,7 @@ bool RegionMapEditor::buildConfigDialog() {
     form.addRow(addMapButton);
 
     // allow user to add region maps
-    connect(addMapButton, &QPushButton::clicked, [this, regionMapList] {
+    connect(addMapButton, &QPushButton::clicked, [this, regionMapList, &updateJsonFromList] {
         poryjson::Json resultJson = configRegionMapDialog();
         poryjson::Json::object resultObj = resultJson.object_items();
 
@@ -310,12 +309,13 @@ bool RegionMapEditor::buildConfigDialog() {
         newItem->setText(resultObj["alias"].string_value());
         newItem->setData(Qt::UserRole, resultStr);
         regionMapList->addItem(newItem);
+        updateJsonFromList();
     });
 
     QPushButton *delMapButton = new QPushButton("Delete Selected Region Map");
     form.addRow(delMapButton);
 
-    connect(delMapButton, &QPushButton::clicked, [this, regionMapList, &updateJsonFromList] {
+    connect(delMapButton, &QPushButton::clicked, [regionMapList, &updateJsonFromList] {
         QListWidgetItem *item = regionMapList->currentItem();
         if (item) {
             regionMapList->removeItemWidget(item);
@@ -344,8 +344,8 @@ bool RegionMapEditor::buildConfigDialog() {
 
 
     // for sake of convenience, option to just use defaults for each basegame version
-    QPushButton *config_useProjectDefault;
-    switch (projectConfig.getBaseGameVersion()) {
+    QPushButton *config_useProjectDefault = nullptr;
+    switch (projectConfig.baseGameVersion) {
         case BaseGameVersion::pokefirered:
             config_useProjectDefault = new QPushButton("\nUse pokefirered defaults\n");
             break;
@@ -403,16 +403,6 @@ bool RegionMapEditor::verifyConfig(poryjson::Json cfg) {
         logError("Region map config json has no map list.");
         return false;
     }
-
-    OrderedJson::array arr = obj["region_maps"].array_items();
-
-    for (auto ref : arr) {
-        RegionMap tempMap(this->project);
-        if (!tempMap.loadMapData(ref)) {
-            return false;
-        }
-    }
-
     return true;
 }
 
@@ -476,6 +466,7 @@ bool RegionMapEditor::setup() {
         if (!newMap->loadMapData(o)) {
             delete newMap;
             // TODO: consider continue, just reporting error loading single map?
+            this->setupError = true;
             return false;
         }
 
@@ -498,26 +489,21 @@ bool RegionMapEditor::setup() {
     if (!region_maps.empty()) {
         setRegionMap(region_maps.begin()->second);
     }
+    this->setupError = false;
     return true;
 }
 
 bool RegionMapEditor::load(bool silent) {
     // check for config json file
-    QString jsonConfigFilepath = this->project->root + "/" + projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg);
-
     bool badConfig = true;
-
-    if (QFile::exists(jsonConfigFilepath)) {
-        logInfo("Region map configuration file found.");
+    if (QFile::exists(this->configFilepath)) {
         ParseUtil parser;
         OrderedJson::object obj;
-        if (parser.tryParseOrderedJsonFile(&obj, jsonConfigFilepath)) {
+        if (parser.tryParseOrderedJsonFile(&obj, this->configFilepath)) {
             this->rmConfigJson = OrderedJson(obj);
             this->configSaved = true;
         }
         badConfig = !verifyConfig(this->rmConfigJson);
-    } else {
-        logWarn("Region Map config file not found.");
     }
 
     if (badConfig) {
@@ -533,14 +519,15 @@ bool RegionMapEditor::load(bool silent) {
         if (warning.exec() == QMessageBox::Ok) {
             // there is a separate window that allows to load multiple region maps, 
             if (!buildConfigDialog()) {
-                logError("Region map loading interrupted [user]");
+                // User canceled config set up
                 return false;
             }
         } else {
-            // do not open editor
-            logError("Region map loading interrupted [user]");
+            // User declined config set up
             return false;
         }
+    } else {
+        logInfo("Successfully loaded region map configuration file.");
     }
 
     return setup();
@@ -582,10 +569,9 @@ void RegionMapEditor::saveConfig() {
     mapsObject["region_maps"] = mapArray;
 
     OrderedJson newConfigJson(mapsObject);
-    QString filepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
-    QFile file(filepath);
+    QFile file(this->configFilepath);
     if (!file.open(QIODevice::WriteOnly)) {
-        logError(QString("Error: Could not open %1 for writing").arg(filepath));
+        logError(QString("Could not open %1 for writing").arg(this->configFilepath));
         return;
     }
     OrderedJsonDoc jsonDoc(&newConfigJson);
@@ -614,6 +600,11 @@ void RegionMapEditor::on_actionSave_All_triggered() {
 }
 
 void RegionMapEditor::on_action_Configure_triggered() {
+    reconfigure();
+}
+
+bool RegionMapEditor::reconfigure() {
+    this->setupError = false;
     if (this->modified()) {
         QMessageBox warning;
         warning.setIcon(QMessageBox::Warning);
@@ -624,15 +615,16 @@ void RegionMapEditor::on_action_Configure_triggered() {
 
         if (warning.exec() == QMessageBox::Ok) {
             if (buildConfigDialog()) {
-                reload();
+                return reload();
             }
         }
     }
     else {
         if (buildConfigDialog()) {
-            reload();
+            return reload();
         }
     }
+    return false;
 }
 
 void RegionMapEditor::displayRegionMap() {

@@ -22,9 +22,9 @@ struct WildPokemonHeader {
 };
 
 struct EncounterField {
-    QString name;
+    QString name; // Ex: "fishing_mons"
     QVector<int> encounterRates;
-    tsl::ordered_map<QString, QVector<int>> groups;
+    tsl::ordered_map<QString, QVector<int>> groups; // Ex: "good_rod", {2, 3, 4}
 };
 
 typedef QVector<EncounterField> EncounterFields;

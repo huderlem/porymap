@@ -4,44 +4,46 @@
 #include "mapconnection.h"
 #include <QGraphicsPixmapItem>
 #include <QPainter>
+#include <QPointer>
 
 class ConnectionPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    ConnectionPixmapItem(QPixmap pixmap, MapConnection* connection, int x, int y, int baseMapWidth, int baseMapHeight): QGraphicsPixmapItem(pixmap) {
-        this->basePixmap = pixmap;
-        this->connection = connection;
-        setFlag(ItemIsMovable);
-        setFlag(ItemSendsGeometryChanges);
-        this->initialX = x;
-        this->initialY = y;
-        this->initialOffset = connection->offset;
-        this->baseMapWidth = baseMapWidth;
-        this->baseMapHeight = baseMapHeight;
-    }
-    QPixmap basePixmap;
-    MapConnection* connection;
-    int initialX;
-    int initialY;
-    int initialOffset;
-    int baseMapWidth;
-    int baseMapHeight;
-    void render(qreal opacity = 1);
-    int getMinOffset();
-    int getMaxOffset();
+    ConnectionPixmapItem(MapConnection* connection, int originX, int originY);
+    ConnectionPixmapItem(MapConnection* connection, QPoint origin);
+
+    const QPointer<MapConnection> connection;
+
+    void setOrigin(int x, int y);
+    void setOrigin(QPoint pos);
+
     void setEditable(bool editable);
     bool getEditable();
-    void updateHighlight(bool selected);
+
+    void setSelected(bool selected);
+
+    void updatePos();
+    void render(bool ignoreCache = false);
+
+private:
+    QPixmap basePixmap;
+    qreal originX;
+    qreal originY;
+    bool selected = false;
+    unsigned actionId = 0;
+
+    static const int mWidth = 16;
+    static const int mHeight = 16;
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override;
 
 signals:
-    void connectionItemSelected(ConnectionPixmapItem* connectionItem);
-    void connectionItemDoubleClicked(ConnectionPixmapItem* connectionItem);
-    void connectionMoved(MapConnection*);
+    void connectionItemDoubleClicked(MapConnection*);
+    void selectionChanged(bool selected);
 };
 
 #endif // CONNECTIONPIXMAPITEM_H

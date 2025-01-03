@@ -15,7 +15,7 @@ NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
     QRegularExpressionValidator *validator = new QRegularExpressionValidator(expression);
     this->ui->nameLineEdit->setValidator(validator);
 
-    bool checkerboard = porymapConfig.getTilesetCheckerboardFill();
+    bool checkerboard = porymapConfig.tilesetCheckerboardFill;
     this->ui->fillCheckBox->setChecked(checkerboard);
     this->checkerboardFill = checkerboard;
 
@@ -46,5 +46,5 @@ void NewTilesetDialog::NameOrSecondaryChanged() {
 
 void NewTilesetDialog::FillChanged() {
     this->checkerboardFill = this->ui->fillCheckBox->isChecked();
-    porymapConfig.setTilesetCheckerboardFill(this->checkerboardFill);
+    porymapConfig.tilesetCheckerboardFill = this->checkerboardFill;
 }
