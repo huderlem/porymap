@@ -11,6 +11,7 @@
 #include "config.h"
 #include "scripting.h"
 #include "customattributestable.h"
+#include "validator.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -152,7 +153,7 @@ void Editor::setEditorView() {
         map_item->setEditsEnabled(false);
     case EditMode::Events:
         if (this->map) {
-            this->editGroup.setActiveStack(&this->map->editHistory);
+            this->editGroup.setActiveStack(this->map->editHistory());
         }
         break;
     case EditMode::Header:
@@ -240,23 +241,23 @@ void Editor::displayWildMonTables() {
     clearWildMonTables();
 
     // Don't try to read encounter data if it doesn't exist on disk for this map.
-    if (!project->wildMonData.contains(map->constantName)) {
+    if (!project->wildMonData.contains(map->constantName())) {
         return;
     }
 
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
-    for (auto groupPair : project->wildMonData[map->constantName])
+    for (auto groupPair : project->wildMonData[map->constantName()])
         labelCombo->addItem(groupPair.first);
 
     labelCombo->setCurrentText(labelCombo->itemText(0));
 
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     int labelIndex = 0;
-    for (auto labelPair : project->wildMonData[map->constantName]) {
+    for (auto labelPair : project->wildMonData[map->constantName()]) {
 
         QString label = labelPair.first;
 
-        WildPokemonHeader header = project->wildMonData[map->constantName][label];
+        WildPokemonHeader header = project->wildMonData[map->constantName()][label];
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
         stack->insertWidget(labelIndex++, tabWidget);
@@ -267,7 +268,7 @@ void Editor::displayWildMonTables() {
 
             tabWidget->clearTableAt(tabIndex);
 
-            if (project->wildMonData.contains(map->constantName) && header.wildMons[fieldName].active) {
+            if (project->wildMonData.contains(map->constantName()) && header.wildMons[fieldName].active) {
                 tabWidget->populateTab(tabIndex, header.wildMons[fieldName]);
             } else {
                 tabWidget->setTabActive(tabIndex, false);
@@ -299,9 +300,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     QLineEdit *lineEdit = new QLineEdit();
     lineEdit->setClearButtonEnabled(true);
     form.addRow(new QLabel("Group Base Label:"), lineEdit);
-    static const QRegularExpression re_validChars("[_A-Za-z0-9]*");
-    QRegularExpressionValidator *validator = new QRegularExpressionValidator(re_validChars);
-    lineEdit->setValidator(validator);
+    lineEdit->setValidator(new IdentifierValidator(lineEdit));
     connect(lineEdit, &QLineEdit::textChanged, [this, &lineEdit, &buttonBox](QString text){
         if (this->project->encounterGroupLabels.contains(text)) {
             lineEdit->setStyleSheet("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
@@ -312,7 +311,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
         }
     });
     // Give a default value to the label.
-    lineEdit->setText(QString("g%1%2").arg(map->name).arg(stack->count()));
+    lineEdit->setText(QString("g%1%2").arg(map->name()).arg(stack->count()));
 
     // Fields [x] copy from existing
     QLabel *fieldsLabel = new QLabel("Fields:");
@@ -415,9 +414,9 @@ void Editor::deleteWildMonGroup() {
     msgBox.exec();
 
     if (msgBox.clickedButton() == deleteButton) {
-        auto it = project->wildMonData.find(map->constantName);
+        auto it = project->wildMonData.find(map->constantName());
         if (it == project->wildMonData.end()) {
-          logError(QString("Failed to find data for map %1. Unable to delete").arg(map->constantName));
+          logError(QString("Failed to find data for map %1. Unable to delete").arg(map->constantName()));
           return;
         }
 
@@ -698,7 +697,7 @@ void Editor::saveEncounterTabData() {
 
     if (!stack->count()) return;
 
-    tsl::ordered_map<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName];
+    tsl::ordered_map<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName()];
 
     for (int groupIndex = 0; groupIndex < stack->count(); groupIndex++) {
         MonTabWidget *tabWidget = static_cast<MonTabWidget *>(stack->widget(groupIndex));
@@ -863,13 +862,13 @@ void Editor::addConnection(MapConnection *connection) {
     // It's possible this is a Dive/Emerge connection, but that's ok (no selection will occur).
     connection_to_select = connection;
 
-    this->map->editHistory.push(new MapConnectionAdd(this->map, connection));
+    this->map->commit(new MapConnectionAdd(this->map, connection));
 }
 
 void Editor::removeConnection(MapConnection *connection) {
     if (!connection)
         return;
-    this->map->editHistory.push(new MapConnectionRemove(this->map, connection));
+    this->map->commit(new MapConnectionRemove(this->map, connection));
 }
 
 void Editor::removeConnectionPixmap(MapConnection *connection) {
@@ -986,7 +985,7 @@ void Editor::setDivingMapName(QString mapName, QString direction) {
         if (mapName.isEmpty()) {
             removeConnection(connection);
         } else {
-            map->editHistory.push(new MapConnectionChangeMap(connection, mapName));
+            map->commit(new MapConnectionChangeMap(connection, mapName));
         }
     } else if (!mapName.isEmpty()) {
         // Create new connection
@@ -1167,7 +1166,7 @@ void Editor::setCursorRectVisible(bool visible) {
 void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
     int x = pos.x();
     int y = pos.y();
-    if (!layout->isWithinBounds(x, y))
+    if (!layout || !layout->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
@@ -1199,7 +1198,7 @@ void Editor::onHoveredMapMetatileCleared() {
 }
 
 void Editor::onHoveredMapMovementPermissionChanged(int x, int y) {
-    if (!layout->isWithinBounds(x, y))
+    if (!layout || !layout->isWithinBounds(x, y))
         return;
 
     this->updateCursorRectPos(x, y);
@@ -1243,10 +1242,10 @@ QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation
 void Editor::unsetMap() {
     // disconnect previous map's signals so they are not firing
     // multiple times if set again in the future
-    if (map) {
-        map->pruneEditHistory();
-        map->disconnect(this);
-        for (auto connection : map->getConnections())
+    if (this->map) {
+        this->map->pruneEditHistory();
+        this->map->disconnect(this);
+        for (const auto &connection : this->map->getConnections())
             disconnectMapConnection(connection);
     }
     clearMapConnections();
@@ -1259,19 +1258,18 @@ bool Editor::setMap(QString map_name) {
         return false;
     }
 
-    unsetMap();
-
     Map *loadedMap = project->loadMap(map_name);
     if (!loadedMap) {
         return false;
     }
 
+    unsetMap();
     this->map = loadedMap;
 
-    setLayout(map->layout->id);
+    setLayout(map->layout()->id);
 
-    editGroup.addStack(&map->editHistory);
-    editGroup.setActiveStack(&map->editHistory);
+    editGroup.addStack(map->editHistory());
+    editGroup.setActiveStack(map->editHistory());
 
     selected_events->clear();
     if (!displayMap()) {
@@ -1292,13 +1290,17 @@ bool Editor::setLayout(QString layoutId) {
         return false;
     }
 
-    this->layout = this->project->loadLayout(layoutId);
+    Layout *loadedLayout = this->project->loadLayout(layoutId);
+    if (!loadedLayout) {
+        return false;
+    }
 
+    this->layout = loadedLayout;
     if (!displayLayout()) {
         return false;
     }
 
-    editGroup.addStack(&layout->editHistory);
+    editGroup.addStack(&this->layout->editHistory);
 
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
     connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
@@ -1469,7 +1471,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                         }
                         selection_origin = QPoint(pos.x(), pos.y());
 
-                        map->editHistory.push(new EventShift(selectedEvents, xDelta, yDelta, actionId));
+                        map->commit(new EventShift(selectedEvents, xDelta, yDelta, actionId));
                     }
                 }
             }
@@ -1784,8 +1786,7 @@ void Editor::displayMapEvents() {
     events_group = new QGraphicsItemGroup;
     scene->addItem(events_group);
 
-    QList<Event *> events = map->getAllEvents();
-    for (Event *event : events) {
+    for (const auto &event : map->getEvents()) {
         project->setEventPixmap(event);
         addMapEvent(event);
     }
@@ -2032,14 +2033,14 @@ void Editor::updateBorderVisibility() {
         // When connecting a map to itself we don't bother to re-render the map connections in real-time,
         // i.e. if the user paints a new metatile on the map this isn't immediately reflected in the connection.
         // We're rendering them now, so we take the opportunity to do a full re-render for self-connections.
-        bool fullRender = (this->map && item->connection && this->map->name == item->connection->targetMapName());
+        bool fullRender = (this->map && item->connection && this->map->name() == item->connection->targetMapName());
         item->render(fullRender);
     }
 }
 
 void Editor::updateCustomMapHeaderValues(QTableWidget *table)
 {
-    map->customHeaders = CustomAttributesTable::getAttributes(table);
+    map->setCustomAttributes(CustomAttributesTable::getAttributes(table));
     map->modify();
 }
 
@@ -2080,13 +2081,13 @@ void Editor::redrawObject(DraggablePixmapItem *item) {
 void Editor::updateWarpEventWarning(Event *event) {
     if (porymapConfig.warpBehaviorWarningDisabled)
         return;
-    if (!project || !map || !map->layout || !event || event->getEventType() != Event::Type::Warp)
+    if (!project || !map || !map->layout() || !event || event->getEventType() != Event::Type::Warp)
         return;
     Block block;
     Metatile * metatile = nullptr;
     WarpEvent * warpEvent = static_cast<WarpEvent*>(event);
-    if (map->layout->getBlock(warpEvent->getX(), warpEvent->getY(), &block)) {
-        metatile = Tileset::getMetatile(block.metatileId(), map->layout->tileset_primary, map->layout->tileset_secondary);
+    if (map->layout()->getBlock(warpEvent->getX(), warpEvent->getY(), &block)) {
+        metatile = Tileset::getMetatile(block.metatileId(), map->layout()->tileset_primary, map->layout()->tileset_secondary);
     }
     // metatile may be null if the warp is in the map border. Display the warning in this case
     bool validWarpBehavior = metatile && projectConfig.warpBehaviors.contains(metatile->behavior());
@@ -2144,10 +2145,7 @@ void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
 void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
     int event_offs = Event::getIndexOffset(eventGroup);
     index = index - event_offs;
-    Event *event = nullptr;
-    if (index < this->map->events.value(eventGroup).length()) {
-        event = this->map->events.value(eventGroup).at(index);
-    }
+    Event *event = this->map->getEvent(eventGroup, index);
     DraggablePixmapItem *selectedEvent = nullptr;
     for (QGraphicsItem *child : this->events_group->childItems()) {
         DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
@@ -2189,7 +2187,7 @@ void Editor::duplicateSelectedEvents() {
         duplicate->setY(duplicate->getY() + 1);
         selectedEvents.append(duplicate);
     }
-    map->editHistory.push(new EventDuplicate(this, map, selectedEvents));
+    map->commit(new EventDuplicate(this, map, selectedEvents));
 }
 
 DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
@@ -2209,7 +2207,7 @@ DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
         ((HealLocationEvent *)event)->setIndex(project->healLocations.length());
     }
 
-    map->editHistory.push(new EventCreate(this, map, event));
+    map->commit(new EventCreate(this, map, event));
     return event->getPixmapItem();
 }
 
@@ -2217,7 +2215,7 @@ DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
 bool Editor::eventLimitReached(Event::Type event_type) {
     if (project && map) {
         if (Event::typeToGroup(event_type) == Event::Group::Object)
-            return map->events.value(Event::Group::Object).length() >= project->getMaxObjectEvents();
+            return map->getNumEvents(Event::Group::Object) >= project->getMaxObjectEvents();
     }
     return false;
 }
@@ -2246,14 +2244,12 @@ void Editor::deleteSelectedEvents() {
         // If deleting multiple events, just let editor work out next selected.
         if (numDeleted == 1) {
             Event::Group event_group = selectedEvents[0]->getEventGroup();
-            int index = this->map->events.value(event_group).indexOf(selectedEvents[0]);
-            if (index != this->map->events.value(event_group).size() - 1)
+            int index = this->map->getIndexOfEvent(selectedEvents[0]);
+            if (index != this->map->getNumEvents(event_group) - 1)
                 index++;
             else
                 index--;
-            Event *event = nullptr;
-            if (index >= 0)
-                event = this->map->events.value(event_group).at(index);
+            Event *event = this->map->getEvent(event_group, index);
             for (QGraphicsItem *child : this->events_group->childItems()) {
                 DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
                 if (event_item->event == event) {
@@ -2262,7 +2258,7 @@ void Editor::deleteSelectedEvents() {
                 }
             }
         }
-        this->map->editHistory.push(new EventDelete(this, this->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
+        this->map->commit(new EventDelete(this, this->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
     }
 }
 

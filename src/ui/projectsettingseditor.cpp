@@ -116,11 +116,6 @@ void ProjectSettingsEditor::initUi() {
     ui->lineEdit_BorderMetatiles->setValidator(validator_HexList);
     this->setBorderMetatilesUi(projectConfig.useCustomBorderSize);
 
-    // Validate that the text added to the warp behavior list could be a valid define
-    // (we don't care whether it actually is a metatile behavior define)
-    static const QRegularExpression expression_Word("^[A-Za-z0-9_]*$");
-    QRegularExpressionValidator *validator_Word = new QRegularExpressionValidator(expression_Word);
-    ui->comboBox_WarpBehaviors->setValidator(validator_Word);
     ui->textEdit_WarpBehaviors->setTextColor(Qt::gray);
 
     // Set spin box limits
@@ -298,7 +293,7 @@ QStringList ProjectSettingsEditor::getWarpBehaviorsList() {
 
 void ProjectSettingsEditor::setWarpBehaviorsList(QStringList list) {
     list.removeDuplicates();
-    list.sort();
+    Project::numericalModeSort(list);
     ui->textEdit_WarpBehaviors->setText(list.join("\n"));
 }
 
@@ -400,7 +395,7 @@ QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath)
     if (!path.startsWith(this->baseDir)){
         // Most of Porymap's file-parsing code for project files will assume that filepaths
         // are relative to the root project folder, so we enforce that here.
-        QMessageBox::warning(this, "Failed to set custom filepath",
+        QMessageBox::warning(this, QApplication::applicationName(),
                            QString("Custom filepaths must be inside the root project folder '%1'").arg(this->baseDir));
         return QString();
     }

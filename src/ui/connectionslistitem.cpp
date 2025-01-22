@@ -79,24 +79,24 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
 void ConnectionsListItem::on_comboBox_Direction_currentTextChanged(QString direction) {
     this->setSelected(true);
     if (this->map)
-        this->map->editHistory.push(new MapConnectionChangeDirection(this->connection, direction));
+        this->map->commit(new MapConnectionChangeDirection(this->connection, direction));
 }
 
 void ConnectionsListItem::on_comboBox_Map_currentTextChanged(QString mapName) {
     this->setSelected(true);
     if (this->map && ui->comboBox_Map->findText(mapName) >= 0)
-        this->map->editHistory.push(new MapConnectionChangeMap(this->connection, mapName));
+        this->map->commit(new MapConnectionChangeMap(this->connection, mapName));
 }
 
 void ConnectionsListItem::on_spinBox_Offset_valueChanged(int offset) {
     this->setSelected(true);
     if (this->map)
-        this->map->editHistory.push(new MapConnectionMove(this->connection, offset, this->actionId));
+        this->map->commit(new MapConnectionMove(this->connection, offset, this->actionId));
 }
 
 void ConnectionsListItem::on_button_Delete_clicked() {
     if (this->map)
-        this->map->editHistory.push(new MapConnectionRemove(this->map, this->connection));
+        this->map->commit(new MapConnectionRemove(this->map, this->connection));
 }
 
 void ConnectionsListItem::on_button_OpenMap_clicked() {

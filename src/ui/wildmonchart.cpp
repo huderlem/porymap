@@ -465,7 +465,7 @@ void WildMonChart::showHelpDialog() {
         informativeText = levelTabInfo;
     }
 
-    QMessageBox msgBox(QMessageBox::Information, "porymap", text, QMessageBox::Close, this);
+    QMessageBox msgBox(QMessageBox::Information, QApplication::applicationName(), text, QMessageBox::Close, this);
     msgBox.setTextFormat(Qt::RichText);
     msgBox.setInformativeText(informativeText);
     msgBox.exec();

@@ -121,9 +121,7 @@ private slots:
     void on_horizontalSlider_TilesZoom_valueChanged(int value);
 
 private:
-    void initUi();
     void setAttributesUi();
-    void setMetatileLabelValidator();
     void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();

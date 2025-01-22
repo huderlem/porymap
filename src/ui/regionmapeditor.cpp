@@ -28,6 +28,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->ui->setupUi(this);
     this->project = project;
+    connect(this->project, &Project::mapSectionIdNamesChanged, this, &RegionMapEditor::setLocations);
     this->configFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
     this->initShortcuts();
     this->restoreWindowState();
@@ -651,10 +652,9 @@ void RegionMapEditor::displayRegionMapLayout() {
 void RegionMapEditor::displayRegionMapLayoutOptions() {
     if (!this->region_map->layoutEnabled()) return;
 
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
+    const QSignalBlocker b(ui->comboBox_RM_ConnectedMap);
     this->ui->comboBox_RM_ConnectedMap->clear();
     this->ui->comboBox_RM_ConnectedMap->addItems(this->project->mapSectionIdNames);
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 
     this->ui->frame_RM_Options->setEnabled(true);
 
@@ -662,22 +662,19 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 }
 
 void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(true);
+    const QSignalBlocker b_ConnectedMap(ui->comboBox_RM_ConnectedMap);
     this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->squareMapSection(index));
-    this->ui->comboBox_RM_ConnectedMap->blockSignals(false);
 
     this->ui->pushButton_RM_Options_delete->setEnabled(this->region_map->squareHasMap(index));
 
-    this->ui->spinBox_RM_LayoutWidth->blockSignals(true);
-    this->ui->spinBox_RM_LayoutHeight->blockSignals(true);
+    const QSignalBlocker b_LayoutWidth(ui->spinBox_RM_LayoutWidth);
+    const QSignalBlocker b_LayoutHeight(ui->spinBox_RM_LayoutHeight);
     this->ui->spinBox_RM_LayoutWidth->setMinimum(1);
     this->ui->spinBox_RM_LayoutWidth->setMaximum(this->region_map->tilemapWidth() - this->region_map->padLeft());
     this->ui->spinBox_RM_LayoutHeight->setMinimum(1);
     this->ui->spinBox_RM_LayoutHeight->setMaximum(this->region_map->tilemapHeight() - this->region_map->padTop());
     this->ui->spinBox_RM_LayoutWidth->setValue(this->region_map->layoutWidth());
     this->ui->spinBox_RM_LayoutHeight->setValue(this->region_map->layoutHeight());
-    this->ui->spinBox_RM_LayoutWidth->blockSignals(false);
-    this->ui->spinBox_RM_LayoutHeight->blockSignals(false);
 }
 
 void RegionMapEditor::displayRegionMapEntriesImage() {
@@ -732,8 +729,12 @@ void RegionMapEditor::displayRegionMapEntryOptions() {
 void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     if (!this->region_map->layoutEnabled()) return;
 
+    const QSignalBlocker b_X(this->ui->spinBox_RM_Entry_x);
+    const QSignalBlocker b_Y(this->ui->spinBox_RM_Entry_y);
+    const QSignalBlocker b_W(this->ui->spinBox_RM_Entry_width);
+    const QSignalBlocker b_H(this->ui->spinBox_RM_Entry_height);
+
     bool enabled = (section != this->region_map->default_map_section) && this->region_map_entries.contains(section);
-    this->ui->lineEdit_RM_MapName->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_x->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_y->setEnabled(enabled);
     this->ui->spinBox_RM_Entry_width->setEnabled(enabled);
@@ -741,56 +742,31 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->pushButton_entryActivate->setEnabled(section != this->region_map->default_map_section);
     this->ui->pushButton_entryActivate->setText(enabled ? "Remove" : "Add");
 
-    this->ui->lineEdit_RM_MapName->blockSignals(true);
-    this->ui->spinBox_RM_Entry_x->blockSignals(true);
-    this->ui->spinBox_RM_Entry_y->blockSignals(true);
-    this->ui->spinBox_RM_Entry_width->blockSignals(true);
-    this->ui->spinBox_RM_Entry_height->blockSignals(true);
-
     this->ui->comboBox_RM_Entry_MapSection->setCurrentText(section);
     this->activeEntry = section;
     this->region_map_entries_item->currentSection = section;
     MapSectionEntry entry = enabled ? this->region_map_entries[section] : MapSectionEntry();
-    this->ui->lineEdit_RM_MapName->setText(entry.name);
     this->ui->spinBox_RM_Entry_x->setValue(entry.x);
     this->ui->spinBox_RM_Entry_y->setValue(entry.y);
     this->ui->spinBox_RM_Entry_width->setValue(entry.width);
     this->ui->spinBox_RM_Entry_height->setValue(entry.height);
-
-    this->ui->lineEdit_RM_MapName->blockSignals(false);
-    this->ui->spinBox_RM_Entry_x->blockSignals(false);
-    this->ui->spinBox_RM_Entry_y->blockSignals(false);
-    this->ui->spinBox_RM_Entry_width->blockSignals(false);
-    this->ui->spinBox_RM_Entry_height->blockSignals(false);
 }
 
 void RegionMapEditor::on_pushButton_entryActivate_clicked() {
     QString section = this->ui->comboBox_RM_Entry_MapSection->currentText();
     if (section == this->region_map->default_map_section) return;
 
+    MapSectionEntry oldEntry = this->region_map->getEntry(section);
     if (this->region_map_entries.contains(section)) {
         // disable
-        MapSectionEntry oldEntry = this->region_map->getEntry(section);
-        this->region_map->removeEntry(section);
-        MapSectionEntry newEntry = this->region_map->getEntry(section);
-        RemoveEntry *commit = new RemoveEntry(this->region_map, section, oldEntry, newEntry);
-        this->region_map->editHistory.push(commit);
-        updateRegionMapEntryOptions(section);
-
-        this->ui->pushButton_entryActivate->setText("Add");
+        this->region_map->editHistory.push(new RemoveEntry(this->region_map, section, oldEntry, MapSectionEntry()));
     } else {
         // enable
-        MapSectionEntry oldEntry = this->region_map->getEntry(section);
-        MapSectionEntry entry = MapSectionEntry();
-        entry.valid = true;
-        this->region_map->setEntry(section, entry);
-        MapSectionEntry newEntry = this->region_map->getEntry(section);
-        AddEntry *commit = new AddEntry(this->region_map, section, oldEntry, newEntry);
-        this->region_map->editHistory.push(commit);
-        updateRegionMapEntryOptions(section);
-
-        this->ui->pushButton_entryActivate->setText("Remove");
+        MapSectionEntry newEntry = MapSectionEntry();
+        newEntry.valid = true;
+        this->region_map->editHistory.push(new AddEntry(this->region_map, section, oldEntry, newEntry));
     }
+    updateRegionMapEntryOptions(section);
 }
 
 void RegionMapEditor::displayRegionMapTileSelector() {
@@ -936,7 +912,7 @@ void RegionMapEditor::on_tabWidget_Region_Map_currentChanged(int index) {
             break;
         case 2:
             this->ui->verticalSlider_Zoom_Image_Tiles->setVisible(false);
-            on_comboBox_RM_Entry_MapSection_textActivated(ui->comboBox_RM_Entry_MapSection->currentText());
+            on_comboBox_RM_Entry_MapSection_currentTextChanged(ui->comboBox_RM_Entry_MapSection->currentText());
             break;
     }
 }
@@ -947,7 +923,7 @@ void RegionMapEditor::on_comboBox_RM_ConnectedMap_textActivated(const QString &m
     onRegionMapLayoutSelectedTileChanged(this->currIndex);// re-draw layout image
 }
 
-void RegionMapEditor::on_comboBox_RM_Entry_MapSection_textActivated(const QString &text) {
+void RegionMapEditor::on_comboBox_RM_Entry_MapSection_currentTextChanged(const QString &text) {
     this->activeEntry = text;
     this->region_map_entries_item->currentSection = text;
     updateRegionMapEntryOptions(text);
@@ -1050,15 +1026,6 @@ void RegionMapEditor::on_spinBox_RM_LayoutHeight_valueChanged(int value) {
     }
 }
 
-void RegionMapEditor::on_lineEdit_RM_MapName_textEdited(const QString &text) {
-    if (!this->region_map_entries.contains(activeEntry)) return;
-    MapSectionEntry oldEntry = this->region_map_entries[activeEntry];
-    this->region_map_entries[activeEntry].name = text;
-    MapSectionEntry newEntry = this->region_map_entries[activeEntry];
-    EditEntry *commit = new EditEntry(this->region_map, activeEntry, oldEntry, newEntry);
-    this->region_map->editHistory.push(commit);
-}
-
 void RegionMapEditor::on_pushButton_RM_Options_delete_clicked() {
     int index = this->region_map->tilemapToLayoutIndex(this->currIndex);
     QList<LayoutSquare> oldLayout = this->region_map->getLayout(this->region_map->getLayer());
@@ -1151,7 +1118,7 @@ void RegionMapEditor::on_action_Swap_triggered() {
     connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &oldSecBox, &newSecBox, &beforeSection, &afterSection](){
         beforeSection = oldSecBox->currentText();
         afterSection = newSecBox->currentText();
-        if (!beforeSection.isEmpty() && !afterSection.isEmpty()) {
+        if (!beforeSection.isEmpty() && !afterSection.isEmpty() && beforeSection != afterSection) {
             popup.accept();
         }
     });
@@ -1190,7 +1157,7 @@ void RegionMapEditor::on_action_Replace_triggered() {
     connect(&buttonBox, &QDialogButtonBox::accepted, [&popup, &oldSecBox, &newSecBox, &beforeSection, &afterSection](){
         beforeSection = oldSecBox->currentText();
         afterSection = newSecBox->currentText();
-        if (!beforeSection.isEmpty() && !afterSection.isEmpty()) {
+        if (!beforeSection.isEmpty() && !afterSection.isEmpty() && beforeSection != afterSection) {
             popup.accept();
         }
     });
@@ -1269,7 +1236,7 @@ void RegionMapEditor::closeEvent(QCloseEvent *event)
     if (this->modified()) {
         QMessageBox::StandardButton result = QMessageBox::question(
             this,
-            "porymap",
+            QApplication::applicationName(),
             "The region map has been modified, save changes?",
             QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
             QMessageBox::Yes);
@@ -1322,4 +1289,19 @@ void RegionMapEditor::on_verticalSlider_Zoom_Image_Tiles_valueChanged(int val) {
     ui->graphicsView_RegionMap_Tiles->setResizeAnchor(QGraphicsView::NoAnchor);
     ui->graphicsView_RegionMap_Tiles->setTransform(transform);
     ui->graphicsView_RegionMap_Tiles->setFixedSize(width + 2, height + 2);
+}
+
+// Repopulate the combo boxes that display MAPSEC names.
+void RegionMapEditor::setLocations(const QStringList &locations) {
+    const QSignalBlocker b_ConnectedMap(ui->comboBox_RM_ConnectedMap);
+    auto before = ui->comboBox_RM_ConnectedMap->currentText();
+    ui->comboBox_RM_ConnectedMap->clear();
+    ui->comboBox_RM_ConnectedMap->addItems(locations);
+    ui->comboBox_RM_ConnectedMap->setCurrentText(before);
+
+    const QSignalBlocker b_MapSection(ui->comboBox_RM_Entry_MapSection);
+    before = ui->comboBox_RM_Entry_MapSection->currentText();
+    ui->comboBox_RM_Entry_MapSection->clear();
+    ui->comboBox_RM_Entry_MapSection->addItems(locations);
+    ui->comboBox_RM_Entry_MapSection->setCurrentText(before);
 }

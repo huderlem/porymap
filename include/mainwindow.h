@@ -22,8 +22,6 @@
 #include "mapimageexporter.h"
 #include "filterchildrenproxymodel.h"
 #include "maplistmodels.h"
-#include "newmappopup.h"
-#include "newtilesetdialog.h"
 #include "shortcutseditor.h"
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
@@ -32,6 +30,8 @@
 #include "wildmonchart.h"
 #include "updatepromoter.h"
 #include "aboutporymap.h"
+#include "mapheaderform.h"
+#include "newlayoutdialog.h"
 
 
 
@@ -180,36 +180,29 @@ private slots:
     void duplicate();
     void setClipboardData(poryjson::Json::object);
     void setClipboardData(QImage);
+    void setClipboardData(const QString &text);
     void copy();
     void paste();
 
     void onLayoutChanged(Layout *layout);
     void onOpenConnectedMap(MapConnection*);
     void onTilesetsSaved(QString, QString);
-    void openNewMapPopupWindow();
-    void onNewMapCreated();
+    void onNewMapCreated(Map *newMap, const QString &groupName);
+    void onNewMapGroupCreated(const QString &groupName);
+    void onNewMapSectionCreated(const QString &idName);
+    void onMapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
+    void onNewLayoutCreated(Layout *layout);
+    void onNewTilesetCreated(Tileset *tileset);
     void onMapLoaded(Map *map);
-    void importMapFromAdvanceMap1_92();
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
     void markMapEdited();
     void markSpecificMapEdited(Map*);
 
-    void on_action_NewMap_triggered();
     void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();
     void on_action_Exit_triggered();
-    void on_comboBox_Song_currentTextChanged(const QString &arg1);
-    void on_comboBox_Location_currentTextChanged(const QString &arg1);
-    void on_comboBox_Weather_currentTextChanged(const QString &arg1);
-    void on_comboBox_Type_currentTextChanged(const QString &arg1);
-    void on_comboBox_BattleScene_currentTextChanged(const QString &arg1);
-    void on_comboBox_LayoutSelector_currentTextChanged(const QString &arg1);
-    void on_checkBox_ShowLocation_stateChanged(int selected);
-    void on_checkBox_AllowRunning_stateChanged(int selected);
-    void on_checkBox_AllowBiking_stateChanged(int selected);
-    void on_checkBox_AllowEscaping_stateChanged(int selected);
-    void on_spinBox_FloorNumber_valueChanged(int offset);
+    void on_comboBox_LayoutSelector_currentTextChanged(const QString &text);
     void on_actionShortcuts_triggered();
 
     void on_actionZoom_In_triggered();
@@ -254,7 +247,6 @@ private slots:
     void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();
     void on_checkBox_smartPaths_stateChanged(int selected);
-    void on_checkBox_Visibility_stateChanged(int selected);
     void on_checkBox_ToggleBorder_stateChanged(int selected);
 
     void resetMapViewScale();
@@ -313,7 +305,6 @@ private:
     QPointer<RegionMapEditor> regionMapEditor = nullptr;
     QPointer<ShortcutsEditor> shortcutsEditor = nullptr;
     QPointer<MapImageExporter> mapImageExporter = nullptr;
-    QPointer<NewMapPopup> newMapPrompt = nullptr;
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<GridSettingsDialog> gridSettingsDialog = nullptr;
@@ -321,8 +312,8 @@ private:
 
     QPointer<FilterChildrenProxyModel> groupListProxyModel = nullptr;
     QPointer<MapGroupModel> mapGroupModel = nullptr;
-    QPointer<FilterChildrenProxyModel> areaListProxyModel = nullptr;
-    QPointer<MapAreaModel> mapAreaModel = nullptr;
+    QPointer<FilterChildrenProxyModel> locationListProxyModel = nullptr;
+    QPointer<MapLocationModel> mapLocationModel = nullptr;
     QPointer<FilterChildrenProxyModel> layoutListProxyModel = nullptr;
     QPointer<LayoutTreeModel> layoutTreeModel = nullptr;
 
@@ -337,10 +328,11 @@ private:
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
 
+    MapHeaderForm *mapHeaderForm = nullptr;
+
     QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
-    bool newMapDefaultsSet = false;
 
     bool tilesetNeedsRedraw = false;
 
@@ -360,8 +352,15 @@ private:
     bool setProjectUI();
     void clearProjectUI();
 
+    void openNewMapDialog();
+    void openDuplicateMapDialog(const QString &mapName);
+    NewLayoutDialog* createNewLayoutDialog(const Layout *layoutToCopy = nullptr);
+    void openNewLayoutDialog();
+    void openDuplicateLayoutDialog(const QString &layoutId);
+    void openNewMapGroupDialog();
+    void openNewLocationDialog();
     void openSubWindow(QWidget * window);
-    void scrollMapList(MapTree *list, QString itemName);
+    void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
     void scrollMapListToCurrentLayout(MapTree *list);
     void resetMapListFilters();
@@ -369,7 +368,9 @@ private:
     QString getExistingDirectory(QString);
     bool openProject(QString dir, bool initial = false);
     bool closeProject();
+    void showRecentError(const QString &baseMessage);
     void showProjectOpenFailure();
+    void showMapsExcludedAlert(const QStringList &excludedMapNames);
 
     bool setInitialMap();
     void saveGlobalConfigs();
@@ -377,9 +378,6 @@ private:
     void refreshRecentProjectsMenu();
 
     void updateMapList();
-    void mapListAddGroup();
-    void mapListAddLayout();
-    void mapListAddArea();
     void openMapListItem(const QModelIndex &index);
     void saveMapListTab(int index);
 
@@ -419,11 +417,10 @@ private:
     void scrollMetatileSelectorToSelection();
     MapListToolBar* getCurrentMapListToolBar();
     MapTree* getCurrentMapList();
-    void refreshLocationsComboBox();
+    void setLocationComboBoxes(const QStringList &locations);
 
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
-    int insertTilesetLabel(QStringList * list, QString label);
 
     void checkForUpdates(bool requestedByUser);
     void setDivingMapsVisible(bool visible);
@@ -450,7 +447,7 @@ struct MapViewTab {
 
 struct MapListTab {
     enum {
-        Groups = 0, Areas, Layouts
+        Groups = 0, Locations, Layouts
     };
 };
 

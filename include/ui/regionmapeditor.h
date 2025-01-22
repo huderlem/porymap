@@ -116,6 +116,7 @@ private:
     void displayRegionMapEntryOptions();
     void updateRegionMapEntryOptions(QString);
     void setRegionMap(RegionMap *map);
+    void setLocations(const QStringList &locations);
 
     void restoreWindowState();
     void closeEvent(QCloseEvent* event);
@@ -133,7 +134,7 @@ private slots:
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
     void on_comboBox_RM_ConnectedMap_textActivated(const QString &);
-    void on_comboBox_RM_Entry_MapSection_textActivated(const QString &);
+    void on_comboBox_RM_Entry_MapSection_currentTextChanged(const QString &);
     void on_comboBox_regionSelector_textActivated(const QString &);
     void on_comboBox_layoutLayer_textActivated(const QString &);
     void on_spinBox_RM_Entry_x_valueChanged(int);
@@ -148,7 +149,6 @@ private slots:
     void on_checkBox_tileVFlip_stateChanged(int);
     void on_verticalSlider_Zoom_Map_Image_valueChanged(int);
     void on_verticalSlider_Zoom_Image_Tiles_valueChanged(int);
-    void on_lineEdit_RM_MapName_textEdited(const QString &);
     void onHoveredRegionMapTileChanged(int x, int y);
     void onHoveredRegionMapTileCleared();
     void mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPixmapItem *item);

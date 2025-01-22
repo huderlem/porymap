@@ -593,13 +593,13 @@ bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
     return gameStringToInt(gameString, ok) != 0;
 }
 
-QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
+tsl::ordered_map<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> &memberMap) {
     QString filePath = this->root + "/" + filename;
     auto cParser = fex::Parser();
     auto tokens = fex::Lexer().LexFile(filePath);
-    auto structs = cParser.ParseTopLevelObjects(tokens);
-    QMap<QString, QHash<QString, QString>> structMaps;
-    for (auto it = structs.begin(); it != structs.end(); it++) {
+    auto topLevelObjects = cParser.ParseTopLevelObjects(tokens);
+    tsl::ordered_map<QString, QHash<QString, QString>> structs;
+    for (auto it = topLevelObjects.begin(); it != topLevelObjects.end(); it++) {
         QString structLabel = QString::fromStdString(it->first);
         if (structLabel.isEmpty()) continue;
         if (!label.isEmpty() && label != structLabel) continue; // Speed up parsing if only looking for a particular symbol
@@ -617,9 +617,9 @@ QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &fi
             }
             i++;
         }
-        structMaps.insert(structLabel, values);
+        structs[structLabel] = values;
     }
-    return structMaps;
+    return structs;
 }
 
 QList<QStringList> ParseUtil::getLabelMacros(const QList<QStringList> &list, const QString &label) {

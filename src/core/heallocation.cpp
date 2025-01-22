@@ -3,6 +3,8 @@
 #include "events.h"
 #include "map.h"
 
+// TODO: Remove
+
 HealLocation::HealLocation(QString id, QString map,
                            int i, int16_t x, int16_t y,
                            QString respawnMap, uint8_t respawnNPC) {

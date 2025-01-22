@@ -18,9 +18,6 @@
 #include <QVariant>
 #include <QFileSystemWatcher>
 
-// The displayed name of the special map value used by warps with multiple potential destinations
-static QString DYNAMIC_MAP_NAME = "Dynamic";
-
 class Project : public QObject
 {
     Q_OBJECT
@@ -35,18 +32,18 @@ public:
 
 public:
     QString root;
-    QStringList groupNames;
-    QMap<QString, int> mapGroups;
-    QList<QStringList> groupedMapNames;
     QStringList mapNames;
+    QStringList groupNames;
+    QMap<QString, QStringList> groupNameToMapNames;
     QList<HealLocation> healLocations;
     QMap<QString, int> healLocationNameToValue;
     QMap<QString, QString> mapConstantsToMapNames;
     QMap<QString, QString> mapNamesToMapConstants;
-    QStringList mapLayoutsTable;
-    QStringList mapLayoutsTableMaster;
+    QMap<QString, QString> mapNameToLayoutId;
+    QMap<QString, QString> mapNameToMapSectionName;
     QString layoutsLabel;
-    QMap<QString, QString> layoutIdsToNames;
+    QStringList layoutIds;
+    QStringList layoutIdsMaster;
     QMap<QString, Layout*> mapLayouts;
     QMap<QString, Layout*> mapLayoutsMaster;
     QMap<QString, EventGraphics*> eventGraphicsMap;
@@ -65,6 +62,7 @@ public:
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
     QStringList globalScriptLabels;
+    QStringList mapSectionIdNamesSaveOrder;
     QStringList mapSectionIdNames;
     QMap<QString, MapSectionEntry> regionMapEntries;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
@@ -77,11 +75,11 @@ public:
     QMap<QString, qint64> modifiedFileTimestamps;
     bool usingAsmTilesets;
     QSet<QString> disabledSettingsNames;
+    QSet<QString> topLevelMapFields;
     int pokemonMinLevel;
     int pokemonMaxLevel;
     int maxEncounterRate;
     bool wildEncountersLoaded;
-    bool saveEmptyMapsec;
 
     void set_root(QString);
 
@@ -113,7 +111,7 @@ public:
     QStringList secondaryTilesetLabels;
     QStringList tilesetLabelsOrdered;
 
-    Blockdata readBlockdata(QString);
+    Blockdata readBlockdata(QString, bool *ok = nullptr);
     bool loadBlockdata(Layout *);
     bool loadLayoutBorder(Layout *);
 
@@ -122,12 +120,29 @@ public:
     void deleteFile(QString path);
 
     bool readMapGroups();
-    Map* addNewMapToGroup(QString, int, Map*, bool, bool);
-    QString getNewMapName();
-    QString getProjectTitle();
+    void addNewMapGroup(const QString &groupName);
+    QString mapNameToMapGroup(const QString &mapName);
 
-    QString readMapLayoutId(QString map_name);
-    QString readMapLocation(QString map_name);
+    struct NewMapSettings {
+        QString name;
+        QString group;
+        bool canFlyTo;
+        Layout::Settings layout;
+        MapHeader header;
+    };
+    NewMapSettings newMapSettings;
+    Layout::Settings newLayoutSettings;
+
+    void initNewMapSettings();
+    void initNewLayoutSettings();
+
+    Map *createNewMap(const Project::NewMapSettings &mapSettings, const Map* toDuplicate = nullptr);
+    Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
+    Tileset *createNewTileset(QString name, bool secondary, bool checkerboardFill);
+    bool isIdentifierUnique(const QString &identifier) const;
+    bool isValidNewIdentifier(QString identifier) const;
+    QString toUniqueIdentifier(const QString &identifier) const;
+    QString getProjectTitle();
 
     bool readWildMonData();
     tsl::ordered_map<QString, tsl::ordered_map<QString, WildPokemonHeader>> wildMonData;
@@ -139,25 +154,24 @@ public:
     bool readSpeciesIconPaths();
     QMap<QString, QString> speciesToIconPath;
 
-    void addNewMapsec(const QString &name);
-    void removeMapsec(const QString &name);
+    void addNewMapsec(const QString &idName);
+    void removeMapsec(const QString &idName);
+    QString getMapsecDisplayName(const QString &idName) const { return this->mapSectionDisplayNames.value(idName); }
+    void setMapsecDisplayName(const QString &idName, const QString &displayName);
 
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
 
-    QSet<QString> getTopLevelMapFields();
+    void initTopLevelMapFields();
+    bool readMapJson(const QString &mapName, QJsonDocument * out);
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
-    Layout *createNewLayout(Layout::SimpleSettings &layoutSettings);
     bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
     void loadTilesetAssets(Tileset*);
-    void loadTilesetTiles(Tileset*, QImage);
-    void loadTilesetMetatiles(Tileset*);
     void loadTilesetMetatileLabels(Tileset*);
-    void loadTilesetPalettes(Tileset*);
     void readTilesetPaths(Tileset* tileset);
 
     void saveLayout(Layout *);
@@ -172,15 +186,10 @@ public:
     void saveMapGroups();
     void saveRegionMapSections();
     void saveWildMonData();
-    void saveMapConstantsHeader();
     void saveHealLocations(Map*);
     void saveTilesets(Tileset*, Tileset*);
     void saveTilesetMetatileLabels(Tileset*, Tileset*);
-    void saveTilesetMetatileAttributes(Tileset*);
-    void saveTilesetMetatiles(Tileset*);
-    void saveTilesetTilesImage(Tileset*);
-    void saveTilesetPalettes(Tileset*);
-    void appendTilesetLabel(QString label, QString isSecondaryStr);
+    void appendTilesetLabel(const QString &label, const QString &isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();
     bool readRegionMapSections();
@@ -217,9 +226,8 @@ public:
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QStringList getEventScriptsFilePaths() const;
 
-    QString getDefaultPrimaryTilesetLabel();
-    QString getDefaultSecondaryTilesetLabel();
-    QString getDynamicMapDefineName();
+    QString getDefaultPrimaryTilesetLabel() const;
+    QString getDefaultSecondaryTilesetLabel() const;
     void updateTilesetMetatileLabels(Tileset *tileset);
     QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
     QString findMetatileLabelsTileset(QString label);
@@ -227,6 +235,9 @@ public:
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
 
+    static QString getEmptyMapDefineName();
+    static QString getDynamicMapDefineName();
+    static QString getDynamicMapName();
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();
@@ -234,7 +245,7 @@ public:
     static int getNumPalettesPrimary();
     static int getNumPalettesTotal();
     static int getMaxMapDataSize();
-    static int getDefaultMapSize();
+    static int getDefaultMapDimension();
     static int getMaxMapWidth();
     static int getMaxMapHeight();
     static int getMapDataSize(int width, int height);
@@ -242,14 +253,17 @@ public:
     bool calculateDefaultMapSize();
     static int getMaxObjectEvents();
     static QString getEmptyMapsecName();
+    static QString getMapGroupPrefix();
+
+    static void numericalModeSort(QStringList &list);
 
 private:
+    QMap<QString, QString> mapSectionDisplayNames;
+
     void updateLayout(Layout *);
 
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
-    void setNewMapEvents(Map *map);
-    void setNewMapConnections(Map *map);
 
     void saveHealLocationsData(Map *map);
     void saveHealLocationsConstants();
@@ -262,13 +276,20 @@ private:
     static int num_pals_primary;
     static int num_pals_total;
     static int max_map_data_size;
-    static int default_map_size;
+    static int default_map_dimension;
     static int max_object_events;
 
 signals:
     void fileChanged(QString filepath);
-    void mapSectionIdNamesChanged();
     void mapLoaded(Map *map);
+    void mapCreated(Map *newMap, const QString &groupName);
+    void layoutCreated(Layout *newLayout);
+    void tilesetCreated(Tileset *newTileset);
+    void mapGroupAdded(const QString &groupName);
+    void mapSectionAdded(const QString &idName);
+    void mapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
+    void mapSectionIdNamesChanged(const QStringList &idNames);
+    void mapsExcluded(const QStringList &excludedMapNames);
 };
 
 #endif // PROJECT_H

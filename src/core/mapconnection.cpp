@@ -65,7 +65,7 @@ QPixmap MapConnection::getPixmap() {
     if (!map)
         return QPixmap();
 
-    return map->renderConnection(m_direction, m_parentMap ? m_parentMap->layout : nullptr);
+    return map->renderConnection(m_direction, m_parentMap ? m_parentMap->layout() : nullptr);
 }
 
 void MapConnection::setParentMap(Map* map, bool mirror) {
@@ -75,7 +75,7 @@ void MapConnection::setParentMap(Map* map, bool mirror) {
     if (mirror) {
         auto connection = findMirror();
         if (connection)
-            connection->setTargetMapName(map ? map->name : QString(), false);
+            connection->setTargetMapName(map ? map->name() : QString(), false);
     }
 
     if (m_parentMap)
@@ -91,7 +91,7 @@ void MapConnection::setParentMap(Map* map, bool mirror) {
 }
 
 QString MapConnection::parentMapName() const {
-    return m_parentMap ? m_parentMap->name : QString();
+    return m_parentMap ? m_parentMap->name() : QString();
 }
 
 void MapConnection::setTargetMapName(const QString &targetMapName, bool mirror) {

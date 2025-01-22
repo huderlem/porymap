@@ -33,7 +33,8 @@ DEFINES += PORYMAP_LATEST_COMMIT=\\\"$$LATEST_COMMIT\\\"
 VERSION = 5.4.1
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
-SOURCES += src/core/block.cpp \
+SOURCES += src/core/advancemapparser.cpp \
+    src/core/block.cpp \
     src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
@@ -42,20 +43,21 @@ SOURCES += src/core/block.cpp \
     src/core/imageexport.cpp \
     src/core/map.cpp \
     src/core/mapconnection.cpp \
+    src/core/mapheader.cpp \
     src/core/maplayout.cpp \
-    src/core/mapparser.cpp \
     src/core/metatile.cpp \
-    src/core/metatileparser.cpp \
     src/core/network.cpp \
     src/core/paletteutil.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
+    src/core/validator.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
     src/core/editcommands.cpp \
     src/lib/fex/lexer.cpp \
     src/lib/fex/parser.cpp \
+    src/lib/collapsiblesection.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
     src/scriptapi/apimap.cpp \
@@ -87,17 +89,23 @@ SOURCES += src/core/block.cpp \
     src/ui/filterchildrenproxymodel.cpp \
     src/ui/maplistmodels.cpp \
     src/ui/maplisttoolbar.cpp \
+    src/ui/message.cpp \
     src/ui/graphicsview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/layoutpixmapitem.cpp \
     src/ui/prefabcreationdialog.cpp \
     src/ui/regionmappixmapitem.cpp \
     src/ui/citymappixmapitem.cpp \
+    src/ui/mapheaderform.cpp \
     src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
     src/ui/movementpermissionsselector.cpp \
     src/ui/neweventtoolbutton.cpp \
+    src/ui/newlayoutdialog.cpp \
+    src/ui/newlayoutform.cpp \
+    src/ui/newlocationdialog.cpp \
+    src/ui/newmapgroupdialog.cpp \
     src/ui/noscrollcombobox.cpp \
     src/ui/noscrollspinbox.cpp \
     src/ui/montabwidget.cpp \
@@ -110,7 +118,7 @@ SOURCES += src/core/block.cpp \
     src/ui/tileseteditortileselector.cpp \
     src/ui/tilemaptileselector.cpp \
     src/ui/regionmapeditor.cpp \
-    src/ui/newmappopup.cpp \
+    src/ui/newmapdialog.cpp \
     src/ui/mapimageexporter.cpp \
     src/ui/newtilesetdialog.cpp \
     src/ui/flowlayout.cpp \
@@ -133,7 +141,8 @@ SOURCES += src/core/block.cpp \
     src/ui/updatepromoter.cpp \
     src/ui/wildmonchart.cpp
 
-HEADERS  += include/core/block.h \
+HEADERS  += include/core/advancemapparser.h \
+    include/core/block.h \
     include/core/bitpacker.h \
     include/core/blockdata.h \
     include/core/events.h \
@@ -143,15 +152,15 @@ HEADERS  += include/core/block.h \
     include/core/imageexport.h \
     include/core/map.h \
     include/core/mapconnection.h \
+    include/core/mapheader.h \
     include/core/maplayout.h \
-    include/core/mapparser.h \
     include/core/metatile.h \
-    include/core/metatileparser.h \
     include/core/network.h \
     include/core/paletteutil.h \
     include/core/parseutil.h \
     include/core/tile.h \
     include/core/tileset.h \
+    include/core/validator.h \
     include/core/regionmap.h \
     include/core/wildmoninfo.h \
     include/core/editcommands.h \
@@ -161,6 +170,7 @@ HEADERS  += include/core/block.h \
     include/lib/fex/define_statement.h \
     include/lib/fex/lexer.h \
     include/lib/fex/parser.h \
+    include/lib/collapsiblesection.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
@@ -174,6 +184,7 @@ HEADERS  += include/core/block.h \
     include/ui/connectionpixmapitem.h \
     include/ui/currentselectedmetatilespixmapitem.h \
     include/ui/gridsettings.h \
+    include/ui/mapheaderform.h \
     include/ui/newmapconnectiondialog.h \
     include/ui/prefabframe.h \
     include/ui/projectsettingseditor.h \
@@ -186,6 +197,7 @@ HEADERS  += include/core/block.h \
     include/ui/filterchildrenproxymodel.h \
     include/ui/maplistmodels.h \
     include/ui/maplisttoolbar.h \
+    include/ui/message.h \
     include/ui/graphicsview.h \
     include/ui/imageproviders.h \
     include/ui/layoutpixmapitem.h \
@@ -199,6 +211,10 @@ HEADERS  += include/core/block.h \
     include/ui/movablerect.h \
     include/ui/movementpermissionsselector.h \
     include/ui/neweventtoolbutton.h \
+    include/ui/newlayoutdialog.h \
+    include/ui/newlayoutform.h \
+    include/ui/newlocationdialog.h \
+    include/ui/newmapgroupdialog.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
     include/ui/montabwidget.h \
@@ -212,7 +228,7 @@ HEADERS  += include/core/block.h \
     include/ui/tileseteditortileselector.h \
     include/ui/tilemaptileselector.h \
     include/ui/regionmapeditor.h \
-    include/ui/newmappopup.h \
+    include/ui/newmapdialog.h \
     include/ui/mapimageexporter.h \
     include/ui/newtilesetdialog.h \
     include/ui/overlay.h \
@@ -241,14 +257,19 @@ FORMS    += forms/mainwindow.ui \
     forms/colorinputwidget.ui \
     forms/connectionslistitem.ui \
     forms/gridsettingsdialog.ui \
+    forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
+    forms/newlayoutdialog.ui \
+    forms/newlayoutform.ui \
+    forms/newlocationdialog.ui \
     forms/newmapconnectiondialog.ui \
+    forms/newmapgroupdialog.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
     forms/tileseteditor.ui \
     forms/paletteeditor.ui \
     forms/regionmapeditor.ui \
-    forms/newmappopup.ui \
+    forms/newmapdialog.ui \
     forms/aboutporymap.ui \
     forms/newtilesetdialog.ui \
     forms/mapimageexporter.ui \

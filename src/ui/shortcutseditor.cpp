@@ -158,7 +158,7 @@ void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyE
             .arg(duplicateKeySequence.toString()).arg(siblingLabel);
 
     const auto result = QMessageBox::question(
-            this, "porymap", message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+            this, QApplication::applicationName(), message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
     if (result == QMessageBox::Yes)
         removeKeySequence(duplicateKeySequence, sibling);

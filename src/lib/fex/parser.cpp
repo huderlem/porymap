@@ -337,9 +337,9 @@ namespace fex
         return DefineStatement(identifer, value);
     }
 
-    std::map<std::string, int> Parser::ReadDefines(const QString &filename, std::vector<std::string> matching)
+    tsl::ordered_map<std::string, int> Parser::ReadDefines(const QString &filename, std::vector<std::string> matching)
     {
-        std::map<std::string, int> out;
+        tsl::ordered_map<std::string, int> out;
 
         Lexer lexer;
         auto tokens = lexer.LexFile(filename);
@@ -488,12 +488,12 @@ namespace fex
         return items;
     }
 
-    std::map<std::string, ArrayValue> Parser::ParseTopLevelObjects(std::vector<Token> tokens)
+    tsl::ordered_map<std::string, ArrayValue> Parser::ParseTopLevelObjects(std::vector<Token> tokens)
     {
         index_ = 0;
         tokens_ = std::move(tokens);
 
-        std::map<std::string, ArrayValue> items;
+        tsl::ordered_map<std::string, ArrayValue> items;
 
         while (index_ < tokens_.size())
         {

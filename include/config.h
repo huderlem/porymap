@@ -71,6 +71,7 @@ public:
         this->showTilesetEditorDivider = false;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
+        this->newMapHeaderSectionExpanded = false;
         this->theme = "default";
         this->wildMonChartTheme = "";
         this->textEditorOpenFolder = "";
@@ -123,6 +124,7 @@ public:
     bool showTilesetEditorDivider;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
+    bool newMapHeaderSectionExpanded;
     QString theme;
     QString wildMonChartTheme;
     QString textEditorOpenFolder;
@@ -135,6 +137,8 @@ public:
     QVersionNumber lastUpdateCheckVersion;
     QMap<QUrl, QDateTime> rateLimitTimes;
     QByteArray wildMonChartGeometry;
+    QByteArray newMapDialogGeometry;
+    QByteArray newLayoutDialogGeometry;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -187,6 +191,7 @@ enum ProjectIdentifier {
     symbol_spawn_npcs,
     symbol_attribute_table,
     symbol_tilesets_prefix,
+    symbol_dynamic_map_name,
     define_obj_event_count,
     define_min_level,
     define_max_level,
@@ -256,7 +261,6 @@ enum ProjectFilePath {
     data_pokemon_gfx,
     data_heal_locations,
     constants_global,
-    constants_map_groups,
     constants_items,
     constants_flags,
     constants_vars,
@@ -328,7 +332,7 @@ public:
     QString getCustomFilePath(ProjectFilePath pathId);
     QString getCustomFilePath(const QString &pathId);
     QString getFilePath(ProjectFilePath pathId);
-    void setIdentifier(ProjectIdentifier id, const QString &text);
+    void setIdentifier(ProjectIdentifier id, QString text);
     void setIdentifier(const QString &id, const QString &text);
     QString getCustomIdentifier(ProjectIdentifier id);
     QString getCustomIdentifier(const QString &id);

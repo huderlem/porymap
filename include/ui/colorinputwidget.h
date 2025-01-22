@@ -2,7 +2,6 @@
 #define COLORINPUTWIDGET_H
 
 #include <QGroupBox>
-#include <QValidator>
 
 namespace Ui {
 class ColorInputWidget;
