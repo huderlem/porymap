@@ -1347,10 +1347,6 @@ void MainWindow::onMapSectionDisplayNameChanged(const QString &idName, const QSt
 void MainWindow::onNewTilesetCreated(Tileset *tileset) {
     logInfo(QString("Created a new tileset named %1.").arg(tileset->name));
 
-    // Unlike creating a new map or layout (which immediately opens the new item)
-    // creating a new tileset has no visual feedback that it succeeded, so we show a message.
-    InfoMessage::show(QString("New tileset created at '%1'!").arg(tileset->getExpectedDir()), this);
-
     // Refresh tileset combo boxes
     if (!tileset->is_secondary) {
         int index = this->editor->project->primaryTilesetLabels.indexOf(tileset->name);
@@ -1409,6 +1405,12 @@ void MainWindow::openDuplicateLayoutDialog(const QString &layoutId) {
 
 void MainWindow::on_actionNew_Tileset_triggered() {
     auto dialog = new NewTilesetDialog(editor->project, this);
+    connect(dialog, &NewTilesetDialog::applied, [this](Tileset *tileset) {
+        // Unlike creating a new map or layout (which immediately opens the new item)
+        // creating a new tileset has no visual feedback that it succeeded, so we show a message.
+        // It's important that we do this after the dialog has closed (sheet modal dialogs on macOS don't seem to play nice together).
+        InfoMessage::show(QString("New tileset created at '%1'!").arg(tileset->getExpectedDir()), this);
+    });
     dialog->open();
 }
 

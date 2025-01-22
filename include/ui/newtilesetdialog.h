@@ -21,6 +21,9 @@ public:
 
     virtual void accept() override;
 
+signals:
+    void applied(Tileset *tileset);
+
 private:
     Ui::NewTilesetDialog *ui;
     Project *project = nullptr;

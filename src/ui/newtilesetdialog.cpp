@@ -76,4 +76,5 @@ void NewTilesetDialog::accept() {
     ui->label_GenericError->setVisible(false);
 
     QDialog::accept();
+    emit applied(tileset);
 }
