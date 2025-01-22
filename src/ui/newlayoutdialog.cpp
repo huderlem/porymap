@@ -42,11 +42,18 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewLayoutDialog::dialogButtonClicked);
 
     refresh();
-    adjustSize();
+
+    if (porymapConfig.newLayoutDialogGeometry.isEmpty()){
+        // On first display resize to fit contents a little better
+        adjustSize();
+    } else {
+        restoreGeometry(porymapConfig.newLayoutDialogGeometry);
+    }
 }
 
 NewLayoutDialog::~NewLayoutDialog()
 {
+    porymapConfig.newLayoutDialogGeometry = saveGeometry();
     saveSettings();
     delete ui;
 }

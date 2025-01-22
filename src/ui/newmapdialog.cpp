@@ -63,6 +63,7 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewMapDialog::dialogButtonClicked);
 
     refresh();
+    restoreGeometry(porymapConfig.newMapDialogGeometry);
 }
 
 // Adding new map to an existing map list folder. Initialize settings accordingly.
@@ -91,6 +92,7 @@ NewMapDialog::NewMapDialog(Project *project, int mapListTab, const QString &mapL
 
 NewMapDialog::~NewMapDialog()
 {
+    porymapConfig.newMapDialogGeometry = saveGeometry();
     saveSettings();
     delete ui;
 }

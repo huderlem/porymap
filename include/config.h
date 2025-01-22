@@ -137,6 +137,8 @@ public:
     QVersionNumber lastUpdateCheckVersion;
     QMap<QUrl, QDateTime> rateLimitTimes;
     QByteArray wildMonChartGeometry;
+    QByteArray newMapDialogGeometry;
+    QByteArray newLayoutDialogGeometry;
 
 protected:
     virtual QString getConfigFilepath() override;

@@ -349,6 +349,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->customScriptsEditorState = bytesFromString(value);
     } else if (key == "wild_mon_chart_geometry") {
         this->wildMonChartGeometry = bytesFromString(value);
+    } else if (key == "new_map_dialog_geometry") {
+        this->newMapDialogGeometry = bytesFromString(value);
+    } else if (key == "new_layout_dialog_geometry") {
+        this->newLayoutDialogGeometry = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "collision_zoom") {
@@ -441,6 +445,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
     map.insert("wild_mon_chart_geometry", stringFromByteArray(this->wildMonChartGeometry));
+    map.insert("new_map_dialog_geometry", stringFromByteArray(this->newMapDialogGeometry));
+    map.insert("new_layout_dialog_geometry", stringFromByteArray(this->newLayoutDialogGeometry));
     map.insert("mirror_connecting_maps", this->mirrorConnectingMaps ? "1" : "0");
     map.insert("show_dive_emerge_maps", this->showDiveEmergeMaps ? "1" : "0");
     map.insert("dive_emerge_map_opacity", QString::number(this->diveEmergeMapOpacity));

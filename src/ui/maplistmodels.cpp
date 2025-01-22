@@ -104,7 +104,6 @@ QStandardItem *MapListModel::createMapItem(const QString &mapName, QStandardItem
     map->setData(mapName, MapListUserRoles::NameRole);
     map->setData("map_name", MapListUserRoles::TypeRole);
     map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemNeverHasChildren);
-    map->setEditable(this->editable); // Will override flags if necessary
     map->setToolTip(this->project->mapNamesToMapConstants.value(mapName));
     this->mapItems.insert(mapName, map);
     return map;
