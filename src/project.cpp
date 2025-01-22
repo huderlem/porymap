@@ -2426,7 +2426,7 @@ void Project::removeMapsec(const QString &idName) {
 }
 
 void Project::setMapsecDisplayName(const QString &idName, const QString &displayName) {
-    if (this->mapSectionDisplayNames[idName] == displayName)
+    if (this->mapSectionDisplayNames.value(idName) == displayName)
         return;
     this->mapSectionDisplayNames[idName] = displayName;
     this->hasUnsavedDataChanges = true;
