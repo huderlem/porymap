@@ -32,11 +32,6 @@ void Layout::copyFrom(const Layout *other) {
     this->border = other->border;
 }
 
-// When we create a layout automatically for a new map we add this suffix to differentiate the layout name from the map name.
-QString Layout::defaultSuffix() {
-    return "_Layout";
-}
-
 QString Layout::layoutConstantFromName(QString mapName) {
     // Transform map names of the form 'GraniteCave_B1F` into layout constants like 'LAYOUT_GRANITE_CAVE_B1F'.
     static const QRegularExpression caseChange("([a-z])([A-Z])");

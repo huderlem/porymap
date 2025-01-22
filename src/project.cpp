@@ -2001,7 +2001,7 @@ void Project::initNewMapSettings() {
     this->newMapSettings.canFlyTo = false;
 
     this->newMapSettings.layout.folderName = this->newMapSettings.name;
-    this->newMapSettings.layout.name = QString("%1%2").arg(this->newMapSettings.name).arg(Layout::defaultSuffix());
+    this->newMapSettings.layout.name = QString();
     this->newMapSettings.layout.id = Layout::layoutConstantFromName(this->newMapSettings.name);
     this->newMapSettings.layout.width = getDefaultMapDimension();
     this->newMapSettings.layout.height = getDefaultMapDimension();

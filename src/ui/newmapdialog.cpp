@@ -124,12 +124,13 @@ void NewMapDialog::saveSettings() {
     settings->header = this->headerForm->headerData();
 
     // This dialog doesn't give users the option to give new layouts a name, we generate one using the map name.
+    // We instead add a "_Layout" suffix to differentiate the layout name from the map name.
     //  (an older iteration of this dialog gave users an option to name new layouts, but it's extra clutter for
     //   something the majority of users creating a map won't need. If they want to give a specific name to a layout
     //   they can create the layout first, then create a new map that uses that layout.)
     const Layout *layout = this->project->mapLayouts.value(settings->layout.id);
     if (!layout) {
-        const QString newLayoutName = QString("%1%2").arg(settings->name).arg(Layout::defaultSuffix());
+        const QString newLayoutName = settings->name + QStringLiteral("_Layout");
         settings->layout.name = this->project->toUniqueIdentifier(newLayoutName);
     } else {
         // Pre-existing layout. The layout name won't be read, but we'll make sure it's correct anyway.
