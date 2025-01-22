@@ -68,6 +68,9 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The constant that will be used to refer to this layout. It cannot be the same as any other existing layout.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="placeholderText">
+          <string>LAYOUT_MY_NEW_LAYOUT</string>
+         </property>
          <property name="clearButtonEnabled">
           <bool>true</bool>
          </property>
@@ -91,6 +94,9 @@
         <widget class="QLineEdit" name="lineEdit_Name">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new layout. The name cannot be the same as any other existing layout.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="placeholderText">
+          <string>MyNewLayout</string>
          </property>
          <property name="clearButtonEnabled">
           <bool>true</bool>

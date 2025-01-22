@@ -28,7 +28,7 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
     if (this->layoutToCopy && !this->layoutToCopy->name.isEmpty()) {
         settings->name = project->toUniqueIdentifier(this->layoutToCopy->name);
     } else {
-        settings->name = project->getNewLayoutName();
+        settings->name = QString();
     }
     // Generate a unique Layout constant
     settings->id = project->toUniqueIdentifier(Layout::layoutConstantFromName(settings->name));

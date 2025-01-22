@@ -133,8 +133,6 @@ public:
     NewMapSettings newMapSettings;
     Layout::Settings newLayoutSettings;
 
-    QString getNewMapName() const;
-    QString getNewLayoutName() const;
     void initNewMapSettings();
     void initNewLayoutSettings();
 

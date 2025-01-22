@@ -185,6 +185,9 @@
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the new map. The name cannot be the same as any other existing map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
+         <property name="placeholderText">
+          <string>MyNewMap</string>
+         </property>
          <property name="clearButtonEnabled">
           <bool>true</bool>
          </property>

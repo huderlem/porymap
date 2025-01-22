@@ -35,9 +35,8 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
         settings->name = project->toUniqueIdentifier(this->mapToCopy->name());
         
     } else {
-        // Not duplicating a map, get a generic new map name.
-        // The rest of the settings are preserved in the project between sessions.
-        settings->name = project->getNewMapName();
+        // Clear the previously-used map name. The rest of the settings are preserved between sessions.
+        settings->name = QString();
     }
     // Generate a unique Layout constant
     settings->layout.id = project->toUniqueIdentifier(Layout::layoutConstantFromName(settings->name));

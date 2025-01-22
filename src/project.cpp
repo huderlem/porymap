@@ -1995,28 +1995,8 @@ QString Project::toUniqueIdentifier(const QString &identifier) const {
     return uniqueIdentifier;
 }
 
-QString Project::getNewMapName() const {
-    // Ensure default name/ID doesn't already exist.
-    int suffix = 1;
-    QString newMapName;
-    do {
-        newMapName = QString("NewMap%1").arg(suffix++);
-    } while (!isIdentifierUnique(newMapName) || !isIdentifierUnique(Map::mapConstantFromName(newMapName)));
-    return newMapName;
-}
-
-QString Project::getNewLayoutName() const {
-    // Ensure default name/ID doesn't already exist.
-    int suffix = 1;
-    QString newLayoutName;
-    do {
-        newLayoutName = QString("NewLayout%1").arg(suffix++);
-    } while (!isIdentifierUnique(newLayoutName) || !isIdentifierUnique(Layout::layoutConstantFromName(newLayoutName)));
-    return newLayoutName;
-}
-
 void Project::initNewMapSettings() {
-    this->newMapSettings.name = getNewMapName();
+    this->newMapSettings.name = QString();
     this->newMapSettings.group = this->groupNames.at(0);
     this->newMapSettings.canFlyTo = false;
 
@@ -2044,7 +2024,7 @@ void Project::initNewMapSettings() {
 }
 
 void Project::initNewLayoutSettings() {
-    this->newLayoutSettings.name = getNewLayoutName();
+    this->newLayoutSettings.name = QString();
     this->newLayoutSettings.id = Layout::layoutConstantFromName(this->newLayoutSettings.name);
     this->newLayoutSettings.width = getDefaultMapDimension();
     this->newLayoutSettings.height = getDefaultMapDimension();
