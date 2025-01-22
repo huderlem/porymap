@@ -213,6 +213,12 @@ void NewMapDialog::on_comboBox_LayoutID_currentTextChanged(const QString &text) 
 
     // Changing the layout ID to an existing layout updates the layout settings to match.
     const Layout *layout = this->project->mapLayouts.value(text);
+    if (!layout && this->mapToCopy) {
+        // When duplicating a map, if a new layout ID is specified the settings will be updated
+        // to match the layout of the map we're duplicating.
+        layout = this->mapToCopy->layout();
+    }
+
     if (layout) {
         ui->newLayoutForm->setSettings(layout->settings());
         ui->newLayoutForm->setDisabled(true);
