@@ -8,8 +8,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
-- Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add the ability to edit layouts with no corresponding map.
+- Add ``Duplicate Map`` / ``Duplicate Layout`` options, accessible by right-clicking a map or layout in the map list.
+- Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
 - Add charts to the `Wild Pokémon` tab that show species and level distributions.
 - Add options for customizing the map grid under `View -> Grid Settings`.
@@ -21,6 +22,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add a setting to specify the tile values to use for the unused metatile layer.
 
 ### Changed
+- Redesigned the new map dialog, including better error checking and a collapsible section for header data.
+- Map groups and ``MAPSEC`` names specified when creating a new map will be added automatically if they don't already exist.
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
 - A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
@@ -30,6 +33,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The triple-layer metatiles setting can now be set automatically using a project constant.
 - `Export Map Stitch Image` now shows a preview of the full image, not just the current map.
 - Maps and layouts were internally separated.
+- Unrecognized map names in Event or Connections data will no longer be overwritten.
+- Map names and ``MAP_NAME`` constants are no longer required to match.
+- Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -66,6 +72,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix exported tile images containing garbage pixels after the end of the tiles.
 - Fix fully transparent pixels rendering with the incorrect color.
 - Fix the values for some config fields shuffling their order every save.
+- Fix some problems with tileset detection when importing maps from AdvanceMap.
+- Fix certain input fields allowing invalid identifiers, like names starting with numbers.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
