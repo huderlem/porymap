@@ -28,6 +28,7 @@
 #include "gridsettings.h"
 #include "customscriptseditor.h"
 #include "wildmonchart.h"
+#include "wildmonsearch.h"
 #include "updatepromoter.h"
 #include "aboutporymap.h"
 #include "mapheaderform.h"
@@ -282,6 +283,7 @@ private slots:
     void on_pushButton_DeleteWildMonGroup_clicked();
     void on_pushButton_SummaryChart_clicked();
     void on_pushButton_ConfigureEncountersJSON_clicked();
+    void on_toolButton_WildMonSearch_clicked();
     void on_pushButton_CreatePrefab_clicked();
     void on_spinBox_SelectedElevation_valueChanged(int elevation);
     void on_spinBox_SelectedCollision_valueChanged(int collision);
@@ -294,6 +296,7 @@ private slots:
     void reloadScriptEngine();
     void on_actionShow_Grid_triggered();
     void on_actionGrid_Settings_triggered();
+    void openWildMonTable(const QString &mapName, const QString &groupName, const QString &fieldName);
 
 public:
     Ui::MainWindow *ui;
@@ -321,6 +324,7 @@ private:
     QPointer<NetworkAccessManager> networkAccessManager = nullptr;
     QPointer<AboutPorymap> aboutWindow = nullptr;
     QPointer<WildMonChart> wildMonChart = nullptr;
+    QPointer<WildMonSearch> wildMonSearch = nullptr;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;

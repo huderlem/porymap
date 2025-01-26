@@ -152,6 +152,7 @@ public:
     QVector<poryjson::Json::object> extraEncounterGroups;
 
     bool readSpeciesIconPaths();
+    QPixmap getSpeciesIcon(const QString &species) const;
     QMap<QString, QString> speciesToIconPath;
 
     void addNewMapsec(const QString &idName);
@@ -238,6 +239,7 @@ public:
     static QString getEmptyMapDefineName();
     static QString getDynamicMapDefineName();
     static QString getDynamicMapName();
+    static QString getEmptySpeciesName();
     static int getNumTilesPrimary();
     static int getNumTilesTotal();
     static int getNumMetatilesPrimary();

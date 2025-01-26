@@ -221,6 +221,7 @@ enum ProjectIdentifier {
     define_map_section_prefix,
     define_map_section_empty,
     define_species_prefix,
+    define_species_empty,
     regex_behaviors,
     regex_obj_event_gfx,
     regex_items,

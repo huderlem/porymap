@@ -29,6 +29,8 @@ void MonTabWidget::populate() {
     copyTabButtons.resize(fields.size());
     copyTabButtons.fill(nullptr);
 
+    this->fieldNameToIndex.clear();
+
     int index = 0;
     for (EncounterField field : fields) {
         QTableView *table = new QTableView(this);
@@ -45,7 +47,7 @@ void MonTabWidget::populate() {
         connect(buttonCopy, &QPushButton::clicked, [=]() {actionCopyTab(index); });
         copyTabButtons[index] = buttonCopy;
         this->tabBar()->setTabButton(index, QTabBar::LeftSide, buttonCopy);
-
+        this->fieldNameToIndex.insert(field.name, index);
         index++;
     }
 }
@@ -111,7 +113,7 @@ void MonTabWidget::deactivateTab(int tabIndex) {
     EncounterTableModel *oldModel = static_cast<EncounterTableModel *>(speciesTable->model());
     WildMonInfo monInfo = oldModel->encounterData();
     monInfo.active = false;
-    EncounterTableModel *newModel = new EncounterTableModel(monInfo, editor->project->wildMonFields, tabIndex, this);
+    EncounterTableModel *newModel = new EncounterTableModel(monInfo, editor->project->wildMonFields[tabIndex], this);
     speciesTable->setModel(newModel);
 
     setTabActive(tabIndex, false);
@@ -120,7 +122,7 @@ void MonTabWidget::deactivateTab(int tabIndex) {
 void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
     QTableView *speciesTable = tableAt(tabIndex);
 
-    EncounterTableModel *model = new EncounterTableModel(monInfo, editor->project->wildMonFields, tabIndex, this);
+    EncounterTableModel *model = new EncounterTableModel(monInfo, editor->project->wildMonFields[tabIndex], this);
     connect(model, &EncounterTableModel::edited, editor, &Editor::saveEncounterTabData);
     connect(model, &EncounterTableModel::edited, editor, &Editor::wildMonTableEdited);
     speciesTable->setModel(model);
@@ -166,4 +168,9 @@ void MonTabWidget::setTabActive(int index, bool active) {
         this->addDeleteTabButtons[index]->setIcon(QIcon(":/icons/delete.ico"));
         this->copyTabButtons[index]->show();
     }
+}
+
+void MonTabWidget::setCurrentField(const QString &fieldName) {
+    int index = this->fieldNameToIndex.value(fieldName, -1);
+    if (index >= 0) setCurrentIndex(index);
 }

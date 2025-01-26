@@ -5,10 +5,14 @@
 #include <QtWidgets>
 #include "orderedmap.h"
 
-struct WildPokemon {
-    int minLevel = 5;
-    int maxLevel = 5;
-    QString species = "SPECIES_NONE"; // TODO: Use define_species_prefix
+class WildPokemon {
+public:
+    WildPokemon();
+    WildPokemon(int minLevel, int maxLevel, const QString &species);
+
+    int minLevel;
+    int maxLevel;
+    QString species;
 };
 
 struct WildMonInfo {
@@ -30,7 +34,8 @@ struct EncounterField {
 typedef QVector<EncounterField> EncounterFields;
 
 void setDefaultEncounterRate(QString fieldName, int rate);
-WildMonInfo getDefaultMonInfo(EncounterField field);
+WildMonInfo getDefaultMonInfo(const EncounterField &field);
+QVector<double> getWildEncounterPercentages(const EncounterField &field);
 void combineEncounters(WildMonInfo &to, WildMonInfo from);
 
 #endif // GUARD_WILDMONINFO_H

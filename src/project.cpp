@@ -1721,11 +1721,11 @@ bool Project::readWildMonData() {
     for (OrderedJson subObjectRef : wildMonObj["wild_encounter_groups"].array_items()) {
         OrderedJson::object subObject = subObjectRef.object_items();
         if (!subObject["for_maps"].bool_value()) {
-            extraEncounterGroups.push_back(subObject);
+            this->extraEncounterGroups.push_back(subObject);
             continue;
         }
 
-        for (OrderedJson field : subObject["fields"].array_items()) {
+        for (const OrderedJson &field : subObject["fields"].array_items()) {
             EncounterField encounterField;
             OrderedJson::object fieldObj = field.object_items();
             encounterField.name = fieldObj["type"].string_value();
@@ -1744,17 +1744,17 @@ bool Project::readWildMonData() {
                 }
             }
             encounterRateFrequencyMaps.insert(encounterField.name, QMap<int, int>());
-            wildMonFields.append(encounterField);
+            this->wildMonFields.append(encounterField);
         }
 
         auto encounters = subObject["encounters"].array_items();
-        for (auto encounter : encounters) {
+        for (const auto &encounter : encounters) {
             OrderedJson::object encounterObj = encounter.object_items();
             QString mapConstant = encounterObj["map"].string_value();
 
             WildPokemonHeader header;
 
-            for (EncounterField monField : wildMonFields) {
+            for (const EncounterField &monField : this->wildMonFields) {
                 QString field = monField.name;
                 if (!encounterObj[field].is_null()) {
                     OrderedJson::object encounterFieldObj = encounterObj[field].object_items();
@@ -1776,8 +1776,8 @@ bool Project::readWildMonData() {
                     }
                 }
             }
-            wildMonData[mapConstant].insert({encounterObj["base_label"].string_value(), header});
-            encounterGroupLabels.append(encounterObj["base_label"].string_value());
+            this->wildMonData[mapConstant].insert({encounterObj["base_label"].string_value(), header});
+            this->encounterGroupLabels.append(encounterObj["base_label"].string_value());
         }
     }
 
@@ -1974,6 +1974,8 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
         }
     }
     if (identifier == getEmptyMapDefineName())
+        return false;
+    if (this->encounterGroupLabels.contains(identifier))
         return false;
     return true;
 }
@@ -2981,6 +2983,31 @@ bool Project::readSpeciesIconPaths() {
     return true;
 }
 
+QPixmap Project::getSpeciesIcon(const QString &species) const {
+    QPixmap pixmap;
+    if (!QPixmapCache::find(species, &pixmap)) {
+        // Prefer path from config. If not present, use the path parsed from project files
+        QString path = projectConfig.getPokemonIconPath(species);
+        if (path.isEmpty()) {
+            path = this->speciesToIconPath.value(species);
+        } else {
+            path = Project::getExistingFilepath(path);
+        }
+
+        QImage img(path);
+        if (img.isNull()) {
+            // No icon for this species, use placeholder
+            static const QPixmap placeholder = QPixmap(QStringLiteral(":images/pokemon_icon_placeholder.png"));
+            pixmap = placeholder;
+        } else {
+            img.setColor(0, qRgba(0, 0, 0, 0));
+            pixmap = QPixmap::fromImage(img).copy(0, 0, 32, 32);
+            QPixmapCache::insert(species, pixmap);
+        }
+    }
+    return pixmap;
+}
+
 int Project::getNumTilesPrimary()
 {
     return Project::num_tiles_primary;
@@ -3067,17 +3094,19 @@ int Project::getMaxObjectEvents()
 }
 
 QString Project::getEmptyMapDefineName() {
-    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
-    return prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_empty);
+    return projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_empty);
 }
 
 QString Project::getDynamicMapDefineName() {
-    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
-    return prefix + projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
+    return projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
 }
 
 QString Project::getDynamicMapName() {
     return projectConfig.getIdentifier(ProjectIdentifier::symbol_dynamic_map_name);
+}
+
+QString Project::getEmptySpeciesName() {
+    return projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_species_empty);
 }
 
 // If the provided filepath is an absolute path to an existing file, return filepath.

@@ -113,6 +113,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
     {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
     {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
+    {ProjectIdentifier::define_species_empty,          {"define_species_empty",          "NONE"}},
     // Regex
     {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
     {ProjectIdentifier::regex_obj_event_gfx,           {"regex_obj_event_gfx",           "\\bOBJ_EVENT_GFX_"}},

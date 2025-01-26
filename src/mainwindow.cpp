@@ -2537,6 +2537,25 @@ void MainWindow::on_pushButton_SummaryChart_clicked() {
     openSubWindow(this->wildMonChart);
 }
 
+void MainWindow::on_toolButton_WildMonSearch_clicked() {
+    if (!this->wildMonSearch) {
+        this->wildMonSearch = new WildMonSearch(this->editor->project, this);
+        connect(this->wildMonSearch, &WildMonSearch::openWildMonTableRequested, this, &MainWindow::openWildMonTable);
+        connect(this->editor, &Editor::wildMonTableEdited, this->wildMonSearch, &WildMonSearch::refresh);
+    }
+    openSubWindow(this->wildMonSearch);
+}
+
+void MainWindow::openWildMonTable(const QString &mapName, const QString &groupName, const QString &fieldName) {
+    if (userSetMap(mapName)) {
+        // Switch to the correct main tab, wild encounter group, and wild encounter type tab.
+        on_mainTabBar_tabBarClicked(MainTab::WildPokemon);
+        ui->comboBox_EncounterGroupLabel->setCurrentText(groupName);
+        QWidget *w = ui->stackedWidget_WildMons->currentWidget();
+        if (w) static_cast<MonTabWidget *>(w)->setCurrentField(fieldName);
+    }
+}
+
 void MainWindow::on_pushButton_ConfigureEncountersJSON_clicked() {
     editor->configureEncounterJSON(this);
 }
@@ -2984,33 +3003,21 @@ void MainWindow::clearOverlay() {
 // delete is happening too late and some of the pointers haven't been cleared by the time we need them to,
 // so we nullify them all here anyway.
 bool MainWindow::closeSupplementaryWindows() {
-    if (this->tilesetEditor && !this->tilesetEditor->close())
-        return false;
-    this->tilesetEditor = nullptr;
+    #define SAFE_CLOSE(window) \
+        do { \
+            if ((window) && !(window)->close()) \
+                return false; \
+            window = nullptr; \
+        } while (0);
 
-    if (this->regionMapEditor && !this->regionMapEditor->close())
-        return false;
-    this->regionMapEditor = nullptr;
-
-    if (this->mapImageExporter && !this->mapImageExporter->close())
-        return false;
-    this->mapImageExporter = nullptr;
-
-    if (this->shortcutsEditor && !this->shortcutsEditor->close())
-        return false;
-    this->shortcutsEditor = nullptr;
-
-    if (this->preferenceEditor && !this->preferenceEditor->close())
-        return false;
-    this->preferenceEditor = nullptr;
-
-    if (this->customScriptsEditor && !this->customScriptsEditor->close())
-        return false;
-    this->customScriptsEditor = nullptr;
-
-    if (this->wildMonChart && !this->wildMonChart->close())
-        return false;
-    this->wildMonChart = nullptr;
+    SAFE_CLOSE(this->tilesetEditor);
+    SAFE_CLOSE(this->regionMapEditor);
+    SAFE_CLOSE(this->mapImageExporter);
+    SAFE_CLOSE(this->shortcutsEditor);
+    SAFE_CLOSE(this->preferenceEditor);
+    SAFE_CLOSE(this->customScriptsEditor);
+    SAFE_CLOSE(this->wildMonChart);
+    SAFE_CLOSE(this->wildMonSearch);
 
     if (this->projectSettingsEditor) this->projectSettingsEditor->closeQuietly();
     this->projectSettingsEditor = nullptr;
