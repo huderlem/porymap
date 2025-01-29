@@ -90,7 +90,7 @@ int Map::getBorderHeight() const {
 // Get the portion of the map that can be rendered when rendered as a map connection.
 // Cardinal connections render the nearest segment of their map and within the bounds of the border draw distance,
 // Dive/Emerge connections are rendered normally within the bounds of their parent map.
-QRect Map::getConnectionRect(const QString &direction, Layout * fromLayout) {
+QRect Map::getConnectionRect(const QString &direction, Layout * fromLayout) const {
     int x = 0, y = 0;
     int w = getWidth(), h = getHeight();
 

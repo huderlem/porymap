@@ -23,7 +23,6 @@ public:
     explicit ConnectionsListItem(QWidget *parent, MapConnection *connection, const QStringList &mapNames);
     ~ConnectionsListItem();
 
-    void updateUI();
     void setSelected(bool selected);
 
 private:
@@ -32,6 +31,8 @@ private:
     Map *map;
     bool isSelected = false;
     unsigned actionId = 0;
+
+    void updateUI();
 
 protected:
     virtual void mousePressEvent(QMouseEvent*) override;

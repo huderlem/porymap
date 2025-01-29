@@ -779,14 +779,6 @@ void Editor::updateEncounterFields(EncounterFields newFields) {
     project->wildMonFields = newFields;
 }
 
-void Editor::disconnectMapConnection(MapConnection *connection) {
-    // Disconnect MapConnection's signals used by the display.
-    // It'd be nice if we could just 'connection->disconnect(this)' but that doesn't account for lambda functions.
-    QObject::disconnect(connection, &MapConnection::targetMapNameChanged, nullptr, nullptr);
-    QObject::disconnect(connection, &MapConnection::directionChanged, nullptr, nullptr);
-    QObject::disconnect(connection, &MapConnection::offsetChanged, nullptr, nullptr);
-}
-
 void Editor::displayConnection(MapConnection *connection) {
     if (!connection)
         return;
@@ -797,13 +789,13 @@ void Editor::displayConnection(MapConnection *connection) {
     }
 
     // Create connection image
-    ConnectionPixmapItem *pixmapItem = new ConnectionPixmapItem(connection, getConnectionOrigin(connection));
-    pixmapItem->render();
+    auto pixmapItem = new ConnectionPixmapItem(connection);
     scene->addItem(pixmapItem);
     maskNonVisibleConnectionTiles();
+    connect(pixmapItem, &ConnectionPixmapItem::positionChanged, this, &Editor::maskNonVisibleConnectionTiles);
 
     // Create item for the list panel
-    ConnectionsListItem *listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, pixmapItem->connection, project->mapNames);
+    auto listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, pixmapItem->connection, project->mapNames);
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
 
     // Double clicking the pixmap or clicking the list item's map button opens the connected map
@@ -820,25 +812,6 @@ void Editor::displayConnection(MapConnection *connection) {
     });
     connect(listItem, &ConnectionsListItem::selected, [=] {
         setSelectedConnectionItem(pixmapItem);
-    });
-
-    // Sync edits to 'offset' between the list UI and the pixmap
-    connect(connection, &MapConnection::offsetChanged, [=](int, int) {
-        listItem->updateUI();
-        pixmapItem->updatePos();
-        maskNonVisibleConnectionTiles();
-    });
-
-    // Sync edits to 'direction' between the list UI and the pixmap
-    connect(connection, &MapConnection::directionChanged, [=](QString, QString) {
-        listItem->updateUI();
-        updateConnectionPixmap(pixmapItem);
-    });
-
-    // Sync edits to 'map' between the list UI and the pixmap
-    connect(connection, &MapConnection::targetMapNameChanged, [=](QString, QString) {
-        listItem->updateUI();
-        updateConnectionPixmap(pixmapItem);
     });
 
     // When the pixmap is deleted, remove its associated list item
@@ -874,8 +847,6 @@ void Editor::removeConnection(MapConnection *connection) {
 void Editor::removeConnectionPixmap(MapConnection *connection) {
     if (!connection)
         return;
-
-    disconnectMapConnection(connection);
 
     if (MapConnection::isDiving(connection->direction())) {
         removeDivingMapPixmap(connection);
@@ -1009,39 +980,6 @@ void Editor::updateDivingMapsVisibility() {
         if (dive) dive->setOpacity(opacity);
         else if (emerge) emerge->setOpacity(opacity);
     }
-}
-
-// Get the 'origin' point for the connection's pixmap, i.e. where it should be positioned in the editor when connection->offset() == 0.
-// This differs depending on the connection's direction and the dimensions of its target map or parent map.
-QPoint Editor::getConnectionOrigin(MapConnection *connection) {
-    if (!connection)
-        return QPoint(0, 0);
-
-    Map *parentMap = connection->parentMap();
-    Map *targetMap = connection->targetMap();
-    const QString direction = connection->direction();
-    int x = 0, y = 0;
-
-    if (direction == "right") {
-        if (parentMap) x = parentMap->getWidth();
-    } else if (direction == "down") {
-        if (parentMap) y = parentMap->getHeight();
-    } else if (direction == "left") {
-        if (targetMap) x = -targetMap->getConnectionRect(direction).width();
-    } else if (direction == "up") {
-        if (targetMap) y = -targetMap->getConnectionRect(direction).height();
-    }
-    return QPoint(x * 16, y * 16);
-}
-
-void Editor::updateConnectionPixmap(ConnectionPixmapItem *pixmapItem) {
-    if (!pixmapItem)
-        return;
-
-    pixmapItem->setOrigin(getConnectionOrigin(pixmapItem->connection));
-    pixmapItem->render(true); // Full render to reflect map changes
-
-    maskNonVisibleConnectionTiles();
 }
 
 void Editor::setSelectedConnectionItem(ConnectionPixmapItem *pixmapItem) {
@@ -1245,8 +1183,6 @@ void Editor::unsetMap() {
     if (this->map) {
         this->map->pruneEditHistory();
         this->map->disconnect(this);
-        for (const auto &connection : this->map->getConnections())
-            disconnectMapConnection(connection);
     }
     clearMapConnections();
 
@@ -1546,7 +1482,10 @@ void Editor::clearMap() {
     map = nullptr;
 
     // These are normally preserved between map displays, we only delete them now.
-    delete scene;
+    if (scene) {
+        scene->removeItem(this->map_ruler);
+        delete scene;
+    }
     delete metatile_selector_item;
     delete movement_permissions_selector_item;
 }
@@ -1575,9 +1514,10 @@ bool Editor::displayLayout() {
         scene->installEventFilter(filter);
         connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
         scene->installEventFilter(this->map_ruler);
+        this->map_ruler->setZValue(1000);
+        scene->addItem(this->map_ruler);
     }
 
-    clearConnectionMask();
     displayMetatileSelector();
     displayMapMetatiles();
     displayMovementPermissionSelector();
@@ -1586,9 +1526,7 @@ bool Editor::displayLayout() {
     displayCurrentMetatilesSelection();
     displayMapBorder();
     displayMapGrid();
-
-    this->map_ruler->setZValue(1000);
-    scene->addItem(this->map_ruler);
+    maskNonVisibleConnectionTiles();
 
     if (map_item) {
         map_item->setVisible(false);
@@ -1638,7 +1576,6 @@ void Editor::clearMapMetatiles() {
     if (map_item && scene) {
         scene->removeItem(map_item);
         delete map_item;
-        scene->removeItem(this->map_ruler);
     }
 }
 

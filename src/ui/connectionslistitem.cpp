@@ -38,6 +38,11 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
     // Distinguish between move actions for the edit history
     connect(ui->spinBox_Offset, &QSpinBox::editingFinished, [this] { this->actionId++; });
 
+    // If the connection changes externally we want to update to reflect the change.
+    connect(connection, &MapConnection::offsetChanged, this, &ConnectionsListItem::updateUI);
+    connect(connection, &MapConnection::directionChanged, this, &ConnectionsListItem::updateUI);
+    connect(connection, &MapConnection::targetMapNameChanged, this, &ConnectionsListItem::updateUI);
+
     this->connection = connection;
     this->map = connection->parentMap();
     this->updateUI();
