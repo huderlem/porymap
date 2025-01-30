@@ -91,7 +91,7 @@ public:
     void removeConnection(MapConnection *);
     void addConnection(MapConnection *);
     void loadConnection(MapConnection *);
-    QRect getConnectionRect(const QString &direction, Layout *fromLayout = nullptr);
+    QRect getConnectionRect(const QString &direction, Layout *fromLayout = nullptr) const;
     QPixmap renderConnection(const QString &direction, Layout *fromLayout = nullptr);
 
     QUndoStack* editHistory() const { return m_editHistory; }

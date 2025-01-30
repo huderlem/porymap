@@ -4,19 +4,25 @@
 
 #include <math.h>
 
-ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, int x, int y)
+ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection)
     : QGraphicsPixmapItem(connection->getPixmap()),
       connection(connection)
 {
     this->setEditable(true);
     setFlag(ItemIsFocusable, true);
     this->basePixmap = pixmap();
-    this->setOrigin(x, y);
+    refresh();
+
+    // If the connection changes externally we want to update the pixmap to reflect the change.
+    connect(connection, &MapConnection::offsetChanged, this, &ConnectionPixmapItem::updatePos);
+    connect(connection, &MapConnection::directionChanged, this, &ConnectionPixmapItem::refresh);
+    connect(connection, &MapConnection::targetMapNameChanged, this, &ConnectionPixmapItem::refresh);
 }
 
-ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, QPoint pos)
-    : ConnectionPixmapItem(connection, pos.x(), pos.y())
-{}
+void ConnectionPixmapItem::refresh() {
+    updateOrigin();
+    render(true);
+}
 
 // Render additional visual effects on top of the base map image.
 void ConnectionPixmapItem::render(bool ignoreCache) {
@@ -77,8 +83,6 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
 
 // If connection->offset changed externally we call this to correct our position.
 void ConnectionPixmapItem::updatePos() {
-    const QSignalBlocker blocker(this);
-
     qreal x = this->originX;
     qreal y = this->originY;
 
@@ -89,16 +93,27 @@ void ConnectionPixmapItem::updatePos() {
     }
 
     this->setPos(x, y);
+    emit positionChanged(x, y);
 }
 
-// Set the pixmap's external origin point, i.e. the pixmap's position when connection->offset == 0
-void ConnectionPixmapItem::setOrigin(int x, int y) {
-    this->originX = x;
-    this->originY = y;
+void ConnectionPixmapItem::updateOrigin() {
+    const Map *parentMap = connection->parentMap();
+    const Map *targetMap = connection->targetMap();
+    const QString direction = connection->direction();
+    int x = 0, y = 0;
+
+    if (direction == "right") {
+        if (parentMap) x = parentMap->getWidth();
+    } else if (direction == "down") {
+        if (parentMap) y = parentMap->getHeight();
+    } else if (direction == "left") {
+        if (targetMap) x = -targetMap->getConnectionRect(direction).width();
+    } else if (direction == "up") {
+        if (targetMap) y = -targetMap->getConnectionRect(direction).height();
+    }
+    this->originX = x * this->mWidth;
+    this->originY = y * this->mHeight;
     updatePos();
-}
-void ConnectionPixmapItem::setOrigin(QPoint pos) {
-    this->setOrigin(pos.x(), pos.y());
 }
 
 void ConnectionPixmapItem::setEditable(bool editable) {

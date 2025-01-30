@@ -135,7 +135,7 @@ public:
 
     QList<QGraphicsPixmapItem*> borderItems;
     QGraphicsItemGroup *mapGrid = nullptr;
-    MapRuler *map_ruler = nullptr;
+    QPointer<MapRuler> map_ruler = nullptr;
 
     MovableRect *playerViewRect = nullptr;
     CursorTileRect *cursorMapTileRect = nullptr;
@@ -221,10 +221,7 @@ private:
     void clearMapGrid();
     void clearWildMonTables();
     void updateBorderVisibility();
-    void disconnectMapConnection(MapConnection *connection);
-    QPoint getConnectionOrigin(MapConnection *connection);
     void removeConnectionPixmap(MapConnection *connection);
-    void updateConnectionPixmap(ConnectionPixmapItem *connectionItem);
     void displayConnection(MapConnection *connection);
     void displayDivingConnection(MapConnection *connection);
     void setDivingMapName(QString mapName, QString direction);
