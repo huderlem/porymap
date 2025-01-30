@@ -139,7 +139,8 @@ SOURCES += src/core/advancemapparser.cpp \
     src/log.cpp \
     src/ui/uintspinbox.cpp \
     src/ui/updatepromoter.cpp \
-    src/ui/wildmonchart.cpp
+    src/ui/wildmonchart.cpp \
+    src/ui/wildmonsearch.cpp
 
 HEADERS  += include/core/advancemapparser.h \
     include/core/block.h \
@@ -251,7 +252,8 @@ HEADERS  += include/core/advancemapparser.h \
     include/log.h \
     include/ui/uintspinbox.h \
     include/ui/updatepromoter.h \
-    include/ui/wildmonchart.h
+    include/ui/wildmonchart.h \
+    include/ui/wildmonsearch.h
 
 FORMS    += forms/mainwindow.ui \
     forms/colorinputwidget.ui \
@@ -281,7 +283,8 @@ FORMS    += forms/mainwindow.ui \
     forms/customscriptseditor.ui \
     forms/customscriptslistitem.ui \
     forms/updatepromoter.ui \
-    forms/wildmonchart.ui
+    forms/wildmonchart.ui \
+    forms/wildmonsearch.ui
 
 RESOURCES += \
     resources/images.qrc \

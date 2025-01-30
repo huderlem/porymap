@@ -302,7 +302,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     form.addRow(new QLabel("Group Base Label:"), lineEdit);
     lineEdit->setValidator(new IdentifierValidator(lineEdit));
     connect(lineEdit, &QLineEdit::textChanged, [this, &lineEdit, &buttonBox](QString text){
-        if (this->project->encounterGroupLabels.contains(text)) {
+        if (!this->project->isIdentifierUnique(text)) {
             lineEdit->setStyleSheet("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
             buttonBox.button(QDialogButtonBox::Ok)->setDisabled(true);
         } else {

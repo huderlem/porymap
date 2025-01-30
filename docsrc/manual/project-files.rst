@@ -122,6 +122,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_map_section_prefix``, ``MAPSEC_``, expected prefix for location macro names
    ``define_map_section_empty``, ``NONE``, macro name after prefix for empty region map sections
    ``define_species_prefix``, ``SPECIES_``, expected prefix for species macro names
+   ``define_species_empty``, ``NONE``, macro name after prefix for the default species
    ``regex_behaviors``, ``\bMB_``, regex to find metatile behavior macro names
    ``regex_obj_event_gfx``, ``\bOBJ_EVENT_GFX_``, regex to find Object Event graphics ID macro names
    ``regex_items``, ``\bITEM_(?!(B_)?USE_)``, regex to find item macro names

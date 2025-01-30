@@ -1740,7 +1740,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1834,7 +1834,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1928,7 +1928,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2028,7 +2028,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2122,7 +2122,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2700,8 +2700,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>100</width>
-                        <height>30</height>
+                        <width>204</width>
+                        <height>16</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="layout_ConnectionsList">
@@ -2842,6 +2842,17 @@
                    <widget class="QPushButton" name="pushButton_ConfigureEncountersJSON">
                     <property name="text">
                      <string>Configure JSON...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="toolButton_WildMonSearch">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/magnifier.ico</normaloff>:/icons/magnifier.ico</iconset>
                     </property>
                    </widget>
                   </item>
