@@ -137,7 +137,6 @@ void WildMonSearch::updateResults(const QString &species) {
         }
     }
 
-    // TODO: This does a lexical sort... We might need custom item delegates to get proper numerical sorting in this table.
     ui->table_Results->setSortingEnabled(true);
 
     this->resultsCache.insert(species, results);
