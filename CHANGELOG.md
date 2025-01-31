@@ -12,7 +12,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add ``Duplicate Map`` / ``Duplicate Layout`` options, accessible by right-clicking a map or layout in the map list.
 - Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
-- Add charts to the `Wild Pokémon` tab that show species and level distributions.
+- Add a search button to the `Wild Pokémon` tab that shows the encounter data for a species across all maps.
+- Add charts to the `Wild Pokémon` tab that show species and level distributions for the current map.
 - Add options for customizing the map grid under `View -> Grid Settings`.
 - Add an option to display a dividing line between tilesets in the Tileset Editor.
 - An alert will be displayed when attempting to open a seemingly invalid project.
