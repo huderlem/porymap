@@ -58,13 +58,13 @@ void WildMonSearch::addTableEntry(const RowData &rowData) {
     int row = ui->table_Results->rowCount();
     ui->table_Results->insertRow(row);
 
-    auto groupItem = new QTableWidgetItem(rowData.groupName);
+    auto groupItem = new NumericSortTableItem(rowData.groupName);
     groupItem->setData(ResultsDataRole::MapName, rowData.mapName);
 
     ui->table_Results->setItem(row, ResultsColumn::Group, groupItem);
-    ui->table_Results->setItem(row, ResultsColumn::Field, new QTableWidgetItem(rowData.fieldName));
-    ui->table_Results->setItem(row, ResultsColumn::Level, new QTableWidgetItem(rowData.levelRange));
-    ui->table_Results->setItem(row, ResultsColumn::Chance, new QTableWidgetItem(rowData.chance));
+    ui->table_Results->setItem(row, ResultsColumn::Field, new NumericSortTableItem(rowData.fieldName));
+    ui->table_Results->setItem(row, ResultsColumn::Level, new NumericSortTableItem(rowData.levelRange));
+    ui->table_Results->setItem(row, ResultsColumn::Chance, new NumericSortTableItem(rowData.chance));
 }
 
 QList<WildMonSearch::RowData> WildMonSearch::search(const QString &species) const {
@@ -137,7 +137,6 @@ void WildMonSearch::updateResults(const QString &species) {
         }
     }
 
-    // TODO: This does a lexical sort... We might need custom item delegates to get proper numerical sorting in this table.
     ui->table_Results->setSortingEnabled(true);
 
     this->resultsCache.insert(species, results);
