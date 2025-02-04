@@ -16,9 +16,6 @@
 #include <QSpacerItem>
 #include <QMessageBox>
 
-using OrderedJson = poryjson::Json;
-using OrderedJsonDoc = poryjson::JsonDoc;
-
 const QString defaultFilepath = "prefabs.json";
 
 void Prefab::loadPrefabs() {

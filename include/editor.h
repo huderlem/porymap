@@ -46,7 +46,6 @@ public:
 
 public:
     Ui::MainWindow* ui;
-    QObject *parent = nullptr;
 
     QPointer<Project> project = nullptr;
     QPointer<Map> map = nullptr;

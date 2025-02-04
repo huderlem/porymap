@@ -84,7 +84,7 @@ public:
     void openScript(QString label);
     void removeEvent(Event *);
     void addEvent(Event *);
-    int getIndexOfEvent(Event *) const;
+    int getIndexOfEvent(const Event *) const;
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const;

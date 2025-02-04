@@ -26,11 +26,9 @@ void NewEventToolButton::init()
     this->newWarpAction->setIcon(QIcon(":/icons/add.ico"));
     connect(this->newWarpAction, &QAction::triggered, this, &NewEventToolButton::newWarp);
 
-    /* // disable this functionality for now
     this->newHealLocationAction = new QAction("New Heal Location", this);
     this->newHealLocationAction->setIcon(QIcon(":/icons/add.ico"));
-    connect(this->newHealLocationAction, SIGNAL(triggered(bool)), this, SLOT(newHealLocation()));
-    */
+    connect(this->newHealLocationAction, &QAction::triggered, this, &NewEventToolButton::newHealLocation);
 
     this->newTriggerAction = new QAction("New Trigger", this);
     this->newTriggerAction->setIcon(QIcon(":/icons/add.ico"));
@@ -56,7 +54,7 @@ void NewEventToolButton::init()
     alignMenu->addAction(this->newObjectAction);
     alignMenu->addAction(this->newCloneObjectAction);
     alignMenu->addAction(this->newWarpAction);
-    //alignMenu->addAction(this->newHealLocationAction);
+    alignMenu->addAction(this->newHealLocationAction);
     alignMenu->addAction(this->newTriggerAction);
     alignMenu->addAction(this->newWeatherTriggerAction);
     alignMenu->addAction(this->newSignAction);

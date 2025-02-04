@@ -61,7 +61,7 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_WarpsIcon,         &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_WarpsIcon); });
     connect(ui->button_TriggersIcon,      &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_TriggersIcon); });
     connect(ui->button_BGsIcon,           &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_BGsIcon); });
-    connect(ui->button_HealspotsIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealspotsIcon); });
+    connect(ui->button_HealLocationsIcon, &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealLocationsIcon); });
     connect(ui->button_PokemonIcon,       &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_PokemonIcon); });
 
 
@@ -476,7 +476,7 @@ void ProjectSettingsEditor::refresh() {
     ui->lineEdit_WarpsIcon->setText(projectConfig.getEventIconPath(Event::Group::Warp));
     ui->lineEdit_TriggersIcon->setText(projectConfig.getEventIconPath(Event::Group::Coord));
     ui->lineEdit_BGsIcon->setText(projectConfig.getEventIconPath(Event::Group::Bg));
-    ui->lineEdit_HealspotsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
+    ui->lineEdit_HealLocationsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
@@ -546,7 +546,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.setEventIconPath(Event::Group::Warp, ui->lineEdit_WarpsIcon->text());
     projectConfig.setEventIconPath(Event::Group::Coord, ui->lineEdit_TriggersIcon->text());
     projectConfig.setEventIconPath(Event::Group::Bg, ui->lineEdit_BGsIcon->text());
-    projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealspotsIcon->text());
+    projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealLocationsIcon->text());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())

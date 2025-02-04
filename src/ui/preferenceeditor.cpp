@@ -50,6 +50,7 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.monitorFiles);
     ui->checkBox_OpenRecentProject->setChecked(porymapConfig.reopenOnLaunch);
     ui->checkBox_CheckForUpdates->setChecked(porymapConfig.checkForUpdates);
+    ui->checkBox_DisableEventWarning->setChecked(porymapConfig.eventDeleteWarningDisabled);
 }
 
 void PreferenceEditor::saveFields() {
@@ -64,6 +65,7 @@ void PreferenceEditor::saveFields() {
     porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();
     porymapConfig.reopenOnLaunch = ui->checkBox_OpenRecentProject->isChecked();
     porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
+    porymapConfig.eventDeleteWarningDisabled = ui->checkBox_DisableEventWarning->isChecked();
     porymapConfig.save();
 
     emit preferencesSaved();

@@ -2,7 +2,6 @@
 #ifndef PARSEUTIL_H
 #define PARSEUTIL_H
 
-#include "heallocation.h"
 #include "log.h"
 #include "orderedjson.h"
 #include "orderedmap.h"
@@ -78,11 +77,11 @@ public:
     static QString removeLineComments(QString text, const QStringList &commentSymbols);
 
     static QStringList splitShellCommand(QStringView command);
-    static int gameStringToInt(QString gameString, bool * ok = nullptr);
-    static bool gameStringToBool(QString gameString, bool * ok = nullptr);
-    static QString jsonToQString(QJsonValue value, bool * ok = nullptr);
-    static int jsonToInt(QJsonValue value, bool * ok = nullptr);
-    static bool jsonToBool(QJsonValue value, bool * ok = nullptr);
+    static int gameStringToInt(const QString &gameString, bool * ok = nullptr);
+    static bool gameStringToBool(const QString &gameString, bool * ok = nullptr);
+    static QString jsonToQString(const QJsonValue &value, bool * ok = nullptr);
+    static int jsonToInt(const QJsonValue &value, bool * ok = nullptr);
+    static bool jsonToBool(const QJsonValue &value, bool * ok = nullptr);
 
 private:
     QString root;

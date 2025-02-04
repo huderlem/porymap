@@ -86,7 +86,7 @@ QString Event::eventGroupToString(Event::Group group) {
     case Event::Group::Bg:
         return "BG";
     case Event::Group::Heal:
-        return "Healspot";
+        return "Heal Location";
     default:
         return "";
     }
@@ -111,7 +111,7 @@ QString Event::eventTypeToString(Event::Type type) {
     case Event::Type::SecretBase:
         return "event_secret_base";
     case Event::Type::HealLocation:
-        return "event_healspot";
+        return "event_heal_location";
     default:
         return "";
     }
@@ -134,7 +134,7 @@ Event::Type Event::eventTypeFromString(QString type) {
         return Event::Type::HiddenItem;
     } else if (type == "event_secret_base") {
         return Event::Type::SecretBase;
-    } else if (type == "event_healspot") {
+    } else if (type == "event_heal_location") {
         return Event::Type::HealLocation;
     } else {
         return Event::Type::None;
@@ -183,7 +183,7 @@ void Event::setIcons() {
 }
 
 
-Event *ObjectEvent::duplicate() {
+Event *ObjectEvent::duplicate() const {
     ObjectEvent *copy = new ObjectEvent();
 
     copy->setX(this->getX());
@@ -232,7 +232,7 @@ OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     return objectJson;
 }
 
-bool ObjectEvent::loadFromJson(QJsonObject json, Project *) {
+bool ObjectEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
@@ -362,7 +362,7 @@ void ObjectEvent::setFrameFromMovement(QString facingDir) {
 
 
 
-Event *CloneObjectEvent::duplicate() {
+Event *CloneObjectEvent::duplicate() const {
     CloneObjectEvent *copy = new CloneObjectEvent();
 
     copy->setX(this->getX());
@@ -399,7 +399,7 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     return cloneJson;
 }
 
-bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
+bool CloneObjectEvent::loadFromJson(const QJsonObject &json, Project *project) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
@@ -469,7 +469,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
 
 
 
-Event *WarpEvent::duplicate() {
+Event *WarpEvent::duplicate() const {
     WarpEvent *copy = new WarpEvent();
 
     copy->setX(this->getX());
@@ -506,7 +506,7 @@ OrderedJson::object WarpEvent::buildEventJson(Project *project) {
     return warpJson;
 }
 
-bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
+bool WarpEvent::loadFromJson(const QJsonObject &json, Project *project) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
@@ -550,7 +550,7 @@ void WarpEvent::setWarningEnabled(bool enabled) {
 
 
 
-Event *TriggerEvent::duplicate() {
+Event *TriggerEvent::duplicate() const {
     TriggerEvent *copy = new TriggerEvent();
 
     copy->setX(this->getX());
@@ -589,7 +589,7 @@ OrderedJson::object TriggerEvent::buildEventJson(Project *) {
     return triggerJson;
 }
 
-bool TriggerEvent::loadFromJson(QJsonObject json, Project *) {
+bool TriggerEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
@@ -626,7 +626,7 @@ QSet<QString> TriggerEvent::getExpectedFields() {
 
 
 
-Event *WeatherTriggerEvent::duplicate() {
+Event *WeatherTriggerEvent::duplicate() const {
     WeatherTriggerEvent *copy = new WeatherTriggerEvent();
 
     copy->setX(this->getX());
@@ -661,7 +661,7 @@ OrderedJson::object WeatherTriggerEvent::buildEventJson(Project *) {
     return weatherJson;
 }
 
-bool WeatherTriggerEvent::loadFromJson(QJsonObject json, Project *) {
+bool WeatherTriggerEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
@@ -692,7 +692,7 @@ QSet<QString> WeatherTriggerEvent::getExpectedFields() {
 
 
 
-Event *SignEvent::duplicate() {
+Event *SignEvent::duplicate() const {
     SignEvent *copy = new SignEvent();
 
     copy->setX(this->getX());
@@ -729,7 +729,7 @@ OrderedJson::object SignEvent::buildEventJson(Project *) {
     return signJson;
 }
 
-bool SignEvent::loadFromJson(QJsonObject json, Project *) {
+bool SignEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
@@ -763,7 +763,7 @@ QSet<QString> SignEvent::getExpectedFields() {
 
 
 
-Event *HiddenItemEvent::duplicate() {
+Event *HiddenItemEvent::duplicate() const {
     HiddenItemEvent *copy = new HiddenItemEvent();
 
     copy->setX(this->getX());
@@ -808,7 +808,7 @@ OrderedJson::object HiddenItemEvent::buildEventJson(Project *) {
     return hiddenItemJson;
 }
 
-bool HiddenItemEvent::loadFromJson(QJsonObject json, Project *) {
+bool HiddenItemEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
@@ -859,7 +859,7 @@ QSet<QString> HiddenItemEvent::getExpectedFields() {
 
 
 
-Event *SecretBaseEvent::duplicate() {
+Event *SecretBaseEvent::duplicate() const {
     SecretBaseEvent *copy = new SecretBaseEvent();
 
     copy->setX(this->getX());
@@ -894,7 +894,7 @@ OrderedJson::object SecretBaseEvent::buildEventJson(Project *) {
     return secretBaseJson;
 }
 
-bool SecretBaseEvent::loadFromJson(QJsonObject json, Project *) {
+bool SecretBaseEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
@@ -925,6 +925,20 @@ QSet<QString> SecretBaseEvent::getExpectedFields() {
 
 
 
+Event *HealLocationEvent::duplicate() const {
+    HealLocationEvent *copy = new HealLocationEvent();
+
+    copy->setX(this->getX());
+    copy->setY(this->getY());
+    copy->setIdName(this->getIdName());
+    copy->setRespawnMapName(this->getRespawnMapName());
+    copy->setRespawnNPC(this->getRespawnNPC());
+
+    copy->setCustomAttributes(this->getCustomAttributes());
+
+    return copy;
+}
+
 EventFrame *HealLocationEvent::createEventFrame() {
     if (!this->eventFrame) {
         this->eventFrame = new HealLocationFrame(this);
@@ -933,22 +947,62 @@ EventFrame *HealLocationEvent::createEventFrame() {
     return this->eventFrame;
 }
 
-OrderedJson::object HealLocationEvent::buildEventJson(Project *) {
-    return OrderedJson::object();
+OrderedJson::object HealLocationEvent::buildEventJson(Project *project) {
+    OrderedJson::object healLocationJson;
+
+    healLocationJson["id"] = this->getIdName();
+    // This field doesn't need to be stored in the Event itself, so it's output only.
+    healLocationJson["map"] = this->getMap() ? this->getMap()->constantName() : QString();
+    healLocationJson["x"] = this->getX();
+    healLocationJson["y"] = this->getY();
+    if (projectConfig.healLocationRespawnDataEnabled) {
+        const QString mapName = this->getRespawnMapName();
+        healLocationJson["respawn_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
+        healLocationJson["respawn_npc"] = this->getRespawnNPC();
+    }
+
+    this->addCustomAttributesTo(&healLocationJson);
+
+    return healLocationJson;
 }
 
-void HealLocationEvent::setDefaultValues(Project *) {
-    this->setElevation(projectConfig.defaultElevation);
-    if (!this->map)
-        return;
+bool HealLocationEvent::loadFromJson(const QJsonObject &json, Project *project) {
+    this->setX(ParseUtil::jsonToInt(json["x"]));
+    this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setIdName(ParseUtil::jsonToQString(json["id"]));
 
-    bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
-    const QString prefix = projectConfig.getIdentifier(respawnEnabled ? ProjectIdentifier::define_spawn_prefix
-                                                                      : ProjectIdentifier::define_heal_locations_prefix);
-    this->setLocationName(this->map->constantName());
-    this->setIdName(prefix + this->map->constantName());
-    if (respawnEnabled) {
-        this->setRespawnMap(this->map->name());
-        this->setRespawnNPC(1);
+    if (projectConfig.healLocationRespawnDataEnabled) {
+        // Log a warning if "respawn_map" isn't a known map ID, but don't overwrite user data.
+        const QString mapConstant = ParseUtil::jsonToQString(json["respawn_map"]);
+        if (!project->mapConstantsToMapNames.contains(mapConstant))
+            logWarn(QString("Unknown Respawn Map constant '%1'.").arg(mapConstant));
+        this->setRespawnMapName(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
+        this->setRespawnNPC(ParseUtil::jsonToQString(json["respawn_npc"]));
     }
+
+    this->readCustomAttributes(json);
+    return true;
+}
+
+void HealLocationEvent::setDefaultValues(Project *project) {
+    if (this->map) {
+        this->setIdName(project->getNewHealLocationName(this->map));
+        this->setRespawnMapName(this->map->name());
+    }
+    this->setRespawnNPC(QString::number(0 + this->getIndexOffset(Event::Group::Object)));
+}
+
+const QSet<QString> expectedHealLocationFields = {
+    "id",
+    "map"
+};
+
+QSet<QString> HealLocationEvent::getExpectedFields() {
+    QSet<QString> expectedFields = expectedHealLocationFields;
+    if (projectConfig.healLocationRespawnDataEnabled) {
+        expectedFields.insert("respawn_map");
+        expectedFields.insert("respawn_npc");
+    }
+    expectedFields << "x" << "y";
+    return expectedFields;
 }

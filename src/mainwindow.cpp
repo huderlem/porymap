@@ -56,9 +56,6 @@
 #define RELEASE_PLATFORM
 #endif
 
-using OrderedJson = poryjson::Json;
-using OrderedJsonDoc = poryjson::JsonDoc;
-
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -857,6 +854,11 @@ bool MainWindow::userSetMap(QString map_name) {
     if (editor->map && editor->map->name() == map_name)
         return true; // Already set
 
+    if (map_name.isEmpty()) {
+        WarningMessage::show(QStringLiteral("Cannot open map with empty name."), this);
+        return false;
+    }
+
     if (map_name == editor->project->getDynamicMapName()) {
         WarningMessage msgBox(QString("Cannot open map '%1'.").arg(map_name), this);
         msgBox.setInformativeText(QStringLiteral("This map name is a placeholder to indicate that the warp's map will be set programmatically."));
@@ -1276,6 +1278,10 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
 void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     logInfo(QString("Created a new map named %1.").arg(newMap->name()));
 
+    if (newMap->needsHealLocation()) {
+        addNewEvent(Event::Type::HealLocation);
+    }
+
     // TODO: Creating a new map shouldn't be automatically saved.
     //       For one, it takes away the option to discard the new map.
     //       For two, if the new map uses an existing layout, any unsaved changes to that layout will also be saved.
@@ -1295,12 +1301,6 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
         const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
         ui->comboBox_DiveMap->insertItem(mapIndex, newMap->name());
         ui->comboBox_EmergeMap->insertItem(mapIndex, newMap->name());
-    }
-
-    if (newMap->needsHealLocation()) {
-        addNewEvent(Event::Type::HealLocation);
-        editor->project->saveHealLocations(newMap);
-        editor->save();
     }
 
     userSetMap(newMap->name());
@@ -1606,13 +1606,6 @@ void MainWindow::copy() {
 
                 for (auto item : events) {
                     Event *event = item->event;
-
-                    if (event->getEventType() == Event::Type::HealLocation) {
-                        // no copy on heal locations
-                        logWarn(QString("Copying heal location events is not allowed."));
-                        continue;
-                    }
-
                     OrderedJson::object eventContainer;
                     eventContainer["event_type"] = Event::eventTypeToString(event->getEventType());
                     OrderedJson::object eventJson = event->buildEventJson(editor->project);
@@ -1730,10 +1723,6 @@ void MainWindow::paste() {
 
                     if (this->editor->eventLimitReached(type)) {
                         logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(typeString));
-                        continue;
-                    }
-                    if (type == Event::Type::HealLocation) {
-                        logWarn(QString("Cannot paste events of type '%1'").arg(typeString));
                         continue;
                     }
 
@@ -1981,7 +1970,7 @@ void MainWindow::displayEventTabs() {
     tryAddEventTab(ui->tab_Warps);
     tryAddEventTab(ui->tab_Triggers);
     tryAddEventTab(ui->tab_BGs);
-    tryAddEventTab(ui->tab_Healspots);
+    tryAddEventTab(ui->tab_HealLocations);
 }
 
 void MainWindow::updateObjects() {
@@ -2075,9 +2064,9 @@ void MainWindow::updateSelectedObjects() {
             break;
         }
         case Event::Group::Heal: {
-            scrollTarget = ui->scrollArea_Healspots;
-            target = ui->scrollAreaWidgetContents_Healspots;
-            ui->tabWidget_EventType->setCurrentWidget(ui->tab_Healspots);
+            scrollTarget = ui->scrollArea_HealLocations;
+            target = ui->scrollAreaWidgetContents_HealLocations;
+            ui->tabWidget_EventType->setCurrentWidget(ui->tab_HealLocations);
 
             QSignalBlocker b(this->ui->spinner_HealID);
             this->ui->spinner_HealID->setMinimum(event_offs);
@@ -2142,11 +2131,11 @@ void MainWindow::updateSelectedObjects() {
 
 Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab) {
     static const QMap<QWidget*,Event::Group> tabToGroup = {
-        {ui->tab_Objects,   Event::Group::Object},
-        {ui->tab_Warps,     Event::Group::Warp},
-        {ui->tab_Triggers,  Event::Group::Coord},
-        {ui->tab_BGs,       Event::Group::Bg},
-        {ui->tab_Healspots, Event::Group::Heal},
+        {ui->tab_Objects,       Event::Group::Object},
+        {ui->tab_Warps,         Event::Group::Warp},
+        {ui->tab_Triggers,      Event::Group::Coord},
+        {ui->tab_BGs,           Event::Group::Bg},
+        {ui->tab_HealLocations, Event::Group::Heal},
     };
     return tabToGroup.value(tab, Event::Group::None);
 }
@@ -2168,6 +2157,9 @@ void MainWindow::eventTabChanged(int index) {
             break;
         case Event::Group::Bg:
             ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
+            break;
+        case Event::Group::Heal:
+            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newHealLocationAction);
             break;
         default:
             break;
