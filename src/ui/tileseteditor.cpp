@@ -29,13 +29,7 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();
 
-    // TODO: The dividing line at the moment is only accurate if the number of primary metatiles is divisible by 8.
-    //       If it's not, the secondary metatiles will wrap above the line. This has other problems (like skewing
-    //       metatile groups the user may have designed) so this should be fixed by filling the primary metatiles
-    //       image with invalid magenta metatiles until it's divisible by 8. Then the line can be re-enabled as-is.
-    ui->actionShow_Tileset_Divider->setChecked(/*porymapConfig.showTilesetEditorDivider*/false);
-    ui->actionShow_Tileset_Divider->setVisible(false);
-
+    ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
     ui->spinBox_paletteSelector->setMinimum(0);
     ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
     ui->lineEdit_metatileLabel->setValidator(new IdentifierValidator(this));
@@ -759,7 +753,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
 {
     QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     dialog.setWindowTitle("Change Number of Metatiles");
-    dialog.setWindowModality(Qt::NonModal);
+    dialog.setWindowModality(Qt::WindowModal);
 
     QFormLayout form(&dialog);
 
@@ -1051,20 +1045,19 @@ void TilesetEditor::countMetatileUsage() {
     // do not double count
     metatileSelector->usedMetatiles.fill(0);
 
-    for (auto layout : this->project->mapLayouts.values()) {
-        bool usesPrimary = false;
-        bool usesSecondary = false;
+    for (auto layout : this->project->mapLayouts) {
+        // It's possible for a layout's tileset labels to change if they are invalid,
+        // so we need to load all the tilesets even if they aren't the tileset we're looking for.
+        // Otherwise the metatile usage counts may change because the layouts with invalid tilesets
+        // were updated to use a tileset we were looking for.
+        this->project->loadLayoutTilesets(layout);
 
-        if (layout->tileset_primary_label == this->primaryTileset->name) {
-            usesPrimary = true;
-        }
-
-        if (layout->tileset_secondary_label == this->secondaryTileset->name) {
-            usesSecondary = true;
-        }
+        bool usesPrimary = (layout->tileset_primary_label == this->primaryTileset->name);
+        bool usesSecondary = (layout->tileset_secondary_label == this->secondaryTileset->name);
 
         if (usesPrimary || usesSecondary) {
-            this->project->loadLayout(layout);
+            if (!this->project->loadLayout(layout))
+                continue;
 
             // for each block in the layout, mark in the vector that it is used
             for (int i = 0; i < layout->blockdata.length(); i++) {
@@ -1097,9 +1090,9 @@ void TilesetEditor::countTileUsage() {
     QSet<Tileset*> secondaryTilesets;
 
     for (auto layout : this->project->mapLayouts.values()) {
+        this->project->loadLayoutTilesets(layout);
         if (layout->tileset_primary_label == this->primaryTileset->name
          || layout->tileset_secondary_label == this->secondaryTileset->name) {
-            this->project->loadLayoutTilesets(layout);
             // need to check metatiles
             if (layout->tileset_primary && layout->tileset_secondary) {
                 primaryTilesets.insert(layout->tileset_primary);
