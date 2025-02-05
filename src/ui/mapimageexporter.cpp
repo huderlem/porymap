@@ -55,6 +55,12 @@ MapImageExporter::MapImageExporter(QWidget *parent, Editor *editor, ImageExporte
         ui->comboBox_MapSelection->addItems(editor->project->mapNames);
         ui->comboBox_MapSelection->setCurrentText(m_map->name());
         ui->comboBox_MapSelection->setEnabled(false);// TODO: allow selecting map from drop-down
+    } else {
+        // Some settings only apply to maps. When exporting an image in layout-only mode we hide them.
+        ui->comboBox_MapSelection->setVisible(false);
+        ui->label_MapSelection->setVisible(false);
+        ui->groupBox_Events->setVisible(false);
+        ui->groupBox_Connections->setVisible(false);
     }
 
     connect(ui->pushButton_Save,   &QPushButton::pressed, this, &MapImageExporter::saveImage);
