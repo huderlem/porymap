@@ -35,9 +35,9 @@ signals:
 private:
     Ui::ShortcutsEditor *ui;
     QWidget *main_container;
-    QMultiMap<QString, const QObject *> labels_objects;
+    QMultiMap<QString, QPointer<const QObject>> labels_objects;
     QHash<QString, QFormLayout *> contexts_layouts;
-    QHash<MultiKeyEdit *, const QObject *> multiKeyEdits_objects;
+    QHash<MultiKeyEdit *, QPointer<const QObject>> multiKeyEdits_objects;
 
     void parseObjectList(const QObjectList &objectList);
     QString getLabel(const QObject *object) const;

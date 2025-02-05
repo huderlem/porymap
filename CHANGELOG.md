@@ -75,6 +75,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the values for some config fields shuffling their order every save.
 - Fix some problems with tileset detection when importing maps from AdvanceMap.
 - Fix certain input fields allowing invalid identifiers, like names starting with numbers.
+- Fix crash in the Shortcuts Editor when applying changes after closing certain windows.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
