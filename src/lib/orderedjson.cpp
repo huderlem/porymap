@@ -116,6 +116,10 @@ static void dump(const QString &value, QString &out, int *indent, bool isKey = f
 static void dump(const Json::array &values, QString &out, int *indent) {
     bool first = true;
     if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
+    if (values.empty()) {
+        out += "[]";
+        return;
+    }
     out += "[\n";
     *indent += 1;
     for (const auto &value : values) {

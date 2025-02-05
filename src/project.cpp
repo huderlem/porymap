@@ -1297,7 +1297,7 @@ void Project::saveMap(Map *map) {
         }
         mapObj["connections"] = connectionsArr;
     } else {
-        mapObj["connections"] = QJsonValue::Null;
+        mapObj["connections"] = OrderedJson();
     }
 
     if (map->sharedEventsMap().isEmpty()) {

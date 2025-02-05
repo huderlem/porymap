@@ -35,6 +35,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - `Export Map Stitch Image` now shows a preview of the full image, not just the current map.
 - Maps and layouts were internally separated.
 - Unrecognized map names in Event or Connections data will no longer be overwritten.
+- Reduced diff noise when saving maps.
 - Map names and ``MAP_NAME`` constants are no longer required to match.
 - Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
 
