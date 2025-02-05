@@ -109,7 +109,7 @@ void WildMonChart::readTable() {
     }
     
     // Read data from the table, combining data for duplicate entries
-    const QList<double> tableFrequencies = this->table->percentages();
+    const QVector<double> tableFrequencies = this->table->percentages();
     const QVector<WildPokemon> tablePokemon = this->table->encounterData().wildPokemon;
     const int numRows = qMin(tableFrequencies.length(), tablePokemon.length());
     const QString speciesPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix);

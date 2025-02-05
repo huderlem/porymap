@@ -9,9 +9,9 @@
 
 #include <QWidget>
 #include <QPointer>
-#include "mapheader.h"
 
-class Project;
+#include "mapheader.h"
+#include "project.h"
 
 namespace Ui {
 class MapHeaderForm;
