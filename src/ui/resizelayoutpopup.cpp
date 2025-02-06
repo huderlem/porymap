@@ -46,7 +46,7 @@ BoundedPixmapItem::BoundedPixmapItem(const QPixmap &pixmap, QGraphicsItem *paren
     setFlags(this->flags() | QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemSendsGeometryChanges | QGraphicsItem::ItemIsSelectable);
 }
 
-void BoundedPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem * item, QWidget *widget) {
+void BoundedPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     // Draw the pixmap darkened in the background
     painter->fillRect(this->boundingRect().toAlignedRect(), QColor(0x444444));
     painter->setCompositionMode(QPainter::CompositionMode_Multiply);
@@ -140,8 +140,8 @@ void ResizeLayoutPopup::setupLayoutView() {
     this->ui->spinBox_height->setMinimum(1);
     this->ui->spinBox_height->setMaximum(maxHeight);
 
-    this->ui->spinBox_width->setLineEditEnabled(false);
-    this->ui->spinBox_height->setLineEditEnabled(false);
+    //this->ui->spinBox_width->setLineEditEnabled(false);
+    //this->ui->spinBox_height->setLineEditEnabled(false);
 
     static bool layoutSizeRectVisible = true;
 

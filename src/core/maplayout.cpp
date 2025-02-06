@@ -176,14 +176,14 @@ void Layout::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bo
     emit layoutDimensionsChanged(QSize(getWidth(), getHeight()));
 }
 
-void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata, bool enableScriptCallback) {
+void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata) {
     int oldWidth = this->width;
     int oldHeight = this->height;
     int newWidth = this->width + margins.left() + margins.right();
     int newHeight = this->height + margins.top() + margins.bottom();
 
     if (setNewBlockdata) {
-        // Fill new blockdata TODO: replace old functions, scripting support, undo etc
+        // Fill new blockdata
         Blockdata newBlockdata;
         for (int y = 0; y < newHeight; y++)
         for (int x = 0; x < newWidth; x++) {

@@ -2625,8 +2625,6 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
             ));
         }
     }
-
-    return;
 }
 
 void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
