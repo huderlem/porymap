@@ -104,7 +104,7 @@ void ResizableRect::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     }
 }
 
-void ResizableRect::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
+void ResizableRect::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
     this->unsetCursor();
 }
 

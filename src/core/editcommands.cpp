@@ -214,7 +214,7 @@ void ResizeLayout::redo() {
 
     layout->width = oldLayoutWidth;
     layout->height = oldLayoutHeight;
-    layout->adjustDimensions(this->newLayoutMargins, false, true);
+    layout->adjustDimensions(this->newLayoutMargins);
     layout->blockdata = newMetatiles;
 
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
@@ -231,7 +231,7 @@ void ResizeLayout::undo() {
 
     layout->width = oldLayoutWidth + newLayoutMargins.left() + newLayoutMargins.right();
     layout->height = oldLayoutHeight + newLayoutMargins.top() + newLayoutMargins.bottom();
-    layout->adjustDimensions(-this->newLayoutMargins, false, true);
+    layout->adjustDimensions(-this->newLayoutMargins);
     layout->blockdata = oldMetatiles;
 
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
