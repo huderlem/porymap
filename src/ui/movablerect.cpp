@@ -1,5 +1,6 @@
 #include <QCursor>
 #include <QGraphicsSceneHoverEvent>
+#include <QMessageBox>
 
 #include "movablerect.h"
 
@@ -151,7 +152,7 @@ void ResizableRect::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         break;
     }
 
-    // lower bounds limits, smallest possible size is 16x16 square
+    // Lower limits: smallest possible size is 16x16 square
     if (resizedRect.width() < 16) {
         if (dx < 0) { // right sided adjustment made
             resizedRect.setWidth(16);
@@ -169,6 +170,6 @@ void ResizableRect::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         }
     }
 
-    // Upper bounds: clip resized to limit rect
+    // Upper limits: clip resized to limit rect
     this->updatePosFromRect(resizedRect & this->limit);
 }

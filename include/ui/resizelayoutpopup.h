@@ -29,6 +29,7 @@ public:
     void setValidRect(QRect rect) {
         this->validRect = rect;
     }
+    QRect getValidRect() { return this->validRect; }
 
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
