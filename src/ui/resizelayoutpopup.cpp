@@ -118,8 +118,6 @@ void ResizeLayoutPopup::setupLayoutView() {
         this->ui->spinBox_borderHeight->setMinimum(1);
         this->ui->spinBox_borderWidth->setMaximum(MAX_BORDER_WIDTH);
         this->ui->spinBox_borderHeight->setMaximum(MAX_BORDER_HEIGHT);
-        this->ui->spinBox_borderWidth->setLineEditEnabled(false);
-        this->ui->spinBox_borderHeight->setLineEditEnabled(false);
     } else {
         this->ui->frame_border->setVisible(false);
     }
@@ -139,9 +137,6 @@ void ResizeLayoutPopup::setupLayoutView() {
     this->ui->spinBox_width->setMaximum(maxWidth);
     this->ui->spinBox_height->setMinimum(1);
     this->ui->spinBox_height->setMaximum(maxHeight);
-
-    //this->ui->spinBox_width->setLineEditEnabled(false);
-    //this->ui->spinBox_height->setLineEditEnabled(false);
 
     static bool layoutSizeRectVisible = true;
 
