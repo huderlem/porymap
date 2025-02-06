@@ -89,8 +89,7 @@ ResizeLayoutPopup::ResizeLayoutPopup(QWidget *parent, Editor *editor) :
     this->ui->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
 
-ResizeLayoutPopup::~ResizeLayoutPopup()
-{
+ResizeLayoutPopup::~ResizeLayoutPopup() {
     delete ui;
 }
 
@@ -149,7 +148,31 @@ void ResizeLayoutPopup::setupLayoutView() {
     this->outline = new ResizableRect(this, &layoutSizeRectVisible, this->editor->layout->getWidth(), this->editor->layout->getHeight(), qRgb(255, 0, 255));
     this->outline->setLimit(cover->rect().toAlignedRect());
     connect(outline, &ResizableRect::rectUpdated, [=](QRect rect){
+        // Note: this extra limit check needs access to the project values, so it is done here and not ResizableRect::mouseMoveEvent
+        // Upper limits: maximum metatiles in a map formula:
+        //     max = (width + 15) * (height + 14)
+        // This limit can be found in fieldmap.c in pokeruby/pokeemerald/pokefirered.
+        int numMetatiles = editor->project->getMapDataSize(rect.width() / 16, rect.height() / 16);
+        int maxMetatiles = editor->project->getMaxMapDataSize();
+        if (numMetatiles > maxMetatiles) {
+            QString errorText = QString("The maximum layout width and height is the following: (width + 15) * (height + 14) <= %1\n"
+                    "The specified layout width and height was: (%2 + 15) * (%3 + 14) = %4")
+                        .arg(maxMetatiles)
+                        .arg(rect.width() / 16)
+                        .arg(rect.height() / 16)
+                        .arg(numMetatiles);
+            QMessageBox warning;
+            warning.setIcon(QMessageBox::Warning);
+            warning.setText("The specified width and height are too large.");
+            warning.setInformativeText(errorText);
+            warning.setStandardButtons(QMessageBox::Ok);
+            warning.setDefaultButton(QMessageBox::Ok);
+            warning.exec();
+            // adjust rect to last accepted size
+            rect = this->scene->getValidRect();
+        }
         this->scene->setValidRect(rect);
+        this->outline->setRect(rect);
         this->ui->spinBox_width->setValue(rect.width() / 16);
         this->ui->spinBox_height->setValue(rect.height() / 16);
     });
