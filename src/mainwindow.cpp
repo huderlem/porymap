@@ -834,12 +834,7 @@ void MainWindow::on_action_Open_Project_triggered()
 }
 
 void MainWindow::on_action_Reload_Project_triggered() {
-    // TODO: when undo history is complete show only if has unsaved changes
-    WarningMessage msgBox(QStringLiteral("Reloading this project will discard any unsaved changes."), this);
-    msgBox.addButton(QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Cancel);
-    if (msgBox.exec() == QMessageBox::Ok)
-        openProject(editor->project->root);
+    openProject(editor->project->root);
 }
 
 void MainWindow::on_action_Close_Project_triggered() {
