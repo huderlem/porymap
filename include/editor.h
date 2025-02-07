@@ -180,6 +180,8 @@ public:
     qreal collisionOpacity = 0.5;
     static QList<QList<const QImage*>> collisionIcons;
 
+    int eventShiftActionId = 0;
+
     void objectsView_onMousePress(QMouseEvent *event);
 
     int getBorderDrawDistance(int dimension);

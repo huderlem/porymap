@@ -1379,10 +1379,9 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             // do nothing here, at least for now
         } else if (objectEditAction == EditAction::Shift) {
             static QPoint selection_origin;
-            static unsigned actionId = 0;
 
             if (event->type() == QEvent::GraphicsSceneMouseRelease) {
-                actionId++;
+                this->eventShiftActionId++;
             } else {
                 if (event->type() == QEvent::GraphicsSceneMousePress) {
                     selection_origin = QPoint(pos.x(), pos.y());
@@ -1398,7 +1397,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                         }
                         selection_origin = QPoint(pos.x(), pos.y());
 
-                        map->commit(new EventShift(selectedEvents, xDelta, yDelta, actionId));
+                        map->commit(new EventShift(selectedEvents, xDelta, yDelta, this->eventShiftActionId));
                     }
                 }
             }

@@ -2609,6 +2609,8 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
     popup.setupLayoutView();
     if (popup.exec() == QDialog::Accepted) {
         Layout *layout = this->editor->layout;
+        Map *map = this->editor->map;
+
         QMargins result = popup.getResult();
         QSize borderResult = popup.getBorderResult();
         QSize oldLayoutDimensions(layout->getWidth(), layout->getHeight());
@@ -2625,6 +2627,15 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
                 oldBorderDimensions, borderResult,
                 oldBorder, layout->border
             ));
+        }
+        // If we're in map-editing mode, adjust the events' position by the same amount.
+        if (map) {
+            auto events = map->getEvents();
+            int deltaX = result.left();
+            int deltaY = result.top();
+            if ((deltaX || deltaY) && !events.isEmpty()) {
+                map->commit(new EventShift(events, deltaX, deltaY, this->editor->eventShiftActionId++));
+            }
         }
     }
 }
