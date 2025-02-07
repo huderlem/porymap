@@ -380,7 +380,7 @@ private:
 
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
-    void saveMapListTab(int index);
+    void onMapListTabChanged(int index);
 
     void displayMapProperties();
     void checkToolButtons();

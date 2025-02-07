@@ -37,6 +37,8 @@ public:
     void setFilterLocked(bool locked) { m_filterLocked = locked; }
     bool isFilterLocked() const { return m_filterLocked; }
 
+    void setSearchFocus();
+
 signals:
     void filterCleared(MapTree*);
     void addFolderClicked();

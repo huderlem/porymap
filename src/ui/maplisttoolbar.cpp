@@ -139,3 +139,7 @@ void MapListToolBar::applyFilter(const QString &filterText) {
 void MapListToolBar::clearFilter() {
     applyFilter("");
 }
+
+void MapListToolBar::setSearchFocus() {
+    ui->lineEdit_filterBox->setFocus();
+}

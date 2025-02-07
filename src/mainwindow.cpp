@@ -454,7 +454,7 @@ void MainWindow::initMapList() {
     connect(ui->mapListToolBar_Locations, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLocationDialog);
     connect(ui->mapListToolBar_Layouts,   &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
 
-    connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::saveMapListTab);
+    connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::onMapListTabChanged);
 }
 
 void MainWindow::updateWindowTitle() {
@@ -1465,8 +1465,15 @@ void MainWindow::currentMetatilesSelectionChanged() {
         scrollMetatileSelectorToSelection();
 }
 
-void MainWindow::saveMapListTab(int index) {
+void MainWindow::onMapListTabChanged(int index) {
+    // Save current tab for future sessions.
     porymapConfig.mapListTab = index;
+
+    // After changing a map list tab the old tab's search widget can keep focus, which isn't helpful
+    // (and might be a little confusing to the user, because they don't know that each search bar is secretly a separate object).
+    // When we change tabs we'll automatically focus in on the search bar. This should also make finding maps a little quicker.
+    auto toolbar = getCurrentMapListToolBar();
+    if (toolbar) toolbar->setSearchFocus();
 }
 
 void MainWindow::openMapListItem(const QModelIndex &index) {
