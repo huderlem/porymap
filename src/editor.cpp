@@ -134,35 +134,25 @@ void Editor::setEditorView() {
         return;
     }
 
+    map_item->setEditsEnabled(this->editMode != EditMode::Connections);
     map_item->draw();
     collision_item->draw();
 
     current_view->setVisible(true);
 
     updateBorderVisibility();
-    this->cursorMapTileRect->setSingleTileMode();
-    this->cursorMapTileRect->setActive(true);
 
-    switch (this->editMode) {
-    case EditMode::Metatiles:
-    case EditMode::Collision:
-        map_item->setEditsEnabled(true);
-        this->editGroup.setActiveStack(&this->layout->editHistory);
-        break;
-    case EditMode::Connections:
-        this->cursorMapTileRect->setActive(false);
-        map_item->setEditsEnabled(false);
-    case EditMode::Events:
-        if (this->map) {
-            this->editGroup.setActiveStack(this->map->editHistory());
-        }
-        break;
-    case EditMode::Header:
-    case EditMode::Encounters:
-    default:
-        this->editGroup.setActiveStack(nullptr);
-        break;
+    QUndoStack *editStack = this->map ? this->map->editHistory() : nullptr;
+    bool usesCursor = false;
+    if (this->editMode == EditMode::Metatiles || this->editMode == EditMode::Collision) {
+        if (this->layout) editStack = &this->layout->editHistory;
+        usesCursor = true;
     }
+
+    this->cursorMapTileRect->setSingleTileMode();
+    this->cursorMapTileRect->setActive(usesCursor);
+    this->editGroup.setActiveStack(editStack);
+
 
     if (this->events_group) {
         this->events_group->setVisible(this->editMode == EditMode::Events);
