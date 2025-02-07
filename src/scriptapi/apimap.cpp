@@ -794,7 +794,7 @@ void MainWindow::setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj
 }
 
 QJSValue MainWindow::getTilePixels(int tileId) {
-    if (tileId < 0 || !this->editor || !this->editor->project || !this->editor->map || !this->editor->layout)
+    if (tileId < 0 || !this->editor || !this->editor->layout)
         return QJSValue();
     QImage tileImage = getTileImage(tileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
     if (tileImage.isNull() || tileImage.sizeInBytes() < 64)

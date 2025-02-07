@@ -42,6 +42,9 @@ public:
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
     Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
     Q_INVOKABLE QList<QString> getMapNames();
+    Q_INVOKABLE QList<QString> getMapConstants();
+    Q_INVOKABLE QList<QString> getLayoutNames();
+    Q_INVOKABLE QList<QString> getLayoutConstants();
     Q_INVOKABLE QList<QString> getTilesetNames();
     Q_INVOKABLE QList<QString> getPrimaryTilesetNames();
     Q_INVOKABLE QList<QString> getSecondaryTilesetNames();

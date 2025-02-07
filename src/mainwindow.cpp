@@ -947,6 +947,7 @@ bool MainWindow::setLayout(QString layoutId) {
 
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
+    Scripting::cb_MapOpened(layout->name);
     updateTilesetEditor();
 
     userConfig.recentMapOrLayout = layoutId;
@@ -2815,8 +2816,15 @@ void MainWindow::reloadScriptEngine() {
     Scripting::populateGlobalObject(this);
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.projectDir);
-    if (editor && editor->map)
-        Scripting::cb_MapOpened(editor->map->name()); // TODO: API should have equivalent for layout
+    if (this->editor) {
+        QString curName;
+        if (this->editor->map)
+            curName = this->editor->map->name();
+        else if (editor->layout)
+            curName = this->editor->layout->name;
+
+        Scripting::cb_MapOpened(curName);
+    }
 }
 
 void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {
