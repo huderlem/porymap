@@ -96,6 +96,7 @@ MainWindow::~MainWindow()
     saveGlobalConfigs();
 
     delete label_MapRulerStatus;
+    delete undoView;
     delete editor;
     delete ui;
 }
@@ -358,15 +359,15 @@ void MainWindow::initEditor() {
     ui->menuEdit->addAction(undoAction);
     ui->menuEdit->addAction(redoAction);
 
-    QUndoView *undoView = new QUndoView(&editor->editGroup);
-    undoView->setWindowTitle(tr("Edit History"));
-    undoView->setAttribute(Qt::WA_QuitOnClose, false);
+    this->undoView = new QUndoView(&editor->editGroup);
+    this->undoView->setWindowTitle(tr("Edit History"));
+    this->undoView->setAttribute(Qt::WA_QuitOnClose, false);
 
     // Show the EditHistory dialog with Ctrl+E
     QAction *showHistory = new QAction("Show Edit History...", this);
     showHistory->setObjectName("action_ShowEditHistory");
     showHistory->setShortcut(QKeySequence("Ctrl+E"));
-    connect(showHistory, &QAction::triggered, [this, undoView](){ openSubWindow(undoView); });
+    connect(showHistory, &QAction::triggered, this, &MainWindow::openEditHistory);
 
     ui->menuEdit->addAction(showHistory);
 
@@ -389,6 +390,10 @@ void MainWindow::initEditor() {
     connect(this->ui->spinner_HealID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->editor->selectedEventIndexChanged(value, Event::Group::Heal);
     });
+}
+
+void MainWindow::openEditHistory() {
+    openSubWindow(this->undoView);
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -1003,13 +1008,12 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
     int index = event_id - Event::getIndexOffset(event_group);
     Event* event = editor->map->getEvent(event_group, index);
     if (event) {
-        for (DraggablePixmapItem *item : editor->getObjects()) {
-            if (item->event == event) {
-                editor->selected_events->clear();
-                editor->selected_events->append(item);
-                editor->updateSelectedEvents();
-                return;
-            }
+        auto item = event->getPixmapItem();
+        if (item) {
+            editor->selected_events->clear();
+            editor->selected_events->append(item);
+            editor->updateSelectedEvents();
+            return;
         }
     }
     // Can still warp to this map, but can't select the specified event
@@ -1993,9 +1997,9 @@ void MainWindow::displayEventTabs() {
 }
 
 void MainWindow::updateObjects() {
-    QList<DraggablePixmapItem *> all_objects = editor->getObjects();
+    QList<DraggablePixmapItem *> items = editor->getEventPixmapItems();
     for (auto i = this->lastSelectedEvent.cbegin(), end = this->lastSelectedEvent.cend(); i != end; i++) {
-        if (i.value() && !all_objects.contains(i.value()))
+        if (i.value() && !items.contains(i.value()))
             this->lastSelectedEvent.insert(i.key(), nullptr);
     }
     displayEventTabs();
@@ -2017,7 +2021,7 @@ void MainWindow::updateSelectedObjects() {
             DraggablePixmapItem *selectedEvent = all_events.first()->getPixmapItem();
             if (selectedEvent) {
                 editor->selected_events->append(selectedEvent);
-                editor->redrawObject(selectedEvent);
+                editor->redrawEventPixmapItem(selectedEvent);
                 events.append(selectedEvent);
             }
         }
@@ -2162,7 +2166,7 @@ Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab) {
 void MainWindow::eventTabChanged(int index) {
     if (editor->map) {
         Event::Group group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
-        DraggablePixmapItem *selectedEvent = this->lastSelectedEvent.value(group, nullptr);
+        DraggablePixmapItem *selectedItem = this->lastSelectedEvent.value(group, nullptr);
 
         switch (group) {
         case Event::Group::Object:
@@ -2182,18 +2186,11 @@ void MainWindow::eventTabChanged(int index) {
         }
 
         if (!isProgrammaticEventTabChange) {
-            if (!selectedEvent && editor->map->getNumEvents(group)) {
+            if (!selectedItem) {
                 Event *event = editor->map->getEvent(group, 0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-                    if (item->event == event) {
-                        selectedEvent = item;
-                        break;
-                    }
-                }
+                if (event) selectedItem = event->getPixmapItem();
             }
-
-            if (selectedEvent) editor->selectMapEvent(selectedEvent);
+            if (selectedItem) editor->selectMapEvent(selectedItem);
         }
     }
 

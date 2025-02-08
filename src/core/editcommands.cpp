@@ -327,9 +327,7 @@ void EventCreate::redo() {
     QUndoCommand::redo();
 
     map->addEvent(event);
-
-    editor->project->setEventPixmap(event);
-    editor->addMapEvent(event);
+    editor->addEventPixmapItem(event);
 
     // select this event
     editor->selected_events->clear();
@@ -338,12 +336,7 @@ void EventCreate::redo() {
 
 void EventCreate::undo() {
     map->removeEvent(event);
-
-    if (editor->scene->items().contains(event->getPixmapItem())) {
-        editor->scene->removeItem(event->getPixmapItem());
-    }
-    editor->selected_events->removeOne(event->getPixmapItem());
-
+    editor->removeEventPixmapItem(event);
     editor->shouldReselectEvents();
 
     QUndoCommand::undo();
@@ -378,11 +371,7 @@ void EventDelete::redo() {
 
     for (Event *event : selectedEvents) {
         map->removeEvent(event);
-
-        if (editor->scene->items().contains(event->getPixmapItem())) {
-            editor->scene->removeItem(event->getPixmapItem());
-        }
-        editor->selected_events->removeOne(event->getPixmapItem());
+        editor->removeEventPixmapItem(event);
     }
 
     editor->selected_events->clear();
@@ -394,8 +383,7 @@ void EventDelete::redo() {
 void EventDelete::undo() {
     for (Event *event : selectedEvents) {
         map->addEvent(event);
-        editor->project->setEventPixmap(event);
-        editor->addMapEvent(event);
+        editor->addEventPixmapItem(event);
     }
 
     // select these events
@@ -436,8 +424,7 @@ void EventDuplicate::redo() {
 
     for (Event *event : selectedEvents) {
         map->addEvent(event);
-        editor->project->setEventPixmap(event);
-        editor->addMapEvent(event);
+        editor->addEventPixmapItem(event);
     }
 
     // select these events
@@ -451,11 +438,7 @@ void EventDuplicate::redo() {
 void EventDuplicate::undo() {
     for (Event *event : selectedEvents) {
         map->removeEvent(event);
-
-        if (editor->scene->items().contains(event->getPixmapItem())) {
-            editor->scene->removeItem(event->getPixmapItem());
-        }
-        editor->selected_events->removeOne(event->getPixmapItem());
+        editor->removeEventPixmapItem(event);
     }
 
     editor->shouldReselectEvents();

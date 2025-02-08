@@ -325,6 +325,7 @@ private:
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;
+    QPointer<QUndoView> undoView = nullptr;
 
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
@@ -353,6 +354,7 @@ private:
     bool setProjectUI();
     void clearProjectUI();
 
+    void openEditHistory();
     void openNewMapDialog();
     void openDuplicateMapDialog(const QString &mapName);
     NewLayoutDialog* createNewLayoutDialog(const Layout *layoutToCopy = nullptr);

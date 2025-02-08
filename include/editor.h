@@ -109,14 +109,15 @@ public:
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapAttributes();
 
-    DraggablePixmapItem *addMapEvent(Event *event);
+    DraggablePixmapItem *addEventPixmapItem(Event *event);
+    void removeEventPixmapItem(Event *event);
     bool eventLimitReached(Map *, Event::Type);
     void selectMapEvent(DraggablePixmapItem *object, bool toggle = false);
     DraggablePixmapItem *addNewEvent(Event::Type type);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
-    void redrawObject(DraggablePixmapItem *item);
-    QList<DraggablePixmapItem *> getObjects();
+    void redrawEventPixmapItem(DraggablePixmapItem *item);
+    QList<DraggablePixmapItem *> getEventPixmapItems();
 
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);

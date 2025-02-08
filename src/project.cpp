@@ -420,6 +420,7 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     this->mapNameToMapSectionName.insert(map->name(), map->header()->location());
 
     map->setIsPersistedToFile(false);
+    this->mapCache.insert(map->name(), map);
 
     emit mapCreated(map, settings.group);
 

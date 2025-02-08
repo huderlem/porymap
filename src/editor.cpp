@@ -1392,7 +1392,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
 
                         QList<Event *> selectedEvents;
 
-                        for (DraggablePixmapItem *pixmapItem : getObjects()) {
+                        for (DraggablePixmapItem *pixmapItem : getEventPixmapItems()) {
                             selectedEvents.append(pixmapItem->event);
                         }
                         selection_origin = QPoint(pos.x(), pos.y());
@@ -1692,15 +1692,13 @@ void Editor::displayMovementPermissionSelector() {
 
 void Editor::clearMapEvents() {
     if (events_group) {
+        if (events_group->scene()) {
+            events_group->scene()->removeItem(events_group);
+        }
         for (QGraphicsItem *child : events_group->childItems()) {
             events_group->removeFromGroup(child);
             delete child;
         }
-
-        if (events_group->scene()) {
-            events_group->scene()->removeItem(events_group);
-        }
-
         delete events_group;
         events_group = nullptr;
     }
@@ -1714,18 +1712,30 @@ void Editor::displayMapEvents() {
     scene->addItem(events_group);
 
     for (const auto &event : map->getEvents()) {
-        project->setEventPixmap(event);
-        addMapEvent(event);
+        addEventPixmapItem(event);
     }
+
     //objects_group->setFiltersChildEvents(false);
     events_group->setHandlesChildEvents(false);
 }
 
-DraggablePixmapItem *Editor::addMapEvent(Event *event) {
-    DraggablePixmapItem *object = new DraggablePixmapItem(event, this);
-    this->redrawObject(object);
-    events_group->addToGroup(object);
-    return object;
+DraggablePixmapItem *Editor::addEventPixmapItem(Event *event) {
+    this->project->setEventPixmap(event);
+    auto item = new DraggablePixmapItem(event, this);
+    redrawEventPixmapItem(item);
+    this->events_group->addToGroup(item);
+    return item;
+}
+
+void Editor::removeEventPixmapItem(Event *event) {
+    auto item = event->getPixmapItem();
+    if (!item) return;
+
+    this->events_group->removeFromGroup(item);
+    this->selected_events->removeOne(item);
+
+    event->setPixmapItem(nullptr);
+    delete item;
 }
 
 void Editor::clearMapConnections() {
@@ -1977,7 +1987,7 @@ Tileset* Editor::getCurrentMapPrimaryTileset()
     return project->getTileset(tilesetLabel);
 }
 
-QList<DraggablePixmapItem *> Editor::getObjects() {
+QList<DraggablePixmapItem *> Editor::getEventPixmapItems() {
     QList<DraggablePixmapItem *> list;
     for (QGraphicsItem *child : events_group->childItems()) {
         list.append(static_cast<DraggablePixmapItem *>(child));
@@ -1985,7 +1995,7 @@ QList<DraggablePixmapItem *> Editor::getObjects() {
     return list;
 }
 
-void Editor::redrawObject(DraggablePixmapItem *item) {
+void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
     if (item && item->event && !item->event->getPixmap().isNull()) {
         qreal opacity = item->event->getUsingSprite() ? 1.0 : 0.7;
         item->setOpacity(opacity);
@@ -2040,8 +2050,8 @@ void Editor::shouldReselectEvents() {
 }
 
 void Editor::updateSelectedEvents() {
-    for (DraggablePixmapItem *item : getObjects()) {
-        redrawObject(item);
+    for (DraggablePixmapItem *item : getEventPixmapItems()) {
+        redrawEventPixmapItem(item);
     }
 
     emit objectsChanged();
@@ -2073,17 +2083,9 @@ void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
     int event_offs = Event::getIndexOffset(eventGroup);
     index = index - event_offs;
     Event *event = this->map->getEvent(eventGroup, index);
-    DraggablePixmapItem *selectedEvent = nullptr;
-    for (QGraphicsItem *child : this->events_group->childItems()) {
-        DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-        if (item->event == event) {
-            selectedEvent = item;
-            break;
-        }
-    }
 
-    if (selectedEvent) {
-        this->selectMapEvent(selectedEvent);
+    if (event && event->getPixmapItem()) {
+        this->selectMapEvent(event->getPixmapItem());
     } else {
         updateSelectedEvents();
     }

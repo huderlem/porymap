@@ -52,7 +52,7 @@ void NewEventToolButton::init()
     this->newSecretBaseAction->setIcon(QIcon(":/icons/add.ico"));
     connect(this->newSecretBaseAction, &QAction::triggered, this, &NewEventToolButton::newSecretBase);
 
-    QMenu *alignMenu = new QMenu();
+    QMenu *alignMenu = new QMenu(this);
     alignMenu->addAction(this->newObjectAction);
     alignMenu->addAction(this->newCloneObjectAction);
     alignMenu->addAction(this->newWarpAction);
