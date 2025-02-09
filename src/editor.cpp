@@ -178,7 +178,7 @@ void Editor::setEditingHeader() {
     setEditorView();
 }
 
-void Editor::setEditingObjects() {
+void Editor::setEditingEvents() {
     this->editMode = EditMode::Events;
 
     setEditorView();
@@ -1295,7 +1295,7 @@ void Editor::setStraightPathCursorMode(QGraphicsSceneMouseEvent *event) {
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
-    // TODO: add event tab object painting tool buttons stuff here
+    // TODO: add event tab event painting tool buttons stuff here
     if (!item->getEditsEnabled()) {
         return;
     }
@@ -1350,10 +1350,10 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             item->shift(event);
         }
     } else if (this->editMode == EditMode::Events) {
-        if (objectEditAction == EditAction::Paint && event->type() == QEvent::GraphicsSceneMousePress) {
+        if (eventEditAction == EditAction::Paint && event->type() == QEvent::GraphicsSceneMousePress) {
             // Right-clicking while in paint mode will change mode to select.
             if (event->buttons() & Qt::RightButton) {
-                this->objectEditAction = EditAction::Select;
+                this->eventEditAction = EditAction::Select;
                 this->settings->mapCursor = QCursor();
                 this->cursorMapTileRect->setSingleTileMode();
                 this->ui->toolButton_Paint->setChecked(false);
@@ -1370,14 +1370,14 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                     DraggablePixmapItem *newEvent = addNewEvent(eventType);
                     if (newEvent) {
                         newEvent->move(pos.x(), pos.y());
-                        emit objectsChanged();
+                        emit eventsChanged();
                         selectMapEvent(newEvent);
                     }
                 }
             }
-        } else if (objectEditAction == EditAction::Select) {
+        } else if (eventEditAction == EditAction::Select) {
             // do nothing here, at least for now
-        } else if (objectEditAction == EditAction::Shift) {
+        } else if (eventEditAction == EditAction::Shift) {
             static QPoint selection_origin;
 
             if (event->type() == QEvent::GraphicsSceneMouseRelease) {
@@ -1715,7 +1715,6 @@ void Editor::displayMapEvents() {
         addEventPixmapItem(event);
     }
 
-    //objects_group->setFiltersChildEvents(false);
     events_group->setHandlesChildEvents(false);
 }
 
@@ -2054,23 +2053,23 @@ void Editor::updateSelectedEvents() {
         redrawEventPixmapItem(item);
     }
 
-    emit objectsChanged();
+    emit eventsChanged();
 }
 
-void Editor::selectMapEvent(DraggablePixmapItem *object, bool toggle) {
-    if (!selected_events || !object)
+void Editor::selectMapEvent(DraggablePixmapItem *item, bool toggle) {
+    if (!selected_events || !item)
         return;
 
     if (!toggle) {
         // Selecting just this event
         selected_events->clear();
-        selected_events->append(object);
-    } else if (!selected_events->contains(object)) {
+        selected_events->append(item);
+    } else if (!selected_events->contains(item)) {
         // Adding event to group selection
-        selected_events->append(object);
+        selected_events->append(item);
     } else if (selected_events->length() > 1) {
         // Removing event from group selection
-        selected_events->removeOne(object);
+        selected_events->removeOne(item);
     } else {
         // Attempting to toggle the only currently-selected event.
         // Unselecting an event this way would be unexpected, so we ignore it.
@@ -2271,13 +2270,13 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
 // Since the DraggablePixmapItem's event fires first, we can set a temp
 // variable "selectingEvent" so that we can detect whether or not the user
 // is clicking on the background instead of an event.
-void Editor::objectsView_onMousePress(QMouseEvent *event) {
-    // make sure we are in object editing mode
+void Editor::eventsView_onMousePress(QMouseEvent *event) {
+    // make sure we are in event editing mode
     if (map_item && this->editMode != EditMode::Events) {
         return;
     }
-    if (this->objectEditAction == EditAction::Paint && event->buttons() & Qt::RightButton) {
-        this->objectEditAction = EditAction::Select;
+    if (this->eventEditAction == EditAction::Paint && event->buttons() & Qt::RightButton) {
+        this->eventEditAction = EditAction::Select;
         this->settings->mapCursor = QCursor();
         this->cursorMapTileRect->setSingleTileMode();
         this->ui->toolButton_Paint->setChecked(false);

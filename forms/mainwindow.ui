@@ -1484,7 +1484,7 @@
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="mapView_ObjectInfo">
+               <widget class="QWidget" name="mapView_EventInfo">
                 <layout class="QGridLayout" name="gridLayout">
                  <property name="leftMargin">
                   <number>1</number>
@@ -1499,7 +1499,7 @@
                   <number>1</number>
                  </property>
                  <item row="0" column="0">
-                  <widget class="QFrame" name="frame_Objects">
+                  <widget class="QFrame" name="frame_Events">
                    <property name="enabled">
                     <bool>true</bool>
                    </property>
@@ -1582,7 +1582,7 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="QToolButton" name="toolButton_deleteObject">
+                        <widget class="QToolButton" name="toolButton_deleteEvent">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                            <horstretch>0</horstretch>

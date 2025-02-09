@@ -5,7 +5,7 @@
 void GraphicsView::mousePressEvent(QMouseEvent *event) {
     QGraphicsView::mousePressEvent(event);
     if (editor) {
-        editor->objectsView_onMousePress(event);
+        editor->eventsView_onMousePress(event);
     }
 }
 

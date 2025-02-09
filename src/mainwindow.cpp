@@ -337,14 +337,14 @@ void MainWindow::checkForUpdates(bool) {}
 
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
-    connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
+    connect(this->editor, &Editor::eventsChanged, this, &MainWindow::updateEvents);
     connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
     connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonTableEdited, [this] { this->markMapEdited(); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
-    connect(ui->toolButton_deleteObject, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
+    connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
 
     this->loadUserSettings();
 
@@ -1760,7 +1760,7 @@ void MainWindow::paste() {
 
                 if (!newEvents.empty()) {
                     editor->map->commit(new EventPaste(this->editor, editor->map, newEvents));
-                    updateObjects();
+                    updateEvents();
                 }
 
                 break;
@@ -1816,8 +1816,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         clickToolButtonFromEditAction(editor->mapEditAction);
     } else if (index == MainTab::Events) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
-        editor->setEditingObjects();
-        clickToolButtonFromEditAction(editor->objectEditAction);
+        editor->setEditingEvents();
+        clickToolButtonFromEditAction(editor->eventEditAction);
     } else if (index == MainTab::Connections) {
         editor->setEditingConnections();
         ui->graphicsView_Connections->setFocus(); // Avoid opening tab with focus on something editable
@@ -1958,13 +1958,13 @@ void MainWindow::resetMapViewScale() {
 
 void MainWindow::addNewEvent(Event::Type type) {
     if (editor && editor->project) {
-        DraggablePixmapItem *object = editor->addNewEvent(type);
-        if (object) {
+        DraggablePixmapItem *item = editor->addNewEvent(type);
+        if (item) {
             auto halfSize = ui->graphicsView_Map->size() / 2;
             auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
-            object->moveTo(Metatile::coordFromPixmapCoord(centerPos));
-            updateObjects();
-            editor->selectMapEvent(object);
+            item->moveTo(Metatile::coordFromPixmapCoord(centerPos));
+            updateEvents();
+            editor->selectMapEvent(item);
         } else {
             WarningMessage msgBox(QStringLiteral("Failed to add new event."), this);
             if (Event::typeToGroup(type) == Event::Group::Object) {
@@ -1996,17 +1996,17 @@ void MainWindow::displayEventTabs() {
     tryAddEventTab(ui->tab_Healspots);
 }
 
-void MainWindow::updateObjects() {
+void MainWindow::updateEvents() {
     QList<DraggablePixmapItem *> items = editor->getEventPixmapItems();
     for (auto i = this->lastSelectedEvent.cbegin(), end = this->lastSelectedEvent.cend(); i != end; i++) {
         if (i.value() && !items.contains(i.value()))
             this->lastSelectedEvent.insert(i.key(), nullptr);
     }
     displayEventTabs();
-    updateSelectedObjects();
+    updateSelectedEvents();
 }
 
-void MainWindow::updateSelectedObjects() {
+void MainWindow::updateSelectedEvents() {
     QList<DraggablePixmapItem *> events;
 
     if (editor->selected_events && editor->selected_events->length()) {
@@ -2259,7 +2259,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Paint;
     else
-        editor->objectEditAction = Editor::EditAction::Paint;
+        editor->eventEditAction = Editor::EditAction::Paint;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
@@ -2280,7 +2280,7 @@ void MainWindow::on_toolButton_Select_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Select;
     else
-        editor->objectEditAction = Editor::EditAction::Select;
+        editor->eventEditAction = Editor::EditAction::Select;
 
     editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2299,7 +2299,7 @@ void MainWindow::on_toolButton_Fill_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Fill;
     else
-        editor->objectEditAction = Editor::EditAction::Fill;
+        editor->eventEditAction = Editor::EditAction::Fill;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2318,7 +2318,7 @@ void MainWindow::on_toolButton_Dropper_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Pick;
     else
-        editor->objectEditAction = Editor::EditAction::Pick;
+        editor->eventEditAction = Editor::EditAction::Pick;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2337,7 +2337,7 @@ void MainWindow::on_toolButton_Move_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Move;
     else
-        editor->objectEditAction = Editor::EditAction::Move;
+        editor->eventEditAction = Editor::EditAction::Move;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2356,7 +2356,7 @@ void MainWindow::on_toolButton_Shift_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Shift;
     else
-        editor->objectEditAction = Editor::EditAction::Shift;
+        editor->eventEditAction = Editor::EditAction::Shift;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2375,7 +2375,7 @@ void MainWindow::checkToolButtons() {
     if (ui->mainTabBar->currentIndex() == MainTab::Map) {
         editAction = editor->mapEditAction;
     } else {
-        editAction = editor->objectEditAction;
+        editAction = editor->eventEditAction;
         if (editAction == Editor::EditAction::Select && editor->map_ruler)
             editor->map_ruler->setEnabled(true);
         else if (editor->map_ruler)

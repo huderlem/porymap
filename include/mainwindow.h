@@ -221,8 +221,8 @@ private slots:
     void addNewEvent(Event::Type type);
     void tryAddEventTab(QWidget * tab);
     void displayEventTabs();
-    void updateSelectedObjects();
-    void updateObjects();
+    void updateSelectedEvents();
+    void updateEvents();
 
     void on_toolButton_Paint_clicked();
     void on_toolButton_Select_clicked();

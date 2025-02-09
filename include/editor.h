@@ -112,7 +112,7 @@ public:
     DraggablePixmapItem *addEventPixmapItem(Event *event);
     void removeEventPixmapItem(Event *event);
     bool eventLimitReached(Map *, Event::Type);
-    void selectMapEvent(DraggablePixmapItem *object, bool toggle = false);
+    void selectMapEvent(DraggablePixmapItem *item, bool toggle = false);
     DraggablePixmapItem *addNewEvent(Event::Type type);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
@@ -157,7 +157,7 @@ public:
 
     enum class EditAction { None, Paint, Select, Fill, Shift, Pick, Move };
     EditAction mapEditAction = EditAction::Paint;
-    EditAction objectEditAction = EditAction::Select;
+    EditAction eventEditAction = EditAction::Select;
 
     enum class EditMode { None, Disabled, Metatiles, Collision, Header, Events, Connections, Encounters };
     EditMode editMode = EditMode::None;
@@ -171,7 +171,7 @@ public:
     void setEditingMetatiles();
     void setEditingCollision();
     void setEditingHeader();
-    void setEditingObjects();
+    void setEditingEvents();
     void setEditingConnections();
     void setEditingEncounters();
 
@@ -183,7 +183,7 @@ public:
 
     int eventShiftActionId = 0;
 
-    void objectsView_onMousePress(QMouseEvent *event);
+    void eventsView_onMousePress(QMouseEvent *event);
 
     int getBorderDrawDistance(int dimension);
 
@@ -257,7 +257,7 @@ private slots:
     void onWheelZoom(int);
 
 signals:
-    void objectsChanged();
+    void eventsChanged();
     void openConnectedMap(MapConnection*);
     void wildMonTableOpened(EncounterTableModel*);
     void wildMonTableClosed();
