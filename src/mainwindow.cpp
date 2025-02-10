@@ -961,8 +961,8 @@ bool MainWindow::setLayout(QString layoutId) {
 }
 
 void MainWindow::redrawMapScene() {
-    editor->displayMap();
     editor->displayLayout();
+    editor->displayMap();
     refreshMapScene();
 }
 
