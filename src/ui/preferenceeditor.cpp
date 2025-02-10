@@ -45,6 +45,11 @@ void PreferenceEditor::initFields() {
 
 void PreferenceEditor::updateFields() {
     themeSelector->setCurrentText(porymapConfig.theme);
+    if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) {
+        ui->radioButton_OnSprite->setChecked(true);
+    } else if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::BoundingRectShape) {
+        ui->radioButton_WithinRect->setChecked(true);
+    }
     ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.textEditorOpenFolder);
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.textEditorGotoLine);
     ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.monitorFiles);
@@ -58,7 +63,7 @@ void PreferenceEditor::saveFields() {
         porymapConfig.theme = theme;
         emit themeChanged(theme);
     }
-
+    porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
     porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();
     porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();

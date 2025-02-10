@@ -116,6 +116,8 @@ public:
     DraggablePixmapItem *addNewEvent(Event::Type type);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
+    void redrawAllEvents();
+    void redrawEvents(const QList<Event*> &events);
     void redrawEventPixmapItem(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> getEventPixmapItems();
 

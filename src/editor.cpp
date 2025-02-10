@@ -1986,6 +1986,16 @@ Tileset* Editor::getCurrentMapPrimaryTileset()
     return project->getTileset(tilesetLabel);
 }
 
+void Editor::redrawAllEvents() {
+    if (this->map) redrawEvents(this->map->getEvents());
+}
+
+void Editor::redrawEvents(const QList<Event*> &events) {
+    for (const auto &event : events) {
+        redrawEventPixmapItem(event->getPixmapItem());
+    }
+}
+
 QList<DraggablePixmapItem *> Editor::getEventPixmapItems() {
     QList<DraggablePixmapItem *> list;
     for (QGraphicsItem *child : events_group->childItems()) {
@@ -2000,7 +2010,7 @@ void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
         item->setOpacity(opacity);
         project->setEventPixmap(item->event, true);
         item->setPixmap(item->event->getPixmap());
-        item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
+        item->setShapeMode(porymapConfig.eventSelectionShapeMode);
         if (selected_events && selected_events->contains(item)) {
             QImage image = item->pixmap().toImage();
             QPainter painter(&image);

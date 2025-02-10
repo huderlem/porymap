@@ -417,6 +417,14 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (match.hasMatch()) {
             this->rateLimitTimes.insert(match.captured("url"), QDateTime::fromString(value).toLocalTime());
         }
+    } else if (key == "event_selection_shape_mode") {
+        if (value == "mask") {
+            this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
+        } else if (value == "bounding_rect") {
+            this->eventSelectionShapeMode = QGraphicsPixmapItem::BoundingRectShape;
+        } else {
+            logWarn(QString("Invalid config value for %1: '%2'. Must be 'mask' or 'bounding_rect'.").arg(key).arg(value));
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -484,6 +492,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
         if (!time.isNull() && time > QDateTime::currentDateTime())
             map.insert("rate_limit_time/" + i.key().toString(), time.toUTC().toString());
     }
+    map.insert("event_selection_shape_mode", (this->eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) ? "mask" : "bounding_rect");
     
     return map;
 }

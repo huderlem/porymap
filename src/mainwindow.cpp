@@ -2754,6 +2754,9 @@ void MainWindow::togglePreferenceSpecificUi() {
 
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();
+
+    // Redraw all events to use updated porymapConfig.eventSelectionShapeMode
+    this->editor->redrawAllEvents();
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {

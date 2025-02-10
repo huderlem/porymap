@@ -58,6 +58,35 @@
      </widget>
     </item>
     <item>
+     <widget class="QGroupBox" name="groupBox_EventSelectionMode">
+      <property name="title">
+       <string>Event Selection Mode</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_EventSelectionMode">
+       <item>
+        <widget class="QRadioButton" name="radioButton_OnSprite">
+         <property name="toolTip">
+          <string>If enabled, an event can be selected by clicking directly on the opaque pixels of its sprite. This may be preferable when events are overlapping.</string>
+         </property>
+         <property name="text">
+          <string>Select by clicking on sprite</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButton_WithinRect">
+         <property name="toolTip">
+          <string>If enabled, an event can be selected by clicking anywhere within its sprite dimensions. This may be preferable for events with small or mostly transparent sprites.</string>
+         </property>
+         <property name="text">
+          <string>Select by clicking within bounding rectangle</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
      <widget class="QGroupBox" name="groupBox_Themes">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
