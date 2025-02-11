@@ -221,8 +221,8 @@ private slots:
     void addNewEvent(Event::Type type);
     void tryAddEventTab(QWidget * tab);
     void displayEventTabs();
-    void updateSelectedObjects();
-    void updateObjects();
+    void updateSelectedEvents();
+    void updateEvents();
 
     void on_toolButton_Paint_clicked();
     void on_toolButton_Select_clicked();
@@ -325,6 +325,7 @@ private:
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;
+    QPointer<QUndoView> undoView = nullptr;
 
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
@@ -353,6 +354,7 @@ private:
     bool setProjectUI();
     void clearProjectUI();
 
+    void openEditHistory();
     void openNewMapDialog();
     void openDuplicateMapDialog(const QString &mapName);
     NewLayoutDialog* createNewLayoutDialog(const Layout *layoutToCopy = nullptr);
@@ -380,7 +382,7 @@ private:
 
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
-    void saveMapListTab(int index);
+    void onMapListTabChanged(int index);
 
     void displayMapProperties();
     void checkToolButtons();

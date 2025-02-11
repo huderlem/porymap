@@ -5,7 +5,7 @@
 #include <QAbstractButton>
 #include <QPointer>
 
-class Project;
+#include "project.h"
 
 namespace Ui {
 class NewLocationDialog;

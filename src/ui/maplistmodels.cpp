@@ -135,9 +135,6 @@ QStandardItem *MapListModel::insertMapItem(const QString &mapName, const QString
     if (folder) {
         folder->appendRow(map);
     }
-
-    if (this->sortingEnabled)
-        this->sort(0, Qt::AscendingOrder);
     return map;
 }
 
@@ -147,8 +144,6 @@ QStandardItem *MapListModel::insertMapFolderItem(const QString &folderName) {
 
     QStandardItem *item = createMapFolderItem(folderName);
     this->root->appendRow(item);
-    if (this->sortingEnabled)
-        this->sort(0, Qt::AscendingOrder);
     return item;
 }
 
@@ -432,9 +427,6 @@ MapLocationModel::MapLocationModel(Project *project, QObject *parent) : MapListM
     for (const auto &mapName : this->project->mapNames) {
         insertMapItem(mapName, this->project->mapNameToMapSectionName.value(mapName));
     }
-
-    this->sortingEnabled = true;
-    sort(0, Qt::AscendingOrder);
 }
 
 void MapLocationModel::removeItem(QStandardItem *item) {
@@ -459,9 +451,6 @@ LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListMod
     for (const auto &mapName : this->project->mapNames) {
         insertMapItem(mapName, this->project->mapNameToLayoutId.value(mapName));
     }
-
-    this->sortingEnabled = true;
-    sort(0, Qt::AscendingOrder);
 }
 
 void LayoutTreeModel::removeItem(QStandardItem *) {

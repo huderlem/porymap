@@ -79,7 +79,6 @@ protected:
 
     QString activeItemName;
     QString folderTypeName;
-    bool sortingEnabled = false;
     bool editable = false;
 
     QIcon mapGrayIcon;

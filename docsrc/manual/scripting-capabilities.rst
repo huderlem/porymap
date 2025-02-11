@@ -153,9 +153,9 @@ Callbacks
 
 .. js:function:: onMapOpened(mapName)
 
-   Called when a map is opened.
+   Called when a map or layout is opened.
 
-   :param mapName: the name of the opened map
+   :param mapName: the name of the opened map or layout
    :type mapName: string
 
 .. js:function:: onBlockChanged(x, y, prevBlock, newBlock)
@@ -1995,7 +1995,28 @@ All utility functions are callable via the global ``utility`` object.
 
    Gets the list of map names.
 
-   :returns: the list of map names
+   :returns: the list of map names (e.g. `PetalburgCity`)
+   :rtype: array
+
+.. js:function:: utility.getMapConstants()
+
+   Gets the list of map IDs (e.g. `MAP_PETALBURG_CITY`)
+
+   :returns: the list of map IDs
+   :rtype: array
+
+.. js:function:: utility.getLayoutNames()
+
+   Gets the list of layout names.
+
+   :returns: the list of layout names (e.g. `PetalburgCity_Layout`)
+   :rtype: array
+
+.. js:function:: utility.getLayoutConstants()
+
+   Gets the list of layout IDs (e.g. `LAYOUT_PETALBURG_CITY`)
+
+   :returns: the list of layout IDs
    :rtype: array
 
 .. js:function:: utility.getTilesetNames()

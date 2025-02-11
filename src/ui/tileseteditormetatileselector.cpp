@@ -22,11 +22,16 @@ int TilesetEditorMetatileSelector::numRows(int numMetatiles) {
 }
 
 int TilesetEditorMetatileSelector::numRows() {
-    return this->numRows(this->primaryTileset->numMetatiles() + this->secondaryTileset->numMetatiles());
+    return this->numRows(this->numPrimaryMetatilesRounded() + this->secondaryTileset->numMetatiles());
+}
+
+int TilesetEditorMetatileSelector::numPrimaryMetatilesRounded() const {
+    // We round up the number of primary metatiles to keep the tilesets on separate rows.
+    return ceil((double)this->primaryTileset->numMetatiles() / this->numMetatilesWide) * this->numMetatilesWide;
 }
 
 QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
-    return this->buildImage(0, this->primaryTileset->numMetatiles() + this->secondaryTileset->numMetatiles());
+    return this->buildImage(0, this->numPrimaryMetatilesRounded() + this->secondaryTileset->numMetatiles());
 }
 
 QImage TilesetEditorMetatileSelector::buildPrimaryMetatilesImage() {
@@ -39,11 +44,11 @@ QImage TilesetEditorMetatileSelector::buildSecondaryMetatilesImage() {
 
 QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMetatiles) {
     int numMetatilesHigh = this->numRows(numMetatiles);
-    int numPrimary = this->primaryTileset->numMetatiles();
+    int numPrimary = this->numPrimaryMetatilesRounded();
     int maxPrimary = Project::getNumMetatilesPrimary();
     bool includesPrimary = metatileIdStart < maxPrimary;
 
-    QImage image(this->numMetatilesWide * 32, numMetatilesHigh * 32, QImage::Format_RGBA8888);
+    QImage image(this->numMetatilesWide * this->cellWidth, numMetatilesHigh * this->cellHeight, QImage::Format_RGBA8888);
     image.fill(Qt::magenta);
     QPainter painter(&image);
     for (int i = 0; i < numMetatiles; i++) {
@@ -57,10 +62,10 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
                     this->layout->metatileLayerOrder,
                     this->layout->metatileLayerOpacity,
                     true)
-                .scaled(32, 32);
+                .scaled(this->cellWidth, this->cellHeight);
         int map_y = i / this->numMetatilesWide;
         int map_x = i % this->numMetatilesWide;
-        QPoint metatile_origin = QPoint(map_x * 32, map_y * 32);
+        QPoint metatile_origin = QPoint(map_x * this->cellWidth, map_y * this->cellHeight);
         painter.drawImage(metatile_origin, metatile_image);
     }
     painter.end();
@@ -107,10 +112,11 @@ uint16_t TilesetEditorMetatileSelector::getSelectedMetatileId() {
 
 uint16_t TilesetEditorMetatileSelector::getMetatileId(int x, int y) {
     int index = y * this->numMetatilesWide + x;
-    if (index < this->primaryTileset->numMetatiles()) {
+    int numPrimary = numPrimaryMetatilesRounded();
+    if (index < numPrimary) {
         return static_cast<uint16_t>(index);
     } else {
-        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - this->primaryTileset->numMetatiles());
+        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - numPrimary);
     }
 }
 
@@ -156,7 +162,7 @@ QPoint TilesetEditorMetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
     }
     int index = metatileId < Project::getNumMetatilesPrimary()
                 ? metatileId
-                : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->numMetatiles();
+                : metatileId - Project::getNumMetatilesPrimary() + this->numPrimaryMetatilesRounded();
     return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
 }
 
@@ -176,12 +182,12 @@ void TilesetEditorMetatileSelector::drawGrid() {
     const int numColumns = this->numMetatilesWide;
     const int numRows = this->numRows();
     for (int column = 1; column < numColumns; column++) {
-        int x = column * 32;
-        painter.drawLine(x, 0, x, numRows * 32);
+        int x = column * this->cellWidth;
+        painter.drawLine(x, 0, x, numRows * this->cellHeight);
     }
     for (int row = 1; row < numRows; row++) {
-        int y = row * 32;
-        painter.drawLine(0, y, numColumns * 32, y);
+        int y = row * this->cellHeight;
+        painter.drawLine(0, y, numColumns * this->cellWidth, y);
     }
     painter.end();
     this->setPixmap(pixmap);
@@ -191,12 +197,12 @@ void TilesetEditorMetatileSelector::drawDivider() {
     if (!this->showDivider)
         return;
 
-    const int y = this->numRows(this->primaryTileset->numMetatiles()) * 32;
+    const int y = this->numRows(this->numPrimaryMetatilesRounded()) * this->cellHeight;
 
     QPixmap pixmap = this->pixmap();
     QPainter painter(&pixmap);
     painter.setPen(Qt::white);
-    painter.drawLine(0, y, this->numMetatilesWide * 32, y);
+    painter.drawLine(0, y, this->numMetatilesWide * this->cellWidth, y);
     painter.end();
     this->setPixmap(pixmap);
 }
@@ -212,7 +218,7 @@ void TilesetEditorMetatileSelector::drawFilters() {
 
 void TilesetEditorMetatileSelector::drawUnused() {
     // setup the circle with a line through it image to layer above unused metatiles
-    QPixmap redX(32, 32);
+    QPixmap redX(this->cellWidth, this->cellHeight);
     redX.fill(Qt::transparent);
 
     QPen whitePen(Qt::white);
@@ -223,21 +229,21 @@ void TilesetEditorMetatileSelector::drawUnused() {
     QPainter oPainter(&redX);
 
     oPainter.setPen(whitePen);
-    oPainter.drawEllipse(QRect(1, 1, 30, 30));
+    oPainter.drawEllipse(QRect(1, 1, this->cellWidth - 2, this->cellHeight - 2));
     oPainter.setPen(pinkPen);
-    oPainter.drawEllipse(QRect(2, 2, 28, 28));
-    oPainter.drawEllipse(QRect(3, 3, 26, 26));
+    oPainter.drawEllipse(QRect(2, 2, this->cellWidth - 4, this->cellHeight - 4));
+    oPainter.drawEllipse(QRect(3, 3, this->cellWidth - 6, this->cellHeight - 6));
 
     oPainter.setPen(whitePen);
-    oPainter.drawEllipse(QRect(4, 4, 24, 24));
+    oPainter.drawEllipse(QRect(4, 4, this->cellHeight - 8, this->cellHeight - 8));
 
     whitePen.setWidth(5);
     oPainter.setPen(whitePen);
-    oPainter.drawLine(0, 0, 31, 31);
+    oPainter.drawLine(0, 0, this->cellWidth - 1, this->cellHeight - 1);
 
     pinkPen.setWidth(3);
     oPainter.setPen(pinkPen);
-    oPainter.drawLine(2, 2, 29, 29);
+    oPainter.drawLine(2, 2, this->cellWidth - 3, this->cellHeight - 3);
 
     oPainter.end();
 
@@ -247,19 +253,13 @@ void TilesetEditorMetatileSelector::drawUnused() {
     QPainter unusedPainter(&metatilesPixmap);
     unusedPainter.setOpacity(0.5);
 
-    int primaryLength = this->primaryTileset->numMetatiles();
-    int length_ = primaryLength + this->secondaryTileset->numMetatiles();
-
-    for (int i = 0; i < length_; i++) {
-        int tile = i;
-        if (i >= primaryLength) {
-            tile += Project::getNumMetatilesPrimary() - primaryLength;
-        }
-        if (!usedMetatiles[tile]) {
-            unusedPainter.drawPixmap((i % 8) * 32, (i / 8) * 32, redX);
-        }
+    for (int metatileId = 0; metatileId < this->usedMetatiles.size(); metatileId++) {
+        if (this->usedMetatiles.at(metatileId) || !Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
+            continue;
+        // Adjust position from center to top-left corner
+        QPoint pos = getMetatileIdCoordsOnWidget(metatileId) - QPoint(this->cellWidth / 2, this->cellHeight / 2);
+        unusedPainter.drawPixmap(pos.x(), pos.y(), redX);
     }
-
     unusedPainter.end();
 
     this->setPixmap(metatilesPixmap);
@@ -268,38 +268,28 @@ void TilesetEditorMetatileSelector::drawUnused() {
 void TilesetEditorMetatileSelector::drawCounts() {
     QPen blackPen(Qt::black);
     blackPen.setWidth(1);
-
-    QPixmap metatilesPixmap = this->pixmap();
-
-    QPainter countPainter(&metatilesPixmap);
-    countPainter.setPen(blackPen);
-
-    for (int tile = 0; tile < this->usedMetatiles.size(); tile++) {
-        int count = usedMetatiles[tile];
-        QString countText = QString::number(count);
-        if (count > 1000) countText = ">1k";
-        countPainter.drawText((tile % 8) * 32, (tile / 8) * 32 + 32, countText);
-    }
-
-    // write in white and black for contrast
     QPen whitePen(Qt::white);
     whitePen.setWidth(1);
-    countPainter.setPen(whitePen);
 
-    int primaryLength = this->primaryTileset->numMetatiles();
-    int length_ = primaryLength + this->secondaryTileset->numMetatiles();
+    QPixmap metatilesPixmap = this->pixmap();
+    QPainter countPainter(&metatilesPixmap);
 
-    for (int i = 0; i < length_; i++) {
-        int tile = i;
-        if (i >= primaryLength) {
-            tile += Project::getNumMetatilesPrimary() - primaryLength;
-        }
-        int count = usedMetatiles[tile];
-        QString countText = QString::number(count);
-        if (count > 1000) countText = ">1k";
-        countPainter.drawText((i % 8) * 32 + 1, (i / 8) * 32 + 32 - 1, countText);
+    for (int metatileId = 0; metatileId < this->usedMetatiles.size(); metatileId++) {
+        if (!Tileset::metatileIsValid(metatileId, this->primaryTileset, this->secondaryTileset))
+            continue;
+
+        int count = this->usedMetatiles.at(metatileId);
+        QString countText = (count > 1000) ? QStringLiteral(">1k") : QString::number(count);
+
+        // Adjust position from center to bottom-left corner
+        QPoint pos = getMetatileIdCoordsOnWidget(metatileId) + QPoint(-(this->cellWidth / 2), this->cellHeight / 2);
+
+        // write in black and white for contrast
+        countPainter.setPen(blackPen);
+        countPainter.drawText(pos.x(), pos.y(), countText);
+        countPainter.setPen(whitePen);
+        countPainter.drawText(pos.x() + 1, pos.y() - 1, countText);
     }
-
     countPainter.end();
 
     this->setPixmap(metatilesPixmap);

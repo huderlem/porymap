@@ -112,7 +112,7 @@ void ProjectSettingsEditor::initUi() {
     // Validate that the border metatiles text is a comma-separated list of metatile values
     static const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
     static const QRegularExpression expression_HexList(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
-    QRegularExpressionValidator *validator_HexList = new QRegularExpressionValidator(expression_HexList);
+    QRegularExpressionValidator *validator_HexList = new QRegularExpressionValidator(expression_HexList, this);
     ui->lineEdit_BorderMetatiles->setValidator(validator_HexList);
     this->setBorderMetatilesUi(projectConfig.useCustomBorderSize);
 

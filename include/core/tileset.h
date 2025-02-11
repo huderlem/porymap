@@ -80,7 +80,7 @@ public:
     Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
 
     void clearMetatiles();
-    void resizeMetatiles(unsigned int newNumMetatiles);
+    void resizeMetatiles(int newNumMetatiles);
     int numMetatiles() const { return m_metatiles.length(); }
 
 private:

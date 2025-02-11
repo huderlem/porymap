@@ -249,6 +249,27 @@ QList<QString> ScriptUtility::getMapNames() {
     return window->editor->project->mapNames;
 }
 
+QList<QString> ScriptUtility::getMapConstants() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->mapConstantsToMapNames.keys();
+}
+
+QList<QString> ScriptUtility::getLayoutNames() {
+    QList<QString> names;
+    if (!window || !window->editor || !window->editor->project)
+        return names;
+    for (const auto &layout : window->editor->project->mapLayouts)
+        names.append(layout->name);
+    return names;
+}
+
+QList<QString> ScriptUtility::getLayoutConstants() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->layoutIds;
+}
+
 QList<QString> ScriptUtility::getTilesetNames() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();

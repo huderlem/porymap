@@ -8,20 +8,21 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
-- Add the ability to edit layouts with no corresponding map.
-- Add ``Duplicate Map`` / ``Duplicate Layout`` options, accessible by right-clicking a map or layout in the map list.
-- Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
+- Redesigned the map list, adding new features including opening/editing layouts with no associated map, duplicating maps or layouts (accessible via right-click), editing the names of map groups, rearranging maps and map groups, and hiding empty folders.
+- Add a drop-down for changing the layout of the currently opened map.
+- Redesigned the Connections tab, adding new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
-- Add charts to the `Wild Pokémon` tab that show species and level distributions.
+- Add a search button to the `Wild Pokémon` tab that shows the encounter data for a species across all maps.
+- Add charts to the `Wild Pokémon` tab that show species and level distributions for the current map.
 - Add options for customizing the map grid under `View -> Grid Settings`.
 - Add an option to display a dividing line between tilesets in the Tileset Editor.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
-- Add button to enable editing map groups including renaming groups and rearranging the maps within them.
 - Add buttons to hide and show empty folders in each map tree view.
 - Add a setting to specify the tile values to use for the unused metatile layer.
 
 ### Changed
+- `Change Dimensions` now has an interactive resizing rectangle.
 - Redesigned the new map dialog, including better error checking and a collapsible section for header data.
 - Map groups and ``MAPSEC`` names specified when creating a new map will be added automatically if they don't already exist.
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
@@ -32,10 +33,12 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
 - The triple-layer metatiles setting can now be set automatically using a project constant.
 - `Export Map Stitch Image` now shows a preview of the full image, not just the current map.
-- Maps and layouts were internally separated.
+- `Custom Attributes` tables now display numbers using spin boxes. The `type` column was removed, because `value`'s type is now obvious.
 - Unrecognized map names in Event or Connections data will no longer be overwritten.
+- Reduced diff noise when saving maps.
 - Map names and ``MAP_NAME`` constants are no longer required to match.
 - Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
+- Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -49,7 +52,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
 - Fix invalid species names clearing from wild pokémon data when revisited.
-- Fix editing wild pokémon data not marking the map as edited.
+- Fix editing wild pokémon data not marking the map as unsaved.
+- Fix editing an event's `Custom Attributes` not marking the map as unsaved.
 - Fix changes to map connections not marking connected maps as unsaved.
 - Fix numerous issues related to connecting a map to itself.
 - Fix incorrect map connections getting selected when opening a map by double-clicking a map connection.
@@ -72,8 +76,11 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix exported tile images containing garbage pixels after the end of the tiles.
 - Fix fully transparent pixels rendering with the incorrect color.
 - Fix the values for some config fields shuffling their order every save.
+- Fix `key`s in `Custom Attributes` disappearing if given an empty name or the name of an existing field.
 - Fix some problems with tileset detection when importing maps from AdvanceMap.
 - Fix certain input fields allowing invalid identifiers, like names starting with numbers.
+- Fix crash in the Shortcuts Editor when applying changes after closing certain windows.
+- Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

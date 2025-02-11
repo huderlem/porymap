@@ -30,7 +30,7 @@ public:
 
     WildMonInfo encounterData() const { return m_monInfo; }
     EncounterField encounterField() const { return m_encounterField; }
-    QList<double> percentages() const { return m_slotPercentages; }
+    QVector<double> percentages() const { return m_slotPercentages; }
 
 private:
     int m_numRows = 0;
@@ -38,7 +38,7 @@ private:
     WildMonInfo m_monInfo;
     EncounterField m_encounterField;
     QMap<int,QString> m_groupNames;
-    QList<double> m_slotPercentages;
+    QVector<double> m_slotPercentages;
 
 signals:
     void edited();

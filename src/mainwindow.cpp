@@ -23,6 +23,7 @@
 #include "newmapconnectiondialog.h"
 #include "config.h"
 #include "filedialog.h"
+#include "resizelayoutpopup.h"
 #include "newmapdialog.h"
 #include "newtilesetdialog.h"
 #include "newmapgroupdialog.h"
@@ -92,6 +93,7 @@ MainWindow::~MainWindow()
     saveGlobalConfigs();
 
     delete label_MapRulerStatus;
+    delete undoView;
     delete editor;
     delete ui;
 }
@@ -332,14 +334,14 @@ void MainWindow::checkForUpdates(bool) {}
 
 void MainWindow::initEditor() {
     this->editor = new Editor(ui);
-    connect(this->editor, &Editor::objectsChanged, this, &MainWindow::updateObjects);
+    connect(this->editor, &Editor::eventsChanged, this, &MainWindow::updateEvents);
     connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
     connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonTableEdited, [this] { this->markMapEdited(); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
-    connect(ui->toolButton_deleteObject, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
+    connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
 
     this->loadUserSettings();
 
@@ -354,15 +356,15 @@ void MainWindow::initEditor() {
     ui->menuEdit->addAction(undoAction);
     ui->menuEdit->addAction(redoAction);
 
-    QUndoView *undoView = new QUndoView(&editor->editGroup);
-    undoView->setWindowTitle(tr("Edit History"));
-    undoView->setAttribute(Qt::WA_QuitOnClose, false);
+    this->undoView = new QUndoView(&editor->editGroup);
+    this->undoView->setWindowTitle(tr("Edit History"));
+    this->undoView->setAttribute(Qt::WA_QuitOnClose, false);
 
     // Show the EditHistory dialog with Ctrl+E
     QAction *showHistory = new QAction("Show Edit History...", this);
     showHistory->setObjectName("action_ShowEditHistory");
     showHistory->setShortcut(QKeySequence("Ctrl+E"));
-    connect(showHistory, &QAction::triggered, [this, undoView](){ openSubWindow(undoView); });
+    connect(showHistory, &QAction::triggered, this, &MainWindow::openEditHistory);
 
     ui->menuEdit->addAction(showHistory);
 
@@ -385,6 +387,10 @@ void MainWindow::initEditor() {
     connect(this->ui->spinner_HealID, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->editor->selectedEventIndexChanged(value, Event::Group::Heal);
     });
+}
+
+void MainWindow::openEditHistory() {
+    openSubWindow(this->undoView);
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -450,7 +456,7 @@ void MainWindow::initMapList() {
     connect(ui->mapListToolBar_Locations, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLocationDialog);
     connect(ui->mapListToolBar_Layouts,   &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
 
-    connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::saveMapListTab);
+    connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::onMapListTabChanged);
 }
 
 void MainWindow::updateWindowTitle() {
@@ -830,12 +836,7 @@ void MainWindow::on_action_Open_Project_triggered()
 }
 
 void MainWindow::on_action_Reload_Project_triggered() {
-    // TODO: when undo history is complete show only if has unsaved changes
-    WarningMessage msgBox(QStringLiteral("Reloading this project will discard any unsaved changes."), this);
-    msgBox.addButton(QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Cancel);
-    if (msgBox.exec() == QMessageBox::Ok)
-        openProject(editor->project->root);
+    openProject(editor->project->root);
 }
 
 void MainWindow::on_action_Close_Project_triggered() {
@@ -953,6 +954,7 @@ bool MainWindow::setLayout(QString layoutId) {
 
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
+    Scripting::cb_MapOpened(layout->name);
     updateTilesetEditor();
 
     userConfig.recentMapOrLayout = layoutId;
@@ -961,8 +963,8 @@ bool MainWindow::setLayout(QString layoutId) {
 }
 
 void MainWindow::redrawMapScene() {
-    editor->displayMap();
     editor->displayLayout();
+    editor->displayMap();
     refreshMapScene();
 }
 
@@ -1008,13 +1010,12 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
     int index = event_id - Event::getIndexOffset(event_group);
     Event* event = editor->map->getEvent(event_group, index);
     if (event) {
-        for (DraggablePixmapItem *item : editor->getObjects()) {
-            if (item->event == event) {
-                editor->selected_events->clear();
-                editor->selected_events->append(item);
-                editor->updateSelectedEvents();
-                return;
-            }
+        auto item = event->getPixmapItem();
+        if (item) {
+            editor->selected_events->clear();
+            editor->selected_events->append(item);
+            editor->updateSelectedEvents();
+            return;
         }
     }
     // Can still warp to this map, but can't select the specified event
@@ -1106,11 +1107,15 @@ bool MainWindow::setProjectUI() {
     this->locationListProxyModel = new FilterChildrenProxyModel();
     locationListProxyModel->setSourceModel(this->mapLocationModel);
     ui->locationList->setModel(locationListProxyModel);
+    ui->locationList->setSortingEnabled(true);
+    ui->locationList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
     ui->layoutList->setModel(layoutListProxyModel);
+    ui->layoutList->setSortingEnabled(true);
+    ui->layoutList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     ui->mapCustomAttributesFrame->table()->setRestrictedKeys(project->topLevelMapFields);
 
@@ -1465,8 +1470,15 @@ void MainWindow::currentMetatilesSelectionChanged() {
         scrollMetatileSelectorToSelection();
 }
 
-void MainWindow::saveMapListTab(int index) {
+void MainWindow::onMapListTabChanged(int index) {
+    // Save current tab for future sessions.
     porymapConfig.mapListTab = index;
+
+    // After changing a map list tab the old tab's search widget can keep focus, which isn't helpful
+    // (and might be a little confusing to the user, because they don't know that each search bar is secretly a separate object).
+    // When we change tabs we'll automatically focus in on the search bar. This should also make finding maps a little quicker.
+    auto toolbar = getCurrentMapListToolBar();
+    if (toolbar) toolbar->setSearchFocus();
 }
 
 void MainWindow::openMapListItem(const QModelIndex &index) {
@@ -1737,7 +1749,7 @@ void MainWindow::paste() {
 
                 if (!newEvents.empty()) {
                     editor->map->commit(new EventPaste(this->editor, editor->map, newEvents));
-                    updateObjects();
+                    updateEvents();
                 }
 
                 break;
@@ -1793,8 +1805,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         clickToolButtonFromEditAction(editor->mapEditAction);
     } else if (index == MainTab::Events) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
-        editor->setEditingObjects();
-        clickToolButtonFromEditAction(editor->objectEditAction);
+        editor->setEditingEvents();
+        clickToolButtonFromEditAction(editor->eventEditAction);
     } else if (index == MainTab::Connections) {
         editor->setEditingConnections();
         ui->graphicsView_Connections->setFocus(); // Avoid opening tab with focus on something editable
@@ -1935,13 +1947,13 @@ void MainWindow::resetMapViewScale() {
 
 void MainWindow::addNewEvent(Event::Type type) {
     if (editor && editor->project) {
-        DraggablePixmapItem *object = editor->addNewEvent(type);
-        if (object) {
+        DraggablePixmapItem *item = editor->addNewEvent(type);
+        if (item) {
             auto halfSize = ui->graphicsView_Map->size() / 2;
             auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
-            object->moveTo(Metatile::coordFromPixmapCoord(centerPos));
-            updateObjects();
-            editor->selectMapEvent(object);
+            item->moveTo(Metatile::coordFromPixmapCoord(centerPos));
+            updateEvents();
+            editor->selectMapEvent(item);
         } else {
             WarningMessage msgBox(QStringLiteral("Failed to add new event."), this);
             if (Event::typeToGroup(type) == Event::Group::Object) {
@@ -1973,17 +1985,17 @@ void MainWindow::displayEventTabs() {
     tryAddEventTab(ui->tab_HealLocations);
 }
 
-void MainWindow::updateObjects() {
-    QList<DraggablePixmapItem *> all_objects = editor->getObjects();
+void MainWindow::updateEvents() {
+    QList<DraggablePixmapItem *> items = editor->getEventPixmapItems();
     for (auto i = this->lastSelectedEvent.cbegin(), end = this->lastSelectedEvent.cend(); i != end; i++) {
-        if (i.value() && !all_objects.contains(i.value()))
+        if (i.value() && !items.contains(i.value()))
             this->lastSelectedEvent.insert(i.key(), nullptr);
     }
     displayEventTabs();
-    updateSelectedObjects();
+    updateSelectedEvents();
 }
 
-void MainWindow::updateSelectedObjects() {
+void MainWindow::updateSelectedEvents() {
     QList<DraggablePixmapItem *> events;
 
     if (editor->selected_events && editor->selected_events->length()) {
@@ -1998,7 +2010,7 @@ void MainWindow::updateSelectedObjects() {
             DraggablePixmapItem *selectedEvent = all_events.first()->getPixmapItem();
             if (selectedEvent) {
                 editor->selected_events->append(selectedEvent);
-                editor->redrawObject(selectedEvent);
+                editor->redrawEventPixmapItem(selectedEvent);
                 events.append(selectedEvent);
             }
         }
@@ -2143,7 +2155,7 @@ Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab) {
 void MainWindow::eventTabChanged(int index) {
     if (editor->map) {
         Event::Group group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
-        DraggablePixmapItem *selectedEvent = this->lastSelectedEvent.value(group, nullptr);
+        DraggablePixmapItem *selectedItem = this->lastSelectedEvent.value(group, nullptr);
 
         switch (group) {
         case Event::Group::Object:
@@ -2166,18 +2178,11 @@ void MainWindow::eventTabChanged(int index) {
         }
 
         if (!isProgrammaticEventTabChange) {
-            if (!selectedEvent && editor->map->getNumEvents(group)) {
+            if (!selectedItem) {
                 Event *event = editor->map->getEvent(group, 0);
-                for (QGraphicsItem *child : editor->events_group->childItems()) {
-                    DraggablePixmapItem *item = static_cast<DraggablePixmapItem *>(child);
-                    if (item->event == event) {
-                        selectedEvent = item;
-                        break;
-                    }
-                }
+                if (event) selectedItem = event->getPixmapItem();
             }
-
-            if (selectedEvent) editor->selectMapEvent(selectedEvent);
+            if (selectedItem) editor->selectMapEvent(selectedItem);
         }
     }
 
@@ -2246,7 +2251,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Paint;
     else
-        editor->objectEditAction = Editor::EditAction::Paint;
+        editor->eventEditAction = Editor::EditAction::Paint;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
@@ -2267,7 +2272,7 @@ void MainWindow::on_toolButton_Select_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Select;
     else
-        editor->objectEditAction = Editor::EditAction::Select;
+        editor->eventEditAction = Editor::EditAction::Select;
 
     editor->settings->mapCursor = QCursor();
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2286,7 +2291,7 @@ void MainWindow::on_toolButton_Fill_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Fill;
     else
-        editor->objectEditAction = Editor::EditAction::Fill;
+        editor->eventEditAction = Editor::EditAction::Fill;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2305,7 +2310,7 @@ void MainWindow::on_toolButton_Dropper_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Pick;
     else
-        editor->objectEditAction = Editor::EditAction::Pick;
+        editor->eventEditAction = Editor::EditAction::Pick;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2324,7 +2329,7 @@ void MainWindow::on_toolButton_Move_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Move;
     else
-        editor->objectEditAction = Editor::EditAction::Move;
+        editor->eventEditAction = Editor::EditAction::Move;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2343,7 +2348,7 @@ void MainWindow::on_toolButton_Shift_clicked()
     if (ui->mainTabBar->currentIndex() == MainTab::Map)
         editor->mapEditAction = Editor::EditAction::Shift;
     else
-        editor->objectEditAction = Editor::EditAction::Shift;
+        editor->eventEditAction = Editor::EditAction::Shift;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
     editor->cursorMapTileRect->setSingleTileMode();
@@ -2362,7 +2367,7 @@ void MainWindow::checkToolButtons() {
     if (ui->mainTabBar->currentIndex() == MainTab::Map) {
         editAction = editor->mapEditAction;
     } else {
-        editAction = editor->objectEditAction;
+        editAction = editor->eventEditAction;
         if (editAction == Editor::EditAction::Select && editor->map_ruler)
             editor->map_ruler->setEnabled(true);
         else if (editor->map_ruler)
@@ -2589,86 +2594,38 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
 void MainWindow::on_pushButton_ChangeDimensions_clicked() {
     if (!editor || !editor->layout) return;
 
-    QDialog dialog(this, Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    dialog.setWindowTitle("Change Map Dimensions");
-    dialog.setWindowModality(Qt::NonModal);
+    ResizeLayoutPopup popup(this->ui->graphicsView_Map, this->editor);
+    popup.show();
+    popup.setupLayoutView();
+    if (popup.exec() == QDialog::Accepted) {
+        Layout *layout = this->editor->layout;
+        Map *map = this->editor->map;
 
-    QFormLayout form(&dialog);
-
-    QSpinBox *widthSpinBox = new QSpinBox();
-    QSpinBox *heightSpinBox = new QSpinBox();
-    QSpinBox *bwidthSpinBox = new QSpinBox();
-    QSpinBox *bheightSpinBox = new QSpinBox();
-    widthSpinBox->setMinimum(1);
-    heightSpinBox->setMinimum(1);
-    bwidthSpinBox->setMinimum(1);
-    bheightSpinBox->setMinimum(1);
-    widthSpinBox->setMaximum(editor->project->getMaxMapWidth());
-    heightSpinBox->setMaximum(editor->project->getMaxMapHeight());
-    bwidthSpinBox->setMaximum(MAX_BORDER_WIDTH);
-    bheightSpinBox->setMaximum(MAX_BORDER_HEIGHT);
-    widthSpinBox->setValue(editor->layout->getWidth());
-    heightSpinBox->setValue(editor->layout->getHeight());
-    bwidthSpinBox->setValue(editor->layout->getBorderWidth());
-    bheightSpinBox->setValue(editor->layout->getBorderHeight());
-    if (projectConfig.useCustomBorderSize) {
-        form.addRow(new QLabel("Map Width"), widthSpinBox);
-        form.addRow(new QLabel("Map Height"), heightSpinBox);
-        form.addRow(new QLabel("Border Width"), bwidthSpinBox);
-        form.addRow(new QLabel("Border Height"), bheightSpinBox);
-    } else {
-        form.addRow(new QLabel("Width"), widthSpinBox);
-        form.addRow(new QLabel("Height"), heightSpinBox);
-    }
-
-    QLabel *errorLabel = new QLabel();
-    errorLabel->setStyleSheet("QLabel { color: red }");
-    errorLabel->setVisible(false);
-
-    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
-    form.addRow(&buttonBox);
-    connect(&buttonBox, &QDialogButtonBox::accepted, [&dialog, &widthSpinBox, &heightSpinBox, &errorLabel, this](){
-        // Ensure width and height are an acceptable size.
-        // The maximum number of metatiles in a map is the following:
-        //    max = (width + 15) * (height + 14)
-        // This limit can be found in fieldmap.c in pokeruby/pokeemerald/pokefirered.
-        int numMetatiles = editor->project->getMapDataSize(widthSpinBox->value(), heightSpinBox->value());
-        int maxMetatiles = editor->project->getMaxMapDataSize();
-        if (numMetatiles <= maxMetatiles) {
-            dialog.accept();
-        } else {
-            QString errorText = QString("Error: The specified width and height are too large.\n"
-                    "The maximum layout width and height is the following: (width + 15) * (height + 14) <= %1\n"
-                    "The specified layout width and height was: (%2 + 15) * (%3 + 14) = %4")
-                        .arg(maxMetatiles)
-                        .arg(widthSpinBox->value())
-                        .arg(heightSpinBox->value())
-                        .arg(numMetatiles);
-            errorLabel->setText(errorText);
-            errorLabel->setVisible(true);
-        }
-    });
-    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    form.addRow(errorLabel);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        Layout *layout = editor->layout;
-        Blockdata oldMetatiles = layout->blockdata;
-        Blockdata oldBorder = layout->border;
-        QSize oldMapDimensions(layout->getWidth(), layout->getHeight());
+        QMargins result = popup.getResult();
+        QSize borderResult = popup.getBorderResult();
+        QSize oldLayoutDimensions(layout->getWidth(), layout->getHeight());
         QSize oldBorderDimensions(layout->getBorderWidth(), layout->getBorderHeight());
-        QSize newMapDimensions(widthSpinBox->value(), heightSpinBox->value());
-        QSize newBorderDimensions(bwidthSpinBox->value(), bheightSpinBox->value());
-        if (oldMapDimensions != newMapDimensions || oldBorderDimensions != newBorderDimensions) {
-            layout->setDimensions(newMapDimensions.width(), newMapDimensions.height(), true, true);
-            layout->setBorderDimensions(newBorderDimensions.width(), newBorderDimensions.height(), true, true);
-            editor->layout->editHistory.push(new ResizeLayout(layout,
-                oldMapDimensions, newMapDimensions,
+        if (!result.isNull() || (borderResult != oldBorderDimensions)) {
+            Blockdata oldMetatiles = layout->blockdata;
+            Blockdata oldBorder = layout->border;
+
+            layout->adjustDimensions(result);
+            layout->setBorderDimensions(borderResult.width(), borderResult.height(), true, true);
+            layout->editHistory.push(new ResizeLayout(layout,
+                oldLayoutDimensions, result,
                 oldMetatiles, layout->blockdata,
-                oldBorderDimensions, newBorderDimensions,
+                oldBorderDimensions, borderResult,
                 oldBorder, layout->border
             ));
+        }
+        // If we're in map-editing mode, adjust the events' position by the same amount.
+        if (map) {
+            auto events = map->getEvents();
+            int deltaX = result.left();
+            int deltaY = result.top();
+            if ((deltaX || deltaY) && !events.isEmpty()) {
+                map->commit(new EventShift(events, deltaX, deltaY, this->editor->eventShiftActionId++));
+            }
         }
     }
 }
@@ -2848,8 +2805,15 @@ void MainWindow::reloadScriptEngine() {
     Scripting::populateGlobalObject(this);
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.projectDir);
-    if (editor && editor->map)
-        Scripting::cb_MapOpened(editor->map->name()); // TODO: API should have equivalent for layout
+    if (this->editor) {
+        QString curName;
+        if (this->editor->map)
+            curName = this->editor->map->name();
+        else if (editor->layout)
+            curName = this->editor->layout->name;
+
+        Scripting::cb_MapOpened(curName);
+    }
 }
 
 void MainWindow::on_horizontalSlider_MetatileZoom_valueChanged(int value) {

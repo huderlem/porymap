@@ -398,6 +398,7 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     this->mapNameToMapSectionName.insert(map->name(), map->header()->location());
 
     map->setIsPersistedToFile(false);
+    this->mapCache.insert(map->name(), map);
 
     emit mapCreated(map, settings.group);
 
@@ -966,7 +967,7 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
         QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
-        logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_primary_label).arg(defaultTileset));
+        logWarn(QString("%1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_primary_label).arg(defaultTileset));
         layout->tileset_primary_label = defaultTileset;
         layout->tileset_primary = getTileset(layout->tileset_primary_label);
         if (!layout->tileset_primary) {
@@ -978,7 +979,7 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     if (!layout->tileset_secondary) {
         QString defaultTileset = this->getDefaultSecondaryTilesetLabel();
-        logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_secondary_label).arg(defaultTileset));
+        logWarn(QString("%1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_secondary_label).arg(defaultTileset));
         layout->tileset_secondary_label = defaultTileset;
         layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
         if (!layout->tileset_secondary) {
@@ -1047,7 +1048,8 @@ bool Project::loadBlockdata(Layout *layout) {
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
 
     if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
-        logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
+        logWarn(QString("%1 blockdata length %2 does not match dimensions %3x%4 (should be %5). Resizing blockdata.")
+                .arg(layout->name)
                 .arg(layout->blockdata.count())
                 .arg(layout->getWidth())
                 .arg(layout->getHeight())
@@ -1084,7 +1086,8 @@ bool Project::loadLayoutBorder(Layout *layout) {
 
     int borderLength = layout->getBorderWidth() * layout->getBorderHeight();
     if (layout->border.count() != borderLength) {
-        logWarn(QString("Layout border blockdata length %1 must be %2. Resizing border blockdata.")
+        logWarn(QString("%1 border blockdata length %2 must be %3. Resizing border blockdata.")
+                .arg(layout->name)
                 .arg(layout->border.count())
                 .arg(borderLength));
         layout->border.resize(borderLength);
@@ -1207,7 +1210,7 @@ void Project::saveMap(Map *map) {
         }
         mapObj["connections"] = connectionsArr;
     } else {
-        mapObj["connections"] = QJsonValue::Null;
+        mapObj["connections"] = OrderedJson();
     }
 
     if (map->sharedEventsMap().isEmpty()) {

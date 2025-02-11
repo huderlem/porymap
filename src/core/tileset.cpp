@@ -83,7 +83,8 @@ void Tileset::addMetatile(Metatile* metatile) {
     m_metatiles.append(metatile);
 }
 
-void Tileset::resizeMetatiles(unsigned int newNumMetatiles) {
+void Tileset::resizeMetatiles(int newNumMetatiles) {
+    if (newNumMetatiles < 0) newNumMetatiles = 0;
     while (m_metatiles.length() > newNumMetatiles) {
         delete m_metatiles.takeLast();
     }
