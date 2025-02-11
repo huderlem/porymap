@@ -38,6 +38,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Reduced diff noise when saving maps.
 - Map names and ``MAP_NAME`` constants are no longer required to match.
 - Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
+- Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -79,6 +80,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix some problems with tileset detection when importing maps from AdvanceMap.
 - Fix certain input fields allowing invalid identifiers, like names starting with numbers.
 - Fix crash in the Shortcuts Editor when applying changes after closing certain windows.
+- Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
