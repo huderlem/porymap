@@ -230,7 +230,7 @@ void Map::addEvent(Event *event) {
     if (!m_ownedEvents.contains(event)) m_ownedEvents.insert(event);
 }
 
-int Map::getIndexOfEvent(const Event *event) const {
+int Map::getIndexOfEvent(Event *event) const {
     return m_events.value(event->getEventGroup()).indexOf(event);
 }
 

@@ -2192,7 +2192,7 @@ void Editor::deleteSelectedEvents() {
     // If deleting multiple events, just let editor work out next selected.
     Event *nextSelectedEvent = nullptr;
     if (eventsToDelete.length() == 1) {
-        const Event *eventToDelete = eventsToDelete.first();
+        Event *eventToDelete = eventsToDelete.first();
         Event::Group event_group = eventToDelete->getEventGroup();
         int index = this->map->getIndexOfEvent(eventToDelete);
         if (index != this->map->getNumEvents(event_group) - 1)
