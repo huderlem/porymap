@@ -267,10 +267,11 @@ public:
     virtual void populate(Project *project) override;
 
 public:
+    QLineEdit *line_edit_id;
     QFrame *hideable_respawn_map;
     QFrame *hideable_respawn_npc;
     NoScrollComboBox *combo_respawn_map;
-    NoScrollSpinBox *spinner_respawn_npc;
+    NoScrollComboBox *combo_respawn_npc;
 
 private:
     HealLocationEvent *healLocation;

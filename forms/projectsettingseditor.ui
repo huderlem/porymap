@@ -1119,9 +1119,9 @@
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLineEdit" name="lineEdit_HealspotsIcon">
+                <widget class="QLineEdit" name="lineEdit_HealLocationsIcon">
                  <property name="toolTip">
-                  <string>The icon that will be used to represent Healspot events</string>
+                  <string>The icon that will be used to represent Heal Location events</string>
                  </property>
                  <property name="clearButtonEnabled">
                   <bool>true</bool>
@@ -1136,9 +1136,9 @@
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="label_HealspotsIcon">
+                <widget class="QLabel" name="label_HealLocationsIcon">
                  <property name="text">
-                  <string>Healspots</string>
+                  <string>Heal Locations</string>
                  </property>
                 </widget>
                </item>
@@ -1224,7 +1224,7 @@
                 </widget>
                </item>
                <item row="4" column="2">
-                <widget class="QToolButton" name="button_HealspotsIcon">
+                <widget class="QToolButton" name="button_HealLocationsIcon">
                  <property name="text">
                   <string>...</string>
                  </property>

@@ -54,6 +54,16 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="checkBox_DisableEventWarning">
+         <property name="toolTip">
+          <string>If checked, no warning will be shown when deleting an event that has an associated #define that may also be deleted.</string>
+         </property>
+         <property name="text">
+          <string>Disable warning when deleting events with IDs</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>

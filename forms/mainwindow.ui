@@ -2042,9 +2042,9 @@
                         </item>
                        </layout>
                       </widget>
-                      <widget class="QWidget" name="tab_Healspots">
+                      <widget class="QWidget" name="tab_HealLocations">
                        <attribute name="title">
-                        <string>Healspots</string>
+                        <string>Heal Locations</string>
                        </attribute>
                        <layout class="QVBoxLayout" name="verticalLayout_9">
                         <property name="leftMargin">
@@ -2091,7 +2091,7 @@
                            </widget>
                           </item>
                           <item>
-                           <spacer name="horizontalSpacer_Healspots">
+                           <spacer name="horizontalSpacer_HealLocations">
                             <property name="orientation">
                              <enum>Qt::Orientation::Horizontal</enum>
                             </property>
@@ -2106,7 +2106,7 @@
                          </layout>
                         </item>
                         <item>
-                         <widget class="QScrollArea" name="scrollArea_Healspots">
+                         <widget class="QScrollArea" name="scrollArea_HealLocations">
                           <property name="frameShape">
                            <enum>QFrame::Shape::NoFrame</enum>
                           </property>
@@ -2116,7 +2116,7 @@
                           <property name="alignment">
                            <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                           </property>
-                          <widget class="QWidget" name="scrollAreaWidgetContents_Healspots">
+                          <widget class="QWidget" name="scrollAreaWidgetContents_HealLocations">
                            <property name="geometry">
                             <rect>
                              <x>0</x>

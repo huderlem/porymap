@@ -79,6 +79,7 @@ public:
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
         this->warpBehaviorWarningDisabled = false;
+        this->eventDeleteWarningDisabled = false;
         this->checkForUpdates = true;
         this->lastUpdateCheckTime = QDateTime();
         this->lastUpdateCheckVersion = porymapVersion;
@@ -132,6 +133,7 @@ public:
     int paletteEditorBitDepth;
     int projectSettingsTab;
     bool warpBehaviorWarningDisabled;
+    bool eventDeleteWarningDisabled;
     bool checkForUpdates;
     QDateTime lastUpdateCheckTime;
     QVersionNumber lastUpdateCheckVersion;
@@ -184,11 +186,6 @@ enum ProjectIdentifier {
     symbol_obj_event_gfx_pointers,
     symbol_pokemon_icon_table,
     symbol_wild_encounters,
-    symbol_heal_locations_type,
-    symbol_heal_locations,
-    symbol_spawn_points,
-    symbol_spawn_maps,
-    symbol_spawn_npcs,
     symbol_attribute_table,
     symbol_tilesets_prefix,
     symbol_dynamic_map_name,
@@ -214,7 +211,6 @@ enum ProjectIdentifier {
     define_attribute_encounter,
     define_metatile_label_prefix,
     define_heal_locations_prefix,
-    define_spawn_prefix,
     define_map_prefix,
     define_map_dynamic,
     define_map_empty,
@@ -247,6 +243,7 @@ enum ProjectFilePath {
     json_map_groups,
     json_layouts,
     json_wild_encounters,
+    json_heal_locations,
     json_region_map_entries,
     json_region_porymap_cfg,
     tilesets_headers,
@@ -260,14 +257,12 @@ enum ProjectFilePath {
     data_obj_event_pic_tables,
     data_obj_event_gfx,
     data_pokemon_gfx,
-    data_heal_locations,
     constants_global,
     constants_items,
     constants_flags,
     constants_vars,
     constants_weather,
     constants_songs,
-    constants_heal_locations,
     constants_pokemon,
     constants_map_types,
     constants_trainer_types,

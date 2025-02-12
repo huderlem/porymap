@@ -247,4 +247,7 @@ protected:
 
 } // namespace poryjson
 
+using OrderedJson = poryjson::Json;
+using OrderedJsonDoc = poryjson::JsonDoc;
+
 #endif // ORDERED_JSON_H
