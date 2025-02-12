@@ -31,8 +31,6 @@ static const QMap<QString, int> globalDefineValues = {
     {"UINT_MAX", UINT_MAX},
 };
 
-using OrderedJson = poryjson::Json;
-
 ParseUtil::ParseUtil() { }
 
 void ParseUtil::set_root(const QString &dir) {
@@ -580,7 +578,7 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     return map;
 }
 
-int ParseUtil::gameStringToInt(QString gameString, bool * ok) {
+int ParseUtil::gameStringToInt(const QString &gameString, bool * ok) {
     if (ok) *ok = true;
     if (QString::compare(gameString, "TRUE", Qt::CaseInsensitive) == 0)
         return 1;
@@ -589,7 +587,7 @@ int ParseUtil::gameStringToInt(QString gameString, bool * ok) {
     return gameString.toInt(ok, 0);
 }
 
-bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
+bool ParseUtil::gameStringToBool(const QString &gameString, bool * ok) {
     return gameStringToInt(gameString, ok) != 0;
 }
 
@@ -705,7 +703,7 @@ bool ParseUtil::ensureFieldsExist(const QJsonObject &obj, const QList<QString> &
 // QJsonValues are strictly typed, and so will not attempt any implicit conversions.
 // The below functions are for attempting to convert a JSON value read from the user's
 // project to a QString, int, or bool (whichever Porymap expects).
-QString ParseUtil::jsonToQString(QJsonValue value, bool * ok) {
+QString ParseUtil::jsonToQString(const QJsonValue &value, bool * ok) {
     if (ok) *ok = true;
     switch (value.type())
     {
@@ -718,7 +716,7 @@ QString ParseUtil::jsonToQString(QJsonValue value, bool * ok) {
     return QString();
 }
 
-int ParseUtil::jsonToInt(QJsonValue value, bool * ok) {
+int ParseUtil::jsonToInt(const QJsonValue &value, bool * ok) {
     if (ok) *ok = true;
     switch (value.type())
     {
@@ -731,7 +729,7 @@ int ParseUtil::jsonToInt(QJsonValue value, bool * ok) {
     return 0;
 }
 
-bool ParseUtil::jsonToBool(QJsonValue value, bool * ok) {
+bool ParseUtil::jsonToBool(const QJsonValue &value, bool * ok) {
     if (ok) *ok = true;
     switch (value.type())
     {

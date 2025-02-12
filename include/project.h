@@ -4,7 +4,6 @@
 
 #include "map.h"
 #include "blockdata.h"
-#include "heallocation.h"
 #include "wildmoninfo.h"
 #include "parseutil.h"
 #include "orderedjson.h"
@@ -35,8 +34,8 @@ public:
     QStringList mapNames;
     QStringList groupNames;
     QMap<QString, QStringList> groupNameToMapNames;
-    QList<HealLocation> healLocations;
-    QMap<QString, int> healLocationNameToValue;
+    QStringList healLocationSaveOrder;
+    QMap<QString, QList<HealLocationEvent*>> healLocations;
     QMap<QString, QString> mapConstantsToMapNames;
     QMap<QString, QString> mapNamesToMapConstants;
     QMap<QString, QString> mapNameToLayoutId;
@@ -87,15 +86,7 @@ public:
     void clearTilesetCache();
     void clearMapLayouts();
     void clearEventGraphics();
-
-    struct DataQualifiers
-    {
-        bool isStatic;
-        bool isConst;
-    };
-    DataQualifiers getDataQualifiers(QString, QString);
-    DataQualifiers healLocationDataQualifiers;
-    QString healLocationsTableName;
+    void clearHealLocations();
 
     bool sanityCheck();
     bool load();
@@ -142,7 +133,8 @@ public:
     bool isIdentifierUnique(const QString &identifier) const;
     bool isValidNewIdentifier(QString identifier) const;
     QString toUniqueIdentifier(const QString &identifier) const;
-    QString getProjectTitle();
+    QString getProjectTitle() const;
+    QString getNewHealLocationName(const Map* map) const;
 
     bool readWildMonData();
     tsl::ordered_map<QString, tsl::ordered_map<QString, WildPokemonHeader>> wildMonData;
@@ -187,7 +179,7 @@ public:
     void saveMapGroups();
     void saveRegionMapSections();
     void saveWildMonData();
-    void saveHealLocations(Map*);
+    void saveHealLocations();
     void saveTilesets(Tileset*, Tileset*);
     void saveTilesetMetatileLabels(Tileset*, Tileset*);
     void appendTilesetLabel(const QString &label, const QString &isSecondaryStr);
@@ -207,7 +199,6 @@ public:
     bool readBgEventFacingDirections();
     bool readTrainerTypes();
     bool readMetatileBehaviors();
-    bool readHealLocationConstants();
     bool readHealLocations();
     bool readMiscellaneousConstants();
     bool readEventScriptLabels();
@@ -266,9 +257,6 @@ private:
 
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
-
-    void saveHealLocationsData(Map *map);
-    void saveHealLocationsConstants();
 
     void ignoreWatchedFileTemporarily(QString filepath);
 

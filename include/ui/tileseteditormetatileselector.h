@@ -51,6 +51,7 @@ private:
     void drawCounts();
     QImage buildAllMetatilesImage();
     QImage buildImage(int metatileIdStart, int numMetatiles);
+    int numPrimaryMetatilesRounded() const;
 
 signals:
     void hoveredMetatileChanged(uint16_t);

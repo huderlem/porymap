@@ -79,6 +79,7 @@ private:
     bool positionIsValid(const QPoint &pos) const;
     bool selectionIsValid();
     void hoverChanged();
+    int numPrimaryMetatilesRounded() const;
 
 signals:
     void hoveredMetatileSelectionChanged(uint16_t);

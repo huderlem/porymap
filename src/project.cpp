@@ -23,9 +23,6 @@
 #include <QRegularExpression>
 #include <algorithm>
 
-using OrderedJson = poryjson::Json;
-using OrderedJsonDoc = poryjson::JsonDoc;
-
 int Project::num_tiles_primary = 512;
 int Project::num_tiles_total = 1024;
 int Project::num_metatiles_primary = 512;
@@ -47,6 +44,7 @@ Project::~Project()
     clearTilesetCache();
     clearMapLayouts();
     clearEventGraphics();
+    clearHealLocations();
 }
 
 void Project::set_root(QString dir) {
@@ -97,7 +95,6 @@ bool Project::load() {
                 && readFieldmapMasks()
                 && readTilesetLabels()
                 && readTilesetMetatileLabels()
-                && readHealLocations()
                 && readMiscellaneousConstants()
                 && readSpeciesIconPaths()
                 && readWildMonData()
@@ -105,7 +102,8 @@ bool Project::load() {
                 && readObjEventGfxConstants()
                 && readEventGraphics()
                 && readSongNames()
-                && readMapGroups();
+                && readMapGroups()
+                && readHealLocations();
 
     if (success) {
         // No need to do this if something failed to load.
@@ -118,7 +116,7 @@ bool Project::load() {
     return success;
 }
 
-QString Project::getProjectTitle() {
+QString Project::getProjectTitle() const {
     if (!root.isNull()) {
         return root.section('/', -1);
     } else {
@@ -182,7 +180,6 @@ void Project::initTopLevelMapFields() {
         "warp_events",
         "coord_events",
         "bg_events",
-        "heal_locations",
         "shared_events_map",
         "shared_scripts_map",
     };
@@ -316,30 +313,11 @@ bool Project::loadMapData(Map* map) {
         }
     }
 
-
-/* TODO: Re-enable
-    const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
-    for (auto it = healLocations.begin(); it != healLocations.end(); it++) {
-        HealLocation loc = *it;
-        //if TRUE map is flyable / has healing location
-        if (loc.mapName == Map::mapConstantFromName(map->name, false)) {
-            HealLocationEvent *heal = new HealLocationEvent();
-            heal->setMap(map);
-            heal->setX(loc.x);
-            heal->setY(loc.y);
-            heal->setElevation(projectConfig.defaultElevation);
-            heal->setLocationName(loc.mapName);
-            heal->setIdName(loc.idName);
-            heal->setIndex(loc.index);
-            if (projectConfig.healLocationRespawnDataEnabled) {
-                heal->setRespawnMap(mapConstantsToMapNames.value(QString(mapPrefix + loc.respawnMap)));
-                heal->setRespawnNPC(loc.respawnNPC);
-            }
-            map->events[Event::Group::Heal].append(heal);
-            map->ownedEvents.append(heal);
-        }
+    // Heal locations are global. Populate the Map's heal location events using our global array.
+    const QList<HealLocationEvent*> hlEvents = this->healLocations.value(map->constantName());
+    for (const auto &event : hlEvents) {
+        map->addEvent(event->duplicate());
     }
-*/
 
     map->deleteConnections();
     QJsonArray connectionsArr = mapObj["connections"].toArray();
@@ -847,134 +825,67 @@ void Project::saveWildMonData() {
     wildEncountersFile.close();
 }
 
-void Project::saveHealLocations(Map *map) {
-    this->saveHealLocationsData(map);
-    this->saveHealLocationsConstants();
+// For a map with a constant of 'MAP_FOO', returns a unique 'HEAL_LOCATION_FOO'.
+// Because of how event ID names are checked it doesn't guarantee that the name
+// won't be in-use by some map that hasn't been loaded yet.
+QString Project::getNewHealLocationName(const Map* map) const {
+    if (!map) return QString();
+
+    QString idName = map->constantName();
+    const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
+    if (idName.startsWith(mapPrefix)) {
+        idName.remove(0, mapPrefix.length());
+    }
+    return toUniqueIdentifier(projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix) + idName);
 }
 
-// Saves heal location maps/coords/respawn data in root + /src/data/heal_locations.h
-void Project::saveHealLocationsData(Map *) {
-/* TODO: Will be re-implemented as part of changes to reading heal locations from map.json
-    // Update heal locations from map
-    if (map->events[Event::Group::Heal].length() > 0) {
-        for (Event *healEvent : map->events[Event::Group::Heal]) {
-            HealLocation hl = HealLocation::fromEvent(healEvent);
-            this->healLocations[hl.index - 1] = hl;
+void Project::saveHealLocations() {
+    const QString filepath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::json_heal_locations));
+    QFile file(filepath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        logError(QString("Could not open '%1' for writing").arg(filepath));
+        return;
+    }
+
+    // Build the JSON data for output.
+    QMap<QString, QList<OrderedJson::object>> idNameToJson;
+    for (auto i = this->healLocations.constBegin(); i != this->healLocations.constEnd(); i++) {
+        const QString mapConstant = i.key();
+        for (const auto &event : i.value()) {
+            // Heal location events don't need to track the "map" field, we're already tracking it either with
+            // the keys in the healLocations map or by virtue of the event being added to a particular Map object.
+            // The global JSON data needs this field, so we add it back here.
+            auto eventJson = event->buildEventJson(this);
+            eventJson["map"] = mapConstant;
+            idNameToJson[event->getIdName()].append(eventJson);
         }
     }
 
-
-    // Find any duplicate constant names
-    QMap<QString, int> healLocationsDupes;
-    QSet<QString> healLocationsUnique;
-    for (auto hl : this->healLocations) {
-        QString idName = hl.idName;
-        if (healLocationsUnique.contains(idName))
-            healLocationsDupes[idName] = 1;
-        else
-            healLocationsUnique.insert(idName);
-    }
-
-    // Create the definition text for each data table
-    bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
-    const QString qualifiers = QString(healLocationDataQualifiers.isStatic ? "static " : "")
-                             + QString(healLocationDataQualifiers.isConst ? "const " : "");
-
-    QString locationTableText = QString("%1%2 %3[] =\n{\n").arg(qualifiers)
-                                                           .arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations_type))
-                                                           .arg(this->healLocationsTableName);
-    QString respawnMapTableText, respawnNPCTableText;
-    if (respawnEnabled) {
-        respawnMapTableText = QString("\n%1%2[][2] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_maps));
-        respawnNPCTableText = QString("\n%1%2[] =\n{\n").arg(qualifiers).arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_npcs));
-    }
-
-    // Populate the data tables with the heal location data
-    int i = 0;
-    const QString emptyMapName = projectConfig.getIdentifier(ProjectIdentifier::define_map_empty);
-    for (auto hl : this->healLocations) {
-        // Add numbered suffix for duplicate constants
-        if (healLocationsDupes.keys().contains(hl.idName)) {
-            QString duplicateName = hl.idName;
-            hl.idName += QString("_%1").arg(healLocationsDupes[duplicateName]);
-            healLocationsDupes[duplicateName]++;
-            this->healLocations[i].idName = hl.idName; // Update the name for writing constants later
+    // We store Heal Locations in a QMap with map name keys. This makes retrieval by map name easy,
+    // but it will sort them alphabetically. Project::healLocationSaveOrder lets us better support
+    // the (perhaps unlikely) user who has designed something with assumptions about the order of the data.
+    // This also avoids a bunch of diff noise on the first save from Porymap reordering the data.
+    OrderedJson::array eventJsonArr;
+    for (const auto &idName : this->healLocationSaveOrder) {
+        if (!idNameToJson.value(idName).isEmpty()) {
+            eventJsonArr.push_back(idNameToJson[idName].takeFirst());
         }
-
-        // Add entry to map/coords table
-        QString mapName = !hl.mapName.isEmpty() ? hl.mapName : emptyMapName;
-        locationTableText += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2), %3, %4},\n")
-                             .arg(hl.idName)
-                             .arg(mapName)
-                             .arg(hl.x)
-                             .arg(hl.y);
-
-        // Add entry to respawn map and npc tables
-        if (respawnEnabled) {
-            mapName = !hl.respawnMap.isEmpty() ? hl.respawnMap : emptyMapName;
-            respawnMapTableText += QString("    [%1 - 1] = {MAP_GROUP(%2), MAP_NUM(%2)},\n")
-                                   .arg(hl.idName)
-                                   .arg(mapName);
-
-            respawnNPCTableText += QString("    [%1 - 1] = %2,\n")
-                                   .arg(hl.idName)
-                                   .arg(hl.respawnNPC);
-        }
-        i++;
     }
-    const QString tableEnd = QString("};\n");
-    QString text = locationTableText + tableEnd;
-    if (respawnEnabled)
-        text += respawnMapTableText + tableEnd + respawnNPCTableText + tableEnd;
+    // Save any heal locations that weren't covered above (should be any new data).
+    for (auto i = idNameToJson.constBegin(); i != idNameToJson.constEnd(); i++) {
+        for (const auto &object : i.value()) {
+            eventJsonArr.push_back(object);
+        }
+    }
 
-    QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::data_heal_locations);
+    OrderedJson::object object;
+    object["heal_locations"] = eventJsonArr;
+
     ignoreWatchedFileTemporarily(filepath);
-    saveTextFile(filepath, text);
-    */
-}
-
-// Saves heal location defines in root + /include/constants/heal_locations.h
-void Project::saveHealLocationsConstants() {
-    // Get existing defines, and create an inverted map so they'll be in sorted order for printing
-    int nextDefineValue = 1;
-    QMap<int, QString> valuesToNames = QMap<int, QString>();
-    QStringList defineNames = this->healLocationNameToValue.keys();
-    QList<int> defineValues = this->healLocationNameToValue.values();
-    for (auto name : defineNames) {
-        int value = this->healLocationNameToValue.value(name);
-        if (valuesToNames.contains(value)) {
-            do { // Redefine duplicate as first available value
-                value = nextDefineValue++;
-            } while (defineValues.contains(value));
-        }
-        valuesToNames.insert(value, name);
-    }
-
-    // Check for new id names in the heal locations list
-    for (auto hl : this->healLocations) {
-        if (this->healLocationNameToValue.contains(hl.idName))
-            continue;
-        int value;
-        do { // Give new heal location first available value
-            value = nextDefineValue++;
-        } while (valuesToNames.contains(value));
-        valuesToNames.insert(value, hl.idName);
-    }
-
-    // Include guards
-    const QString guardName = "GUARD_CONSTANTS_HEAL_LOCATIONS_H";
-    QString constantsText = QString("#ifndef %1\n#define %1\n\n").arg(guardName);
-
-    // List defines in ascending order
-    QMap<int, QString>::const_iterator i;
-    for (i = valuesToNames.constBegin(); i != valuesToNames.constEnd(); i++)
-        constantsText += QString("#define %1 %2\n").arg(i.value()).arg(i.key());
-
-    constantsText += QString("\n#endif // %1\n").arg(guardName);
-
-    QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
-    ignoreWatchedFileTemporarily(filepath);
-    saveTextFile(filepath, constantsText);
+    OrderedJson json(object);
+    OrderedJsonDoc jsonDoc(&json);
+    jsonDoc.dump(&file);
+    file.close();
 }
 
 void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -1056,7 +967,7 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
         QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
-        logWarn(QString("Map layout %1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_primary_label).arg(defaultTileset));
+        logWarn(QString("%1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_primary_label).arg(defaultTileset));
         layout->tileset_primary_label = defaultTileset;
         layout->tileset_primary = getTileset(layout->tileset_primary_label);
         if (!layout->tileset_primary) {
@@ -1068,7 +979,7 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     if (!layout->tileset_secondary) {
         QString defaultTileset = this->getDefaultSecondaryTilesetLabel();
-        logWarn(QString("Map layout %1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->id).arg(layout->tileset_secondary_label).arg(defaultTileset));
+        logWarn(QString("%1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_secondary_label).arg(defaultTileset));
         layout->tileset_secondary_label = defaultTileset;
         layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
         if (!layout->tileset_secondary) {
@@ -1137,7 +1048,8 @@ bool Project::loadBlockdata(Layout *layout) {
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
 
     if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
-        logWarn(QString("Layout blockdata length %1 does not match dimensions %2x%3 (should be %4). Resizing blockdata.")
+        logWarn(QString("%1 blockdata length %2 does not match dimensions %3x%4 (should be %5). Resizing blockdata.")
+                .arg(layout->name)
                 .arg(layout->blockdata.count())
                 .arg(layout->getWidth())
                 .arg(layout->getHeight())
@@ -1174,7 +1086,8 @@ bool Project::loadLayoutBorder(Layout *layout) {
 
     int borderLength = layout->getBorderWidth() * layout->getBorderHeight();
     if (layout->border.count() != borderLength) {
-        logWarn(QString("Layout border blockdata length %1 must be %2. Resizing border blockdata.")
+        logWarn(QString("%1 border blockdata length %2 must be %3. Resizing border blockdata.")
+                .arg(layout->name)
                 .arg(layout->border.count())
                 .arg(borderLength));
         layout->border.resize(borderLength);
@@ -1337,6 +1250,16 @@ void Project::saveMap(Map *map) {
         mapObj["shared_scripts_map"] = map->sharedScriptsMap();
     }
 
+    // Update the global heal locations array using the Map's heal location events.
+    // This won't get saved to disc until Project::saveHealLocations is called.
+    QList<HealLocationEvent*> hlEvents;
+    for (const auto &event : map->getEvents(Event::Group::Heal)) {
+        auto hl = static_cast<HealLocationEvent*>(event);
+        hlEvents.append(static_cast<HealLocationEvent*>(hl->duplicate()));
+    }
+    qDeleteAll(this->healLocations[map->constantName()]);
+    this->healLocations[map->constantName()] = hlEvents;
+
     // Custom header fields.
     const auto customAttributes = map->customAttributes();
     for (auto i = customAttributes.constBegin(); i != customAttributes.constEnd(); i++) {
@@ -1349,7 +1272,6 @@ void Project::saveMap(Map *map) {
     mapFile.close();
 
     saveLayout(map->layout());
-    saveHealLocations(map);
 
     map->setClean();
 }
@@ -1381,6 +1303,7 @@ void Project::saveAllDataStructures() {
     saveMapLayouts();
     saveMapGroups();
     saveRegionMapSections();
+    saveHealLocations();
     saveWildMonData();
     saveConfig();
     this->hasUnsavedDataChanges = false;
@@ -1976,6 +1899,15 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
         return false;
     if (this->encounterGroupLabels.contains(identifier))
         return false;
+    // Check event IDs
+    for (const auto &map : this->mapCache) {
+        auto events = map->getEvents();
+        for (const auto &event : events) {
+            QString idName = event->getIdName();
+            if (!idName.isEmpty() && idName == identifier)
+                return false;
+        }
+    }
     return true;
 }
 
@@ -2033,18 +1965,6 @@ void Project::initNewLayoutSettings() {
     this->newLayoutSettings.borderHeight = DEFAULT_BORDER_HEIGHT;
     this->newLayoutSettings.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
     this->newLayoutSettings.secondaryTilesetLabel = getDefaultSecondaryTilesetLabel();
-}
-
-Project::DataQualifiers Project::getDataQualifiers(QString text, QString label) {
-    Project::DataQualifiers qualifiers;
-
-    QRegularExpression regex(QString("\\s*(?<static>static\\s*)?(?<const>const\\s*)?[A-Za-z0-9_\\s]*\\b%1\\b").arg(label));
-    QRegularExpressionMatch match = regex.match(text);
-
-    qualifiers.isStatic = match.captured("static").isNull() ? false : true;
-    qualifiers.isConst = match.captured("const").isNull() ? false : true;
-
-    return qualifiers;
 }
 
 QString Project::getDefaultPrimaryTilesetLabel() const {
@@ -2434,110 +2354,40 @@ void Project::setMapsecDisplayName(const QString &idName, const QString &display
     emit mapSectionDisplayNameChanged(idName, displayName);
 }
 
-// Read the constants to preserve any "unused" heal locations when writing the file later
-bool Project::readHealLocationConstants() {
-    this->healLocationNameToValue.clear();
-    const QStringList regexList = {
-        QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix)),
-        QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_spawn_prefix))
-    };
-    QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_heal_locations);
-    fileWatcher.addPath(root + "/" + constantsFilename);
-    this->healLocationNameToValue = parser.readCDefinesByRegex(constantsFilename, regexList);
-    // No need to check if empty, not finding any heal location constants is ok
-    return true;
+void Project::clearHealLocations() {
+    for (auto &events : this->healLocations) {
+        qDeleteAll(events);
+    }
+    this->healLocations.clear();
+    this->healLocationSaveOrder.clear();
 }
 
-// TODO: Simplify using the new C struct parsing functions (and indexed array parsing functions)
 bool Project::readHealLocations() {
-    this->healLocations.clear();
+    clearHealLocations();
 
-    if (!this->readHealLocationConstants())
+    QJsonDocument doc;
+    const QString baseFilepath = projectConfig.getFilePath(ProjectFilePath::json_heal_locations);
+    const QString filepath = QString("%1/%2").arg(this->root).arg(baseFilepath);
+    if (!parser.tryParseJsonFile(&doc, filepath)) {
+        logError(QString("Failed to read heal locations from '%1'").arg(baseFilepath));
         return false;
-
-    QString filename = projectConfig.getFilePath(ProjectFilePath::data_heal_locations);
-    fileWatcher.addPath(root + "/" + filename);
-    QString text = parser.readTextFile(root + "/" + filename);
-
-    // Strip comments
-    static const QRegularExpression re_comments("//.*?(\r\n?|\n)|/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption);
-    text.replace(re_comments, "");
-
-    bool respawnEnabled = projectConfig.healLocationRespawnDataEnabled;
-
-    // Search for the name of the main Heal Locations table
-    const QRegularExpression tableNameExpr(QString("%1\\s+(?<name>[A-Za-z0-9_]+)\\[").arg(projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations_type)));
-    const QRegularExpressionMatch tableNameMatch = tableNameExpr.match(text);
-    if (tableNameMatch.hasMatch()) {
-        // Found table name, record it and its qualifiers for output when saving.
-        this->healLocationsTableName = tableNameMatch.captured("name");
-        this->healLocationDataQualifiers = this->getDataQualifiers(text, this->healLocationsTableName);
-    } else {
-        // No table name found, initialize default name for output when saving.
-        this->healLocationsTableName = respawnEnabled ? projectConfig.getIdentifier(ProjectIdentifier::symbol_spawn_points)
-                                                      : projectConfig.getIdentifier(ProjectIdentifier::symbol_heal_locations);
-        this->healLocationDataQualifiers = { .isStatic = true, .isConst = true };
     }
+    fileWatcher.addPath(filepath);
 
-    // Create regex pattern for the constants (ex: "SPAWN_PALLET_TOWN" or "HEAL_LOCATION_PETALBURG_CITY")
-    const QString spawnPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_spawn_prefix);
-    const QString healLocPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix);
-    const QRegularExpression constantsExpr(QString("\\b(%1|%2)[A-Za-z0-9_]+").arg(spawnPrefix).arg(healLocPrefix));
-
-    // Find all the unique heal location constants used in the data tables.
-    // Porymap doesn't care whether or not a constant appeared in the heal locations constants file.
-    // Any data entry without a designated initializer using one of these constants will be silently discarded.
-    // Any data entry that repeats a designated initializer will also be discarded.
-    QStringList constants = QStringList();
-    QRegularExpressionMatchIterator constantsMatch = constantsExpr.globalMatch(text);
-    while (constantsMatch.hasNext())
-        constants << constantsMatch.next().captured();
-    constants.removeDuplicates();
-
-    // Pattern for a map value pair (ex: "MAP_GROUP(PALLET_TOWN), MAP_NUM(PALLET_TOWN)")
-    const QString mapPattern = "MAP_GROUP[\\(\\s]+(?<map>[A-Za-z0-9_]+)[\\s\\)]+,\\s*MAP_NUM[\\(\\s]+(\\1)[\\s\\)]+";
-    // Pattern for an x, y number pair
-    const QString coordPattern = "\\s*(?<x>[0-9A-Fa-fx]+),\\s*(?<y>[0-9A-Fa-fx]+)"; 
-
-    for (const auto &idName : constants) {
-        // Create regex pattern for e.g. "SPAWN_PALLET_TOWN - 1] = "
-        const QString initializerPattern = QString("%1\\s*-\\s*1\\s*\\]\\s*=\\s*").arg(idName);
-
-        // Expression for location data, e.g. "SPAWN_PALLET_TOWN - 1] = {MAP_GROUP(PALLET_TOWN), MAP_NUM(PALLET_TOWN), x, y}"
-        QRegularExpression locationRegex(QString("%1\\{%2,%3}").arg(initializerPattern).arg(mapPattern).arg(coordPattern));
-        QRegularExpressionMatch match = locationRegex.match(text);
-
-        // Read location data
-        HealLocation healLocation;
-        if (match.hasMatch()) {
-            QString mapName = match.captured("map");
-            int x = match.captured("x").toInt(nullptr, 0);
-            int y = match.captured("y").toInt(nullptr, 0);
-            healLocation = HealLocation(idName, mapName, this->healLocations.size() + 1, x, y);
-        } else {
-            // This heal location has data, but is missing from the location table and won't be displayed by Porymap.
-            // Add a dummy entry, and preserve the rest of its data for the user anyway
-            healLocation = HealLocation(idName, "", this->healLocations.size() + 1, 0, 0);
+    QJsonArray healLocations = doc.object()["heal_locations"].toArray();
+    for (int i = 0; i < healLocations.size(); i++) {
+        QJsonObject healLocationObj = healLocations.at(i).toObject();
+        static const QString mapField = QStringLiteral("map");
+        if (!healLocationObj.contains(mapField)) {
+            logWarn(QString("Ignoring data for heal location %1 in '%2'. Missing required field \"%3\"").arg(i).arg(baseFilepath).arg(mapField));
+            continue;
         }
 
-        // Read respawn data
-        if (respawnEnabled) {
-            // Expression for respawn map data, e.g. "SPAWN_PALLET_TOWN - 1] = {MAP_GROUP(PALLET_TOWN_PLAYERS_HOUSE_1F), MAP_NUM(PALLET_TOWN_PLAYERS_HOUSE_1F)}"
-            QRegularExpression respawnMapRegex(QString("%1\\{%2}").arg(initializerPattern).arg(mapPattern));
-            match = respawnMapRegex.match(text);
-            if (match.hasMatch())
-                healLocation.respawnMap = match.captured("map");
-
-            // Expression for respawn npc data, e.g. "SPAWN_PALLET_TOWN - 1] = 1"
-            QRegularExpression respawnNPCRegex(QString("%1(?<npc>[0-9]+)").arg(initializerPattern));
-            match = respawnNPCRegex.match(text);
-            if (match.hasMatch())
-                healLocation.respawnNPC = match.captured("npc").toInt(nullptr, 0);
-        }
-
-        this->healLocations.append(healLocation);
+        auto event = new HealLocationEvent();
+        event->loadFromJson(healLocationObj, this);
+        this->healLocations[ParseUtil::jsonToQString(healLocationObj["map"])].append(event);
+        this->healLocationSaveOrder.append(event->getIdName());
     }
-    // No need to check if empty, not finding any heal locations is ok
     return true;
 }
 

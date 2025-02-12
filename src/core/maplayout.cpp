@@ -177,8 +177,6 @@ void Layout::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bo
 }
 
 void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata) {
-    int oldWidth = this->width;
-    int oldHeight = this->height;
     int newWidth = this->width + margins.left() + margins.right();
     int newHeight = this->height + margins.top() + margins.bottom();
 
@@ -190,7 +188,7 @@ void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata) {
             if ((x < margins.left()) || (x >= newWidth - margins.right()) || (y < margins.top()) || (y >= newHeight - margins.bottom())) {
                 newBlockdata.append(0);
             } else {
-                int index = (y - margins.top()) * oldWidth + (x - margins.left());
+                int index = (y - margins.top()) * this->width + (x - margins.left());
                 newBlockdata.append(this->blockdata.value(index));
             }
         }

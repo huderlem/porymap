@@ -35,13 +35,8 @@ Map::Map(const Map &other, QObject *parent) : Map(parent) {
 
     // Copy events
     for (auto i = other.m_events.constBegin(); i != other.m_events.constEnd(); i++) {
-        QList<Event*> newEvents;
-        for (const auto &event : i.value()) {
-            auto newEvent = event->duplicate();
-            m_ownedEvents.insert(newEvent);
-            newEvents.append(newEvent);
-        }
-        m_events[i.key()] = newEvents;
+        for (const auto &event : i.value())
+            addEvent(event->duplicate());
     }
 
     // Duplicating the map connections is probably not desirable, so we skip them.

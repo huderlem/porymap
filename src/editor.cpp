@@ -12,6 +12,7 @@
 #include "scripting.h"
 #include "customattributesframe.h"
 #include "validator.h"
+#include "message.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>
@@ -1366,13 +1367,11 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 if (this->selected_events->size() > 0)
                     eventType = this->selected_events->first()->event->getEventType();
 
-                if (eventType != Event::Type::HealLocation) {
-                    DraggablePixmapItem *newEvent = addNewEvent(eventType);
-                    if (newEvent) {
-                        newEvent->move(pos.x(), pos.y());
-                        emit eventsChanged();
-                        selectMapEvent(newEvent);
-                    }
+                DraggablePixmapItem *newEvent = addNewEvent(eventType);
+                if (newEvent) {
+                    newEvent->move(pos.x(), pos.y());
+                    emit eventsChanged();
+                    selectMapEvent(newEvent);
                 }
             }
         } else if (eventEditAction == EditAction::Select) {
@@ -2112,15 +2111,7 @@ void Editor::duplicateSelectedEvents() {
             logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(Event::eventTypeToString(eventType)));
             continue;
         }
-        if (eventType == Event::Type::HealLocation) {
-            logWarn("Skipping duplication, event is a heal location.");
-            continue;
-        }
         Event *duplicate = original->duplicate();
-        if (!duplicate) {
-            logError("Encountered a problem duplicating an event.");
-            continue;
-        }
         duplicate->setX(duplicate->getX() + 1);
         duplicate->setY(duplicate->getY() + 1);
         selectedEvents.append(duplicate);
@@ -2138,13 +2129,6 @@ DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
 
     event->setMap(this->map);
     event->setDefaultValues(this->project);
-
-    if (type == Event::Type::HealLocation) {
-        HealLocation healLocation = HealLocation::fromEvent(event);
-        project->healLocations.append(healLocation);
-        ((HealLocationEvent *)event)->setIndex(project->healLocations.length());
-    }
-
     map->commit(new EventCreate(this, map, event));
     return event->getPixmapItem();
 }
@@ -2162,42 +2146,73 @@ void Editor::deleteSelectedEvents() {
     if (!this->selected_events || this->selected_events->length() == 0 || !this->map || this->editMode != EditMode::Events)
         return;
 
-    DraggablePixmapItem *nextSelectedEvent = nullptr;
-    QList<Event *> selectedEvents;
-    int numDeleted = 0;
+    QList<Event*> eventsToDelete;
+    bool skipWarning = porymapConfig.eventDeleteWarningDisabled;
     for (DraggablePixmapItem *item : *this->selected_events) {
-        Event::Group event_group = item->event->getEventGroup();
-        if (event_group != Event::Group::Heal) {
-            numDeleted++;
-            item->event->setPixmapItem(item);
-            selectedEvents.append(item->event);
-        }
-        else { // don't allow deletion of heal locations
-            logWarn(QString("Cannot delete event of type '%1'").arg(Event::eventTypeToString(item->event->getEventType())));
-        }
-    }
-    if (numDeleted) {
-        // Get the index for the event that should be selected after this event has been deleted.
-        // Select event at next smallest index when deleting a single event.
-        // If deleting multiple events, just let editor work out next selected.
-        if (numDeleted == 1) {
-            Event::Group event_group = selectedEvents[0]->getEventGroup();
-            int index = this->map->getIndexOfEvent(selectedEvents[0]);
-            if (index != this->map->getNumEvents(event_group) - 1)
-                index++;
-            else
-                index--;
-            Event *event = this->map->getEvent(event_group, index);
-            for (QGraphicsItem *child : this->events_group->childItems()) {
-                DraggablePixmapItem *event_item = static_cast<DraggablePixmapItem *>(child);
-                if (event_item->event == event) {
-                    nextSelectedEvent = event_item;
-                    break;
+        Event* event = item->event;
+        const QString idName = event->getIdName();
+        if (skipWarning || idName.isEmpty()) {
+            eventsToDelete.append(event);
+        } else {
+            // If an event with a ID #define is deleted, its ID is also deleted (by the user's project, not Porymap).
+            // Warn the user about this and give them a chance to abort.
+            WarningMessage msgBox(QStringLiteral("Deleting this event may also delete the constant listed below. This can stop your project from compiling.\n\n"
+                                                 "Are you sure you want to delete this event?"),
+                                  ui->graphicsView_Map);
+            msgBox.setInformativeText(idName);
+            msgBox.setIconPixmap(event->getPixmap());
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Cancel);
+            msgBox.addButton(QStringLiteral("Delete"), QMessageBox::DestructiveRole);
+            msgBox.setCheckBox(new QCheckBox(QStringLiteral("Don't warn me again")));
+
+            QAbstractButton* deleteAllButton = nullptr;
+            if (this->selected_events->length() > 1) {
+                deleteAllButton = msgBox.addButton(QStringLiteral("Delete All"), QMessageBox::DestructiveRole);
+                msgBox.addButton(QStringLiteral("Skip"), QMessageBox::NoRole);
+            }
+
+            msgBox.exec();
+            auto clickedButton = msgBox.clickedButton();
+            auto clickedRole = msgBox.buttonRole(clickedButton);
+            porymapConfig.eventDeleteWarningDisabled = msgBox.checkBox()->isChecked();
+            if (clickedRole == QMessageBox::DestructiveRole) {
+                // Confirmed deleting this event.
+                eventsToDelete.append(event);
+                if (deleteAllButton && clickedButton == deleteAllButton) {
+                    // Confirmed deleting all events, no more warning.
+                    skipWarning = true;
                 }
+            } else if (clickedRole == QMessageBox::NoRole) {
+                // Declined deleting this event.
+                continue;
+            } else if (clickedRole == QMessageBox::RejectRole) {
+                // Canceled delete.
+                return;
             }
         }
-        this->map->commit(new EventDelete(this, this->map, selectedEvents, nextSelectedEvent ? nextSelectedEvent->event : nullptr));
+        // TODO: Are we just calling this to invalidate connections?
+        event->setPixmapItem(item);
     }
+    if (eventsToDelete.isEmpty())
+        return;
+
+    // Get the index for the event that should be selected after this event has been deleted.
+    // Select event at next smallest index when deleting a single event.
+    // If deleting multiple events, just let editor work out next selected.
+    Event *nextSelectedEvent = nullptr;
+    if (eventsToDelete.length() == 1) {
+        Event *eventToDelete = eventsToDelete.first();
+        Event::Group event_group = eventToDelete->getEventGroup();
+        int index = this->map->getIndexOfEvent(eventToDelete);
+        if (index != this->map->getNumEvents(event_group) - 1)
+            index++;
+        else
+            index--;
+        nextSelectedEvent = this->map->getEvent(event_group, index);
+    }
+
+    this->map->commit(new EventDelete(this, this->map, eventsToDelete, nextSelectedEvent));
 }
 
 void Editor::openMapScripts() const {
