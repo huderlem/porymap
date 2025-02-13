@@ -27,7 +27,7 @@ ColorPicker::ColorPicker(QWidget *parent) :
         QPoint cursorPos = QCursor::pos();
         if (lastCursorPos != cursorPos) {
             lastCursorPos = cursorPos;
-            this->hover(cursorPos.x(), cursorPos.y());
+            this->hover(cursorPos);
         }
     });
     timer->start(10);
@@ -40,15 +40,17 @@ ColorPicker::~ColorPicker()
     delete ui;
 }
 
-void ColorPicker::hover(int mouseX, int mouseY) {
-    QScreen *screen = QGuiApplication::primaryScreen();
-    if (const QWindow *window = windowHandle())
-        screen = window->screen();
+void ColorPicker::hover(const QPoint &pos) {
+    QScreen *screen = QGuiApplication::screenAt(pos);
+    if (!screen) {
+        const QWindow *window = windowHandle();
+        if (window) screen = window->screen();
+    }
     if (!screen)
         return;
 
     // 15 X 15 box with 8x magnification = 120px square)
-    QPixmap grab = screen->grabWindow(0, mouseX - zoom_box_dimensions / 2, mouseY - zoom_box_dimensions / 2, zoom_box_dimensions, zoom_box_dimensions);
+    QPixmap grab = screen->grabWindow(0, pos.x() - zoom_box_dimensions / 2, pos.y() - zoom_box_dimensions / 2, zoom_box_dimensions, zoom_box_dimensions);
     int pixelRatio = grab.devicePixelRatio();
 
     // TODO: investigate for high dpi displays why text is too high res

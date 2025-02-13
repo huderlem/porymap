@@ -27,7 +27,7 @@ private:
 
     QColor color = Qt::white;
 
-    void hover(int mouseX, int mouseY);
+    void hover(const QPoint &pos);
 };
 
 #endif // COLORPICKER_H
