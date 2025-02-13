@@ -123,6 +123,12 @@ void MapListToolBar::applyFilter(const QString &filterText) {
     const QSignalBlocker b(ui->lineEdit_filterBox);
     ui->lineEdit_filterBox->setText(filterText);
 
+    // The clear button does not properly disappear when filterText is empty.
+    // It seems like this is because blocking the QLineEdit's signals prevents
+    // it from communicating the text change to QLineEditPrivate.
+    // We toggle the button ourselves as a workaround.
+    ui->lineEdit_filterBox->setClearButtonEnabled(!filterText.isEmpty());
+
     if (m_list) {
         auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
         if (model) model->setFilterRegularExpression(QRegularExpression(filterText, QRegularExpression::CaseInsensitiveOption));
