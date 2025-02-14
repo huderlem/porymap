@@ -14,7 +14,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-qt5-linux:
+  build-linux:
+    strategy:
+     matrix:
+       qtversion: [5.14.2, 6.8.2]
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -23,7 +26,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '5.14.2'
+          version: ${{ matrix.qtversion }}
           modules: 'qtcharts'
           cache: 'true'
 
@@ -47,7 +50,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.7.*'
+          version: '6.8.2'
           modules: 'qtcharts'
           cache: 'true'
 
