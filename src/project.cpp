@@ -35,7 +35,7 @@ int Project::max_object_events = 64;
 Project::Project(QObject *parent) :
     QObject(parent)
 {
-    QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::fileChanged);
+    QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
 }
 
 Project::~Project()
@@ -660,7 +660,25 @@ void Project::saveMapLayouts() {
 
 void Project::ignoreWatchedFileTemporarily(QString filepath) {
     // Ignore any file-change events for this filepath for the next 5 seconds.
-    modifiedFileTimestamps.insert(filepath, QDateTime::currentMSecsSinceEpoch() + 5000);
+    this->modifiedFileTimestamps.insert(filepath, QDateTime::currentMSecsSinceEpoch() + 5000);
+}
+
+void Project::recordFileChange(const QString &filepath) {
+    if (this->modifiedFiles.contains(filepath)) {
+        // We already recorded a change to this file
+        return;
+    }
+
+    if (this->modifiedFileTimestamps.contains(filepath)) {
+        if (QDateTime::currentMSecsSinceEpoch() < this->modifiedFileTimestamps[filepath]) {
+            // We're still ignoring changes to this file
+            return;
+        }
+        this->modifiedFileTimestamps.remove(filepath);
+    }
+
+    this->modifiedFiles.insert(filepath);
+    emit fileChanged(filepath);
 }
 
 void Project::saveMapGroups() {

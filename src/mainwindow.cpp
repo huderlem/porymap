@@ -69,6 +69,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setApplicationVersion(PORYMAP_VERSION);
     QApplication::setApplicationDisplayName(QApplication::applicationName());
     QApplication::setWindowIcon(QIcon(":/icons/porymap-icon-2.ico"));
+    connect(qApp, &QApplication::applicationStateChanged, this, &MainWindow::showFileWatcherWarning);
+
     ui->setupUi(this);
 
     cleanupLargeLog();
@@ -791,26 +793,46 @@ void MainWindow::openSubWindow(QWidget * window) {
     }
 }
 
-void MainWindow::showFileWatcherWarning(QString filepath) {
-    if (!porymapConfig.monitorFiles || !isProjectOpen())
+void MainWindow::showFileWatcherWarning() {
+     if (!porymapConfig.monitorFiles || !isProjectOpen())
+        return;
+
+    // Only show the file watcher warning if Porymap is the currently active application.
+    // This stops Porymap from bugging users when they switch to their projects to make edits;
+    // we'll warn them about the need to reload when they return to Porymap.
+    if (QGuiApplication::applicationState() != Qt::ApplicationActive)
         return;
 
     Project *project = this->editor->project;
-    if (project->modifiedFileTimestamps.contains(filepath)) {
-        if (QDateTime::currentMSecsSinceEpoch() < project->modifiedFileTimestamps[filepath]) {
-            return;
-        }
-        project->modifiedFileTimestamps.remove(filepath);
+    QStringList modifiedFiles(project->modifiedFiles.constBegin(),  project->modifiedFiles.constEnd());
+    if (modifiedFiles.isEmpty())
+        return;
+    project->modifiedFiles.clear();
+
+    // Only allow one of these warnings at a single time.
+    // Additional file changes are ignored while the warning is already active. 
+    static bool showing = false;
+    if (showing)
+        return;
+    showing = true;
+
+    // Strip project root from filepaths
+    const QString root = project->root + "/";
+    for (auto &path : modifiedFiles) {
+        path.remove(root);
     }
 
-    static bool showing = false;
-    if (showing) return;
+    QuestionMessage msgBox("", this);
+    if (modifiedFiles.count() == 1) {
+        msgBox.setText(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(modifiedFiles.first()));
+    } else {
+        msgBox.setText(QStringLiteral("Some project files have changed on disk. Would you like to reload the project?"));
+        msgBox.setDetailedText(QStringLiteral("The following files have changed:\n") + modifiedFiles.join("\n"));
+    }
 
-    QuestionMessage msgBox(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(filepath.remove(project->root + "/")), this);
     QCheckBox showAgainCheck("Do not ask again.");
     msgBox.setCheckBox(&showAgainCheck);
 
-    showing = true;
     auto reply = msgBox.exec();
     if (reply == QMessageBox::Yes) {
         on_action_Reload_Project_triggered();
