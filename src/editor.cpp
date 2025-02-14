@@ -113,8 +113,12 @@ bool Editor::getEditingLayout() {
     return this->editMode == EditMode::Metatiles || this->editMode == EditMode::Collision;
 }
 
-void Editor::setEditorView() {
-    // based on editMode
+void Editor::setEditMode(EditMode editMode) {
+    // At the moment we can't early return if editMode == this->editMode, because this function also takes care of refreshing the map view.
+    // The main window relies on this when switching projects (the edit mode will remain the same, but it needs a refresh).
+    auto oldEditMode = this->editMode;
+    this->editMode = editMode;
+
     if (!map_item || !collision_item) return;
     if (!this->layout) return;
 
@@ -145,57 +149,22 @@ void Editor::setEditorView() {
 
     QUndoStack *editStack = this->map ? this->map->editHistory() : nullptr;
     bool usesCursor = false;
-    if (this->editMode == EditMode::Metatiles || this->editMode == EditMode::Collision) {
+    if (getEditingLayout()) {
         if (this->layout) editStack = &this->layout->editHistory;
         usesCursor = true;
+        setMapEditingButtonsEnabled(true);
     }
-
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(usesCursor);
     this->editGroup.setActiveStack(editStack);
 
-
-    if (this->events_group) {
-        this->events_group->setVisible(this->editMode == EditMode::Events);
+    if (this->editMode == EditMode::Events || oldEditMode == EditMode::Events) {
+        // When switching to or from the Events tab the opacity of the events changes. Redraw the events to reflect that change.
+       redrawAllEvents();
     }
-    setMapEditingButtonsEnabled(this->editMode != EditMode::Events);
-}
-
-void Editor::setEditingMetatiles() {
-    this->editMode = EditMode::Metatiles;
-
-    setEditorView();
-}
-
-void Editor::setEditingCollision() {
-    this->editMode = EditMode::Collision;
-
-    setEditorView();
-}
-
-void Editor::setEditingHeader() {
-    this->editMode = EditMode::Header;
-
-    setEditorView();
-}
-
-void Editor::setEditingEvents() {
-    this->editMode = EditMode::Events;
-
-    setEditorView();
-    updateWarpEventWarnings();
-}
-
-void Editor::setEditingConnections() {
-    this->editMode = EditMode::Connections;
-
-    setEditorView();
-}
-
-void Editor::setEditingEncounters() {
-    this->editMode = EditMode::Encounters;
-
-    setEditorView();
+    if (this->editMode == EditMode::Events){
+        updateWarpEventWarnings();
+    }
 }
 
 void Editor::setMapEditingButtonsEnabled(bool enabled) {
@@ -1486,10 +1455,6 @@ bool Editor::displayMap() {
     displayMapEvents();
     displayMapConnections();
     maskNonVisibleConnectionTiles();
-
-    if (events_group) {
-        events_group->setVisible(false);
-    }
     return true;
 }
 
@@ -2003,20 +1968,40 @@ QList<DraggablePixmapItem *> Editor::getEventPixmapItems() {
     return list;
 }
 
+qreal Editor::getEventOpacity(const Event *event) const {
+    // There are 4 possible opacities for an event's sprite:
+    // - Off the Events tab, and the event overlay is off (0.0)
+    // - Off the Events tab, and the event overlay is on (0.5)
+    // - On the Events tab, and the event has a default sprite (0.7)
+    // - On the Events tab, and the event has a custom sprite (1.0)
+    if (this->editMode != EditMode::Events)
+        return porymapConfig.eventOverlayEnabled ? 0.5 : 0.0;
+    return event->getUsingSprite() ? 1.0 : 0.7;
+}
+
 void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
     if (item && item->event && !item->event->getPixmap().isNull()) {
-        qreal opacity = item->event->getUsingSprite() ? 1.0 : 0.7;
-        item->setOpacity(opacity);
+        item->setOpacity(getEventOpacity(item->event));
         project->setEventPixmap(item->event, true);
         item->setPixmap(item->event->getPixmap());
         item->setShapeMode(porymapConfig.eventSelectionShapeMode);
-        if (selected_events && selected_events->contains(item)) {
-            QImage image = item->pixmap().toImage();
-            QPainter painter(&image);
-            painter.setPen(QColor(255, 0, 255));
-            painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
-            painter.end();
-            item->setPixmap(QPixmap::fromImage(image));
+
+        if (this->editMode == EditMode::Events) {
+            if (selected_events && selected_events->contains(item)) {
+                // Draw the selection rectangle
+                QImage image = item->pixmap().toImage();
+                QPainter painter(&image);
+                painter.setPen(QColor(255, 0, 255));
+                painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
+                painter.end();
+                item->setPixmap(QPixmap::fromImage(image));
+            }
+            item->setAcceptedMouseButtons(Qt::AllButtons);
+        } else {
+            // Can't interact with event pixmaps outside of event editing mode.
+            // We could do setEnabled(false), but rather than ignoring the mouse events this
+            // would reject them, which would prevent painting on the map behind the events.
+            item->setAcceptedMouseButtons(Qt::NoButton);
         }
         item->updatePosition();
     }

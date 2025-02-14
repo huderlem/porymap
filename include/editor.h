@@ -119,6 +119,7 @@ public:
     void redrawEvents(const QList<Event*> &events);
     void redrawEventPixmapItem(DraggablePixmapItem *item);
     QList<DraggablePixmapItem *> getEventPixmapItems();
+    qreal getEventOpacity(const Event *event) const;
 
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
@@ -161,20 +162,10 @@ public:
     EditAction eventEditAction = EditAction::Select;
 
     enum class EditMode { None, Disabled, Metatiles, Collision, Header, Events, Connections, Encounters };
-    EditMode editMode = EditMode::None;
-    void setEditMode(EditMode mode) { this->editMode = mode; }
-    EditMode getEditMode() { return this->editMode; }
+    void setEditMode(EditMode editMode);
+    EditMode getEditMode() const { return this->editMode; }
 
     bool getEditingLayout();
-
-    void setEditorView();
-    
-    void setEditingMetatiles();
-    void setEditingCollision();
-    void setEditingHeader();
-    void setEditingEvents();
-    void setEditingConnections();
-    void setEditingEncounters();
 
     void setMapEditingButtonsEnabled(bool enabled);
 
@@ -210,6 +201,8 @@ private:
     const QImage defaultCollisionImgSheet = QImage(":/images/collisions.png");
     const QImage collisionPlaceholder = QImage(":/images/collisions_unknown.png");
     QPixmap collisionSheetPixmap;
+
+    EditMode editMode = EditMode::None;
 
     void clearMap();
     void clearMetatileSelector();
