@@ -136,14 +136,14 @@ void Editor::setEditMode(EditMode editMode) {
         break;
     default:
         current_view = nullptr;
-        return;
+        break;
     }
 
     map_item->setEditsEnabled(this->editMode != EditMode::Connections);
     map_item->draw();
     collision_item->draw();
 
-    current_view->setVisible(true);
+    if (current_view) current_view->setVisible(true);
 
     updateBorderVisibility();
 
