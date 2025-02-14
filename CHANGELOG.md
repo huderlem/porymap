@@ -35,6 +35,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - `Export Map Stitch Image` now shows a preview of the full image, not just the current map.
 - `Custom Attributes` tables now display numbers using spin boxes. The `type` column was removed, because `value`'s type is now obvious.
 - Unrecognized map names in Event or Connections data will no longer be overwritten.
+- It's now possible to click on an event's sprite even if a different event's rectangle is overlapping it. The old selection behavior is available via a new setting.
 - Reduced diff noise when saving maps.
 - Map names and ``MAP_NAME`` constants are no longer required to match.
 - Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
