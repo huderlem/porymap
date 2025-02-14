@@ -148,15 +148,14 @@ void Editor::setEditMode(EditMode editMode) {
     updateBorderVisibility();
 
     QUndoStack *editStack = this->map ? this->map->editHistory() : nullptr;
-    bool usesCursor = false;
-    if (getEditingLayout()) {
-        if (this->layout) editStack = &this->layout->editHistory;
-        usesCursor = true;
-        setMapEditingButtonsEnabled(true);
+    bool editingLayout = getEditingLayout();
+    if (editingLayout && this->layout) {
+        editStack = &this->layout->editHistory;
     }
     this->cursorMapTileRect->setSingleTileMode();
-    this->cursorMapTileRect->setActive(usesCursor);
+    this->cursorMapTileRect->setActive(editingLayout);
     this->editGroup.setActiveStack(editStack);
+    setMapEditingButtonsEnabled(editingLayout);
 
     if (this->editMode == EditMode::Events || oldEditMode == EditMode::Events) {
         // When switching to or from the Events tab the opacity of the events changes. Redraw the events to reflect that change.
