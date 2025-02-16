@@ -328,10 +328,7 @@ void EventCreate::redo() {
 
     map->addEvent(event);
     editor->addEventPixmapItem(event);
-
-    // select this event
-    editor->selected_events->clear();
-    editor->selectMapEvent(event->getPixmapItem());
+    editor->selectMapEvent(event);
 }
 
 void EventCreate::undo() {
@@ -374,9 +371,9 @@ void EventDelete::redo() {
         editor->removeEventPixmapItem(event);
     }
 
-    editor->selected_events->clear();
+    editor->selectedEvents.clear();
     if (nextSelectedEvent)
-        editor->selected_events->append(nextSelectedEvent->getPixmapItem());
+        editor->selectedEvents.append(nextSelectedEvent);
     editor->shouldReselectEvents();
 }
 
@@ -386,11 +383,7 @@ void EventDelete::undo() {
         editor->addEventPixmapItem(event);
     }
 
-    // select these events
-    editor->selected_events->clear();
-    for (Event *event : selectedEvents) {
-        editor->selected_events->append(event->getPixmapItem());
-    }
+    editor->selectedEvents = selectedEvents;
     editor->shouldReselectEvents();
 
     QUndoCommand::undo();
@@ -427,11 +420,7 @@ void EventDuplicate::redo() {
         editor->addEventPixmapItem(event);
     }
 
-    // select these events
-    editor->selected_events->clear();
-    for (Event *event : selectedEvents) {
-        editor->selected_events->append(event->getPixmapItem());
-    }
+    editor->selectedEvents = selectedEvents;
     editor->shouldReselectEvents();
 }
 

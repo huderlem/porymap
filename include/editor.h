@@ -111,14 +111,13 @@ public:
     DraggablePixmapItem *addEventPixmapItem(Event *event);
     void removeEventPixmapItem(Event *event);
     bool canAddEvents(const QList<Event*> &events);
-    void selectMapEvent(DraggablePixmapItem *item, bool toggle = false);
+    void selectMapEvent(Event *event, bool toggle = false);
     Event *addNewEvent(Event::Type type);
-    void updateSelectedEvents();
+    void updateEvents();
     void duplicateSelectedEvents();
     void redrawAllEvents();
     void redrawEvents(const QList<Event*> &events);
     void redrawEventPixmapItem(DraggablePixmapItem *item);
-    QList<DraggablePixmapItem *> getEventPixmapItems();
     qreal getEventOpacity(const Event *event) const;
 
     void updateCursorRectPos(int x, int y);
@@ -153,7 +152,7 @@ public:
     CurrentSelectedMetatilesPixmapItem *current_metatile_selection_item = nullptr;
     QPointer<MovementPermissionsSelector> movement_permissions_selector_item = nullptr;
 
-    QList<DraggablePixmapItem *> *selected_events = nullptr;
+    QList<Event*> selectedEvents;
     QPointer<ConnectionPixmapItem> selected_connection_item = nullptr;
     QPointer<MapConnection> connection_to_select = nullptr;
 

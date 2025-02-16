@@ -332,7 +332,7 @@ private:
 
     MapHeaderForm *mapHeaderForm = nullptr;
 
-    QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
+    QMap<Event::Group, Event*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
 

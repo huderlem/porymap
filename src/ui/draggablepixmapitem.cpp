@@ -8,11 +8,11 @@ static unsigned currentActionId = 0;
 
 
 void DraggablePixmapItem::updatePosition() {
-    int x = event->getPixelX();
-    int y = event->getPixelY();
+    int x = this->event->getPixelX();
+    int y = this->event->getPixelY();
     setX(x);
     setY(y);
-    if (editor->selected_events && editor->selected_events->contains(this)) {
+    if (this->editor->selectedEvents.contains(this->event)) {
         setZValue(event->getY() + 1);
     } else {
         setZValue(event->getY());
@@ -40,10 +40,10 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     this->lastPos = Metatile::coordFromPixmapCoord(mouse->scenePos());
 
     bool selectionToggle = mouse->modifiers() & Qt::ControlModifier;
-    if (selectionToggle || !editor->selected_events->contains(this)) {
+    if (selectionToggle || !this->editor->selectedEvents.contains(this->event)) {
         // User is either toggling this selection on/off as part of a group selection,
         // or they're newly selecting just this item.
-        this->editor->selectMapEvent(this, selectionToggle);
+        this->editor->selectMapEvent(this->event, selectionToggle);
     } else {
         // This item is already selected and the user isn't toggling the selection, so there are 4 possibilities:
         // 1. This is the only selected event, and the selection is pointless.
@@ -84,10 +84,8 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     emit this->editor->map_item->hoveredMapMetatileChanged(pos);
 
     QList <Event *> selectedEvents;
-    if (editor->selected_events->contains(this)) {
-        for (DraggablePixmapItem *item : *editor->selected_events) {
-            selectedEvents.append(item->event);
-        }
+    if (this->editor->selectedEvents.contains(this->event)) {
+        selectedEvents = this->editor->selectedEvents;
     } else {
         selectedEvents.append(this->event);
     }
@@ -103,7 +101,7 @@ void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
     if (this->releaseSelectionQueued) {
         this->releaseSelectionQueued = false;
         if (Metatile::coordFromPixmapCoord(mouse->scenePos()) == this->lastPos)
-            this->editor->selectMapEvent(this);
+            this->editor->selectMapEvent(this->event);
     }
 }
 

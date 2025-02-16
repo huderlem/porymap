@@ -1027,18 +1027,13 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
 
     // Select the target event.
     int index = event_id - Event::getIndexOffset(event_group);
-    Event* event = editor->map->getEvent(event_group, index);
+    Event* event = this->editor->map->getEvent(event_group, index);
     if (event) {
-        auto item = event->getPixmapItem();
-        if (item) {
-            editor->selected_events->clear();
-            editor->selected_events->append(item);
-            editor->updateSelectedEvents();
-            return;
-        }
+        this->editor->selectMapEvent(event);
+    } else {
+        // Can still warp to this map, but can't select the specified event
+        logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::groupToString(event_group)).arg(event_id).arg(map_name));
     }
-    // Can still warp to this map, but can't select the specified event
-    logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::groupToString(event_group)).arg(event_id).arg(map_name));
 }
 
 void MainWindow::displayMapProperties() {
@@ -1628,15 +1623,8 @@ void MainWindow::copy() {
                 OrderedJson::object copyObject;
                 copyObject["object"] = "events";
 
-                QList<DraggablePixmapItem *> events;
-                if (editor->selected_events && editor->selected_events->length()) {
-                    events = *editor->selected_events;
-                }
-
                 OrderedJson::array eventsArray;
-
-                for (auto item : events) {
-                    Event *event = item->event;
+                for (const auto &event : this->editor->selectedEvents) {
                     OrderedJson::object eventContainer;
                     eventContainer["event_type"] = Event::typeToString(event->getEventType());
                     OrderedJson::object eventJson = event->buildEventJson(editor->project);
@@ -1997,31 +1985,32 @@ void MainWindow::displayEventTabs() {
 }
 
 void MainWindow::updateEvents() {
-    QList<DraggablePixmapItem *> items = editor->getEventPixmapItems();
-    for (auto i = this->lastSelectedEvent.cbegin(), end = this->lastSelectedEvent.cend(); i != end; i++) {
-        if (i.value() && !items.contains(i.value()))
-            this->lastSelectedEvent.insert(i.key(), nullptr);
+    if (this->editor->map) {
+        for (auto i = this->lastSelectedEvent.begin(); i != this->lastSelectedEvent.end(); i++) {
+            if (i.value() && !this->editor->map->hasEvent(i.value()))
+                this->lastSelectedEvent.insert(i.key(), nullptr);
+        }
     }
     displayEventTabs();
     updateSelectedEvents();
 }
 
 void MainWindow::updateSelectedEvents() {
-    QList<DraggablePixmapItem *> events;
+    QList<Event*> events;
 
-    if (editor->selected_events && editor->selected_events->length()) {
-        events = *editor->selected_events;
+    if (!this->editor->selectedEvents.isEmpty()) {
+        events = this->editor->selectedEvents;
     }
     else {
-        QList<Event *> all_events;
-        if (editor->map) {
-            all_events = editor->map->getEvents();
+        QList<Event *> allEvents;
+        if (this->editor->map) {
+            allEvents = this->editor->map->getEvents();
         }
-        if (all_events.length()) {
-            DraggablePixmapItem *selectedEvent = all_events.first()->getPixmapItem();
+        if (!allEvents.isEmpty()) {
+            Event *selectedEvent = allEvents.first();
             if (selectedEvent) {
-                editor->selected_events->append(selectedEvent);
-                editor->redrawEventPixmapItem(selectedEvent);
+                this->editor->selectedEvents.append(selectedEvent);
+                this->editor->redrawEventPixmapItem(selectedEvent->getPixmapItem());
                 events.append(selectedEvent);
             }
         }
@@ -2034,12 +2023,13 @@ void MainWindow::updateSelectedEvents() {
 
     if (events.length() == 1) {
         // single selected event case
-        Event *current = events[0]->event;
+        Event *current = events.constFirst();
         Event::Group eventGroup = current->getEventGroup();
         int event_offs = Event::getIndexOffset(eventGroup);
 
-        if (eventGroup != Event::Group::None)
-            this->lastSelectedEvent.insert(eventGroup, current->getPixmapItem());
+        if (eventGroup != Event::Group::None) {
+            this->lastSelectedEvent.insert(eventGroup, current);
+        }
 
         switch (eventGroup) {
         case Event::Group::Object: {
@@ -2110,8 +2100,7 @@ void MainWindow::updateSelectedEvents() {
     this->isProgrammaticEventTabChange = false;
 
     QList<QFrame *> frames;
-    for (DraggablePixmapItem *item : events) {
-        Event *event = item->event;
+    for (auto event : events) {
         EventFrame *eventFrame = event->createEventFrame();
         eventFrame->populate(this->editor->project);
         eventFrame->initialize();
@@ -2166,7 +2155,7 @@ Event::Group MainWindow::getEventGroupFromTabWidget(QWidget *tab) {
 void MainWindow::eventTabChanged(int index) {
     if (editor->map) {
         Event::Group group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
-        DraggablePixmapItem *selectedItem = this->lastSelectedEvent.value(group, nullptr);
+        Event *selectedEvent = this->lastSelectedEvent.value(group, nullptr);
 
         switch (group) {
         case Event::Group::Object:
@@ -2189,11 +2178,8 @@ void MainWindow::eventTabChanged(int index) {
         }
 
         if (!isProgrammaticEventTabChange) {
-            if (!selectedItem) {
-                Event *event = editor->map->getEvent(group, 0);
-                if (event) selectedItem = event->getPixmapItem();
-            }
-            if (selectedItem) editor->selectMapEvent(selectedItem);
+            if (!selectedEvent) selectedEvent = this->editor->map->getEvent(group, 0);
+            this->editor->selectMapEvent(selectedEvent);
         }
     }
 
