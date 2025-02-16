@@ -264,8 +264,6 @@ void MainWindow::initCustomUI() {
 }
 
 void MainWindow::initExtraSignals() {
-    // other signals
-    connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this, &MainWindow::addNewEvent);
     connect(ui->tabWidget_EventType, &QTabWidget::currentChanged, this, &MainWindow::eventTabChanged);
 
     // Change pages on wild encounter groups
@@ -343,6 +341,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::wildMonTableEdited, [this] { this->markMapEdited(); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
+    connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
     connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
 
     this->loadUserSettings();
@@ -1304,7 +1303,7 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     logInfo(QString("Created a new map named %1.").arg(newMap->name()));
 
     if (newMap->needsHealLocation()) {
-        addNewEvent(Event::Type::HealLocation);
+        this->editor->addNewEvent(Event::Type::HealLocation);
     }
 
     // TODO: Creating a new map shouldn't be automatically saved.
@@ -1750,14 +1749,7 @@ void MainWindow::paste() {
                 QJsonArray events = pasteObject["events"].toArray();
                 for (QJsonValue event : events) {
                     // paste the event to the map
-                    const QString typeString = event["event_type"].toString();
-                    Event::Type type = Event::typeFromString(typeString);
-
-                    if (this->editor->eventLimitReached(type)) {
-                        logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(typeString));
-                        continue;
-                    }
-
+                    Event::Type type = Event::typeFromString(event["event_type"].toString());
                     Event *pasteEvent = Event::create(type);
                     if (!pasteEvent)
                         continue;
@@ -1766,12 +1758,16 @@ void MainWindow::paste() {
                     pasteEvent->setMap(this->editor->map);
                     newEvents.append(pasteEvent);
                 }
+                if (newEvents.empty())
+                    return;
 
-                if (!newEvents.empty()) {
-                    editor->map->commit(new EventPaste(this->editor, editor->map, newEvents));
-                    updateEvents();
+                if (!this->editor->canAddEvents(newEvents)) {
+                    WarningMessage::show(QStringLiteral("Unable to paste, the maximum number of events would be exceeded."), this);
+                    qDeleteAll(newEvents);
+                    return;
                 }
-
+                this->editor->map->commit(new EventPaste(this->editor, this->editor->map, newEvents));
+                updateEvents();
                 break;
             }
         }
@@ -1981,29 +1977,6 @@ void MainWindow::on_actionMap_Shift_triggered()
 
 void MainWindow::resetMapViewScale() {
     editor->scaleMapView(0);
-}
-
-void MainWindow::addNewEvent(Event::Type type) {
-    if (editor && editor->project) {
-        DraggablePixmapItem *item = editor->addNewEvent(type);
-        if (item) {
-            auto halfSize = ui->graphicsView_Map->size() / 2;
-            auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
-            item->moveTo(Metatile::coordFromPixmapCoord(centerPos));
-            updateEvents();
-            editor->selectMapEvent(item);
-        } else {
-            WarningMessage msgBox(QStringLiteral("Failed to add new event."), this);
-            if (Event::typeToGroup(type) == Event::Group::Object) {
-                msgBox.setInformativeText(QString("The limit for object events (%1) has been reached.\n\n"
-                                                  "This limit can be adjusted with %2 in '%3'.")
-                                          .arg(editor->project->getMaxObjectEvents())
-                                          .arg(projectConfig.getIdentifier(ProjectIdentifier::define_obj_event_count))
-                                          .arg(projectConfig.getFilePath(ProjectFilePath::constants_global)));
-            }
-            msgBox.exec();
-        }
-    }
 }
 
 void MainWindow::tryAddEventTab(QWidget * tab) {

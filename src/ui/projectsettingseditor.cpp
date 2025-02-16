@@ -135,6 +135,7 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_UnusedTileNormal->setMaximum(Tile::maxValue);
     ui->spinBox_UnusedTileCovered->setMaximum(Tile::maxValue);
     ui->spinBox_UnusedTileSplit->setMaximum(Tile::maxValue);
+    ui->spinBox_MaxEvents->setMaximum(INT_MAX);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -464,6 +465,7 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_UnusedTileNormal->setValue(projectConfig.unusedTileNormal);
     ui->spinBox_UnusedTileCovered->setValue(projectConfig.unusedTileCovered);
     ui->spinBox_UnusedTileSplit->setValue(projectConfig.unusedTileSplit);
+    ui->spinBox_MaxEvents->setValue(projectConfig.maxEventsPerGroup);
 
     // Set (and sync) border metatile IDs
     this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
@@ -538,6 +540,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.unusedTileNormal = ui->spinBox_UnusedTileNormal->value();
     projectConfig.unusedTileCovered = ui->spinBox_UnusedTileCovered->value();
     projectConfig.unusedTileSplit = ui->spinBox_UnusedTileSplit->value();
+    projectConfig.maxEventsPerGroup = ui->spinBox_MaxEvents->value();
 
     // Save line edit settings
     projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();

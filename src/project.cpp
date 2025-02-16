@@ -30,7 +30,6 @@ int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
 int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_dimension = 20;
-int Project::max_object_events = 64;
 
 Project::Project(QObject *parent) :
     QObject(parent)
@@ -2578,21 +2577,22 @@ bool Project::readMiscellaneousConstants() {
     fileWatcher.addPath(root + "/" + filename);
     QMap<QString, int> defines = parser.readCDefinesByName(filename, {maxObjectEventsName});
 
+    this->maxObjectEvents = 64; // Default value
     auto it = defines.find(maxObjectEventsName);
     if (it != defines.end()) {
         if (it.value() > 0) {
-            Project::max_object_events = it.value();
+            this->maxObjectEvents = it.value();
         } else {
             logWarn(QString("Value for '%1' is %2, must be greater than 0. Using default (%3) instead.")
                     .arg(maxObjectEventsName)
                     .arg(it.value())
-                    .arg(Project::max_object_events));
+                    .arg(this->maxObjectEvents));
         }
     }
     else {
         logWarn(QString("Value for '%1' not found. Using default (%2) instead.")
                 .arg(maxObjectEventsName)
-                .arg(Project::max_object_events));
+                .arg(this->maxObjectEvents));
     }
 
     return true;
@@ -2943,9 +2943,14 @@ bool Project::calculateDefaultMapSize(){
     return true;
 }
 
-int Project::getMaxObjectEvents()
-{
-    return Project::max_object_events;
+// Object events have their own limit specified by ProjectIdentifier::define_obj_event_count.
+// The default value for this is 64. All events (object events included) are also limited by
+// the data types of the event counters in the project. This would normally be u8, so the limit is 255.
+// We let the users tell us this limit in case they change these data types.
+int Project::getMaxEvents(Event::Group group) {
+    if (group == Event::Group::Object)
+        return qMin(this->maxObjectEvents, projectConfig.maxEventsPerGroup);
+    return projectConfig.maxEventsPerGroup;
 }
 
 QString Project::getEmptyMapDefineName() {

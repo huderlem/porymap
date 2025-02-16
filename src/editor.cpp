@@ -1330,17 +1330,13 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             } else {
                 // Left-clicking while in paint mode will add a new event of the
                 // type of the first currently selected events.
-                // Disallow adding heal locations, deleting them is not possible yet
                 Event::Type eventType = Event::Type::Object;
                 if (this->selected_events->size() > 0)
                     eventType = this->selected_events->first()->event->getEventType();
 
-                DraggablePixmapItem *newEvent = addNewEvent(eventType);
-                if (newEvent) {
-                    newEvent->move(pos.x(), pos.y());
-                    emit eventsChanged();
-                    selectMapEvent(newEvent);
-                }
+                Event* event = addNewEvent(eventType);
+                if (event && event->getPixmapItem())
+                    event->getPixmapItem()->moveTo(pos);
             }
         } else if (eventEditAction == EditAction::Select) {
             // do nothing here, at least for now
@@ -2083,29 +2079,47 @@ void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
     }
 }
 
-void Editor::duplicateSelectedEvents() {
-    if (!selected_events || !selected_events->length() || !map || !current_view || this->getEditingLayout())
-        return;
+bool Editor::canAddEvents(const QList<Event*> &events) {
+    if (!this->project || !this->map)
+        return false;
 
-    QList<Event *> selectedEvents;
-    for (int i = 0; i < selected_events->length(); i++) {
-        Event *original = selected_events->at(i)->event;
-        Event::Type eventType = original->getEventType();
-        if (eventLimitReached(eventType)) {
-            logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(Event::typeToString(eventType)));
-            continue;
+    QMap<Event::Group, int> newEventCounts;
+    for (const auto &event : events) {
+        Event::Group group = event->getEventGroup();
+        int maxEvents = this->project->getMaxEvents(group);
+        if (this->map->getNumEvents(group) + newEventCounts[group]++ >= maxEvents) {
+            return false;
         }
-        Event *duplicate = original->duplicate();
-        duplicate->setX(duplicate->getX() + 1);
-        duplicate->setY(duplicate->getY() + 1);
-        selectedEvents.append(duplicate);
     }
-    map->commit(new EventDuplicate(this, map, selectedEvents));
+    return true;
 }
 
-DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
-    if (!project || !map || eventLimitReached(type))
+void Editor::duplicateSelectedEvents() {
+    if (!selected_events || !selected_events->length() || !project || !map || !current_view || this->getEditingLayout())
+        return;
+
+    QList<Event *> duplicatedEvents;
+    for (int i = 0; i < selected_events->length(); i++) {
+        duplicatedEvents.append(selected_events->at(i)->event->duplicate());
+    }
+    if (!canAddEvents(duplicatedEvents)) {
+        WarningMessage::show(QStringLiteral("Unable to duplicate, the maximum number of events would be exceeded."), ui->graphicsView_Map);
+        qDeleteAll(duplicatedEvents);
+        return;
+    }
+    this->map->commit(new EventDuplicate(this, this->map, duplicatedEvents));
+}
+
+Event *Editor::addNewEvent(Event::Type type) {
+    if (!this->project || !this->map)
         return nullptr;
+
+    Event::Group group = Event::typeToGroup(type);
+    int maxEvents = this->project->getMaxEvents(group);
+    if (this->map->getNumEvents(group) >= maxEvents) {
+        WarningMessage::show(QString("The maximum number of %1 events (%2) has been reached.").arg(Event::groupToString(group)).arg(maxEvents), ui->graphicsView_Map);
+        return nullptr;
+    }
 
     Event *event = Event::create(type);
     if (!event)
@@ -2113,17 +2127,18 @@ DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
 
     event->setMap(this->map);
     event->setDefaultValues(this->project);
-    map->commit(new EventCreate(this, map, event));
-    return event->getPixmapItem();
-}
 
-// Currently only object events have an explicit limit
-bool Editor::eventLimitReached(Event::Type event_type) {
-    if (project && map) {
-        if (Event::typeToGroup(event_type) == Event::Group::Object)
-            return map->getNumEvents(Event::Group::Object) >= project->getMaxObjectEvents();
+    // This will add the event to the map, create the event pixmap item, and select the event.
+    this->map->commit(new EventCreate(this, this->map, event));
+
+    auto pixmapItem = event->getPixmapItem();
+    if (pixmapItem) {
+        auto halfSize = ui->graphicsView_Map->size() / 2;
+        auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
+        pixmapItem->moveTo(Metatile::coordFromPixmapCoord(centerPos));
     }
-    return false;
+
+    return event;
 }
 
 void Editor::deleteSelectedEvents() {

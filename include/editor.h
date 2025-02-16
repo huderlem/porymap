@@ -110,9 +110,9 @@ public:
 
     DraggablePixmapItem *addEventPixmapItem(Event *event);
     void removeEventPixmapItem(Event *event);
-    bool eventLimitReached(Map *, Event::Type);
+    bool canAddEvents(const QList<Event*> &events);
     void selectMapEvent(DraggablePixmapItem *item, bool toggle = false);
-    DraggablePixmapItem *addNewEvent(Event::Type type);
+    Event *addNewEvent(Event::Type type);
     void updateSelectedEvents();
     void duplicateSelectedEvents();
     void redrawAllEvents();
@@ -185,7 +185,6 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
-    bool eventLimitReached(Event::Type type);
     void setCollisionGraphics();
 
 public slots:

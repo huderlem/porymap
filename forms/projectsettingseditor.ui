@@ -1342,6 +1342,29 @@
                 </widget>
                </item>
                <item>
+                <widget class="QWidget" name="widget_MaxEvents" native="true">
+                 <layout class="QFormLayout" name="formLayout_4">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_MaxEvents">
+                    <property name="text">
+                     <string>Maximum Events per Event group</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="NoScrollSpinBox" name="spinBox_MaxEvents">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maps cannot have more than this number of events in each event group. Object events are additionally limited by 'define_obj_event_count' on the Identifiers tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
                 <widget class="QGroupBox" name="groupBox_Events">
                  <property name="title">
                   <string/>

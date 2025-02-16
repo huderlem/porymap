@@ -218,7 +218,6 @@ private slots:
     void on_actionMove_triggered();
     void on_actionMap_Shift_triggered();
 
-    void addNewEvent(Event::Type type);
     void tryAddEventTab(QWidget * tab);
     void displayEventTabs();
     void updateSelectedEvents();
