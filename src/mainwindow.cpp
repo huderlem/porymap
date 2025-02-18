@@ -915,7 +915,7 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
     this->ui->mainTabBar->setTabEnabled(MainTab::Events, mapEditingEnabled);
     this->ui->mainTabBar->setTabEnabled(MainTab::Header, mapEditingEnabled);
     this->ui->mainTabBar->setTabEnabled(MainTab::Connections, mapEditingEnabled);
-    this->ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, mapEditingEnabled);
+    this->ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, mapEditingEnabled && editor->project->wildEncountersLoaded);
 
     this->ui->comboBox_LayoutSelector->setEnabled(mapEditingEnabled);
 }
