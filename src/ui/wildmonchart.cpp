@@ -392,7 +392,7 @@ void WildMonChart::updateTheme() {
     // distribution chart determine what those mapping are (it always includes every
     // species in the table) and then we apply those mappings to subsequent charts.
     QChart *chart = ui->chartView_SpeciesDistribution->chart();
-    if (!chart)
+    if (!chart || chart->series().isEmpty())
         return;
     chart->setTheme(theme);
     saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
