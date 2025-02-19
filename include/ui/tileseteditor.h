@@ -57,6 +57,7 @@ public slots:
     void onSelectedMetatileChanged(uint16_t);
 
 private slots:
+    void onWindowActivated();
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
     void onHoveredTileChanged(uint16_t);

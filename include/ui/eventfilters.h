@@ -26,3 +26,16 @@ signals:
     void wheelZoom(int delta);
 public slots:
 };
+
+
+
+/// Emits a signal when a window gets activated / regains focus
+class ActiveWindowFilter : public QObject {
+    Q_OBJECT
+public:
+    ActiveWindowFilter(QObject *parent) : QObject(parent) {}
+    virtual ~ActiveWindowFilter() {}
+    bool eventFilter(QObject *obj, QEvent *event) override;
+signals:
+    void activated();
+};

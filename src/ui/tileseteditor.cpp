@@ -9,6 +9,7 @@
 #include "shortcut.h"
 #include "filedialog.h"
 #include "validator.h"
+#include "eventfilters.h"
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QCloseEvent>
@@ -39,6 +40,10 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     ui->spinBox_paletteSelector->setMinimum(0);
     ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
     ui->lineEdit_metatileLabel->setValidator(new IdentifierValidator(this));
+
+    ActiveWindowFilter *filter = new ActiveWindowFilter(this);
+    connect(filter, &ActiveWindowFilter::activated, this, &TilesetEditor::onWindowActivated);
+    this->installEventFilter(filter);
 
     setAttributesUi();
     initMetatileSelector();
@@ -300,6 +305,16 @@ void TilesetEditor::restoreWindowState() {
     this->ui->splitter->restoreState(geometry.value("tileset_editor_splitter_state"));
 }
 
+void TilesetEditor::onWindowActivated() {
+    // User may have made layout edits since window was last focused, so update counts
+    if (this->metatileSelector) {
+        if (this->metatileSelector->selectorShowUnused || this->metatileSelector->selectorShowCounts) {
+            countMetatileUsage();
+            this->metatileSelector->draw();
+        }
+    }
+}
+
 void TilesetEditor::initMetatileHistory() {
     metatileHistory.clear();
     MetatileHistoryItem *commit = new MetatileHistoryItem(0, nullptr, new Metatile(), QString(), QString());
@@ -455,6 +470,10 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
                 tile.xflip = tiles.at(selectedTileIndex).xflip;
                 tile.yflip = tiles.at(selectedTileIndex).yflip;
                 tile.palette = tiles.at(selectedTileIndex).palette;
+                if (this->tileSelector->showUnused) {
+                    this->tileSelector->usedTiles[tile.tileId] += 1;
+                    this->tileSelector->usedTiles[prevMetatile->tiles[tileIndex].tileId] -= 1;
+                }
             }
             selectedTileIndex++;
         }
@@ -462,6 +481,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
 
     this->metatileSelector->draw();
     this->metatileLayersItem->draw();
+    this->tileSelector->draw();
     this->commitMetatileChange(prevMetatile);
 }
 
@@ -1049,7 +1069,7 @@ void TilesetEditor::on_actionShow_Tileset_Divider_triggered(bool checked) {
 
 void TilesetEditor::countMetatileUsage() {
     // do not double count
-    metatileSelector->usedMetatiles.fill(0);
+    this->metatileSelector->usedMetatiles.fill(0);
 
     for (auto layout : this->project->mapLayouts.values()) {
         bool usesPrimary = false;

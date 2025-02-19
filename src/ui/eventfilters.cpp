@@ -24,3 +24,12 @@ bool MapSceneEventFilter::eventFilter(QObject*, QEvent *event) {
     }
     return false;
 }
+
+
+
+bool ActiveWindowFilter::eventFilter(QObject*, QEvent *event) {
+    if (event->type() == QEvent::WindowActivate) {
+        emit activated();
+    }
+    return false;
+}
