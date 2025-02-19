@@ -155,6 +155,7 @@ Event *ObjectEvent::duplicate() const {
     copy->setX(this->getX());
     copy->setY(this->getY());
     copy->setElevation(this->getElevation());
+    copy->setIdName(this->getIdName());
     copy->setGfx(this->getGfx());
     copy->setMovement(this->getMovement());
     copy->setRadiusX(this->getRadiusX());
@@ -182,6 +183,9 @@ OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     if (projectConfig.eventCloneObjectEnabled) {
         objectJson["type"] = "object";
     }
+    QString idName = this->getIdName();
+    if (!idName.isEmpty())
+        objectJson["local_id"] = idName;
     objectJson["graphics_id"] = this->getGfx();
     objectJson["x"] = this->getX();
     objectJson["y"] = this->getY();
@@ -202,6 +206,7 @@ bool ObjectEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setIdName(ParseUtil::jsonToQString(json["local_id"]));
     this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
     this->setMovement(ParseUtil::jsonToQString(json["movement_type"]));
     this->setRadiusX(ParseUtil::jsonToInt(json["movement_range_x"]));
@@ -229,6 +234,7 @@ void ObjectEvent::setDefaultValues(Project *project) {
 }
 
 const QSet<QString> expectedObjectFields = {
+    "local_id",
     "graphics_id",
     "elevation",
     "movement_type",
@@ -334,6 +340,7 @@ Event *CloneObjectEvent::duplicate() const {
     copy->setX(this->getX());
     copy->setY(this->getY());
     copy->setElevation(this->getElevation());
+    copy->setIdName(this->getIdName());
     copy->setGfx(this->getGfx());
     copy->setTargetID(this->getTargetID());
     copy->setTargetMap(this->getTargetMap());
@@ -354,6 +361,9 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     OrderedJson::object cloneJson;
 
     cloneJson["type"] = "clone";
+    QString idName = this->getIdName();
+    if (!idName.isEmpty())
+        cloneJson["local_id"] = idName;
     cloneJson["graphics_id"] = this->getGfx();
     cloneJson["x"] = this->getX();
     cloneJson["y"] = this->getY();
@@ -368,6 +378,7 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
 bool CloneObjectEvent::loadFromJson(const QJsonObject &json, Project *project) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setIdName(ParseUtil::jsonToQString(json["local_id"]));
     this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
     this->setTargetID(ParseUtil::jsonToInt(json["target_local_id"]));
 
@@ -390,6 +401,7 @@ void CloneObjectEvent::setDefaultValues(Project *project) {
 
 const QSet<QString> expectedCloneObjectFields = {
     "type",
+    "local_id",
     "graphics_id",
     "target_local_id",
     "target_map",
