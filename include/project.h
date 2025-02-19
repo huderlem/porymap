@@ -71,7 +71,7 @@ public:
     QMap<QString, QString> facingDirections;
     ParseUtil parser;
     QFileSystemWatcher fileWatcher;
-    QMap<QString, qint64> modifiedFileTimestamps;
+    QSet<QString> modifiedFiles;
     bool usingAsmTilesets;
     QSet<QString> disabledSettingsNames;
     QSet<QString> topLevelMapFields;
@@ -252,6 +252,7 @@ public:
 
 private:
     QMap<QString, QString> mapSectionDisplayNames;
+    QMap<QString, qint64> modifiedFileTimestamps;
 
     void updateLayout(Layout *);
 
@@ -259,6 +260,7 @@ private:
     void setNewLayoutBorder(Layout *layout);
 
     void ignoreWatchedFileTemporarily(QString filepath);
+    void recordFileChange(const QString &filepath);
 
     static int num_tiles_primary;
     static int num_tiles_total;
@@ -270,7 +272,7 @@ private:
     static int max_object_events;
 
 signals:
-    void fileChanged(QString filepath);
+    void fileChanged(const QString &filepath);
     void mapLoaded(Map *map);
     void mapCreated(Map *newMap, const QString &groupName);
     void layoutCreated(Layout *newLayout);
