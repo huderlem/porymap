@@ -157,6 +157,7 @@ public:
 
     void initTopLevelMapFields();
     bool readMapJson(const QString &mapName, QJsonDocument * out);
+    bool loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType = Event::Type::None);
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);

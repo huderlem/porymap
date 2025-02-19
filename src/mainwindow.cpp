@@ -1039,7 +1039,7 @@ void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_
         }
     }
     // Can still warp to this map, but can't select the specified event
-    logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::eventGroupToString(event_group)).arg(event_id).arg(map_name));
+    logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::groupToString(event_group)).arg(event_id).arg(map_name));
 }
 
 void MainWindow::displayMapProperties() {
@@ -1639,7 +1639,7 @@ void MainWindow::copy() {
                 for (auto item : events) {
                     Event *event = item->event;
                     OrderedJson::object eventContainer;
-                    eventContainer["event_type"] = Event::eventTypeToString(event->getEventType());
+                    eventContainer["event_type"] = Event::typeToString(event->getEventType());
                     OrderedJson::object eventJson = event->buildEventJson(editor->project);
                     eventContainer["event"] = eventJson;
                     eventsArray.append(eventContainer);
@@ -1751,7 +1751,7 @@ void MainWindow::paste() {
                 for (QJsonValue event : events) {
                     // paste the event to the map
                     const QString typeString = event["event_type"].toString();
-                    Event::Type type = Event::eventTypeFromString(typeString);
+                    Event::Type type = Event::typeFromString(typeString);
 
                     if (this->editor->eventLimitReached(type)) {
                         logWarn(QString("Cannot paste event, the limit for type '%1' has been reached.").arg(typeString));
@@ -2009,7 +2009,7 @@ void MainWindow::addNewEvent(Event::Type type) {
 void MainWindow::tryAddEventTab(QWidget * tab) {
     auto group = getEventGroupFromTabWidget(tab);
     if (editor->map->getNumEvents(group))
-        ui->tabWidget_EventType->addTab(tab, QString("%1s").arg(Event::eventGroupToString(group)));
+        ui->tabWidget_EventType->addTab(tab, QString("%1s").arg(Event::groupToString(group)));
 }
 
 void MainWindow::displayEventTabs() {

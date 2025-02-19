@@ -75,70 +75,36 @@ void Event::modify() {
     this->map->modify();
 }
 
-QString Event::eventGroupToString(Event::Group group) {
-    switch (group) {
-    case Event::Group::Object:
-        return "Object";
-    case Event::Group::Warp:
-        return "Warp";
-    case Event::Group::Coord:
-        return "Trigger";
-    case Event::Group::Bg:
-        return "BG";
-    case Event::Group::Heal:
-        return "Heal Location";
-    default:
-        return "";
-    }
+const QMap<Event::Group, QString> groupToStringMap = {
+    {Event::Group::Object, "Object"},
+    {Event::Group::Warp, "Warp"},
+    {Event::Group::Coord, "Trigger"},
+    {Event::Group::Bg, "BG"},
+    {Event::Group::Heal, "Heal Location"},
+};
+
+QString Event::groupToString(Event::Group group) {
+    return groupToStringMap.value(group);
 }
 
-QString Event::eventTypeToString(Event::Type type) {
-    switch (type) {
-    case Event::Type::Object:
-        return "event_object";
-    case Event::Type::CloneObject:
-        return "event_clone_object";
-    case Event::Type::Warp:
-        return "event_warp";
-    case Event::Type::Trigger:
-        return "event_trigger";
-    case Event::Type::WeatherTrigger:
-        return "event_weather_trigger";
-    case Event::Type::Sign:
-        return "event_sign";
-    case Event::Type::HiddenItem:
-        return "event_hidden_item";
-    case Event::Type::SecretBase:
-        return "event_secret_base";
-    case Event::Type::HealLocation:
-        return "event_heal_location";
-    default:
-        return "";
-    }
+const QMap<Event::Type, QString> typeToStringMap = {
+    {Event::Type::Object, "object"},
+    {Event::Type::CloneObject, "clone_object"},
+    {Event::Type::Warp, "warp"},
+    {Event::Type::Trigger, "trigger"},
+    {Event::Type::WeatherTrigger, "weather"},
+    {Event::Type::Sign, "sign"},
+    {Event::Type::HiddenItem, "hidden_item"},
+    {Event::Type::SecretBase, "secret_base"},
+    {Event::Type::HealLocation, "heal_location"},
+};
+
+QString Event::typeToString(Event::Type type) {
+    return typeToStringMap.value(type);
 }
 
-Event::Type Event::eventTypeFromString(QString type) {
-    if (type == "event_object") {
-        return Event::Type::Object;
-    } else if (type == "event_clone_object") {
-        return Event::Type::CloneObject;
-    } else if (type == "event_warp") {
-        return Event::Type::Warp;
-    } else if (type == "event_trigger") {
-        return Event::Type::Trigger;
-    } else if (type == "event_weather_trigger") {
-        return Event::Type::WeatherTrigger;
-    } else if (type == "event_sign") {
-        return Event::Type::Sign;
-    } else if (type == "event_hidden_item") {
-        return Event::Type::HiddenItem;
-    } else if (type == "event_secret_base") {
-        return Event::Type::SecretBase;
-    } else if (type == "event_heal_location") {
-        return Event::Type::HealLocation;
-    } else {
-        return Event::Type::None;
-    }
+Event::Type Event::typeFromString(QString type) {
+    return typeToStringMap.key(type, Event::Type::None);
 }
 
 void Event::loadPixmap(Project *) {

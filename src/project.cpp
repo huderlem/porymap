@@ -203,6 +203,21 @@ bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
     return true;
 }
 
+bool Project::loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType) {
+    QString typeString = ParseUtil::jsonToQString(json["type"]);
+    Event::Type type = typeString.isEmpty() ? defaultType : Event::typeFromString(typeString);
+    Event* event = Event::create(type);
+    if (!event) {
+        return false;
+    }
+    if (!event->loadFromJson(json, this)) {
+        delete event;
+        return false;
+    }
+    map->addEvent(event);
+    return true;
+}
+
 bool Project::loadMapData(Map* map) {
     if (!map->isPersistedToFile()) {
         return true;
@@ -241,75 +256,22 @@ bool Project::loadMapData(Map* map) {
 
     // Events
     map->resetEvents();
-    QJsonArray objectEventsArr = mapObj["object_events"].toArray();
-    for (int i = 0; i < objectEventsArr.size(); i++) {
-        QJsonObject event = objectEventsArr[i].toObject();
-        // If clone objects are not enabled then no type field is present
-        QString type = projectConfig.eventCloneObjectEnabled ? ParseUtil::jsonToQString(event["type"]) : "object";
-        if (type.isEmpty() || type == "object") {
-            ObjectEvent *object = new ObjectEvent();
-            object->loadFromJson(event, this);
-            map->addEvent(object);
-        } else if (type == "clone") {
-            CloneObjectEvent *clone = new CloneObjectEvent();
-            if (clone->loadFromJson(event, this)) {
-                map->addEvent(clone);
+    static const QMap<QString, Event::Type> defaultEventTypes = {
+        // Map of the expected keys for each event group, and the default type of that group.
+        // If the default type is Type::None then each event must specify its type, or its an error.
+        {"object_events", Event::Type::Object},
+        {"warp_events",   Event::Type::Warp},
+        {"coord_events",  Event::Type::None},
+        {"bg_events",     Event::Type::None},
+    };
+    for (auto i = defaultEventTypes.constBegin(); i != defaultEventTypes.constEnd(); i++) {
+        QString eventGroupKey = i.key();
+        Event::Type defaultType = i.value();
+        const QJsonArray eventsJsonArr = mapObj[eventGroupKey].toArray();
+        for (int i = 0; i < eventsJsonArr.size(); i++) {
+            if (!loadMapEvent(map, eventsJsonArr.at(i).toObject(), defaultType)) {
+                logError(QString("Failed to load event for %1, in %2 at index %3.").arg(map->name()).arg(eventGroupKey).arg(i));
             }
-            else {
-                delete clone;
-            }
-        } else {
-            logError(QString("Map %1 object_event %2 has invalid type '%3'. Must be 'object' or 'clone'.").arg(map->name()).arg(i).arg(type));
-        }
-    }
-
-    QJsonArray warpEventsArr = mapObj["warp_events"].toArray();
-    for (int i = 0; i < warpEventsArr.size(); i++) {
-        QJsonObject event = warpEventsArr[i].toObject();
-        WarpEvent *warp = new WarpEvent();
-        if (warp->loadFromJson(event, this)) {
-            map->addEvent(warp);
-        }
-        else {
-            delete warp;
-        }
-    }
-
-    QJsonArray coordEventsArr = mapObj["coord_events"].toArray();
-    for (int i = 0; i < coordEventsArr.size(); i++) {
-        QJsonObject event = coordEventsArr[i].toObject();
-        QString type = ParseUtil::jsonToQString(event["type"]);
-        if (type == "trigger") {
-            TriggerEvent *coord = new TriggerEvent();
-            coord->loadFromJson(event, this);
-            map->addEvent(coord);
-        } else if (type == "weather") {
-            WeatherTriggerEvent *coord = new WeatherTriggerEvent();
-            coord->loadFromJson(event, this);
-            map->addEvent(coord);
-        } else {
-            logError(QString("Map %1 coord_event %2 has invalid type '%3'. Must be 'trigger' or 'weather'.").arg(map->name()).arg(i).arg(type));
-        }
-    }
-
-    QJsonArray bgEventsArr = mapObj["bg_events"].toArray();
-    for (int i = 0; i < bgEventsArr.size(); i++) {
-        QJsonObject event = bgEventsArr[i].toObject();
-        QString type = ParseUtil::jsonToQString(event["type"]);
-        if (type == "sign") {
-            SignEvent *bg = new SignEvent();
-            bg->loadFromJson(event, this);
-            map->addEvent(bg);
-        } else if (type == "hidden_item") {
-            HiddenItemEvent *bg = new HiddenItemEvent();
-            bg->loadFromJson(event, this);
-            map->addEvent(bg);
-        } else if (type == "secret_base") {
-            SecretBaseEvent *bg = new SecretBaseEvent();
-            bg->loadFromJson(event, this);
-            map->addEvent(bg);
-        } else {
-            logError(QString("Map %1 bg_event %2 has invalid type '%3'. Must be 'sign', 'hidden_item', or 'secret_base'.").arg(map->name()).arg(i).arg(type));
         }
     }
 
