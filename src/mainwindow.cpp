@@ -1565,6 +1565,15 @@ void MainWindow::save(bool currentOnly) {
     }
     updateWindowTitle();
     updateMapList();
+
+    if (!porymapConfig.shownInGameReloadMessage) {
+        // Show a one-time warning that the user may need to reload their map to see their new changes.
+        static const QString message = QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
+                                                      "the changes may not appear until you leave the map and return.");
+        InfoMessage::show(message, this);
+        porymapConfig.shownInGameReloadMessage = true;
+    }
+
     saveGlobalConfigs();
 }
 

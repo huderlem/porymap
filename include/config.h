@@ -87,6 +87,7 @@ public:
         this->lastUpdateCheckVersion = porymapVersion;
         this->rateLimitTimes.clear();
         this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
+        this->shownInGameReloadMessage = false;
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -146,6 +147,7 @@ public:
     QByteArray wildMonChartGeometry;
     QByteArray newMapDialogGeometry;
     QByteArray newLayoutDialogGeometry;
+    bool shownInGameReloadMessage;
 
 protected:
     virtual QString getConfigFilepath() override;

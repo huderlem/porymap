@@ -422,6 +422,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         } else {
             logWarn(QString("Invalid config value for %1: '%2'. Must be 'mask' or 'bounding_rect'.").arg(key).arg(value));
         }
+    } else if (key == "shown_in_game_reload_message") {
+        this->shownInGameReloadMessage = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -492,6 +494,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
             map.insert("rate_limit_time/" + i.key().toString(), time.toUTC().toString());
     }
     map.insert("event_selection_shape_mode", (this->eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) ? "mask" : "bounding_rect");
+    map.insert("shown_in_game_reload_message", this->shownInGameReloadMessage ? "1" : "0");
     
     return map;
 }
