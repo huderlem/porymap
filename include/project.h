@@ -167,13 +167,13 @@ public:
     void loadTilesetMetatileLabels(Tileset*);
     void readTilesetPaths(Tileset* tileset);
 
+    void saveAll();
+    void saveGlobalData();
     void saveLayout(Layout *);
     void saveLayoutBlockdata(Layout *);
     void saveLayoutBorder(Layout *);
     void writeBlockdata(QString, const Blockdata &);
-    void saveAllMaps();
-    void saveMap(Map *);
-    void saveAllDataStructures();
+    void saveMap(Map *map, bool skipLayout = false);
     void saveConfig();
     void saveMapLayouts();
     void saveMapGroups();

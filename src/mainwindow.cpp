@@ -1307,12 +1307,6 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
         addNewEvent(Event::Type::HealLocation);
     }
 
-    // TODO: Creating a new map shouldn't be automatically saved.
-    //       For one, it takes away the option to discard the new map.
-    //       For two, if the new map uses an existing layout, any unsaved changes to that layout will also be saved.
-    editor->project->saveMap(newMap);
-    editor->project->saveAllDataStructures();
-
     // Add new map to the map lists
     this->mapGroupModel->insertMapItem(newMap->name(), groupName);
     this->mapLocationModel->insertMapItem(newMap->name(), newMap->header()->location());
@@ -1328,7 +1322,12 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
         ui->comboBox_EmergeMap->insertItem(mapIndex, newMap->name());
     }
 
-    userSetMap(newMap->name());
+    if (userSetMap(newMap->name())) {
+        // TODO: Creating a new map shouldn't be automatically saved.
+        //       For one, it takes away the option to discard the new map.
+        //       For two, if the new map uses an existing layout, any unsaved changes to that layout will also be saved.
+        save(true);
+    }
 }
 
 // Called any time a new layout is created (including as a byproduct of creating a new map)
@@ -1551,14 +1550,19 @@ void MainWindow::updateMapList() {
 }
 
 void MainWindow::on_action_Save_Project_triggered() {
-    editor->saveProject();
-    updateWindowTitle();
-    updateMapList();
-    saveGlobalConfigs();
+    save(false);
 }
 
 void MainWindow::on_action_Save_triggered() {
-    editor->save();
+    save(true);
+}
+
+void MainWindow::save(bool currentOnly) {
+    if (currentOnly) {
+        this->editor->saveCurrent();
+    } else {
+        this->editor->saveAll();
+    }
     updateWindowTitle();
     updateMapList();
     saveGlobalConfigs();
@@ -3008,7 +3012,7 @@ bool MainWindow::closeProject() {
 
         auto reply = msgBox.exec();
         if (reply == QMessageBox::Yes) {
-            editor->saveProject();
+            save();
         } else if (reply == QMessageBox::No) {
             logWarn("Closing project with unsaved changes.");
         } else if (reply == QMessageBox::Cancel) {
