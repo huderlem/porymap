@@ -81,6 +81,7 @@ public:
         this->projectSettingsTab = 0;
         this->warpBehaviorWarningDisabled = false;
         this->eventDeleteWarningDisabled = false;
+        this->eventOverlayEnabled = false;
         this->checkForUpdates = true;
         this->lastUpdateCheckTime = QDateTime();
         this->lastUpdateCheckVersion = porymapVersion;
@@ -136,6 +137,7 @@ public:
     int projectSettingsTab;
     bool warpBehaviorWarningDisabled;
     bool eventDeleteWarningDisabled;
+    bool eventOverlayEnabled;
     bool checkForUpdates;
     QDateTime lastUpdateCheckTime;
     QVersionNumber lastUpdateCheckVersion;

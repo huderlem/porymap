@@ -394,6 +394,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else if (key == "event_delete_warning_disabled") {
         this->eventDeleteWarningDisabled = getConfigBool(key, value);
+    } else if (key == "event_overlay_enabled") {
+        this->eventOverlayEnabled = getConfigBool(key, value);
     } else if (key == "check_for_updates") {
         this->checkForUpdates = getConfigBool(key, value);
     } else if (key == "last_update_check_time") {
@@ -479,6 +481,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
     map.insert("event_delete_warning_disabled", QString::number(this->eventDeleteWarningDisabled));
+    map.insert("event_overlay_enabled", QString::number(this->eventOverlayEnabled));
     map.insert("check_for_updates", QString::number(this->checkForUpdates));
     map.insert("last_update_check_time", this->lastUpdateCheckTime.toUTC().toString());
     map.insert("last_update_check_version", this->lastUpdateCheckVersion.toString());

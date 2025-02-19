@@ -261,6 +261,7 @@ private slots:
 
     void on_checkBox_MirrorConnections_stateChanged(int selected);
     void on_actionDive_Emerge_Map_triggered();
+    void on_actionShow_Events_In_Map_View_triggered();
     void on_groupBox_DiveMapOpacity_toggled(bool on);
     void on_slider_DiveEmergeMapOpacity_valueChanged(int value);
     void on_slider_DiveMapOpacity_valueChanged(int value);
