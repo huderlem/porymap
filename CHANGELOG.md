@@ -15,6 +15,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add a search button to the `Wild Pokémon` tab that shows the encounter data for a species across all maps.
 - Add charts to the `Wild Pokémon` tab that show species and level distributions for the current map.
 - Add options for customizing the map grid under `View -> Grid Settings`.
+- Add an option to display Event sprites while editing the map.
 - Add an option to display a dividing line between tilesets in the Tileset Editor.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
@@ -40,6 +41,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Map names and ``MAP_NAME`` constants are no longer required to match.
 - Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
 - Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
+- The prompt to reload the project when a file has changed will now only appear when Porymap is the active application.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
