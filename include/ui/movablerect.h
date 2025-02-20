@@ -15,8 +15,8 @@ public:
         qreal penWidth = 4;
         return QRectF(-penWidth,
                       -penWidth,
-                      30 * 8 + penWidth * 2,
-                      20 * 8 + penWidth * 2);
+                      this->rect().width() + penWidth * 2,
+                      this->rect().height() + penWidth * 2);
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {

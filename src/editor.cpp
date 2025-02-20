@@ -1061,6 +1061,18 @@ void Editor::scaleMapView(int s) {
     ui->graphicsView_Connections->setTransform(transform);
 }
 
+void Editor::setPlayerViewSize(const QSize &size) {
+    if (!this->playerViewRect)
+        return;
+
+    auto rect = this->playerViewRect->rect();
+    rect.setWidth(qMax(size.width(), 16));
+    rect.setHeight(qMax(size.height(), 16));
+    this->playerViewRect->setRect(rect);
+    if (ui->graphicsView_Map->scene())
+        ui->graphicsView_Map->scene()->update();
+}
+
 void Editor::updateCursorRectPos(int x, int y) {
     if (this->playerViewRect)
         this->playerViewRect->updateLocation(x, y);
@@ -2338,8 +2350,8 @@ void Editor::setCollisionGraphics() {
 
     // Users are not required to provide an image that gives an icon for every elevation/collision combination.
     // Instead they tell us how many are provided in their image by specifying the number of columns and rows.
-    const int imgColumns = projectConfig.collisionSheetWidth;
-    const int imgRows = projectConfig.collisionSheetHeight;
+    const int imgColumns = projectConfig.collisionSheetSize.width();
+    const int imgRows = projectConfig.collisionSheetSize.height();
 
     // Create a pixmap for the selector on the Collision tab. If a project was previously opened we'll also need to refresh the selector.
     this->collisionSheetPixmap = QPixmap::fromImage(imgSheet).scaled(MovementPermissionsSelector::CellWidth * imgColumns,

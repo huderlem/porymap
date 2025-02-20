@@ -3268,8 +3268,8 @@ void Project::applyParsedLimits() {
     projectConfig.defaultMetatileId = qMin(projectConfig.defaultMetatileId, Block::getMaxMetatileId());
     projectConfig.defaultElevation = qMin(projectConfig.defaultElevation, Block::getMaxElevation());
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
-    projectConfig.collisionSheetHeight = qMin(qMax(projectConfig.collisionSheetHeight, 1), Block::getMaxElevation() + 1);
-    projectConfig.collisionSheetWidth = qMin(qMax(projectConfig.collisionSheetWidth, 1), Block::getMaxCollision() + 1);
+    projectConfig.collisionSheetSize.setHeight(qMin(qMax(projectConfig.collisionSheetSize.height(), 1), Block::getMaxElevation() + 1));
+    projectConfig.collisionSheetSize.setWidth(qMin(qMax(projectConfig.collisionSheetSize.width(), 1), Block::getMaxCollision() + 1));
 }
 
 bool Project::hasUnsavedChanges() {

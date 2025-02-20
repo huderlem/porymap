@@ -281,6 +281,49 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_PlayerViewSize">
+              <property name="title">
+               <string>Player View Size</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_PlayerViewSize">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_PlayerViewWidth">
+                 <property name="text">
+                  <string>Width</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_PlayerViewWidth">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The horizontal size in pixels of the area that the player can see in-game (normally, the full width of the GBA screen).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="minimum">
+                  <number>16</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_PlayerViewHeight">
+                 <property name="text">
+                  <string>Height</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_PlayerViewHeight">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The vertical size in pixels of the area that the player can see in-game (normally, the full height of the GBA screen).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="minimum">
+                  <number>16</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QFrame" name="frame_Warning">
               <property name="styleSheet">
                <string notr="true">.QFrame { border: 1px solid red; }</string>

@@ -331,8 +331,8 @@ public:
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
         this->collisionSheetPath = QString();
-        this->collisionSheetWidth = 2;
-        this->collisionSheetHeight = 16;
+        this->collisionSheetSize = QSize(2, 16);
+        this->playerViewSize = QSize(240, 160);
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
@@ -408,8 +408,8 @@ public:
     uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
     QString collisionSheetPath;
-    int collisionSheetWidth;
-    int collisionSheetHeight;
+    QSize collisionSheetSize;
+    QSize playerViewSize;
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
 

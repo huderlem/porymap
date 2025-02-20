@@ -832,9 +832,13 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
-        this->collisionSheetWidth = getConfigUint32(key, value, 1, Block::maxValue);
+        this->collisionSheetSize.setWidth(getConfigInteger(key, value, 1, Block::maxValue));
     } else if (key == "collision_sheet_height") {
-        this->collisionSheetHeight = getConfigUint32(key, value, 1, Block::maxValue);
+        this->collisionSheetSize.setHeight(getConfigInteger(key, value, 1, Block::maxValue));
+    } else if (key == "player_view_width") {
+        this->playerViewSize.setWidth(getConfigInteger(key, value, 16, INT_MAX, 240));
+    } else if (key == "player_view_height") {
+        this->playerViewSize.setHeight(getConfigInteger(key, value, 16, INT_MAX, 160));
     } else if (key == "warp_behaviors") {
         this->warpBehaviors.clear();
         value.remove(" ");
@@ -935,8 +939,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
         map.insert("ident/"+defaultIdentifiers.value(i.key()).first, i.value());
     }
     map.insert("collision_sheet_path", this->collisionSheetPath);
-    map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
-    map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
+    map.insert("collision_sheet_width", QString::number(this->collisionSheetSize.width()));
+    map.insert("collision_sheet_height", QString::number(this->collisionSheetSize.height()));
+    map.insert("player_view_width", QString::number(this->playerViewSize.width()));
+    map.insert("player_view_height", QString::number(this->playerViewSize.height()));
     QStringList warpBehaviorStrs;
     for (const auto &value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
