@@ -45,7 +45,7 @@ bool NumericSortProxyModel::lessThan(const QModelIndex &source_left, const QMode
 
     if (l.canConvert<QString>() && r.canConvert<QString>()) {
         // We need to override lexical comparison of strings to do a numeric sort.
-        QCollator collator;
+        static QCollator collator;
         collator.setNumericMode(true);
         return collator.compare(l.toString(), r.toString()) < 0;
     }

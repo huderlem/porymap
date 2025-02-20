@@ -1127,14 +1127,12 @@ bool MainWindow::setProjectUI() {
     this->locationListProxyModel = new FilterChildrenProxyModel();
     locationListProxyModel->setSourceModel(this->mapLocationModel);
     ui->locationList->setModel(locationListProxyModel);
-    ui->locationList->setSortingEnabled(true);
     ui->locationList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
     ui->layoutList->setModel(layoutListProxyModel);
-    ui->layoutList->setSortingEnabled(true);
     ui->layoutList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     ui->mapCustomAttributesFrame->table()->setRestrictedKeys(project->topLevelMapFields);
