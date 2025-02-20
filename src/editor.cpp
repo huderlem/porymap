@@ -1670,7 +1670,7 @@ void Editor::displayMapEvents() {
 }
 
 DraggablePixmapItem *Editor::addEventPixmapItem(Event *event) {
-    this->project->setEventPixmap(event);
+    this->project->loadEventPixmap(event);
     auto item = new DraggablePixmapItem(event, this);
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
@@ -1955,13 +1955,13 @@ qreal Editor::getEventOpacity(const Event *event) const {
     // - On the Events tab, and the event has a custom sprite (1.0)
     if (this->editMode != EditMode::Events)
         return porymapConfig.eventOverlayEnabled ? 0.5 : 0.0;
-    return event->getUsingSprite() ? 1.0 : 0.7;
+    return event->getUsesDefaultPixmap() ? 0.7 : 1.0;
 }
 
 void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
     if (item && item->event && !item->event->getPixmap().isNull()) {
         item->setOpacity(getEventOpacity(item->event));
-        project->setEventPixmap(item->event, true);
+        project->loadEventPixmap(item->event, true);
         item->setPixmap(item->event->getPixmap());
         item->setShapeMode(porymapConfig.eventSelectionShapeMode);
 

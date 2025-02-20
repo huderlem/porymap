@@ -517,7 +517,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
              || (m_settings.showBGs && group == Event::Group::Bg)
              || (m_settings.showTriggers && group == Event::Group::Coord)
              || (m_settings.showHealLocations && group == Event::Group::Heal)) {
-                m_editor->project->setEventPixmap(event);
+                m_editor->project->loadEventPixmap(event);
                 eventPainter.drawImage(QPoint(event->getPixelX() + pixelOffset, event->getPixelY() + pixelOffset), event->getPixmap().toImage());
             }
         }

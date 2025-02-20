@@ -45,7 +45,6 @@ public:
     QStringList layoutIdsMaster;
     QMap<QString, Layout*> mapLayouts;
     QMap<QString, Layout*> mapLayoutsMaster;
-    QMap<QString, EventGraphics*> eventGraphicsMap;
     QMap<QString, int> gfxDefines;
     QString defaultSong;
     QStringList songNames;
@@ -68,7 +67,6 @@ public:
     QMap<QString, uint16_t> unusedMetatileLabels;
     QMap<QString, uint32_t> metatileBehaviorMap;
     QMap<uint32_t, QString> metatileBehaviorMapInverse;
-    QMap<QString, QString> facingDirections;
     ParseUtil parser;
     QFileSystemWatcher fileWatcher;
     QSet<QString> modifiedFiles;
@@ -210,7 +208,10 @@ public:
     bool readFieldmapMasks();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
-    void setEventPixmap(Event *event, bool forceLoad = false);
+    QPixmap getEventPixmap(const QString &gfxName, const QString &movementName);
+    QPixmap getEventPixmap(const QString &gfxName, int frame, bool hFlip);
+    QPixmap getEventPixmap(Event::Group group);
+    void loadEventPixmap(Event *event, bool forceLoad = false);
 
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
@@ -254,6 +255,18 @@ public:
 private:
     QMap<QString, QString> mapSectionDisplayNames;
     QMap<QString, qint64> modifiedFileTimestamps;
+    QMap<QString, QString> facingDirections;
+
+    struct EventGraphics
+    {
+        QString filepath;
+        bool loaded = false;
+        QImage spritesheet;
+        int spriteWidth = -1;
+        int spriteHeight = -1;
+        bool inanimate = false;
+    };
+    QMap<QString, EventGraphics*> eventGraphicsMap;
 
     void updateLayout(Layout *);
 
