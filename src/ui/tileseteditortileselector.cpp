@@ -304,7 +304,7 @@ void TilesetEditorTileSelector::drawUnused() {
     unusedPainter.setOpacity(0.5);
 
     for (int tile = 0; tile < this->usedTiles.size(); tile++) {
-        if (!usedTiles[tile]) {
+        if (!this->usedTiles[tile]) {
             unusedPainter.drawPixmap((tile % 16) * 16, (tile / 16) * 16, redX);
         }
     }
