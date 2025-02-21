@@ -1103,7 +1103,6 @@ bool MainWindow::setProjectUI() {
     ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.eventSecretBaseEnabled);
     ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.eventCloneObjectEnabled);
 
-    Event::setIcons();
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
@@ -1161,8 +1160,6 @@ void MainWindow::clearProjectUI() {
     delete this->layoutTreeModel;
     delete this->layoutListProxyModel;
     resetMapListFilters();
-
-    Event::clearIcons();
 }
 
 void MainWindow::scrollMapList(MapTree *list, const QString &itemName) {

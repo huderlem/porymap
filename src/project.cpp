@@ -44,6 +44,7 @@ Project::~Project()
     clearMapLayouts();
     clearEventGraphics();
     clearHealLocations();
+    QPixmapCache::clear();
 }
 
 void Project::set_root(QString dir) {
@@ -2768,6 +2769,12 @@ QPixmap Project::getEventPixmap(const QString &gfxName, const QString &movementN
 }
 
 QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
+    QPixmap pixmap;
+    const QString cacheKey = QString("EVENT#%1#%2#%3").arg(gfxName).arg(frame).arg(hFlip ? "1" : "0");
+    if (QPixmapCache::find(cacheKey, &pixmap)) {
+        return pixmap;
+    }
+
     EventGraphics* gfx = this->eventGraphicsMap.value(gfxName, nullptr);
     if (!gfx) {
         // Invalid gfx constant. If this is a number, try to use that instead.
@@ -2823,15 +2830,44 @@ QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
     }
     // Set first palette color fully transparent.
     img.setColor(0, qRgba(0, 0, 0, 0));
-    QPixmap pixmap = QPixmap::fromImage(img);
 
-    // TODO: Cache?
+    pixmap = QPixmap::fromImage(img);
+    QPixmapCache::insert(cacheKey, pixmap);
     return pixmap;
 }
 
-QPixmap Project::getEventPixmap(Event::Group) {
-    // TODO
-    return QPixmap();
+QPixmap Project::getEventPixmap(Event::Group group) {
+    if (group == Event::Group::None)
+        return QPixmap();
+
+    QPixmap pixmap;
+    const QString cacheKey = QString("EVENT#%1").arg(Event::groupToString(group));
+    if (QPixmapCache::find(cacheKey, &pixmap)) {
+        return pixmap;
+    }
+
+    const int defaultWidth = 16;
+    const int defaultHeight = 16;
+    static const QPixmap defaultIcons = QPixmap(":/images/Entities_16x16.png");
+    QPixmap defaultIcon = QPixmap(defaultIcons.copy(static_cast<int>(group) * defaultWidth, 0, defaultWidth, defaultHeight));
+
+    // Custom event icons may be provided by the user.
+    QString customIconPath = projectConfig.getEventIconPath(group);
+    if (customIconPath.isEmpty()) {
+        // No custom icon specified, use the default icon.
+        pixmap = defaultIcon;
+    } else {
+        // Try to load custom icon
+        QString validPath = Project::getExistingFilepath(customIconPath);
+        if (!validPath.isEmpty()) customIconPath = validPath; // Otherwise allow it to fail with the original path
+        pixmap = QPixmap(customIconPath);
+        if (pixmap.isNull()) {
+            pixmap = defaultIcon;
+            logWarn(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
+        }
+    }
+    QPixmapCache::insert(cacheKey, pixmap);
+    return pixmap;
 }
 
 bool Project::readSpeciesIconPaths() {

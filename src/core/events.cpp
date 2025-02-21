@@ -4,8 +4,6 @@
 #include "project.h"
 #include "config.h"
 
-QMap<Event::Group, const QPixmap*> Event::icons;
-
 Event* Event::create(Event::Type type) {
     switch (type) {
     case Event::Type::Object: return new ObjectEvent();
@@ -108,46 +106,10 @@ Event::Type Event::typeFromString(QString type) {
 }
 
 void Event::loadPixmap(Project *project) {
-    const QPixmap * pixmap = Event::icons.value(this->getEventGroup());
-    this->pixmap = pixmap ? *pixmap : QPixmap();
+    this->pixmap = project->getEventPixmap(this->getEventGroup());
     this->usesDefaultPixmap = true;
 }
 
-void Event::clearIcons() {
-    qDeleteAll(icons);
-    icons.clear();
-}
-
-void Event::setIcons() {
-    clearIcons();
-    const int w = 16;
-    const int h = 16;
-    static const QPixmap defaultIcons = QPixmap(":/images/Entities_16x16.png");
-
-    // Custom event icons may be provided by the user.
-    const int numIcons = qMin(defaultIcons.width() / w, static_cast<int>(Event::Group::None));
-    for (int i = 0; i < numIcons; i++) {
-        Event::Group group = static_cast<Event::Group>(i);
-        QString customIconPath = projectConfig.getEventIconPath(group);
-        if (customIconPath.isEmpty()) {
-            // No custom icon specified, use the default icon.
-            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
-            continue;
-        }
-
-        // Try to load custom icon
-        QString validPath = Project::getExistingFilepath(customIconPath);
-        if (!validPath.isEmpty()) customIconPath = validPath; // Otherwise allow it to fail with the original path
-        const QPixmap customIcon = QPixmap(customIconPath);
-        if (customIcon.isNull()) {
-            // Custom icon failed to load, use the default icon.
-            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
-            logWarn(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
-        } else {
-            icons[group] = new QPixmap(customIcon.scaled(w, h));
-        }
-    }
-}
 
 
 Event *ObjectEvent::duplicate() const {

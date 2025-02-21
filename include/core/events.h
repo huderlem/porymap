@@ -107,8 +107,6 @@ public:
 
     static Event* create(Event::Type type);
 
-    static QMap<Event::Group, const QPixmap*> icons;
-
 // standard public methods
 public:
 
@@ -171,8 +169,6 @@ public:
     static QString groupToString(Event::Group group);
     static QString typeToString(Event::Type type);
     static Event::Type typeFromString(QString type);
-    static void clearIcons();
-    static void setIcons();
 
 // protected attributes
 protected:
