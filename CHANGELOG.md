@@ -84,6 +84,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix certain input fields allowing invalid identifiers, like names starting with numbers.
 - Fix crash in the Shortcuts Editor when applying changes after closing certain windows.
 - Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
+- The Metatile / Tile usage counts in the Tileset Editor now update to reflect changes.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
