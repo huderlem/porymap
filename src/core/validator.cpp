@@ -10,10 +10,17 @@ bool PrefixValidator::missingPrefix(const QString &input) const {
 
 QValidator::State PrefixValidator::validate(QString &input, int &pos) const {
     auto state = QRegularExpressionValidator::validate(input, pos);
-    if (state == QValidator::Acceptable) {
-        // This input could be valid. If there's a prefix we should require it now.
-        if (missingPrefix(input))
+    if (missingPrefix(input)) {
+        if (state == QValidator::Acceptable) {
+            // If the input was valid, it should be intermediate because it's missing the prefix.
             state = QValidator::Intermediate;
+        } else if (state == QValidator::Invalid) {
+            // If the input was invalid, we should check if it could become valid once it has the prefix.
+            QString withPrefix = m_prefix + input;
+            if (QRegularExpressionValidator::validate(withPrefix, pos) != QValidator::Invalid) {
+                state = QValidator::Intermediate;
+            }
+        }
     }
     return state;
 }
