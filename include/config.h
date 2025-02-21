@@ -79,6 +79,7 @@ public:
         this->textEditorGotoLine = "";
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
+        this->loadAllEventScripts = false;
         this->warpBehaviorWarningDisabled = false;
         this->eventDeleteWarningDisabled = false;
         this->eventOverlayEnabled = false;
@@ -135,6 +136,7 @@ public:
     QString textEditorGotoLine;
     int paletteEditorBitDepth;
     int projectSettingsTab;
+    bool loadAllEventScripts;
     bool warpBehaviorWarningDisabled;
     bool eventDeleteWarningDisabled;
     bool eventOverlayEnabled;

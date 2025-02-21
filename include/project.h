@@ -219,6 +219,7 @@ public:
     static QString getScriptFileExtension(bool usePoryScript);
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QStringList getEventScriptsFilePaths() const;
+    void insertGlobalScriptLabels(QStringList &scriptLabels) const;
 
     QString getDefaultPrimaryTilesetLabel() const;
     QString getDefaultSecondaryTilesetLabel() const;

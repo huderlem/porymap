@@ -173,12 +173,19 @@ void EventFrame::setActive(bool active) {
 }
 
 void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * project) {
-    // The script dropdown is populated with scripts used by the map's events and from its scripts file.
-    if (this->event->getMap())
-        combo->addItems(this->event->getMap()->getScriptLabels(this->event->getEventGroup()));
+    // The script dropdown and autocomplete are populated with scripts used by the map's events and from its scripts file.
+    if (!this->event->getMap())
+        return;
 
-    // The dropdown's autocomplete has all script labels across the full project.
-    auto completer = new QCompleter(project->globalScriptLabels, combo);
+    QStringList scripts = this->event->getMap()->getScriptLabels(this->event->getEventGroup());
+    combo->addItems(scripts);
+
+    // Depending on the settings, the autocomplete may also contain all global scripts.
+    if (porymapConfig.loadAllEventScripts) {
+        project->insertGlobalScriptLabels(scripts);
+    }
+
+    auto completer = new QCompleter(scripts, combo);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
     completer->setFilterMode(Qt::MatchContains);

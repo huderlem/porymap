@@ -152,13 +152,12 @@ QStringList Map::getScriptLabels(Event::Group group) {
         scriptLabels = scriptTracker.getScripts();
     }
 
-    // Add scripts from map's scripts file, and empty names.
+    // Add labels from the map's scripts file
     scriptLabels.append(m_scriptsFileLabels);
     scriptLabels.sort(Qt::CaseInsensitive);
-    scriptLabels.prepend("0x0");
-    scriptLabels.prepend("NULL");
-
     scriptLabels.removeAll("");
+    scriptLabels.removeAll("0");
+    scriptLabels.removeAll("0x0");
     scriptLabels.removeDuplicates();
 
     return scriptLabels;

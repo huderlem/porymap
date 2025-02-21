@@ -2600,14 +2600,26 @@ bool Project::readMiscellaneousConstants() {
 }
 
 bool Project::readEventScriptLabels() {
-    globalScriptLabels.clear();
-    for (const auto &filePath : getEventScriptsFilePaths())
-        globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
+    this->globalScriptLabels.clear();
 
-    globalScriptLabels.sort(Qt::CaseInsensitive);
-    globalScriptLabels.removeDuplicates();
+    if (porymapConfig.loadAllEventScripts)
+        return true;
+
+    for (const auto &filePath : getEventScriptsFilePaths())
+        this->globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
+
+   this->globalScriptLabels.sort(Qt::CaseInsensitive);
+   this->globalScriptLabels.removeDuplicates();
 
     return true;
+}
+
+void Project::insertGlobalScriptLabels(QStringList &scriptLabels) const {
+    if (this->globalScriptLabels.isEmpty())
+        return;
+    scriptLabels.append(this->globalScriptLabels);
+    scriptLabels.sort();
+    scriptLabels.removeDuplicates();
 }
 
 QString Project::fixPalettePath(QString path) {
