@@ -843,6 +843,18 @@ bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src, Q
     if (metatileId == this->getSelectedMetatileId())
         this->ui->lineEdit_metatileLabel->setText(newLabel);
 
+    // Update tile usage if any tiles changed
+    if (this->tileSelector && this->tileSelector->showUnused) {
+        int numTiles = projectConfig.getNumTilesInMetatile();
+        for (int i = 0; i < numTiles; i++) {
+            if (src->tiles[i].tileId != dest->tiles[i].tileId) {
+                this->tileSelector->usedTiles[src->tiles[i].tileId] += 1;
+                this->tileSelector->usedTiles[dest->tiles[i].tileId] -= 1;
+            }
+        }
+        this->tileSelector->draw();
+    }
+
     this->metatile = dest;
     *this->metatile = *src;
     this->metatileSelector->select(metatileId);
