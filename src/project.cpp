@@ -2602,15 +2602,14 @@ bool Project::readMiscellaneousConstants() {
 bool Project::readEventScriptLabels() {
     this->globalScriptLabels.clear();
 
-    if (porymapConfig.loadAllEventScripts)
-        return true;
+    if (porymapConfig.loadAllEventScripts) {
+        for (const auto &filePath : getEventScriptsFilePaths())
+            this->globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
 
-    for (const auto &filePath : getEventScriptsFilePaths())
-        this->globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
-
-   this->globalScriptLabels.sort(Qt::CaseInsensitive);
-   this->globalScriptLabels.removeDuplicates();
-
+       this->globalScriptLabels.sort(Qt::CaseInsensitive);
+       this->globalScriptLabels.removeDuplicates();
+    }
+    emit eventScriptLabelsRead();
     return true;
 }
 

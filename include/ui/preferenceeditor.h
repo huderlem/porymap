@@ -23,6 +23,7 @@ public:
 signals:
     void preferencesSaved();
     void themeChanged(const QString &theme);
+    void scriptSettingsChanged(bool on);
 
 private:
     Ui::PreferenceEditor *ui;

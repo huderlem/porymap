@@ -13,6 +13,7 @@
 #include "customattributesframe.h"
 #include "validator.h"
 #include "message.h"
+#include "eventframes.h"
 #include <QCheckBox>
 #include <QPainter>
 #include <QMouseEvent>

@@ -195,6 +195,9 @@ void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * proj
     if (popup) popup->setUniformItemSizes(true);
 
     combo->setCompleter(completer);
+
+    // If the project changes the script labels, update the EventFrame.
+    connect(project, &Project::eventScriptLabelsRead, this, &EventFrame::invalidateValues, Qt::UniqueConnection);
 }
 
 

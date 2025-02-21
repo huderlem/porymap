@@ -298,6 +298,7 @@ signals:
     void mapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
     void mapSectionIdNamesChanged(const QStringList &idNames);
     void mapsExcluded(const QStringList &excludedMapNames);
+    void eventScriptLabelsRead();
 };
 
 #endif // PROJECT_H
