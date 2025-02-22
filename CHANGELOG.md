@@ -85,6 +85,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix crash in the Shortcuts Editor when applying changes after closing certain windows.
 - Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
 - The Metatile / Tile usage counts in the Tileset Editor now update to reflect changes.
+- Fix regression that stopped the map zoom from centering on the cursor.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
