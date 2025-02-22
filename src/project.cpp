@@ -2720,7 +2720,8 @@ bool Project::readEventGraphics() {
 
         // Strip the address-of operator to get the pointer's name. We'll use this name to get data about the event's sprite.
         // If we don't recognize the name, ignore it. The event will use a default sprite.
-        QString info_label = pointerMap[gfxName].replace("&", "");
+        QString info_label = pointerMap.value(gfxName);
+        info_label.replace("&", "");
         if (!gfxInfos.contains(info_label))
             continue;
         const QHash<QString, QString> gfxInfoAttributes = gfxInfos[info_label];
