@@ -178,6 +178,8 @@ QLineEdit {
     color: #F8F8F2;
 }
 
+/* Checkboxes */
+
 QCheckBox {
     background-color: #31332b;
     color: #F8F8F2;
@@ -197,16 +199,23 @@ QCheckBox QWidget:disabled {
 }
 
 QCheckBox::indicator {
-    margin-left: 4px;
     height: 16px;
     width: 16px;
 }
 
-QRadioButton::indicator::unchecked, QCheckBox::indicator::unchecked {
+QCheckBox::indicator::unchecked {
     image: url(:/icons/ui/midnight/checkbox_unchecked.png)
 }
 
-QRadioButton::indicator:unchecked:hover, QCheckBox::indicator:unchecked:hover {
+QCheckBox::indicator::checked {
+    image: url(":/icons/ui/midnight/checkbox_checked.png");
+}
+
+QCheckBox::indicator:unchecked:hover {
+
+}
+
+QCheckBox::indicator:checked:hover {
 
 }
 
@@ -214,17 +223,60 @@ QCheckBox::indicator:unchecked:disabled {
     image: url(":/icons/ui/midnight/checkbox_unchecked_disabled.png");
 }
 
-QRadioButton::indicator::checked, QCheckBox::indicator::checked {
-    image: url(":/icons/ui/midnight/checkbox_checked.png");
-}
-
-QRadioButton::indicator:checked:hover, QCheckBox::indicator:checked:hover {
-
-}
-
 QCheckBox::indicator:checked:disabled {
     image: url(":/icons/ui/midnight/checkbox_checked_disabled.png");
 }
+
+
+/* Radio Buttons */
+
+QRadioButton {
+    background-color: #31332b;
+    color: #F8F8F2;
+    spacing: 4px;
+    outline: none;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+QRadioButton:focus {
+    border: none;
+}
+
+QRadioButton QWidget:disabled {
+    background-color: #49483E;
+    color: #F8F8F2;
+}
+
+QRadioButton::indicator {
+    height: 16px;
+    width: 16px;
+}
+
+QRadioButton::indicator::unchecked {
+    image: url(:/icons/ui/midnight/radio_unchecked.png)
+}
+
+QRadioButton::indicator::checked {
+    image: url(":/icons/ui/midnight/radio_checked.png");
+}
+
+QRadioButton::indicator:unchecked:hover {
+
+}
+
+QRadioButton::indicator:checked:hover {
+
+}
+
+QRadioButton::indicator:unchecked:disabled {
+    image: url(":/icons/ui/midnight/radio_unchecked_disabled.png");
+}
+
+QRadioButton::indicator:checked:disabled {
+    image: url(":/icons/ui/midnight/radio_checked_disabled.png");
+}
+
 
 /* Map List View */
 

@@ -61,6 +61,14 @@
         <file>icons/ui/dark/branch_open.png</file>
         <file>icons/ui/dark/branch_end.png</file>
         <file>icons/ui/dark/branch_more.png</file>
+        <file>icons/ui/dark/radio_checked_disabled.png</file>
+        <file>icons/ui/dark/radio_checked_disabled@2x.png</file>
+        <file>icons/ui/dark/radio_checked.png</file>
+        <file>icons/ui/dark/radio_checked@2x.png</file>
+        <file>icons/ui/dark/radio_unchecked_disabled.png</file>
+        <file>icons/ui/dark/radio_unchecked_disabled@2x.png</file>
+        <file>icons/ui/dark/radio_unchecked.png</file>
+        <file>icons/ui/dark/radio_unchecked@2x.png</file>
         <file>icons/ui/midnight/checkbox_checked_disabled.png</file>
         <file>icons/ui/midnight/checkbox_checked_disabled@2x.png</file>
         <file>icons/ui/midnight/checkbox_checked.png</file>
@@ -73,6 +81,14 @@
         <file>icons/ui/midnight/branch_open.png</file>
         <file>icons/ui/midnight/branch_end.png</file>
         <file>icons/ui/midnight/branch_more.png</file>
+        <file>icons/ui/midnight/radio_checked_disabled.png</file>
+        <file>icons/ui/midnight/radio_checked_disabled@2x.png</file>
+        <file>icons/ui/midnight/radio_checked.png</file>
+        <file>icons/ui/midnight/radio_checked@2x.png</file>
+        <file>icons/ui/midnight/radio_unchecked_disabled.png</file>
+        <file>icons/ui/midnight/radio_unchecked_disabled@2x.png</file>
+        <file>icons/ui/midnight/radio_unchecked.png</file>
+        <file>icons/ui/midnight/radio_unchecked@2x.png</file>
         <file>images/blank_tileset.png</file>
         <file>images/collisions.png</file>
         <file>images/collisions_unknown.png</file>
