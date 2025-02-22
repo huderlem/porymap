@@ -2702,8 +2702,9 @@ bool Project::readEventGraphics() {
     // The positions of each of the required members for the gfx info struct.
     // For backwards compatibility if the struct doesn't use initializers.
     static const QHash<int, QString> gfxInfoMemberMap = {
+        {4, "width"},
+        {5, "height"},
         {8, "inanimate"},
-        {11, "oam"},
         {12, "subspriteTables"},
         {14, "images"},
     };
@@ -2742,16 +2743,23 @@ bool Project::readEventGraphics() {
 
         // The .png file is expected to be a spritesheet that can have multiple frames.
         // We only want to show one frame at a time, so we need to know the dimensions of each frame.
-        // TODO: Describe different ways we read these. Use width/height?
-        static const QRegularExpression re("\\S+_(\\d+)x(\\d+)");
-        QRegularExpressionMatch dimensionMatch = re.match(gfxInfoAttributes.value("oam"));
-        QRegularExpressionMatch oamTablesMatch = re.match(gfxInfoAttributes.value("subspriteTables"));
-        if (oamTablesMatch.hasMatch()) {
-            gfx->spriteWidth = oamTablesMatch.captured(1).toInt(nullptr, 0);
-            gfx->spriteHeight = oamTablesMatch.captured(2).toInt(nullptr, 0);
-        } else if (dimensionMatch.hasMatch()) {
-            gfx->spriteWidth = dimensionMatch.captured(1).toInt(nullptr, 0);
-            gfx->spriteHeight = dimensionMatch.captured(2).toInt(nullptr, 0);
+        // The true dimensions are buried in the subsprite data, so we try to infer the dimensions from the name of the 'subspriteTables' symbol.
+        // If we are unable to do this, we can read the dimensions from the width and height fields.
+        // This is much more straightforward, but the numbers are not necessarily accurate (one vanilla event sprite,
+        // the Town Map in FRLG, has width/height values that differ from its true dimensions).
+        static const QRegularExpression re_dimensions("\\S+_(\\d+)x(\\d+)");
+        const QRegularExpressionMatch dimensionsMatch = re_dimensions.match(gfxInfoAttributes.value("subspriteTables"));
+        if (dimensionsMatch.hasMatch()) {
+            gfx->spriteWidth = dimensionsMatch.captured(1).toInt(nullptr, 0);
+            gfx->spriteHeight = dimensionsMatch.captured(2).toInt(nullptr, 0);
+        } else if (gfxInfoAttributes.contains("width") && gfxInfoAttributes.contains("height")) {
+            gfx->spriteWidth = gfxInfoAttributes.value("width").toInt(nullptr, 0);
+            gfx->spriteHeight = gfxInfoAttributes.value("height").toInt(nullptr, 0);
+        }
+        // If we fail to get sprite dimensions then they should remain -1, and the sprite will use the full spritesheet as its image.
+        if (gfx->spriteWidth <= 0 || gfx->spriteHeight <= 0) {
+            gfx->spriteWidth = -1;
+            gfx->spriteHeight = -1;
         }
 
         // Inanimate events will only ever use the first frame of their spritesheet.
