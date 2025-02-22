@@ -496,18 +496,18 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     return map;
 }
 
-QString PorymapConfig::stringFromByteArray(QByteArray bytearray) {
+QString PorymapConfig::stringFromByteArray(const QByteArray &bytearray) {
     QString ret;
-    for (auto ch : bytearray) {
+    for (const auto &ch : bytearray) {
         ret += QString::number(static_cast<int>(ch)) + ":";
     }
     return ret;
 }
 
-QByteArray PorymapConfig::bytesFromString(QString in) {
+QByteArray PorymapConfig::bytesFromString(const QString &in) {
     QByteArray ba;
-    QStringList split = in.split(":");
-    for (auto ch : split) {
+    QStringList split = in.split(":", Qt::SkipEmptyParts);
+    for (const auto &ch : split) {
         ba.append(static_cast<char>(ch.toInt()));
     }
     return ba;

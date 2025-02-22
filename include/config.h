@@ -155,8 +155,8 @@ protected:
     virtual void setUnreadKeys() override {};
 
 private:
-    QString stringFromByteArray(QByteArray);
-    QByteArray bytesFromString(QString);
+    QString stringFromByteArray(const QByteArray&);
+    QByteArray bytesFromString(const QString&);
 
     QStringList recentProjects;
     QByteArray mainWindowGeometry;
