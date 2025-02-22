@@ -28,7 +28,6 @@ QList<QList<const QImage*>> Editor::collisionIcons;
 Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
-    this->selected_events = new QList<DraggablePixmapItem*>;
     this->settings = new Settings();
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
@@ -40,7 +39,7 @@ Editor::Editor(Ui::MainWindow* ui)
     /// the index is changed.
     connect(&editGroup, &QUndoGroup::indexChanged, [this](int) {
         if (selectNewEvents) {
-            updateSelectedEvents();
+            updateEvents();
             selectNewEvents = false;
         }
     });
@@ -58,7 +57,6 @@ Editor::Editor(Ui::MainWindow* ui)
 
 Editor::~Editor()
 {
-    delete this->selected_events;
     delete this->settings;
     delete this->playerViewRect;
     delete this->cursorMapTileRect;
@@ -1167,7 +1165,7 @@ bool Editor::setMap(QString map_name) {
     editGroup.addStack(map->editHistory());
     editGroup.setActiveStack(map->editHistory());
 
-    selected_events->clear();
+    this->selectedEvents.clear();
     if (!displayMap()) {
         return false;
     }
@@ -1176,7 +1174,7 @@ bool Editor::setMap(QString map_name) {
     connect(map, &Map::openScriptRequested, this, &Editor::openScript);
     connect(map, &Map::connectionAdded, this, &Editor::displayConnection);
     connect(map, &Map::connectionRemoved, this, &Editor::removeConnectionPixmap);
-    updateSelectedEvents();
+    updateEvents();
 
     return true;
 }
@@ -1330,17 +1328,13 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             } else {
                 // Left-clicking while in paint mode will add a new event of the
                 // type of the first currently selected events.
-                // Disallow adding heal locations, deleting them is not possible yet
                 Event::Type eventType = Event::Type::Object;
-                if (this->selected_events->size() > 0)
-                    eventType = this->selected_events->first()->event->getEventType();
+                if (!this->selectedEvents.isEmpty())
+                    eventType = this->selectedEvents.first()->getEventType();
 
-                DraggablePixmapItem *newEvent = addNewEvent(eventType);
-                if (newEvent) {
-                    newEvent->move(pos.x(), pos.y());
-                    emit eventsChanged();
-                    selectMapEvent(newEvent);
-                }
+                Event* event = addNewEvent(eventType);
+                if (event && event->getPixmapItem())
+                    event->getPixmapItem()->moveTo(pos);
             }
         } else if (eventEditAction == EditAction::Select) {
             // do nothing here, at least for now
@@ -1356,15 +1350,9 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                     if (pos.x() != selection_origin.x() || pos.y() != selection_origin.y()) {
                         int xDelta = pos.x() - selection_origin.x();
                         int yDelta = pos.y() - selection_origin.y();
-
-                        QList<Event *> selectedEvents;
-
-                        for (DraggablePixmapItem *pixmapItem : getEventPixmapItems()) {
-                            selectedEvents.append(pixmapItem->event);
-                        }
                         selection_origin = QPoint(pos.x(), pos.y());
 
-                        map->commit(new EventShift(selectedEvents, xDelta, yDelta, this->eventShiftActionId));
+                        this->map->commit(new EventShift(this->map->getEvents(), xDelta, yDelta, this->eventShiftActionId));
                     }
                 }
             }
@@ -1665,7 +1653,7 @@ void Editor::clearMapEvents() {
         delete events_group;
         events_group = nullptr;
     }
-    selected_events->clear();
+    this->selectedEvents.clear();
 }
 
 void Editor::displayMapEvents() {
@@ -1694,7 +1682,7 @@ void Editor::removeEventPixmapItem(Event *event) {
     if (!item) return;
 
     this->events_group->removeFromGroup(item);
-    this->selected_events->removeOne(item);
+    this->selectedEvents.removeOne(event);
 
     event->setPixmapItem(nullptr);
     delete item;
@@ -1959,14 +1947,6 @@ void Editor::redrawEvents(const QList<Event*> &events) {
     }
 }
 
-QList<DraggablePixmapItem *> Editor::getEventPixmapItems() {
-    QList<DraggablePixmapItem *> list;
-    for (QGraphicsItem *child : events_group->childItems()) {
-        list.append(static_cast<DraggablePixmapItem *>(child));
-    }
-    return list;
-}
-
 qreal Editor::getEventOpacity(const Event *event) const {
     // There are 4 possible opacities for an event's sprite:
     // - Off the Events tab, and the event overlay is off (0.0)
@@ -1986,7 +1966,7 @@ void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
         item->setShapeMode(porymapConfig.eventSelectionShapeMode);
 
         if (this->editMode == EditMode::Events) {
-            if (selected_events && selected_events->contains(item)) {
+            if (this->selectedEvents.contains(item->event)) {
                 // Draw the selection rectangle
                 QImage image = item->pixmap().toImage();
                 QPainter painter(&image);
@@ -2031,44 +2011,40 @@ void Editor::updateWarpEventWarning(Event *event) {
 void Editor::updateWarpEventWarnings() {
     if (porymapConfig.warpBehaviorWarningDisabled)
         return;
-    if (selected_events) {
-        for (auto selection : *selected_events)
-            updateWarpEventWarning(selection->event);
-    }
+    for (const auto &event : this->selectedEvents)
+        updateWarpEventWarning(event);
 }
 
 void Editor::shouldReselectEvents() {
     selectNewEvents = true;
 }
 
-void Editor::updateSelectedEvents() {
-    for (DraggablePixmapItem *item : getEventPixmapItems()) {
-        redrawEventPixmapItem(item);
-    }
-
+// TODO: This is frequently used to do more work than necessary.
+void Editor::updateEvents() {
+    redrawAllEvents();
     emit eventsChanged();
 }
 
-void Editor::selectMapEvent(DraggablePixmapItem *item, bool toggle) {
-    if (!selected_events || !item)
+void Editor::selectMapEvent(Event *event, bool toggle) {
+    if (!event)
         return;
 
     if (!toggle) {
         // Selecting just this event
-        selected_events->clear();
-        selected_events->append(item);
-    } else if (!selected_events->contains(item)) {
+        this->selectedEvents.clear();
+        this->selectedEvents.append(event);
+    } else if (!this->selectedEvents.contains(event)) {
         // Adding event to group selection
-        selected_events->append(item);
-    } else if (selected_events->length() > 1) {
+        this->selectedEvents.append(event);
+    } else if (this->selectedEvents.length() > 1) {
         // Removing event from group selection
-        selected_events->removeOne(item);
+        this->selectedEvents.removeOne(event);
     } else {
         // Attempting to toggle the only currently-selected event.
         // Unselecting an event this way would be unexpected, so we ignore it.
         return;
     }
-    updateSelectedEvents();
+    updateEvents();
 }
 
 void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
@@ -2076,36 +2052,54 @@ void Editor::selectedEventIndexChanged(int index, Event::Group eventGroup) {
     index = index - event_offs;
     Event *event = this->map->getEvent(eventGroup, index);
 
-    if (event && event->getPixmapItem()) {
-        this->selectMapEvent(event->getPixmapItem());
+    if (event) {
+        selectMapEvent(event);
     } else {
-        updateSelectedEvents();
+        updateEvents();
     }
+}
+
+bool Editor::canAddEvents(const QList<Event*> &events) {
+    if (!this->project || !this->map)
+        return false;
+
+    QMap<Event::Group, int> newEventCounts;
+    for (const auto &event : events) {
+        Event::Group group = event->getEventGroup();
+        int maxEvents = this->project->getMaxEvents(group);
+        if (this->map->getNumEvents(group) + newEventCounts[group]++ >= maxEvents) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void Editor::duplicateSelectedEvents() {
-    if (!selected_events || !selected_events->length() || !map || !current_view || this->getEditingLayout())
+    if (this->selectedEvents.isEmpty() || !project || !map || !current_view || this->getEditingLayout())
         return;
 
-    QList<Event *> selectedEvents;
-    for (int i = 0; i < selected_events->length(); i++) {
-        Event *original = selected_events->at(i)->event;
-        Event::Type eventType = original->getEventType();
-        if (eventLimitReached(eventType)) {
-            logWarn(QString("Skipping duplication, the map limit for events of type '%1' has been reached.").arg(Event::eventTypeToString(eventType)));
-            continue;
-        }
-        Event *duplicate = original->duplicate();
-        duplicate->setX(duplicate->getX() + 1);
-        duplicate->setY(duplicate->getY() + 1);
-        selectedEvents.append(duplicate);
+    QList<Event *> duplicatedEvents;
+    for (const auto &event : this->selectedEvents) {
+        duplicatedEvents.append(event->duplicate());
     }
-    map->commit(new EventDuplicate(this, map, selectedEvents));
+    if (!canAddEvents(duplicatedEvents)) {
+        WarningMessage::show(QStringLiteral("Unable to duplicate, the maximum number of events would be exceeded."), ui->graphicsView_Map);
+        qDeleteAll(duplicatedEvents);
+        return;
+    }
+    this->map->commit(new EventDuplicate(this, this->map, duplicatedEvents));
 }
 
-DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
-    if (!project || !map || eventLimitReached(type))
+Event *Editor::addNewEvent(Event::Type type) {
+    if (!this->project || !this->map)
         return nullptr;
+
+    Event::Group group = Event::typeToGroup(type);
+    int maxEvents = this->project->getMaxEvents(group);
+    if (this->map->getNumEvents(group) >= maxEvents) {
+        WarningMessage::show(QString("The maximum number of %1 events (%2) has been reached.").arg(Event::groupToString(group)).arg(maxEvents), ui->graphicsView_Map);
+        return nullptr;
+    }
 
     Event *event = Event::create(type);
     if (!event)
@@ -2113,27 +2107,27 @@ DraggablePixmapItem *Editor::addNewEvent(Event::Type type) {
 
     event->setMap(this->map);
     event->setDefaultValues(this->project);
-    map->commit(new EventCreate(this, map, event));
-    return event->getPixmapItem();
-}
 
-// Currently only object events have an explicit limit
-bool Editor::eventLimitReached(Event::Type event_type) {
-    if (project && map) {
-        if (Event::typeToGroup(event_type) == Event::Group::Object)
-            return map->getNumEvents(Event::Group::Object) >= project->getMaxObjectEvents();
+    // This will add the event to the map, create the event pixmap item, and select the event.
+    this->map->commit(new EventCreate(this, this->map, event));
+
+    auto pixmapItem = event->getPixmapItem();
+    if (pixmapItem) {
+        auto halfSize = ui->graphicsView_Map->size() / 2;
+        auto centerPos = ui->graphicsView_Map->mapToScene(halfSize.width(), halfSize.height());
+        pixmapItem->moveTo(Metatile::coordFromPixmapCoord(centerPos));
     }
-    return false;
+
+    return event;
 }
 
 void Editor::deleteSelectedEvents() {
-    if (!this->selected_events || this->selected_events->length() == 0 || !this->map || this->editMode != EditMode::Events)
+    if (this->selectedEvents.isEmpty() || !this->map || this->editMode != EditMode::Events)
         return;
 
     QList<Event*> eventsToDelete;
     bool skipWarning = porymapConfig.eventDeleteWarningDisabled;
-    for (DraggablePixmapItem *item : *this->selected_events) {
-        Event* event = item->event;
+    for (auto event : this->selectedEvents) {
         const QString idName = event->getIdName();
         if (skipWarning || idName.isEmpty()) {
             eventsToDelete.append(event);
@@ -2151,7 +2145,7 @@ void Editor::deleteSelectedEvents() {
             msgBox.setCheckBox(new QCheckBox(QStringLiteral("Don't warn me again")));
 
             QAbstractButton* deleteAllButton = nullptr;
-            if (this->selected_events->length() > 1) {
+            if (this->selectedEvents.length() > 1) {
                 deleteAllButton = msgBox.addButton(QStringLiteral("Delete All"), QMessageBox::DestructiveRole);
                 msgBox.addButton(QStringLiteral("Skip"), QMessageBox::NoRole);
             }
@@ -2176,7 +2170,7 @@ void Editor::deleteSelectedEvents() {
             }
         }
         // TODO: Are we just calling this to invalidate connections?
-        event->setPixmapItem(item);
+        event->setPixmapItem(event->getPixmapItem());
     }
     if (eventsToDelete.isEmpty())
         return;
@@ -2293,9 +2287,9 @@ void Editor::eventsView_onMousePress(QMouseEvent *event) {
     }
 
     bool multiSelect = event->modifiers() & Qt::ControlModifier;
-    if (!selectingEvent && !multiSelect && selected_events->length() > 1) {
+    if (!selectingEvent && !multiSelect && this->selectedEvents.length() > 1) {
         // User is clearing group selection by clicking on the background
-        this->selectMapEvent(selected_events->first());
+        this->selectMapEvent(this->selectedEvents.first());
     }
     selectingEvent = false;
 }

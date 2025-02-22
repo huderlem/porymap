@@ -157,6 +157,7 @@ public:
 
     void initTopLevelMapFields();
     bool readMapJson(const QString &mapName, QJsonDocument * out);
+    bool loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType = Event::Type::None);
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
@@ -244,7 +245,7 @@ public:
     static int getMapDataSize(int width, int height);
     static bool mapDimensionsValid(int width, int height);
     bool calculateDefaultMapSize();
-    static int getMaxObjectEvents();
+    int getMaxEvents(Event::Group group);
     static QString getEmptyMapsecName();
     static QString getMapGroupPrefix();
 
@@ -262,6 +263,8 @@ private:
     void ignoreWatchedFileTemporarily(QString filepath);
     void recordFileChange(const QString &filepath);
 
+    int maxEventsPerGroup;
+    int maxObjectEvents;
     static int num_tiles_primary;
     static int num_tiles_total;
     static int num_metatiles_primary;
@@ -269,7 +272,6 @@ private:
     static int num_pals_total;
     static int max_map_data_size;
     static int default_map_dimension;
-    static int max_object_events;
 
 signals:
     void fileChanged(const QString &filepath);

@@ -319,6 +319,7 @@ public:
         this->unusedTileNormal = 0x3014;
         this->unusedTileCovered = 0x0000;
         this->unusedTileSplit = 0x0000;
+        this->maxEventsPerGroup = 255;
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -388,6 +389,7 @@ public:
     int collisionSheetWidth;
     int collisionSheetHeight;
     QList<uint32_t> warpBehaviors;
+    int maxEventsPerGroup;
 
 protected:
     virtual QString getConfigFilepath() override;

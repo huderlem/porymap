@@ -186,9 +186,9 @@ public:
     void setIdName(QString newIdName) { this->idName = newIdName; }
     QString getIdName() const { return this->idName; }
 
-    static QString eventGroupToString(Event::Group group);
-    static QString eventTypeToString(Event::Type type);
-    static Event::Type eventTypeFromString(QString type);
+    static QString groupToString(Event::Group group);
+    static QString typeToString(Event::Type type);
+    static Event::Type typeFromString(QString type);
     static void clearIcons();
     static void setIcons();
 

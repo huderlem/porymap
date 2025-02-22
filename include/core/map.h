@@ -85,6 +85,7 @@ public:
     void removeEvent(Event *);
     void addEvent(Event *);
     int getIndexOfEvent(Event *) const;
+    bool hasEvent(Event *) const;
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const;

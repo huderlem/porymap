@@ -75,70 +75,36 @@ void Event::modify() {
     this->map->modify();
 }
 
-QString Event::eventGroupToString(Event::Group group) {
-    switch (group) {
-    case Event::Group::Object:
-        return "Object";
-    case Event::Group::Warp:
-        return "Warp";
-    case Event::Group::Coord:
-        return "Trigger";
-    case Event::Group::Bg:
-        return "BG";
-    case Event::Group::Heal:
-        return "Heal Location";
-    default:
-        return "";
-    }
+const QMap<Event::Group, QString> groupToStringMap = {
+    {Event::Group::Object, "Object"},
+    {Event::Group::Warp, "Warp"},
+    {Event::Group::Coord, "Trigger"},
+    {Event::Group::Bg, "BG"},
+    {Event::Group::Heal, "Heal Location"},
+};
+
+QString Event::groupToString(Event::Group group) {
+    return groupToStringMap.value(group);
 }
 
-QString Event::eventTypeToString(Event::Type type) {
-    switch (type) {
-    case Event::Type::Object:
-        return "event_object";
-    case Event::Type::CloneObject:
-        return "event_clone_object";
-    case Event::Type::Warp:
-        return "event_warp";
-    case Event::Type::Trigger:
-        return "event_trigger";
-    case Event::Type::WeatherTrigger:
-        return "event_weather_trigger";
-    case Event::Type::Sign:
-        return "event_sign";
-    case Event::Type::HiddenItem:
-        return "event_hidden_item";
-    case Event::Type::SecretBase:
-        return "event_secret_base";
-    case Event::Type::HealLocation:
-        return "event_heal_location";
-    default:
-        return "";
-    }
+const QMap<Event::Type, QString> typeToStringMap = {
+    {Event::Type::Object, "object"},
+    {Event::Type::CloneObject, "clone_object"},
+    {Event::Type::Warp, "warp"},
+    {Event::Type::Trigger, "trigger"},
+    {Event::Type::WeatherTrigger, "weather"},
+    {Event::Type::Sign, "sign"},
+    {Event::Type::HiddenItem, "hidden_item"},
+    {Event::Type::SecretBase, "secret_base"},
+    {Event::Type::HealLocation, "heal_location"},
+};
+
+QString Event::typeToString(Event::Type type) {
+    return typeToStringMap.value(type);
 }
 
-Event::Type Event::eventTypeFromString(QString type) {
-    if (type == "event_object") {
-        return Event::Type::Object;
-    } else if (type == "event_clone_object") {
-        return Event::Type::CloneObject;
-    } else if (type == "event_warp") {
-        return Event::Type::Warp;
-    } else if (type == "event_trigger") {
-        return Event::Type::Trigger;
-    } else if (type == "event_weather_trigger") {
-        return Event::Type::WeatherTrigger;
-    } else if (type == "event_sign") {
-        return Event::Type::Sign;
-    } else if (type == "event_hidden_item") {
-        return Event::Type::HiddenItem;
-    } else if (type == "event_secret_base") {
-        return Event::Type::SecretBase;
-    } else if (type == "event_heal_location") {
-        return Event::Type::HealLocation;
-    } else {
-        return Event::Type::None;
-    }
+Event::Type Event::typeFromString(QString type) {
+    return typeToStringMap.key(type, Event::Type::None);
 }
 
 void Event::loadPixmap(Project *) {
@@ -189,6 +155,7 @@ Event *ObjectEvent::duplicate() const {
     copy->setX(this->getX());
     copy->setY(this->getY());
     copy->setElevation(this->getElevation());
+    copy->setIdName(this->getIdName());
     copy->setGfx(this->getGfx());
     copy->setMovement(this->getMovement());
     copy->setRadiusX(this->getRadiusX());
@@ -216,6 +183,9 @@ OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     if (projectConfig.eventCloneObjectEnabled) {
         objectJson["type"] = "object";
     }
+    QString idName = this->getIdName();
+    if (!idName.isEmpty())
+        objectJson["local_id"] = idName;
     objectJson["graphics_id"] = this->getGfx();
     objectJson["x"] = this->getX();
     objectJson["y"] = this->getY();
@@ -236,6 +206,7 @@ bool ObjectEvent::loadFromJson(const QJsonObject &json, Project *) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
     this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
+    this->setIdName(ParseUtil::jsonToQString(json["local_id"]));
     this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
     this->setMovement(ParseUtil::jsonToQString(json["movement_type"]));
     this->setRadiusX(ParseUtil::jsonToInt(json["movement_range_x"]));
@@ -263,6 +234,7 @@ void ObjectEvent::setDefaultValues(Project *project) {
 }
 
 const QSet<QString> expectedObjectFields = {
+    "local_id",
     "graphics_id",
     "elevation",
     "movement_type",
@@ -368,6 +340,7 @@ Event *CloneObjectEvent::duplicate() const {
     copy->setX(this->getX());
     copy->setY(this->getY());
     copy->setElevation(this->getElevation());
+    copy->setIdName(this->getIdName());
     copy->setGfx(this->getGfx());
     copy->setTargetID(this->getTargetID());
     copy->setTargetMap(this->getTargetMap());
@@ -388,6 +361,9 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     OrderedJson::object cloneJson;
 
     cloneJson["type"] = "clone";
+    QString idName = this->getIdName();
+    if (!idName.isEmpty())
+        cloneJson["local_id"] = idName;
     cloneJson["graphics_id"] = this->getGfx();
     cloneJson["x"] = this->getX();
     cloneJson["y"] = this->getY();
@@ -402,6 +378,7 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
 bool CloneObjectEvent::loadFromJson(const QJsonObject &json, Project *project) {
     this->setX(ParseUtil::jsonToInt(json["x"]));
     this->setY(ParseUtil::jsonToInt(json["y"]));
+    this->setIdName(ParseUtil::jsonToQString(json["local_id"]));
     this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
     this->setTargetID(ParseUtil::jsonToInt(json["target_local_id"]));
 
@@ -424,6 +401,7 @@ void CloneObjectEvent::setDefaultValues(Project *project) {
 
 const QSet<QString> expectedCloneObjectFields = {
     "type",
+    "local_id",
     "graphics_id",
     "target_local_id",
     "target_map",

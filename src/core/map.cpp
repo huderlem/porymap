@@ -229,6 +229,10 @@ int Map::getIndexOfEvent(Event *event) const {
     return m_events.value(event->getEventGroup()).indexOf(event);
 }
 
+bool Map::hasEvent(Event *event) const {
+    return getIndexOfEvent(event) >= 0;
+}
+
 void Map::deleteConnections() {
     qDeleteAll(m_ownedConnections);
     m_ownedConnections.clear();

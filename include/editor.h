@@ -110,15 +110,14 @@ public:
 
     DraggablePixmapItem *addEventPixmapItem(Event *event);
     void removeEventPixmapItem(Event *event);
-    bool eventLimitReached(Map *, Event::Type);
-    void selectMapEvent(DraggablePixmapItem *item, bool toggle = false);
-    DraggablePixmapItem *addNewEvent(Event::Type type);
-    void updateSelectedEvents();
+    bool canAddEvents(const QList<Event*> &events);
+    void selectMapEvent(Event *event, bool toggle = false);
+    Event *addNewEvent(Event::Type type);
+    void updateEvents();
     void duplicateSelectedEvents();
     void redrawAllEvents();
     void redrawEvents(const QList<Event*> &events);
     void redrawEventPixmapItem(DraggablePixmapItem *item);
-    QList<DraggablePixmapItem *> getEventPixmapItems();
     qreal getEventOpacity(const Event *event) const;
 
     void updateCursorRectPos(int x, int y);
@@ -153,7 +152,7 @@ public:
     CurrentSelectedMetatilesPixmapItem *current_metatile_selection_item = nullptr;
     QPointer<MovementPermissionsSelector> movement_permissions_selector_item = nullptr;
 
-    QList<DraggablePixmapItem *> *selected_events = nullptr;
+    QList<Event*> selectedEvents;
     QPointer<ConnectionPixmapItem> selected_connection_item = nullptr;
     QPointer<MapConnection> connection_to_select = nullptr;
 
@@ -185,7 +184,6 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
-    bool eventLimitReached(Event::Type type);
     void setCollisionGraphics();
 
 public slots:
