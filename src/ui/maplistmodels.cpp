@@ -285,17 +285,17 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
             stream >> groupName;
         }
 
-        this->insertRow(row, parentIndex);
-
         // copy children to new node
         int sourceRow = data->data("application/porymap.mapgroupmodel.source.row").toInt();
         QModelIndex originIndex = this->index(sourceRow, 0);
         QModelIndexList children;
         QStringList mapsToMove;
         for (int i = 0; i < this->rowCount(originIndex); ++i ) {
-            children << this->index( i, 0, originIndex);
-            mapsToMove << this->index( i, 0 , originIndex).data(MapListUserRoles::NameRole).toString();
+            children << this->index(i, 0, originIndex);
+            mapsToMove << this->index(i, 0 , originIndex).data(MapListUserRoles::NameRole).toString();
         }
+
+        this->insertRow(row, parentIndex);
 
         QModelIndex groupIndex = index(row, 0, parentIndex);
         QStandardItem *groupItem = this->itemFromIndex(groupIndex);
