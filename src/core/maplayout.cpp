@@ -34,8 +34,7 @@ void Layout::copyFrom(const Layout *other) {
 }
 
 QString Layout::layoutConstantFromName(const QString &name) {
-    // TODO: Expose "LAYOUT_" to config
-    return "LAYOUT_" + Util::toDefineCase(name);
+    return projectConfig.getIdentifier(ProjectIdentifier::define_layout_prefix) + Util::toDefineCase(name);
 }
 
 Layout::Settings Layout::settings() const {

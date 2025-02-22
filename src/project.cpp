@@ -2804,7 +2804,8 @@ bool Project::readSpeciesIconPaths() {
     const QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
 
     // Read species constants. If this fails we can get them from the icon table (but we shouldn't rely on it).
-    const QStringList regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix))};
+    const QString speciesPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix);
+    const QStringList regexList = {QString("\\b%1").arg(speciesPrefix)};
     const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
     fileWatcher.addPath(root + "/" + constantsFilename);
     QStringList speciesNames = parser.readCDefineNames(constantsFilename, regexList);
@@ -2832,7 +2833,7 @@ bool Project::readSpeciesIconPaths() {
             }
 
             // Ex: For 'SPECIES_FOO_BAR_BAZ' try 'foo_bar_baz'
-            possibleDirNames.append(species.mid(8).toLower());
+            possibleDirNames.append(species.mid(speciesPrefix.length()).toLower());
 
             // Permute paths with underscores.
             // Ex: Try 'foo_bar/baz', 'foo/bar_baz', 'foobarbaz', 'foo_bar', and 'foo'

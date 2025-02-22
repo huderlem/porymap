@@ -101,6 +101,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_attribute_encounter,    {"define_attribute_encounter",    "METATILE_ATTRIBUTE_ENCOUNTER_TYPE"}},
     {ProjectIdentifier::define_metatile_label_prefix,  {"define_metatile_label_prefix",  "METATILE_"}},
     {ProjectIdentifier::define_heal_locations_prefix,  {"define_heal_locations_prefix",  "HEAL_LOCATION_"}},
+    {ProjectIdentifier::define_layout_prefix,          {"define_layout_prefix",          "LAYOUT_"}},
     {ProjectIdentifier::define_map_prefix,             {"define_map_prefix",             "MAP_"}},
     {ProjectIdentifier::define_map_dynamic,            {"define_map_dynamic",            "DYNAMIC"}},
     {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "UNDEFINED"}},
