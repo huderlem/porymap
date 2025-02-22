@@ -51,6 +51,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/core/parseutil.cpp \
     src/core/tile.cpp \
     src/core/tileset.cpp \
+    src/core/utility.cpp \
     src/core/validator.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
@@ -162,6 +163,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/core/parseutil.h \
     include/core/tile.h \
     include/core/tileset.h \
+    include/core/utility.h \
     include/core/validator.h \
     include/core/regionmap.h \
     include/core/wildmoninfo.h \

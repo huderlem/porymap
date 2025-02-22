@@ -248,8 +248,6 @@ public:
     static QString getEmptyMapsecName();
     static QString getMapGroupPrefix();
 
-    static void numericalModeSort(QStringList &list);
-
 private:
     QMap<QString, QString> mapSectionDisplayNames;
     QMap<QString, qint64> modifiedFileTimestamps;

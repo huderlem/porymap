@@ -45,7 +45,8 @@ public:
     void setConstantName(const QString &constantName) { m_constantName = constantName; }
     QString constantName() const { return m_constantName; }
 
-    static QString mapConstantFromName(QString mapName, bool includePrefix = true);
+    static QString mapConstantFromName(const QString &name);
+    QString expectedConstantName() const { return Map::mapConstantFromName(m_name); }
 
     void setLayout(Layout *layout);
     Layout* layout() const { return m_layout; }

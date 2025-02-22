@@ -3,6 +3,7 @@
 #include "noscrollcombobox.h"
 #include "prefab.h"
 #include "filedialog.h"
+#include "utility.h"
 
 #include <QAbstractButton>
 #include <QFormLayout>
@@ -293,7 +294,7 @@ QStringList ProjectSettingsEditor::getWarpBehaviorsList() {
 
 void ProjectSettingsEditor::setWarpBehaviorsList(QStringList list) {
     list.removeDuplicates();
-    Project::numericalModeSort(list);
+    Util::numericalModeSort(list);
     ui->textEdit_WarpBehaviors->setText(list.join("\n"));
 }
 

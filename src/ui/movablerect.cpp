@@ -3,6 +3,7 @@
 #include <QMessageBox>
 
 #include "movablerect.h"
+#include "utility.h"
 
 MovableRect::MovableRect(bool *enabled, int width, int height, QRgb color)
   : QGraphicsRectItem(0, 0, width, height)
@@ -21,10 +22,6 @@ void MovableRect::updateLocation(int x, int y) {
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
-
-int roundUp(int numToRound, int multiple) {
-    return (numToRound + multiple - 1) & -multiple;
-}
 
 ResizableRect::ResizableRect(QObject *parent, bool *enabled, int width, int height, QRgb color)
   : QObject(parent),
@@ -117,8 +114,8 @@ void ResizableRect::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void ResizableRect::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    int dx = roundUp(event->scenePos().x() - this->clickedPos.x(), 16);
-    int dy = roundUp(event->scenePos().y() - this->clickedPos.y(), 16);
+    int dx = Util::roundUp(event->scenePos().x() - this->clickedPos.x(), 16);
+    int dy = Util::roundUp(event->scenePos().y() - this->clickedPos.y(), 16);
 
     QRect resizedRect = this->clickedRect;
 

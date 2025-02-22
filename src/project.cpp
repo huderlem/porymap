@@ -10,6 +10,7 @@
 #include "filedialog.h"
 #include "validator.h"
 #include "orderedjson.h"
+#include "utility.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -349,7 +350,7 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     map->setNeedsHealLocation(settings.canFlyTo);
 
     // Generate a unique MAP constant.
-    map->setConstantName(toUniqueIdentifier(Map::mapConstantFromName(map->name())));
+    map->setConstantName(toUniqueIdentifier(map->expectedConstantName()));
 
     Layout *layout = this->mapLayouts.value(settings.layout.id);
     if (!layout) {
@@ -2074,8 +2075,8 @@ bool Project::readTilesetLabels() {
         }
     }
 
-    numericalModeSort(this->primaryTilesetLabels);
-    numericalModeSort(this->secondaryTilesetLabels);
+    Util::numericalModeSort(this->primaryTilesetLabels);
+    Util::numericalModeSort(this->secondaryTilesetLabels);
 
     bool success = true;
     if (this->secondaryTilesetLabels.isEmpty()) {
@@ -2348,7 +2349,7 @@ bool Project::readRegionMapSections() {
     if (!this->mapSectionIdNames.contains(defaultName)) {
         this->mapSectionIdNames.append(defaultName);
     }
-    numericalModeSort(this->mapSectionIdNames);
+    Util::numericalModeSort(this->mapSectionIdNames);
 
     return true;
 }
@@ -2372,7 +2373,7 @@ void Project::addNewMapsec(const QString &idName) {
     }
 
     this->mapSectionIdNames.append(idName);
-    numericalModeSort(this->mapSectionIdNames);
+    Util::numericalModeSort(this->mapSectionIdNames);
 
     this->hasUnsavedDataChanges = true;
 
@@ -2596,7 +2597,7 @@ bool Project::readSongNames() {
     // Song names don't have a very useful order (esp. if we include SE_* values), so sort them alphabetically.
     // The default song should be the first in the list, not the first alphabetically, so save that before sorting.
     this->defaultSong = this->songNames.value(0, "0");
-    numericalModeSort(this->songNames);
+    Util::numericalModeSort(this->songNames);
     return true;
 }
 
@@ -3057,15 +3058,4 @@ bool Project::hasUnsavedChanges() {
             return true;
     }
     return false;
-}
-
-// TODO: This belongs in a more general utility file, once we have one.
-// Sometimes we want to sort names alphabetically to make them easier to find in large combo box lists.
-// QStringList::sort (as of writing) can only sort numbers in lexical order, which has an undesirable
-// effect (e.g. MAPSEC_ROUTE_10 comes after MAPSEC_ROUTE_1, rather than MAPSEC_ROUTE_9).
-// We can use QCollator to sort these lists with better handling for numbers.
-void Project::numericalModeSort(QStringList &list) {
-    QCollator collator;
-    collator.setNumericMode(true);
-    std::sort(list.begin(), list.end(), collator);
 }
