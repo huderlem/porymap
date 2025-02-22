@@ -100,39 +100,39 @@ QMenu::indicator {
 }
 
 QMenu::indicator {
-    image: url(":/icons/ui/dark_checkbox_unchecked.png");
+    image: url(":/icons/ui/dark/checkbox_unchecked.png");
 }
 
 QMenu::indicator:non-exclusive:unchecked {
-    image: url(":/icons/ui/dark_checkbox_unchecked.png");
+    image: url(":/icons/ui/dark/checkbox_unchecked.png");
 }
 
 QMenu::indicator:non-exclusive:unchecked:selected {
-    image: url(":/icons/ui/dark_checkbox_unchecked.png");
+    image: url(":/icons/ui/dark/checkbox_unchecked.png");
 }
 
 QMenu::indicator:non-exclusive:checked {
-    image: url(":/icons/ui/dark_checkbox_checked.png");
+    image: url(":/icons/ui/dark/checkbox_checked.png");
 }
 
 QMenu::indicator:non-exclusive:checked:selected {
-    image: url(":/icons/ui/dark_checkbox_checked.png");
+    image: url(":/icons/ui/dark/checkbox_checked.png");
 }
 
 QMenu::indicator:exclusive:unchecked {
-    image: url(":/icons/ui/dark_checkbox_unchecked.png");
+    image: url(":/icons/ui/dark/checkbox_unchecked.png");
 }
 
 QMenu::indicator:exclusive:unchecked:selected {
-    image: url(":/icons/ui/dark_checkbox_unchecked.png");
+    image: url(":/icons/ui/dark/checkbox_unchecked.png");
 }
 
 QMenu::indicator:exclusive:checked {
-    image: url(":/icons/ui/dark_checkbox_checked.png");
+    image: url(":/icons/ui/dark/checkbox_checked.png");
 }
 
 QMenu::indicator:exclusive:checked:selected {
-    image: url(":/icons/ui/dark_checkbox_checked.png");
+    image: url(":/icons/ui/dark/checkbox_checked.png");
 }
 
 
@@ -204,7 +204,7 @@ QCheckBox::indicator {
 }
 
 QRadioButton::indicator::unchecked, QCheckBox::indicator::unchecked {
-    image: url(:/icons/ui/dark_checkbox_unchecked.png)
+    image: url(:/icons/ui/dark/checkbox_unchecked.png)
 }
 
 QRadioButton::indicator:unchecked:hover, QCheckBox::indicator:unchecked:hover {
@@ -212,11 +212,11 @@ QRadioButton::indicator:unchecked:hover, QCheckBox::indicator:unchecked:hover {
 }
 
 QCheckBox::indicator:unchecked:disabled {
-    image: url(":/icons/ui/dark_checkbox_unchecked_disabled.png");
+    image: url(":/icons/ui/dark/checkbox_unchecked_disabled.png");
 }
 
 QRadioButton::indicator::checked, QCheckBox::indicator::checked {
-    image: url(":/icons/ui/dark_checkbox_checked.png");
+    image: url(":/icons/ui/dark/checkbox_checked.png");
 }
 
 QRadioButton::indicator:checked:hover, QCheckBox::indicator:checked:hover {
@@ -224,7 +224,7 @@ QRadioButton::indicator:checked:hover, QCheckBox::indicator:checked:hover {
 }
 
 QCheckBox::indicator:checked:disabled {
-    image: url(":/icons/ui/dark_checkbox_checked_disabled.png");
+    image: url(":/icons/ui/dark/checkbox_checked_disabled.png");
 }
 
 /* Map List View */
@@ -247,27 +247,27 @@ QTreeView::branch {
 }
 
 QTreeView::branch:has-siblings:!adjoins-item {
-    border-image: url(:/icons/ui/dark_vline.png) 0;
+    border-image: url(:/icons/ui/dark/vline.png) 0;
 }
 
 QTreeView::branch:has-siblings:adjoins-item {
-    border-image: url(:/icons/ui/dark_branch_more.png) 0;
+    border-image: url(:/icons/ui/dark/branch_more.png) 0;
 }
 
 QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-    border-image: url(:/icons/ui/dark_branch_end.png) 0;
+    border-image: url(:/icons/ui/dark/branch_end.png) 0;
 }
 
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
         border-image: none;
-        image: url(:/icons/ui/dark_branch_closed.png);
+        image: url(:/icons/ui/dark/branch_closed.png);
 }
 
 QTreeView::branch:open:has-children:!has-siblings,
 QTreeView::branch:open:has-children:has-siblings  {
         border-image: none;
-        image: url(:/icons/ui/dark_branch_open.png);
+        image: url(:/icons/ui/dark/branch_open.png);
 }
 
 /* Scroll Bar */

@@ -49,30 +49,30 @@
         <file>icons/viewsprites.ico</file>
         <file>icons/application_form_edit.ico</file>
         <file>icons/connections.ico</file>
-        <file>icons/ui/dark_checkbox_checked_disabled.png</file>
-        <file>icons/ui/dark_checkbox_checked_disabled@2x.png</file>
-        <file>icons/ui/dark_checkbox_checked.png</file>
-        <file>icons/ui/dark_checkbox_checked@2x.png</file>
-        <file>icons/ui/dark_checkbox_unchecked_disabled.png</file>
-        <file>icons/ui/dark_checkbox_unchecked_disabled@2x.png</file>
-        <file>icons/ui/dark_checkbox_unchecked.png</file>
-        <file>icons/ui/dark_checkbox_unchecked@2x.png</file>
-        <file>icons/ui/dark_branch_closed.png</file>
-        <file>icons/ui/dark_branch_open.png</file>
-        <file>icons/ui/dark_branch_end.png</file>
-        <file>icons/ui/dark_branch_more.png</file>
-        <file>icons/ui/midnight_checkbox_checked_disabled.png</file>
-        <file>icons/ui/midnight_checkbox_checked_disabled@2x.png</file>
-        <file>icons/ui/midnight_checkbox_checked.png</file>
-        <file>icons/ui/midnight_checkbox_checked@2x.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked_disabled.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked_disabled@2x.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked@2x.png</file>
-        <file>icons/ui/midnight_branch_closed.png</file>
-        <file>icons/ui/midnight_branch_open.png</file>
-        <file>icons/ui/midnight_branch_end.png</file>
-        <file>icons/ui/midnight_branch_more.png</file>
+        <file>icons/ui/dark/checkbox_checked_disabled.png</file>
+        <file>icons/ui/dark/checkbox_checked_disabled@2x.png</file>
+        <file>icons/ui/dark/checkbox_checked.png</file>
+        <file>icons/ui/dark/checkbox_checked@2x.png</file>
+        <file>icons/ui/dark/checkbox_unchecked_disabled.png</file>
+        <file>icons/ui/dark/checkbox_unchecked_disabled@2x.png</file>
+        <file>icons/ui/dark/checkbox_unchecked.png</file>
+        <file>icons/ui/dark/checkbox_unchecked@2x.png</file>
+        <file>icons/ui/dark/branch_closed.png</file>
+        <file>icons/ui/dark/branch_open.png</file>
+        <file>icons/ui/dark/branch_end.png</file>
+        <file>icons/ui/dark/branch_more.png</file>
+        <file>icons/ui/midnight/checkbox_checked_disabled.png</file>
+        <file>icons/ui/midnight/checkbox_checked_disabled@2x.png</file>
+        <file>icons/ui/midnight/checkbox_checked.png</file>
+        <file>icons/ui/midnight/checkbox_checked@2x.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked_disabled.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked_disabled@2x.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked@2x.png</file>
+        <file>icons/ui/midnight/branch_closed.png</file>
+        <file>icons/ui/midnight/branch_open.png</file>
+        <file>icons/ui/midnight/branch_end.png</file>
+        <file>icons/ui/midnight/branch_more.png</file>
         <file>images/blank_tileset.png</file>
         <file>images/collisions.png</file>
         <file>images/collisions_unknown.png</file>
