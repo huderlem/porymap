@@ -277,6 +277,11 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         if (parentIndex.row() != -1 || parentIndex.column() != -1) {
             return false;
         }
+
+        if (row < 0) {
+            row = this->rowCount(parentIndex);
+        }
+
         QByteArray encodedData = data->data("application/porymap.mapgroupmodel.group");
         QDataStream stream(&encodedData, QIODevice::ReadOnly);
         QString groupName;
@@ -296,7 +301,6 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         }
 
         this->insertRow(row, parentIndex);
-
         QModelIndex groupIndex = index(row, 0, parentIndex);
         QStandardItem *groupItem = this->itemFromIndex(groupIndex);
         createMapFolderItem(groupName, groupItem);
