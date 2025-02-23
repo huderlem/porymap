@@ -314,6 +314,26 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     // Generate a unique MAP constant.
     map->setConstantName(toUniqueIdentifier(Map::mapConstantFromName(map->name())));
 
+    // Make sure we keep the order of the map names the same as in the map group order.
+    int mapNamePos;
+    if (this->groupNames.contains(settings.group)) {
+        mapNamePos = 0;
+        for (const auto &name : this->groupNames) {
+            mapNamePos += this->groupNameToMapNames[name].length();
+            if (name == settings.group)
+                break;
+        }
+    } else if (isValidNewIdentifier(settings.group)) {
+        // Adding map to a map group that doesn't exist yet.
+        // Create the group, and we already know the map will be last in the list.
+        addNewMapGroup(settings.group);
+        mapNamePos = this->mapNames.length();
+    } else {
+        logError(QString("Cannot create new map with invalid map group name '%1'.").arg(settings.group));
+        delete map;
+        return nullptr;
+    }
+
     Layout *layout = this->mapLayouts.value(settings.layout.id);
     if (!layout) {
         // Layout doesn't already exist, create it.
@@ -328,24 +348,6 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
         loadLayout(layout);
     }
     map->setLayout(layout);
-
-    // Make sure we keep the order of the map names the same as in the map group order.
-    int mapNamePos;
-    if (this->groupNames.contains(settings.group)) {
-        mapNamePos = 0;
-        for (const auto &name : this->groupNames) {
-            mapNamePos += this->groupNameToMapNames[name].length();
-            if (name == settings.group)
-                break;
-        }
-    } else {
-        // Adding map to a map group that doesn't exist yet.
-        // Create the group, and we already know the map will be last in the list.
-        if (isValidNewIdentifier(settings.group)) {
-            addNewMapGroup(settings.group);
-        }
-        mapNamePos = this->mapNames.length();
-    }
 
     const QString location = map->header()->location();
     if (!this->mapSectionIdNames.contains(location) && isValidNewIdentifier(location)) {
