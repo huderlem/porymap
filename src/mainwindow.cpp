@@ -297,6 +297,7 @@ void MainWindow::initExtraSignals() {
 
     connect(ui->action_NewMap, &QAction::triggered, this, &MainWindow::openNewMapDialog);
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
+    connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -1409,6 +1410,14 @@ void MainWindow::openDuplicateLayoutDialog(const QString &layoutId) {
         dialog->open();
     } else {
         RecentErrorMessage::show(QString("Unable to duplicate '%1'.").arg(layoutId), this);
+    }
+}
+
+void MainWindow::openDuplicateMapOrLayoutDialog() {
+    if (this->editor->map) {
+        openDuplicateMapDialog(this->editor->map->name());
+    } else if (this->editor->layout) {
+        openDuplicateLayoutDialog(this->editor->layout->id);
     }
 }
 

@@ -361,6 +361,7 @@ private:
     NewLayoutDialog* createNewLayoutDialog(const Layout *layoutToCopy = nullptr);
     void openNewLayoutDialog();
     void openDuplicateLayoutDialog(const QString &layoutId);
+    void openDuplicateMapOrLayoutDialog();
     void openNewMapGroupDialog();
     void openNewLocationDialog();
     void openSubWindow(QWidget * window);
