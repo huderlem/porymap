@@ -438,5 +438,5 @@ QPixmap Layout::getLayoutItemPixmap() {
 }
 
 bool Layout::hasUnsavedChanges() const {
-    return !this->editHistory.isClean();
+    return !this->editHistory.isClean() || !this->newFolderPath.isEmpty();
 }

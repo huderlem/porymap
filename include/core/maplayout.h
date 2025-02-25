@@ -28,6 +28,7 @@ public:
 
     QString id;
     QString name;
+    QString newFolderPath;
 
     int width;
     int height;

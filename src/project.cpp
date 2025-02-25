@@ -385,19 +385,9 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
     // Otherwise the new layout's folder name will just be the layout's name.
     const QString folderName = !settings.folderName.isEmpty() ? settings.folderName : layout->name;
     const QString folderPath = projectConfig.getFilePath(ProjectFilePath::data_layouts_folders) + folderName;
+    layout->newFolderPath = folderPath;
     layout->border_path = folderPath + "/border.bin";
     layout->blockdata_path = folderPath + "/map.bin";
-
-    // Create a new directory for the layout, if it doesn't already exist.
-    const QString fullPath = QString("%1/%2").arg(this->root).arg(folderPath);
-    if (!QDir::root().mkpath(fullPath)) {
-        logError(QString("Failed to create directory for new layout: '%1'").arg(fullPath));
-        delete layout;
-        return nullptr;
-    }
-
-    this->mapLayouts.insert(layout->id, layout);
-    this->layoutIds.append(layout->id);
 
     if (layout->blockdata.isEmpty()) {
         // Fill layout using default fill settings
@@ -408,7 +398,15 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
         setNewLayoutBorder(layout);
     }
 
-    saveLayout(layout); // TODO: Ideally we shouldn't automatically save new layouts
+    // No need for a full load, we already have all the blockdata.
+    layout->loaded = loadLayoutTilesets(layout);
+    if (!layout->loaded) {
+        delete layout;
+        return nullptr;
+    }
+
+    this->mapLayouts.insert(layout->id, layout);
+    this->layoutIds.append(layout->id);
 
     emit layoutCreated(layout);
 
@@ -948,25 +946,25 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     if (!layout->tileset_primary) {
         QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
-        logWarn(QString("%1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_primary_label).arg(defaultTileset));
         layout->tileset_primary_label = defaultTileset;
         layout->tileset_primary = getTileset(layout->tileset_primary_label);
         if (!layout->tileset_primary) {
-            logError(QString("Failed to set default primary tileset."));
+            logError(QString("%1 has invalid primary tileset '%2'.").arg(layout->name).arg(layout->tileset_primary_label));
             return false;
         }
+        logWarn(QString("%1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_primary_label).arg(defaultTileset));
     }
 
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     if (!layout->tileset_secondary) {
         QString defaultTileset = this->getDefaultSecondaryTilesetLabel();
-        logWarn(QString("%1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_secondary_label).arg(defaultTileset));
         layout->tileset_secondary_label = defaultTileset;
         layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
         if (!layout->tileset_secondary) {
-            logError(QString("Failed to set default secondary tileset."));
+            logError(QString("%1 has invalid secondary tileset '%2'.").arg(layout->name).arg(layout->tileset_secondary_label));
             return false;
         }
+        logWarn(QString("%1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_secondary_label).arg(defaultTileset));
     }
     return true;
 }
@@ -1265,6 +1263,16 @@ void Project::saveMap(Map *map, bool skipLayout) {
 void Project::saveLayout(Layout *layout) {
     if (!layout || !layout->loaded)
         return;
+
+    if (!layout->newFolderPath.isEmpty()) {
+        // Layout directory doesn't exist yet, create it now.
+        const QString fullPath = QString("%1/%2").arg(this->root).arg(layout->newFolderPath);
+        if (!QDir::root().mkpath(fullPath)) {
+            logError(QString("Failed to create directory for new layout: '%1'").arg(fullPath));
+            return;
+        }
+        layout->newFolderPath = QString();
+    }
 
     saveLayoutBorder(layout);
     saveLayoutBlockdata(layout);

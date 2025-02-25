@@ -1315,12 +1315,7 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
         ui->comboBox_EmergeMap->insertItem(mapIndex, newMap->name());
     }
 
-    if (userSetMap(newMap->name())) {
-        // TODO: Creating a new map shouldn't be automatically saved.
-        //       For one, it takes away the option to discard the new map.
-        //       For two, if the new map uses an existing layout, any unsaved changes to that layout will also be saved.
-        save(true);
-    }
+    userSetMap(newMap->name());
 }
 
 // Called any time a new layout is created (including as a byproduct of creating a new map)
