@@ -120,26 +120,20 @@ bool RegionMapEditor::saveRegionMapEntries() {
 void buildEmeraldDefaults(poryjson::Json &json) {
     ParseUtil parser;
     QString emeraldDefault = parser.readTextFile(":/text/region_map_default_emerald.json");
-
-    QString err;
-    json = poryjson::Json::parse(emeraldDefault, err);
+    json = poryjson::Json::parse(emeraldDefault);
 }
 
 void buildRubyDefaults(poryjson::Json &json) {
     ParseUtil parser;
     QString emeraldDefault = parser.readTextFile(":/text/region_map_default_ruby.json");
-
-    QString err;
-    json = poryjson::Json::parse(emeraldDefault, err);
+    json = poryjson::Json::parse(emeraldDefault);
 }
 
 void buildFireredDefaults(poryjson::Json &json) {
 
     ParseUtil parser;
     QString fireredDefault = parser.readTextFile(":/text/region_map_default_firered.json");    
-
-    QString err;
-    json = poryjson::Json::parse(fireredDefault, err);
+    json = poryjson::Json::parse(fireredDefault);
 }
 
 poryjson::Json RegionMapEditor::buildDefaultJson() {
@@ -199,8 +193,7 @@ bool RegionMapEditor::buildConfigDialog() {
         poryjson::Json::object newJson;
         poryjson::Json::array mapArr;
         for (auto item : regionMapList->findItems("*", Qt::MatchWildcard)) {
-            QString err;
-            poryjson::Json itemJson = poryjson::Json::parse(item->data(Qt::UserRole).toString(), err);
+            poryjson::Json itemJson = poryjson::Json::parse(item->data(Qt::UserRole).toString());
             mapArr.append(itemJson);
         }
         newJson["region_maps"] = mapArr;
@@ -213,8 +206,7 @@ bool RegionMapEditor::buildConfigDialog() {
     connect(regionMapList, &QListWidget::itemDoubleClicked, [this, &rmConfigJsonUpdate, updateMapList, regionMapList](QListWidgetItem *item) {
         int itemIndex = regionMapList->row(item);
 
-        QString err;
-        poryjson::Json clickedJson = poryjson::Json::parse(item->data(Qt::UserRole).toString(), err);
+        poryjson::Json clickedJson = poryjson::Json::parse(item->data(Qt::UserRole).toString());
 
         RegionMapPropertiesDialog dialog(this);
         dialog.setProject(this->project);

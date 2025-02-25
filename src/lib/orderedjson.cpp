@@ -393,7 +393,7 @@ struct JsonParser final {
      */
     const QString &str;
     int i;
-    QString &err;
+    QString *err;
     bool failed;
     const JsonParse strategy;
 
@@ -407,8 +407,8 @@ struct JsonParser final {
 
     template <typename T>
     T fail(QString &&msg, const T err_ret) {
-        if (!failed)
-            err = std::move(msg);
+        if (!failed && err)
+            *err = std::move(msg);
         failed = true;
         return err_ret;
     }
@@ -775,7 +775,7 @@ struct JsonParser final {
 };
 }//namespace {
 
-Json Json::parse(const QString &in, QString &err, JsonParse strategy) {
+Json Json::parse(const QString &in, QString *err, JsonParse strategy) {
     JsonParser parser { in, 0, err, false, strategy };
     Json result = parser.parse_json(0);
 

@@ -67,10 +67,10 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
     return QString("%1:%2:%3: %4").arg(this->file).arg(lineNum).arg(colNum).arg(message);
 }
 
-QString ParseUtil::readTextFile(const QString &path) {
+QString ParseUtil::readTextFile(const QString &path, QString *error) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1': ").arg(path) + file.errorString());
+        if (error) *error = file.errorString();
         return QString();
     }
     QTextStream in(&file);
@@ -380,7 +380,7 @@ bool ParseUtil::defineNameMatchesFilter(const QString &name, const QList<QRegula
     return false;
 }
 
-ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const QStringList &filterList, bool useRegex) {
+ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const QStringList &filterList, bool useRegex, QString *error) {
     ParsedDefines result;
     this->file = filename;
 
@@ -389,12 +389,9 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
     }
 
     QString filepath = this->root + "/" + this->file;
-    this->text = readTextFile(filepath);
-
-    if (this->text.isNull()) {
-        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
+    this->text = readTextFile(filepath, error);
+    if (this->text.isNull())
         return result;
-    }
 
     static const QRegularExpression re_extraChars("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)");
     this->text.replace(re_extraChars, "");
@@ -466,8 +463,8 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
 }
 
 // Read all the define names and their expressions in the specified file, then evaluate the ones matching the search text (and any they depend on).
-QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex) {
-    ParsedDefines defines = readCDefines(filename, filterList, useRegex);
+QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex, QString *error) {
+    ParsedDefines defines = readCDefines(filename, filterList, useRegex, error);
 
     // Evaluate defines
     QMap<QString, int> filteredValues;
@@ -486,20 +483,20 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
 }
 
 // Find and evaluate a specific set of defines with known names.
-QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QStringList &names) {
-    return evaluateCDefines(filename, names, false);
+QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QStringList &names, QString *error) {
+    return evaluateCDefines(filename, names, false, error);
 }
 
 // Find and evaluate an unknown list of defines with a known name pattern.
-QMap<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QStringList &regexList) {
-    return evaluateCDefines(filename, regexList, true);
+QMap<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QStringList &regexList, QString *error) {
+    return evaluateCDefines(filename, regexList, true, error);
 }
 
 // Find an unknown list of defines with a known name pattern.
 // Similar to readCDefinesByRegex, but for cases where we only need to show a list of define names.
 // We can skip evaluating any expressions (and by extension skip reporting any errors from this process).
-QStringList ParseUtil::readCDefineNames(const QString &filename, const QStringList &regexList) {
-    return readCDefines(filename, regexList, true).filteredNames;
+QStringList ParseUtil::readCDefineNames(const QString &filename, const QStringList &regexList, QString *error) {
+    return readCDefines(filename, regexList, true, error).filteredNames;
 }
 
 QStringList ParseUtil::readCArray(const QString &filename, const QString &label) {
@@ -558,8 +555,8 @@ QMap<QString, QStringList> ParseUtil::readCArrayMulti(const QString &filename) {
     return map;
 }
 
-QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, const QString &label) {
-    this->text = readTextFile(this->root + "/" + filename);
+QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, const QString &label, QString *error) {
+    this->text = readTextFile(this->root + "/" + filename, error);
     QMap<QString, QString> map;
 
     QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
@@ -659,10 +656,10 @@ QStringList ParseUtil::getLabelValues(const QList<QStringList> &list, const QStr
     return values;
 }
 
-bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath) {
+bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath, QString *error) {
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
-        logError(QString("Error: Could not open %1 for reading").arg(filepath));
+        if (error) *error = file.errorString();
         return false;
     }
 
@@ -671,7 +668,7 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath) {
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &parseError);
     file.close();
     if (parseError.error != QJsonParseError::NoError) {
-        logError(QString("Error: Failed to parse json file %1: %2").arg(filepath).arg(parseError.errorString()));
+        if (error) *error = parseError.errorString();
         return false;
     }
 
@@ -679,23 +676,15 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath) {
     return true;
 }
 
-bool ParseUtil::tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath) {
+bool ParseUtil::tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath, QString *error) {
     QString err;
-    QString jsonTxt = readTextFile(filepath);
-    *out = OrderedJson::parse(jsonTxt, err).object_items();
-    if (!err.isEmpty()) {
-        logError(QString("Error: Failed to parse json file %1: %2").arg(filepath).arg(err));
+    QString jsonTxt = readTextFile(filepath, error);
+    if (error && !error->isEmpty()) {
         return false;
     }
-    return true;
-}
-
-bool ParseUtil::ensureFieldsExist(const QJsonObject &obj, const QList<QString> &fields) {
-    for (QString field : fields) {
-        if (!obj.contains(field)) {
-            logError(QString("JSON object is missing field '%1'.").arg(field));
-            return false;
-        }
+    *out = OrderedJson::parse(jsonTxt, error).object_items();
+    if (error && !error->isEmpty()) {
+        return false;
     }
     return true;
 }
