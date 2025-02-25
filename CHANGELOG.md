@@ -8,8 +8,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
-- Redesigned the map list, adding new features including opening/editing layouts with no associated map, duplicating maps or layouts (accessible via right-click), editing the names of map groups, rearranging maps and map groups, and hiding empty folders.
+- Redesigned the map list, adding new features including opening/editing layouts with no associated map, editing the names of map groups, rearranging maps and map groups, and hiding empty folders.
 - Add a drop-down for changing the layout of the currently opened map.
+- Add an option to duplicate maps/layouts.
 - Redesigned the Connections tab, adding new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
 - Add a search button to the `Wild Pokémon` tab that shows the encounter data for a species across all maps.
@@ -25,6 +26,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ### Changed
 - `Change Dimensions` now has an interactive resizing rectangle.
 - Redesigned the new map dialog, including better error checking and a collapsible section for header data.
+- New maps/layouts are no longer saved automatically, and can be fully discarded by closing without saving.
 - Map groups and ``MAPSEC`` names specified when creating a new map will be added automatically if they don't already exist.
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
