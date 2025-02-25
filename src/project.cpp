@@ -1118,12 +1118,17 @@ void Project::writeBlockdata(QString path, const Blockdata &blockdata) {
     }
 }
 
-void Project::saveAllMaps() {
-    for (auto *map : mapCache.values())
-        saveMap(map);
+void Project::saveAll() {
+    for (auto map : this->mapCache) {
+        saveMap(map, true); // Avoid double-saving the layouts
+    }
+    for (auto layout : this->mapLayouts) {
+        saveLayout(layout);
+    }
+    saveGlobalData();
 }
 
-void Project::saveMap(Map *map) {
+void Project::saveMap(Map *map, bool skipLayout) {
     // Create/Modify a few collateral files for brand new maps.
     const QString folderPath = projectConfig.getFilePath(ProjectFilePath::data_map_folders) + map->name();
     const QString fullPath = QString("%1/%2").arg(this->root).arg(folderPath);
@@ -1252,12 +1257,15 @@ void Project::saveMap(Map *map) {
     jsonDoc.dump(&mapFile);
     mapFile.close();
 
-    saveLayout(map->layout());
+    if (!skipLayout) saveLayout(map->layout());
 
     map->setClean();
 }
 
 void Project::saveLayout(Layout *layout) {
+    if (!layout || !layout->loaded)
+        return;
+
     saveLayoutBorder(layout);
     saveLayoutBlockdata(layout);
 
@@ -1280,7 +1288,7 @@ void Project::updateLayout(Layout *layout) {
     }
 }
 
-void Project::saveAllDataStructures() {
+void Project::saveGlobalData() {
     saveMapLayouts();
     saveMapGroups();
     saveRegionMapSections();

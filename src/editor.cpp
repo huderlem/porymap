@@ -67,28 +67,30 @@ Editor::~Editor()
     closeProject();
 }
 
-void Editor::saveProject() {
-    if (project) {
-        saveUiFields();
-        project->saveAllMaps();
-        project->saveAllDataStructures();
-    }
+void Editor::saveCurrent() {
+    save(true);
 }
 
-void Editor::save() {
-    if (this->project && this->map) {
-        saveUiFields();
-        this->project->saveMap(this->map);
-        this->project->saveAllDataStructures();
-    }
-    else if (this->project && this->layout) {
-        this->project->saveLayout(this->layout);
-        this->project->saveAllDataStructures();
-    }
+void Editor::saveAll() {
+    save(false);
 }
 
-void Editor::saveUiFields() {
+void Editor::save(bool currentOnly) {
+    if (!this->project)
+        return;
+
     saveEncounterTabData();
+
+    if (currentOnly) {
+        if (this->map) {
+            this->project->saveMap(this->map);
+        } else if (this->layout) {
+            this->project->saveLayout(this->layout);
+        }
+        this->project->saveGlobalData();
+    } else {
+        this->project->saveAll();
+    }
 }
 
 void Editor::setProject(Project * project) {
@@ -649,6 +651,9 @@ void Editor::configureEncounterJSON(QWidget *window) {
 }
 
 void Editor::saveEncounterTabData() {
+    if (!this->map || !this->project)
+        return;
+
     // This function does not save to disk so it is safe to use before user clicks Save.
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
