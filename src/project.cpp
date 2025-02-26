@@ -664,6 +664,10 @@ void Project::saveMapGroups() {
     for (const auto &groupName : this->groupNames) {
         OrderedJson::array groupArr;
         for (const auto &mapName : this->groupNameToMapNames.value(groupName)) {
+            if (this->mapCache.value(mapName) && !this->mapCache.value(mapName)->isPersistedToFile()) {
+                // This is a new map that hasn't been saved yet, don't add it to the global map groups list yet.
+                continue;
+            }
             groupArr.push_back(mapName);
         }
         mapGroupsObj[groupName] = groupArr;
@@ -1136,6 +1140,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
     if (!map->isPersistedToFile()) {
         if (!QDir::root().mkpath(fullPath)) {
             logError(QString("Failed to create directory for new map: '%1'").arg(fullPath));
+            return;
         }
 
         // Create file data/maps/<map_name>/scripts.inc
