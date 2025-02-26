@@ -44,6 +44,7 @@ Project::~Project()
     clearMapLayouts();
     clearEventGraphics();
     clearHealLocations();
+    QPixmapCache::clear();
 }
 
 void Project::set_root(QString dir) {
@@ -2637,14 +2638,25 @@ bool Project::readMiscellaneousConstants() {
 }
 
 bool Project::readEventScriptLabels() {
-    globalScriptLabels.clear();
-    for (const auto &filePath : getEventScriptsFilePaths())
-        globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
+    this->globalScriptLabels.clear();
 
-    globalScriptLabels.sort(Qt::CaseInsensitive);
-    globalScriptLabels.removeDuplicates();
+    if (porymapConfig.loadAllEventScripts) {
+        for (const auto &filePath : getEventScriptsFilePaths())
+            this->globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
 
+       this->globalScriptLabels.sort(Qt::CaseInsensitive);
+       this->globalScriptLabels.removeDuplicates();
+    }
+    emit eventScriptLabelsRead();
     return true;
+}
+
+void Project::insertGlobalScriptLabels(QStringList &scriptLabels) const {
+    if (this->globalScriptLabels.isEmpty())
+        return;
+    scriptLabels.append(this->globalScriptLabels);
+    scriptLabels.sort();
+    scriptLabels.removeDuplicates();
 }
 
 QString Project::fixPalettePath(QString path) {
@@ -2702,90 +2714,218 @@ QStringList Project::getEventScriptsFilePaths() const {
     return filePaths;
 }
 
-void Project::setEventPixmap(Event *event, bool forceLoad) {
+void Project::loadEventPixmap(Event *event, bool forceLoad) {
     if (event && (event->getPixmap().isNull() || forceLoad))
         event->loadPixmap(this);
 }
 
 void Project::clearEventGraphics() {
-    qDeleteAll(eventGraphicsMap);
-    eventGraphicsMap.clear();
+    qDeleteAll(this->eventGraphicsMap);
+    this->eventGraphicsMap.clear();
 }
 
 bool Project::readEventGraphics() {
     clearEventGraphics();
 
-    fileWatcher.addPaths(QStringList() << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers)
-                                       << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info)
-                                       << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables)
-                                       << root + "/" + projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
-
     const QString pointersFilepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_pointers);
-    const QString pointersName = projectConfig.getIdentifier(ProjectIdentifier::symbol_obj_event_gfx_pointers);
-    QMap<QString, QString> pointerHash = parser.readNamedIndexCArray(pointersFilepath, pointersName);
+    const QString gfxInfoFilepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
+    const QString picTablesFilepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables);
+    const QString gfxFilepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx);
+    fileWatcher.addPaths({pointersFilepath, gfxInfoFilepath, picTablesFilepath, gfxFilepath});
 
-    QStringList gfxNames = gfxDefines.keys();
+    // Read the table mapping OBJ_EVENT_GFX constants to the names of pointers to data about their graphics.
+    const QString pointersName = projectConfig.getIdentifier(ProjectIdentifier::symbol_obj_event_gfx_pointers);
+    const QMap<QString, QString> pointerMap = parser.readNamedIndexCArray(pointersFilepath, pointersName);
 
     // The positions of each of the required members for the gfx info struct.
     // For backwards compatibility if the struct doesn't use initializers.
-    static const auto gfxInfoMemberMap = QHash<int, QString>{
+    static const QHash<int, QString> gfxInfoMemberMap = {
+        {4, "width"},
+        {5, "height"},
         {8, "inanimate"},
-        {11, "oam"},
         {12, "subspriteTables"},
         {14, "images"},
     };
+    // Read the structs containing data about each of the event sprites.
+    auto gfxInfos = parser.readCStructs(gfxInfoFilepath, "", gfxInfoMemberMap);
 
-    QString filepath = projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx_info);
-    auto gfxInfos = parser.readCStructs(filepath, "", gfxInfoMemberMap);
+    // We need data in both of these files to translate data from the structs above into the path for a .png file.
+    const QMap<QString, QStringList> picTables = parser.readCArrayMulti(picTablesFilepath);
+    const QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(gfxFilepath);
 
-    QMap<QString, QStringList> picTables = parser.readCArrayMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_pic_tables));
-    QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(projectConfig.getFilePath(ProjectFilePath::data_obj_event_gfx));
+    for (auto i = this->gfxDefines.constBegin(); i != this->gfxDefines.constEnd(); i++) {
+        const QString gfxName = i.key();
 
-    for (QString gfxName : gfxNames) {
-        QString info_label = pointerHash[gfxName].replace("&", "");
+        // Strip the address-of operator to get the pointer's name. We'll use this name to get data about the event's sprite.
+        // If we don't recognize the name, ignore it. The event will use a default sprite.
+        QString info_label = pointerMap.value(gfxName);
+        info_label.replace("&", "");
         if (!gfxInfos.contains(info_label))
             continue;
+        const QHash<QString, QString> gfxInfoAttributes = gfxInfos[info_label];
 
-        auto gfxInfoAttributes = gfxInfos[info_label];
+        auto gfx = new EventGraphics;
 
-        auto eventGraphics = new EventGraphics;
-        eventGraphics->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));
-        QString pic_label = gfxInfoAttributes.value("images");
-        QString dimensions_label = gfxInfoAttributes.value("oam");
-        QString subsprites_label = gfxInfoAttributes.value("subspriteTables");
-
-        QString gfx_label = picTables[pic_label].value(0);
+        // We need the .png filepath for the event's sprite. This is buried behind a few levels of indirection.
+        // The 'images' field gives us the name of the table containing the sprite's image data.
+        // The entries in this table are expected to be in the format (PngSymbolName, ...).
+        // We extract the symbol name of the .png's INCBIN'd data by looking at the first entry in this table.
+        // Once we have the .png's symbol name we can get the actual filepath from its INCBIN.
+        QString gfx_label = picTables[gfxInfoAttributes.value("images")].value(0);
         static const QRegularExpression re_parens("[\\(\\)]");
         gfx_label = gfx_label.section(re_parens, 1, 1);
-        QString path = graphicIncbins[gfx_label];
+        gfx->filepath = fixGraphicPath(graphicIncbins[gfx_label]);
 
-        if (!path.isNull()) {
-            path = fixGraphicPath(path);
-            eventGraphics->spritesheet = QImage(root + "/" + path);
-            if (!eventGraphics->spritesheet.isNull()) {
-                // Infer the sprite dimensions from the OAM labels.
-                static const QRegularExpression re("\\S+_(\\d+)x(\\d+)");
-                QRegularExpressionMatch dimensionMatch = re.match(dimensions_label);
-                QRegularExpressionMatch oamTablesMatch = re.match(subsprites_label);
-                if (oamTablesMatch.hasMatch()) {
-                    eventGraphics->spriteWidth = oamTablesMatch.captured(1).toInt(nullptr, 0);
-                    eventGraphics->spriteHeight = oamTablesMatch.captured(2).toInt(nullptr, 0);
-                } else if (dimensionMatch.hasMatch()) {
-                    eventGraphics->spriteWidth = dimensionMatch.captured(1).toInt(nullptr, 0);
-                    eventGraphics->spriteHeight = dimensionMatch.captured(2).toInt(nullptr, 0);
-                } else {
-                    eventGraphics->spriteWidth = eventGraphics->spritesheet.width();
-                    eventGraphics->spriteHeight = eventGraphics->spritesheet.height();
-                }
-            }
-        } else {
-            eventGraphics->spritesheet = QImage();
-            eventGraphics->spriteWidth = 16;
-            eventGraphics->spriteHeight = 16;
+        // Note: gfx has a 'spritesheet' field that will contain a QImage for the event's sprite.
+        //       We don't create this QImage yet. Reading the image now is unnecessary overhead for startup.
+        //       We'll read the image file when the event's sprite is first requested to be drawn.
+
+        // The .png file is expected to be a spritesheet that can have multiple frames.
+        // We only want to show one frame at a time, so we need to know the dimensions of each frame.
+        // The true dimensions are buried in the subsprite data, so we try to infer the dimensions from the name of the 'subspriteTables' symbol.
+        // If we are unable to do this, we can read the dimensions from the width and height fields.
+        // This is much more straightforward, but the numbers are not necessarily accurate (one vanilla event sprite,
+        // the Town Map in FRLG, has width/height values that differ from its true dimensions).
+        static const QRegularExpression re_dimensions("\\S+_(\\d+)x(\\d+)");
+        const QRegularExpressionMatch dimensionsMatch = re_dimensions.match(gfxInfoAttributes.value("subspriteTables"));
+        if (dimensionsMatch.hasMatch()) {
+            gfx->spriteWidth = dimensionsMatch.captured(1).toInt(nullptr, 0);
+            gfx->spriteHeight = dimensionsMatch.captured(2).toInt(nullptr, 0);
+        } else if (gfxInfoAttributes.contains("width") && gfxInfoAttributes.contains("height")) {
+            gfx->spriteWidth = gfxInfoAttributes.value("width").toInt(nullptr, 0);
+            gfx->spriteHeight = gfxInfoAttributes.value("height").toInt(nullptr, 0);
         }
-        eventGraphicsMap.insert(gfxName, eventGraphics);
+        // If we fail to get sprite dimensions then they should remain -1, and the sprite will use the full spritesheet as its image.
+        if (gfx->spriteWidth <= 0 || gfx->spriteHeight <= 0) {
+            gfx->spriteWidth = -1;
+            gfx->spriteHeight = -1;
+        }
+
+        // Inanimate events will only ever use the first frame of their spritesheet.
+        gfx->inanimate = ParseUtil::gameStringToBool(gfxInfoAttributes.value("inanimate"));
+
+        this->eventGraphicsMap.insert(gfxName, gfx);
     }
     return true;
+}
+
+QPixmap Project::getEventPixmap(const QString &gfxName, const QString &movementName) {
+    struct FrameData {
+        int index = 0;
+        bool hFlip = false;
+    };
+    // TODO: Expose as a setting to users
+    static const QMap<QString, FrameData> directionToFrameData = {
+        {"DIR_SOUTH", { .index = 0, .hFlip = false }},
+        {"DIR_NORTH", { .index = 1, .hFlip = false }},
+        {"DIR_WEST",  { .index = 2, .hFlip = false }},
+        {"DIR_EAST",  { .index = 2, .hFlip = true }}, // East-facing sprite is just the West-facing sprite mirrored
+    };
+    const QString direction = this->facingDirections.value(movementName, "DIR_SOUTH");
+    auto frameData = directionToFrameData.value(direction);
+    return getEventPixmap(gfxName, frameData.index, frameData.hFlip);
+}
+
+QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
+    QPixmap pixmap;
+    const QString cacheKey = QString("EVENT#%1#%2#%3").arg(gfxName).arg(frame).arg(hFlip ? "1" : "0");
+    if (QPixmapCache::find(cacheKey, &pixmap)) {
+        return pixmap;
+    }
+
+    EventGraphics* gfx = this->eventGraphicsMap.value(gfxName, nullptr);
+    if (!gfx) {
+        // Invalid gfx constant. If this is a number, try to use that instead.
+        bool ok;
+        int gfxNum = ParseUtil::gameStringToInt(gfxName, &ok);
+        if (ok && gfxNum < this->gfxDefines.count()) {
+            gfx = this->eventGraphicsMap.value(this->gfxDefines.key(gfxNum, "NULL"), nullptr);
+        }
+    }
+    if (gfx && !gfx->loaded) {
+        // This is the first request for this event's sprite. We'll attempt to load it now.
+        if (!gfx->filepath.isEmpty()) {
+            gfx->spritesheet = QImage(QString("%1/%2").arg(this->root).arg(gfx->filepath));
+            if (gfx->spritesheet.isNull()) {
+                logWarn(QString("Failed to open '%1' for event's sprite. Event will use a default sprite instead.").arg(gfx->filepath));
+            } else {
+                // If we were unable to find the dimensions of a frame within the spritesheet we'll use the full image dimensions.
+                if (gfx->spriteWidth <= 0) {
+                    gfx->spriteWidth = gfx->spritesheet.width();
+                }
+                if (gfx->spriteHeight <= 0) {
+                    gfx->spriteHeight = gfx->spritesheet.height();
+                }
+            }
+        }
+        // Set this whether we were successful or not, we only need to try to load it once.
+        gfx->loaded = true;
+    }
+    if (!gfx || gfx->spritesheet.isNull()) {
+        // Either we didn't recognize the gfxName, or we were unable to load the sprite's image.
+        return QPixmap();
+    }
+
+    QImage img;
+    if (gfx->inanimate) {
+        img = gfx->spritesheet.copy(0, 0, gfx->spriteWidth, gfx->spriteHeight);
+    } else {
+        int x = 0;
+        int y = 0;
+
+        // Get frame's position in spritesheet.
+        // Assume horizontal layout. If position would exceed sheet width, try vertical layout.
+        if ((frame + 1) * gfx->spriteWidth <= gfx->spritesheet.width()) {
+            x = frame * gfx->spriteWidth;
+        } else if ((frame + 1) * gfx->spriteHeight <= gfx->spritesheet.height()) {
+            y = frame * gfx->spriteHeight;
+        }
+
+        img = gfx->spritesheet.copy(x, y, gfx->spriteWidth, gfx->spriteHeight);
+        if (hFlip) {
+            img = img.transformed(QTransform().scale(-1, 1));
+        }
+    }
+    // Set first palette color fully transparent.
+    img.setColor(0, qRgba(0, 0, 0, 0));
+
+    pixmap = QPixmap::fromImage(img);
+    QPixmapCache::insert(cacheKey, pixmap);
+    return pixmap;
+}
+
+QPixmap Project::getEventPixmap(Event::Group group) {
+    if (group == Event::Group::None)
+        return QPixmap();
+
+    QPixmap pixmap;
+    const QString cacheKey = QString("EVENT#%1").arg(Event::groupToString(group));
+    if (QPixmapCache::find(cacheKey, &pixmap)) {
+        return pixmap;
+    }
+
+    const int defaultWidth = 16;
+    const int defaultHeight = 16;
+    static const QPixmap defaultIcons = QPixmap(":/images/Entities_16x16.png");
+    QPixmap defaultIcon = QPixmap(defaultIcons.copy(static_cast<int>(group) * defaultWidth, 0, defaultWidth, defaultHeight));
+
+    // Custom event icons may be provided by the user.
+    QString customIconPath = projectConfig.getEventIconPath(group);
+    if (customIconPath.isEmpty()) {
+        // No custom icon specified, use the default icon.
+        pixmap = defaultIcon;
+    } else {
+        // Try to load custom icon
+        QString validPath = Project::getExistingFilepath(customIconPath);
+        if (!validPath.isEmpty()) customIconPath = validPath; // Otherwise allow it to fail with the original path
+        pixmap = QPixmap(customIconPath);
+        if (pixmap.isNull()) {
+            pixmap = defaultIcon;
+            logWarn(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
+        }
+    }
+    QPixmapCache::insert(cacheKey, pixmap);
+    return pixmap;
 }
 
 bool Project::readSpeciesIconPaths() {

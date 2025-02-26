@@ -390,6 +390,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "project_settings_tab") {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
+    } else if (key == "load_all_event_scripts") {
+        this->loadAllEventScripts = getConfigBool(key, value);
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else if (key == "event_delete_warning_disabled") {
@@ -481,6 +483,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
+    map.insert("load_all_event_scripts", QString::number(this->loadAllEventScripts));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
     map.insert("event_delete_warning_disabled", QString::number(this->eventDeleteWarningDisabled));
     map.insert("event_overlay_enabled", QString::number(this->eventOverlayEnabled));

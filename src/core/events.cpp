@@ -4,8 +4,6 @@
 #include "project.h"
 #include "config.h"
 
-QMap<Event::Group, const QPixmap*> Event::icons;
-
 Event* Event::create(Event::Type type) {
     switch (type) {
     case Event::Type::Object: return new ObjectEvent();
@@ -107,46 +105,11 @@ Event::Type Event::typeFromString(QString type) {
     return typeToStringMap.key(type, Event::Type::None);
 }
 
-void Event::loadPixmap(Project *) {
-    const QPixmap * pixmap = Event::icons.value(this->getEventGroup());
-    this->pixmap = pixmap ? *pixmap : QPixmap();
+void Event::loadPixmap(Project *project) {
+    this->pixmap = project->getEventPixmap(this->getEventGroup());
+    this->usesDefaultPixmap = true;
 }
 
-void Event::clearIcons() {
-    qDeleteAll(icons);
-    icons.clear();
-}
-
-void Event::setIcons() {
-    clearIcons();
-    const int w = 16;
-    const int h = 16;
-    static const QPixmap defaultIcons = QPixmap(":/images/Entities_16x16.png");
-
-    // Custom event icons may be provided by the user.
-    const int numIcons = qMin(defaultIcons.width() / w, static_cast<int>(Event::Group::None));
-    for (int i = 0; i < numIcons; i++) {
-        Event::Group group = static_cast<Event::Group>(i);
-        QString customIconPath = projectConfig.getEventIconPath(group);
-        if (customIconPath.isEmpty()) {
-            // No custom icon specified, use the default icon.
-            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
-            continue;
-        }
-
-        // Try to load custom icon
-        QString validPath = Project::getExistingFilepath(customIconPath);
-        if (!validPath.isEmpty()) customIconPath = validPath; // Otherwise allow it to fail with the original path
-        const QPixmap customIcon = QPixmap(customIconPath);
-        if (customIcon.isNull()) {
-            // Custom icon failed to load, use the default icon.
-            icons[group] = new QPixmap(defaultIcons.copy(i * w, 0, w, h));
-            logWarn(QString("Failed to load custom event icon '%1', using default icon.").arg(customIconPath));
-        } else {
-            icons[group] = new QPixmap(customIcon.scaled(w, h));
-        }
-    }
-}
 
 
 Event *ObjectEvent::duplicate() const {
@@ -230,7 +193,6 @@ void ObjectEvent::setDefaultValues(Project *project) {
     this->setRadiusX(0);
     this->setRadiusY(0);
     this->setSightRadiusBerryTreeID("0");
-    this->setFrameFromMovement(project->facingDirections.value(this->getMovement()));
 }
 
 const QSet<QString> expectedObjectFields = {
@@ -257,78 +219,11 @@ QSet<QString> ObjectEvent::getExpectedFields() {
 }
 
 void ObjectEvent::loadPixmap(Project *project) {
-    EventGraphics *eventGfx = project->eventGraphicsMap.value(this->gfx, nullptr);
-    if (!eventGfx) {
-        // Invalid gfx constant.
-        // If this is a number, try to use that instead.
-        bool ok;
-        int altGfx = ParseUtil::gameStringToInt(this->gfx, &ok);
-        if (ok && (altGfx < project->gfxDefines.count())) {
-            eventGfx = project->eventGraphicsMap.value(project->gfxDefines.key(altGfx, "NULL"), nullptr);
-        }
-    }
-    if (!eventGfx || eventGfx->spritesheet.isNull()) {
-        // No sprite associated with this gfx constant.
-        // Use default sprite instead.
+    this->pixmap = project->getEventPixmap(this->gfx, this->movement);
+    if (!this->pixmap.isNull()) {
+        this->usesDefaultPixmap = false;
+    } else {
         Event::loadPixmap(project);
-        this->spriteWidth = 16;
-        this->spriteHeight = 16;
-        this->usingSprite = false;
-    } else {
-        this->setFrameFromMovement(project->facingDirections.value(this->movement));
-        this->setPixmapFromSpritesheet(eventGfx);
-    }
-}
-
-void ObjectEvent::setPixmapFromSpritesheet(EventGraphics * gfx)
-{
-    QImage img;
-    if (gfx->inanimate) {
-        img = gfx->spritesheet.copy(0, 0, gfx->spriteWidth, gfx->spriteHeight);
-    } else {
-        int x = 0;
-        int y = 0;
-
-        // Get frame's position in spritesheet.
-        // Assume horizontal layout. If position would exceed sheet width, try vertical layout.
-        if ((this->frame + 1) * gfx->spriteWidth <= gfx->spritesheet.width()) {
-            x = this->frame * gfx->spriteWidth;
-        } else if ((this->frame + 1) * gfx->spriteHeight <= gfx->spritesheet.height()) {
-            y = this->frame * gfx->spriteHeight;
-        }
-
-        img = gfx->spritesheet.copy(x, y, gfx->spriteWidth, gfx->spriteHeight);
-
-        // Right-facing sprite is just the left-facing sprite mirrored
-        if (this->hFlip) {
-            img = img.transformed(QTransform().scale(-1, 1));
-        }
-    }
-    // Set first palette color fully transparent.
-    img.setColor(0, qRgba(0, 0, 0, 0));
-    pixmap = QPixmap::fromImage(img);
-    this->spriteWidth = gfx->spriteWidth;
-    this->spriteHeight = gfx->spriteHeight;
-    this->usingSprite = true;
-}
-
-void ObjectEvent::setFrameFromMovement(QString facingDir) {
-    // defaults
-    // TODO: read this from a file somewhere?
-    this->frame = 0;
-    this->hFlip = false;
-    if (facingDir == "DIR_NORTH") {
-        this->frame = 1;
-        this->hFlip = false;
-    } else if (facingDir == "DIR_SOUTH") {
-        this->frame = 0;
-        this->hFlip = false;
-    } else if (facingDir == "DIR_WEST") {
-        this->frame = 2;
-        this->hFlip = false;
-    } else if (facingDir == "DIR_EAST") {
-        this->frame = 2;
-        this->hFlip = true;
     }
 }
 
@@ -430,19 +325,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
         this->gfx = project->gfxDefines.key(0, "0");
         this->movement = project->movementTypes.value(0, "0");
     }
-
-    EventGraphics *eventGfx = project->eventGraphicsMap.value(gfx, nullptr);
-    if (!eventGfx || eventGfx->spritesheet.isNull()) {
-        // No sprite associated with this gfx constant.
-        // Use default sprite instead.
-        Event::loadPixmap(project);
-        this->spriteWidth = 16;
-        this->spriteHeight = 16;
-        this->usingSprite = false;
-    } else {
-        this->setFrameFromMovement(project->facingDirections.value(this->movement));
-        this->setPixmapFromSpritesheet(eventGfx);
-    }
+    ObjectEvent::loadPixmap(project);
 }
 
 

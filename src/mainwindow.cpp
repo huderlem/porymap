@@ -1104,7 +1104,6 @@ bool MainWindow::setProjectUI() {
     ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.eventSecretBaseEnabled);
     ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.eventCloneObjectEnabled);
 
-    Event::setIcons();
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
@@ -1162,8 +1161,6 @@ void MainWindow::clearProjectUI() {
     delete this->layoutTreeModel;
     delete this->layoutListProxyModel;
     resetMapListFilters();
-
-    Event::clearIcons();
 }
 
 void MainWindow::scrollMapList(MapTree *list, const QString &itemName) {
@@ -2739,12 +2736,10 @@ void MainWindow::on_actionOpen_Config_Folder_triggered() {
 void MainWindow::on_actionPreferences_triggered() {
     if (!preferenceEditor) {
         preferenceEditor = new PreferenceEditor(this);
-        connect(preferenceEditor, &PreferenceEditor::themeChanged,
-                this, &MainWindow::setTheme);
-        connect(preferenceEditor, &PreferenceEditor::themeChanged,
-                editor, &Editor::maskNonVisibleConnectionTiles);
-        connect(preferenceEditor, &PreferenceEditor::preferencesSaved,
-                this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged, this, &MainWindow::setTheme);
+        connect(preferenceEditor, &PreferenceEditor::themeChanged, editor, &Editor::maskNonVisibleConnectionTiles);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &PreferenceEditor::scriptSettingsChanged, editor->project, &Project::readEventScriptLabels);
     }
 
     openSubWindow(preferenceEditor);
@@ -2759,8 +2754,9 @@ void MainWindow::togglePreferenceSpecificUi() {
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();
 
-    // Redraw all events to use updated porymapConfig.eventSelectionShapeMode
-    this->editor->redrawAllEvents();
+    // Changes to porymapConfig.loadAllEventScripts or porymapConfig.eventSelectionShapeMode
+    // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
+    this->editor->updateEvents();
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {

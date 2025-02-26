@@ -27,7 +27,7 @@ void DraggablePixmapItem::emitPositionChanged() {
 }
 
 void DraggablePixmapItem::updatePixmap() {
-    editor->project->setEventPixmap(event, true);
+    editor->project->loadEventPixmap(event, true);
     this->updatePosition();
     editor->redrawEventPixmapItem(this);
     emit spriteChanged(event->getPixmap());

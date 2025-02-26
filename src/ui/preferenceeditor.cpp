@@ -56,6 +56,7 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_OpenRecentProject->setChecked(porymapConfig.reopenOnLaunch);
     ui->checkBox_CheckForUpdates->setChecked(porymapConfig.checkForUpdates);
     ui->checkBox_DisableEventWarning->setChecked(porymapConfig.eventDeleteWarningDisabled);
+    ui->checkBox_AutocompleteAllScripts->setChecked(porymapConfig.loadAllEventScripts);
 }
 
 void PreferenceEditor::saveFields() {
@@ -63,6 +64,11 @@ void PreferenceEditor::saveFields() {
         const auto theme = themeSelector->currentText();
         porymapConfig.theme = theme;
         emit themeChanged(theme);
+    }
+    bool loadAllEventScripts = ui->checkBox_AutocompleteAllScripts->isChecked();
+    if (loadAllEventScripts != porymapConfig.loadAllEventScripts) {
+        porymapConfig.loadAllEventScripts = loadAllEventScripts;
+        emit scriptSettingsChanged(loadAllEventScripts);
     }
     porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();

@@ -41,14 +41,6 @@ public:
     virtual void visitSign(SignEvent *) = 0;
 };
 
-struct EventGraphics
-{
-    QImage spritesheet;
-    int spriteWidth;
-    int spriteHeight;
-    bool inanimate;
-};
-
 
 ///
 /// Event base class -- purely virtual
@@ -64,11 +56,7 @@ public:
     Event& operator=(const Event &other) = delete;
 
 protected:
-    Event() {
-        this->spriteWidth = 16;
-        this->spriteHeight = 16;
-        this->usingSprite = false;
-    }
+    Event() {}
 
 // public enums & static methods
 public:
@@ -119,8 +107,6 @@ public:
 
     static Event* create(Event::Type type);
 
-    static QMap<Event::Group, const QPixmap*> icons;
-
 // standard public methods
 public:
 
@@ -143,8 +129,8 @@ public:
     int getZ() const { return this->elevation; }
     int getElevation() const { return this->elevation; }
 
-    int getPixelX() const { return (this->x * 16) - qMax(0, (this->spriteWidth - 16) / 2); }
-    int getPixelY() const { return (this->y * 16) - qMax(0, this->spriteHeight - 16); }
+    int getPixelX() const { return (this->x * 16) - qMax(0, (pixmap.width() - 16) / 2); }
+    int getPixelY() const { return (this->y * 16) - qMax(0, pixmap.height() - 16); }
 
     virtual EventFrame *getEventFrame();
     virtual EventFrame *createEventFrame() = 0;
@@ -172,14 +158,8 @@ public:
     void setPixmapItem(DraggablePixmapItem *item);
     DraggablePixmapItem *getPixmapItem() const { return this->pixmapItem; }
 
-    void setUsingSprite(bool newUsingSprite) { this->usingSprite = newUsingSprite; }
-    bool getUsingSprite() const { return this->usingSprite; }
-
-    void setSpriteWidth(int newSpriteWidth) { this->spriteWidth = newSpriteWidth; }
-    int getspriteWidth() const { return this->spriteWidth; }
-
-    void setSpriteHeight(int newSpriteHeight) { this->spriteHeight = newSpriteHeight; }
-    int getspriteHeight() const { return this->spriteHeight; }
+    void setUsesDefaultPixmap(bool newUsesDefaultPixmap) { this->usesDefaultPixmap = newUsesDefaultPixmap; }
+    bool getUsesDefaultPixmap() const { return this->usesDefaultPixmap; }
 
     int getEventIndex();
 
@@ -189,8 +169,6 @@ public:
     static QString groupToString(Event::Group group);
     static QString typeToString(Event::Type type);
     static Event::Type typeFromString(QString type);
-    static void clearIcons();
-    static void setIcons();
 
 // protected attributes
 protected:
@@ -204,9 +182,7 @@ protected:
     int y = 0;
     int elevation = 0;
 
-    int spriteWidth = 16;
-    int spriteHeight = 16;
-    bool usingSprite = false;
+    bool usesDefaultPixmap = true;
 
     // Some events can have an associated #define name that should be unique to this event.
     // e.g. object events can have a 'LOCALID', or Heal Locations have a 'HEAL_LOCATION' id.
@@ -272,10 +248,6 @@ public:
 
     void setFlag(QString newFlag) { this->flag = newFlag; }
     QString getFlag() const { return this->flag; }
-
-public:
-    void setFrameFromMovement(QString movement);
-    void setPixmapFromSpritesheet(EventGraphics * gfx);
 
 
 protected:

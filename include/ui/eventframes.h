@@ -31,8 +31,6 @@ public:
     void invalidateUi();
     void invalidateValues();
 
-    void populateScriptDropdown(NoScrollComboBox * combo, Project * project);
-
     virtual void setActive(bool active);
 
 public:
@@ -58,6 +56,8 @@ protected:
     bool populated = false;
     bool initialized = false;
     bool connected = false;
+
+    void populateScriptDropdown(NoScrollComboBox * combo, Project * project);
 
 private:
     Event *event;
