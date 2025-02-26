@@ -168,7 +168,7 @@ QString Map::getScriptsFilePath() const {
     auto path = QDir::cleanPath(QString("%1/%2/%3/scripts")
                                         .arg(projectConfig.projectDir)
                                         .arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders))
-                                        .arg(m_name));
+                                        .arg(!m_sharedScriptsMap.isEmpty() ? m_sharedScriptsMap : m_name));
     auto extension = Project::getScriptFileExtension(usePoryscript);
     if (usePoryscript && !QFile::exists(path + extension))
         extension = Project::getScriptFileExtension(false);
