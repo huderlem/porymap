@@ -20,8 +20,8 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add an option to display a dividing line between tilesets in the Tileset Editor.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
-- Add buttons to hide and show empty folders in each map tree view.
 - Add a setting to specify the tile values to use for the unused metatile layer.
+- Add a setting to specify the maximum number of events in a group. A warning will be shown if too many events are added.
 
 ### Changed
 - `Change Dimensions` now has an interactive resizing rectangle.
@@ -44,6 +44,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
 - Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
 - The prompt to reload the project when a file has changed will now only appear when Porymap is the active application.
+- `Script` dropdowns now autocomplete only with scripts from the current map, rather than every script in the project. The old behavior is available via a new setting.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -56,6 +57,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
+- Fix species on the wild pokémon tab retaining icons from previously-opened projects.
 - Fix invalid species names clearing from wild pokémon data when revisited.
 - Fix editing wild pokémon data not marking the map as unsaved.
 - Fix editing an event's `Custom Attributes` not marking the map as unsaved.
@@ -88,6 +90,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
 - The Metatile / Tile usage counts in the Tileset Editor now update to reflect changes.
 - Fix regression that stopped the map zoom from centering on the cursor.
+- Fix `Open Map Scripts` not working on maps with a `shared_scripts_map` field.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
