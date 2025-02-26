@@ -182,15 +182,15 @@ public:
 
     // Parse. If parse fails, return Json() and assign an error message to err.
     static Json parse(const QString & in,
-                      QString & err,
+                      QString * err = nullptr,
                       JsonParse strategy = JsonParse::STANDARD);
     static Json parse(const char * in,
-                      QString & err,
+                      QString * err = nullptr,
                       JsonParse strategy = JsonParse::STANDARD) {
         if (in) {
             return parse(QString(in), err, strategy);
         } else {
-            err = "null input";
+            if (err) *err = "null input";
             return nullptr;
         }
     }

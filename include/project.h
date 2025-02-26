@@ -45,7 +45,6 @@ public:
     QStringList layoutIdsMaster;
     QMap<QString, Layout*> mapLayouts;
     QMap<QString, Layout*> mapLayoutsMaster;
-    QMap<QString, EventGraphics*> eventGraphicsMap;
     QMap<QString, int> gfxDefines;
     QString defaultSong;
     QStringList songNames;
@@ -68,7 +67,6 @@ public:
     QMap<QString, uint16_t> unusedMetatileLabels;
     QMap<QString, uint32_t> metatileBehaviorMap;
     QMap<uint32_t, QString> metatileBehaviorMapInverse;
-    QMap<QString, QString> facingDirections;
     ParseUtil parser;
     QFileSystemWatcher fileWatcher;
     QSet<QString> modifiedFiles;
@@ -157,6 +155,7 @@ public:
 
     void initTopLevelMapFields();
     bool readMapJson(const QString &mapName, QJsonDocument * out);
+    bool loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType = Event::Type::None);
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
@@ -167,13 +166,13 @@ public:
     void loadTilesetMetatileLabels(Tileset*);
     void readTilesetPaths(Tileset* tileset);
 
+    void saveAll();
+    void saveGlobalData();
     void saveLayout(Layout *);
     void saveLayoutBlockdata(Layout *);
     void saveLayoutBorder(Layout *);
     void writeBlockdata(QString, const Blockdata &);
-    void saveAllMaps();
-    void saveMap(Map *);
-    void saveAllDataStructures();
+    void saveMap(Map *map, bool skipLayout = false);
     void saveConfig();
     void saveMapLayouts();
     void saveMapGroups();
@@ -209,7 +208,10 @@ public:
     bool readFieldmapMasks();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
-    void setEventPixmap(Event *event, bool forceLoad = false);
+    QPixmap getEventPixmap(const QString &gfxName, const QString &movementName);
+    QPixmap getEventPixmap(const QString &gfxName, int frame, bool hFlip);
+    QPixmap getEventPixmap(Event::Group group);
+    void loadEventPixmap(Event *event, bool forceLoad = false);
 
     QString fixPalettePath(QString path);
     QString fixGraphicPath(QString path);
@@ -217,6 +219,7 @@ public:
     static QString getScriptFileExtension(bool usePoryScript);
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;
     QStringList getEventScriptsFilePaths() const;
+    void insertGlobalScriptLabels(QStringList &scriptLabels) const;
 
     QString getDefaultPrimaryTilesetLabel() const;
     QString getDefaultSecondaryTilesetLabel() const;
@@ -244,13 +247,25 @@ public:
     static int getMapDataSize(int width, int height);
     static bool mapDimensionsValid(int width, int height);
     bool calculateDefaultMapSize();
-    static int getMaxObjectEvents();
+    int getMaxEvents(Event::Group group);
     static QString getEmptyMapsecName();
     static QString getMapGroupPrefix();
 
 private:
     QMap<QString, QString> mapSectionDisplayNames;
     QMap<QString, qint64> modifiedFileTimestamps;
+    QMap<QString, QString> facingDirections;
+
+    struct EventGraphics
+    {
+        QString filepath;
+        bool loaded = false;
+        QImage spritesheet;
+        int spriteWidth = -1;
+        int spriteHeight = -1;
+        bool inanimate = false;
+    };
+    QMap<QString, EventGraphics*> eventGraphicsMap;
 
     void updateLayout(Layout *);
 
@@ -260,6 +275,8 @@ private:
     void ignoreWatchedFileTemporarily(QString filepath);
     void recordFileChange(const QString &filepath);
 
+    int maxEventsPerGroup;
+    int maxObjectEvents;
     static int num_tiles_primary;
     static int num_tiles_total;
     static int num_metatiles_primary;
@@ -267,7 +284,6 @@ private:
     static int num_pals_total;
     static int max_map_data_size;
     static int default_map_dimension;
-    static int max_object_events;
 
 signals:
     void fileChanged(const QString &filepath);
@@ -280,6 +296,7 @@ signals:
     void mapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
     void mapSectionIdNamesChanged(const QStringList &idNames);
     void mapsExcluded(const QStringList &excludedMapNames);
+    void eventScriptLabelsRead();
 };
 
 #endif // PROJECT_H

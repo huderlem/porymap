@@ -44,25 +44,24 @@ class ParseUtil
 public:
     ParseUtil();
     void set_root(const QString &dir);
-    static QString readTextFile(const QString &path);
+    static QString readTextFile(const QString &path, QString *error = nullptr);
     void invalidateTextFile(const QString &path);
     static int textFileLineCount(const QString &path);
     QList<QStringList> parseAsm(const QString &filename);
     QStringList readCArray(const QString &filename, const QString &label);
     QMap<QString, QStringList> readCArrayMulti(const QString &filename);
-    QMap<QString, QString> readNamedIndexCArray(const QString &text, const QString &label);
+    QMap<QString, QString> readNamedIndexCArray(const QString &text, const QString &label, QString *error = nullptr);
     QString readCIncbin(const QString &text, const QString &label);
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
-    QMap<QString, int> readCDefinesByRegex(const QString &filename, const QStringList &regexList);
-    QMap<QString, int> readCDefinesByName(const QString &filename, const QStringList &names);
-    QStringList readCDefineNames(const QString &filename, const QStringList &regexList);
+    QMap<QString, int> readCDefinesByRegex(const QString &filename, const QStringList &regexList, QString *error = nullptr);
+    QMap<QString, int> readCDefinesByName(const QString &filename, const QStringList &names, QString *error = nullptr);
+    QStringList readCDefineNames(const QString &filename, const QStringList &regexList, QString *error = nullptr);
     tsl::ordered_map<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString>& = {});
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
-    bool tryParseJsonFile(QJsonDocument *out, const QString &filepath);
-    bool tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath);
-    bool ensureFieldsExist(const QJsonObject &obj, const QList<QString> &fields);
+    bool tryParseJsonFile(QJsonDocument *out, const QString &filepath, QString *error = nullptr);
+    bool tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath, QString *error = nullptr);
 
     // Returns the 1-indexed line number for the definition of scriptLabel in the scripts file at filePath.
     // Returns 0 if a definition for scriptLabel cannot be found.
@@ -102,8 +101,8 @@ private:
         QMap<QString,QString> expressions; // Map of all define names encountered to their expressions
         QStringList filteredNames; // List of define names that matched the search text, in the order that they were encountered
     };
-    ParsedDefines readCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
-    QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex);
+    ParsedDefines readCDefines(const QString &filename, const QStringList &filterList, bool useRegex, QString *error);
+    QMap<QString, int> evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex, QString *error);
     bool defineNameMatchesFilter(const QString &name, const QStringList &filterList) const;
     bool defineNameMatchesFilter(const QString &name, const QList<QRegularExpression> &filterList) const;
 

@@ -175,6 +175,7 @@ private slots:
     void on_action_Reload_Project_triggered();
     void on_action_Close_Project_triggered();
     void on_action_Save_Project_triggered();
+    void save(bool currentOnly = false);
 
     void openWarpMap(QString map_name, int event_id, Event::Group event_group);
 
@@ -218,7 +219,6 @@ private slots:
     void on_actionMove_triggered();
     void on_actionMap_Shift_triggered();
 
-    void addNewEvent(Event::Type type);
     void tryAddEventTab(QWidget * tab);
     void displayEventTabs();
     void updateSelectedEvents();
@@ -333,7 +333,7 @@ private:
 
     MapHeaderForm *mapHeaderForm = nullptr;
 
-    QMap<Event::Group, DraggablePixmapItem*> lastSelectedEvent;
+    QMap<Event::Group, Event*> lastSelectedEvent;
 
     bool isProgrammaticEventTabChange;
 
@@ -361,6 +361,7 @@ private:
     NewLayoutDialog* createNewLayoutDialog(const Layout *layoutToCopy = nullptr);
     void openNewLayoutDialog();
     void openDuplicateLayoutDialog(const QString &layoutId);
+    void openDuplicateMapOrLayoutDialog();
     void openNewMapGroupDialog();
     void openNewLocationDialog();
     void openSubWindow(QWidget * window);

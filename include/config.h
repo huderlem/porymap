@@ -79,6 +79,7 @@ public:
         this->textEditorGotoLine = "";
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
+        this->loadAllEventScripts = false;
         this->warpBehaviorWarningDisabled = false;
         this->eventDeleteWarningDisabled = false;
         this->eventOverlayEnabled = false;
@@ -87,6 +88,7 @@ public:
         this->lastUpdateCheckVersion = porymapVersion;
         this->rateLimitTimes.clear();
         this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
+        this->shownInGameReloadMessage = false;
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -135,6 +137,7 @@ public:
     QString textEditorGotoLine;
     int paletteEditorBitDepth;
     int projectSettingsTab;
+    bool loadAllEventScripts;
     bool warpBehaviorWarningDisabled;
     bool eventDeleteWarningDisabled;
     bool eventOverlayEnabled;
@@ -146,6 +149,7 @@ public:
     QByteArray wildMonChartGeometry;
     QByteArray newMapDialogGeometry;
     QByteArray newLayoutDialogGeometry;
+    bool shownInGameReloadMessage;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -320,6 +324,7 @@ public:
         this->unusedTileNormal = 0x3014;
         this->unusedTileCovered = 0x0000;
         this->unusedTileSplit = 0x0000;
+        this->maxEventsPerGroup = 255;
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -389,6 +394,7 @@ public:
     int collisionSheetWidth;
     int collisionSheetHeight;
     QList<uint32_t> warpBehaviors;
+    int maxEventsPerGroup;
 
 protected:
     virtual QString getConfigFilepath() override;

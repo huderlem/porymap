@@ -27,8 +27,12 @@ void Prefab::loadPrefabs() {
     QJsonDocument prefabDoc;
 
     QString validPath = Project::getExistingFilepath(filepath);
-    if (validPath.isEmpty() || !parser.tryParseJsonFile(&prefabDoc, validPath)) {
-        logError(QString("Failed to read prefab data from %1").arg(filepath));
+    if (validPath.isEmpty())
+        return;
+
+    QString error;
+    if (!parser.tryParseJsonFile(&prefabDoc, validPath, &error)) {
+        logError(QString("Failed to read prefab data from %1: %2").arg(filepath).arg(error));
         return;
     }
     filepath = validPath;

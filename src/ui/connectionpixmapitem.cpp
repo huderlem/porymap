@@ -11,7 +11,8 @@ ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection)
     this->setEditable(true);
     setFlag(ItemIsFocusable, true);
     this->basePixmap = pixmap();
-    refresh();
+    updateOrigin();
+    render(false);
 
     // If the connection changes externally we want to update the pixmap to reflect the change.
     connect(connection, &MapConnection::offsetChanged, this, &ConnectionPixmapItem::updatePos);

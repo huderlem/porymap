@@ -391,6 +391,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "project_settings_tab") {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
+    } else if (key == "load_all_event_scripts") {
+        this->loadAllEventScripts = getConfigBool(key, value);
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else if (key == "event_delete_warning_disabled") {
@@ -423,6 +425,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         } else {
             logWarn(QString("Invalid config value for %1: '%2'. Must be 'mask' or 'bounding_rect'.").arg(key).arg(value));
         }
+    } else if (key == "shown_in_game_reload_message") {
+        this->shownInGameReloadMessage = getConfigBool(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -480,6 +484,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
+    map.insert("load_all_event_scripts", QString::number(this->loadAllEventScripts));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
     map.insert("event_delete_warning_disabled", QString::number(this->eventDeleteWarningDisabled));
     map.insert("event_overlay_enabled", QString::number(this->eventOverlayEnabled));
@@ -493,6 +498,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
             map.insert("rate_limit_time/" + i.key().toString(), time.toUTC().toString());
     }
     map.insert("event_selection_shape_mode", (this->eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) ? "mask" : "bounding_rect");
+    map.insert("shown_in_game_reload_message", this->shownInGameReloadMessage ? "1" : "0");
     
     return map;
 }
@@ -804,6 +810,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         const QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
         for (auto s : behaviorList)
             this->warpBehaviors.append(getConfigUint32(key, s));
+    } else if (key == "max_events_per_group") {
+        this->maxEventsPerGroup = getConfigInteger(key, value, 1, INT_MAX, 255);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -899,6 +907,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (const auto &value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
+    map.insert("max_events_per_group", QString::number(this->maxEventsPerGroup));
 
     return map;
 }

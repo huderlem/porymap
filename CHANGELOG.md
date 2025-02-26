@@ -8,8 +8,9 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
-- Redesigned the map list, adding new features including opening/editing layouts with no associated map, duplicating maps or layouts (accessible via right-click), editing the names of map groups, rearranging maps and map groups, and hiding empty folders.
+- Redesigned the map list, adding new features including opening/editing layouts with no associated map, editing the names of map groups, rearranging maps and map groups, and hiding empty folders.
 - Add a drop-down for changing the layout of the currently opened map.
+- Add an option to duplicate maps/layouts.
 - Redesigned the Connections tab, adding new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
 - Add a search button to the `Wild Pokémon` tab that shows the encounter data for a species across all maps.
@@ -19,12 +20,13 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add an option to display a dividing line between tilesets in the Tileset Editor.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
-- Add buttons to hide and show empty folders in each map tree view.
 - Add a setting to specify the tile values to use for the unused metatile layer.
+- Add a setting to specify the maximum number of events in a group. A warning will be shown if too many events are added.
 
 ### Changed
 - `Change Dimensions` now has an interactive resizing rectangle.
 - Redesigned the new map dialog, including better error checking and a collapsible section for header data.
+- New maps/layouts are no longer saved automatically, and can be fully discarded by closing without saving.
 - Map groups and ``MAPSEC`` names specified when creating a new map will be added automatically if they don't already exist.
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
@@ -42,6 +44,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
 - Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
 - The prompt to reload the project when a file has changed will now only appear when Porymap is the active application.
+- `Script` dropdowns now autocomplete only with scripts from the current map, rather than every script in the project. The old behavior is available via a new setting.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -54,6 +57,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
+- Fix species on the wild pokémon tab retaining icons from previously-opened projects.
 - Fix invalid species names clearing from wild pokémon data when revisited.
 - Fix editing wild pokémon data not marking the map as unsaved.
 - Fix editing an event's `Custom Attributes` not marking the map as unsaved.
@@ -86,6 +90,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
 - The Metatile / Tile usage counts in the Tileset Editor now update to reflect changes.
 - Fix regression that stopped the map zoom from centering on the cursor.
+- Fix `Open Map Scripts` not working on maps with a `shared_scripts_map` field.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
