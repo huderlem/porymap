@@ -51,6 +51,7 @@ public:
     QStringList itemNames;
     QStringList flagNames;
     QStringList varNames;
+    QStringList speciesNames;
     QStringList movementTypes;
     QStringList mapTypes;
     QStringList mapBattleScenes;
@@ -142,8 +143,8 @@ public:
     QVector<poryjson::Json::object> extraEncounterGroups;
 
     bool readSpeciesIconPaths();
-    QPixmap getSpeciesIcon(const QString &species) const;
-    QMap<QString, QString> speciesToIconPath;
+    QString getDefaultSpeciesIconPath(const QString &species);
+    QPixmap getSpeciesIcon(const QString &species);
 
     void addNewMapsec(const QString &idName);
     void removeMapsec(const QString &idName);
@@ -255,6 +256,7 @@ private:
     QMap<QString, QString> mapSectionDisplayNames;
     QMap<QString, qint64> modifiedFileTimestamps;
     QMap<QString, QString> facingDirections;
+    QMap<QString, QString> speciesToIconPath;
 
     struct EventGraphics
     {
@@ -274,6 +276,8 @@ private:
 
     void ignoreWatchedFileTemporarily(QString filepath);
     void recordFileChange(const QString &filepath);
+
+    QString findSpeciesIconPath(const QStringList &names) const;
 
     int maxEventsPerGroup;
     int maxObjectEvents;
