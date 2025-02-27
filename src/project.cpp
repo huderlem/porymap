@@ -2197,10 +2197,10 @@ bool Project::readFieldmapMasks() {
             return false;
         *value = static_cast<uint16_t>(it.value());
         if (*value != it.value()){
-            logWarn(QString("Value for %1 truncated from '0x%2' to '0x%3'")
+            logWarn(QString("Value for %1 truncated from '%2' to '%3'")
                 .arg(name)
-                .arg(QString::number(it.value(), 16).toUpper())
-                .arg(QString::number(*value, 16).toUpper()));
+                .arg(Util::toHexString(it.value()))
+                .arg(Util::toHexString(*value)));
         }
         return true;
     };

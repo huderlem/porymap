@@ -5,7 +5,7 @@
 
 // Sometimes we want to sort names alphabetically to make them easier to find in large combo box lists.
 // QStringList::sort (as of writing) can only sort numbers in lexical order, which has an undesirable
-// effect (e.g. MAPSEC_ROUTE_10 comes after MAPSEC_ROUTE_1, rather than MAPSEC_ROUTE_9).
+// effect (e.g. 'ROUTE_1, ROUTE_10, ROUTE_2,...' instead of 'ROUTE_1, ROUTE_2,... ROUTE_10').
 // We can use QCollator to sort these lists with better handling for numbers.
 void Util::numericalModeSort(QStringList &list) {
     static QCollator collator;
@@ -37,4 +37,8 @@ QString Util::toDefineCase(QString input) {
     input.replace(re_Underscores, "_");
 
     return input.toUpper();
+}
+
+QString Util::toHexString(uint32_t value, int minLength) {
+    return "0x" + QString("%1").arg(value, minLength, 16, QChar('0')).toUpper();
 }

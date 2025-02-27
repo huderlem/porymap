@@ -5,6 +5,7 @@
 #include "selectablepixmapitem.h"
 #include "paletteutil.h"
 #include "imageproviders.h"
+#include "utility.h"
 
 #include <memory>
 using std::shared_ptr;
@@ -66,7 +67,7 @@ public:
     }
 
     virtual QString info() const {
-        return QString("Tile: 0x") + QString("%1  ").arg(this->id(), 4, 16, QChar('0')).toUpper();
+        return QString("Tile: %1  ").arg(Util::toHexString(this->id(), 4));
     }
 };
 

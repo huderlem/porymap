@@ -1,6 +1,7 @@
 #include "metatile.h"
 #include "tileset.h"
 #include "project.h"
+#include "utility.h"
 
 // Stores how each attribute should be laid out for all metatiles, according to the vanilla games.
 // Used to set default config values and import maps with AdvanceMap.
@@ -42,7 +43,7 @@ QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
 
 static int numMetatileIdChars = 4;
 QString Metatile::getMetatileIdString(uint16_t metatileId) {
-    return "0x" + QString("%1").arg(metatileId, numMetatileIdChars, 16, QChar('0')).toUpper();
+    return Util::toHexString(metatileId, numMetatileIdChars);
 };
 
 QString Metatile::getMetatileIdStrings(const QList<uint16_t> metatileIds) {
@@ -127,8 +128,8 @@ void Metatile::setLayout(Project * project) {
     if (behaviorMask && !project->metatileBehaviorMapInverse.isEmpty()) {
         uint32_t maxBehavior = project->metatileBehaviorMapInverse.lastKey();
         if (packer.clamp(maxBehavior) != maxBehavior)
-            logWarn(QString("Metatile Behavior mask '0x%1' is insufficient to contain all available options.")
-                                .arg(QString::number(behaviorMask, 16).toUpper()));
+            logWarn(QString("Metatile Behavior mask '%1' is insufficient to contain all available options.")
+                            .arg(Util::toHexString(behaviorMask)));
     }
     attributePackers.insert(Metatile::Attr::Behavior, packer);
 
@@ -136,8 +137,8 @@ void Metatile::setLayout(Project * project) {
     packer.setMask(terrainTypeMask);
     const uint32_t maxTerrainType = NUM_METATILE_TERRAIN_TYPES - 1;
     if (terrainTypeMask && packer.clamp(maxTerrainType) != maxTerrainType) {
-        logWarn(QString("Metatile Terrain Type mask '0x%1' is insufficient to contain all %2 available options.")
-                            .arg(QString::number(terrainTypeMask, 16).toUpper())
+        logWarn(QString("Metatile Terrain Type mask '%1' is insufficient to contain all %2 available options.")
+                            .arg(Util::toHexString(terrainTypeMask))
                             .arg(maxTerrainType + 1));
     }
     attributePackers.insert(Metatile::Attr::TerrainType, packer);
@@ -146,8 +147,8 @@ void Metatile::setLayout(Project * project) {
     packer.setMask(encounterTypeMask);
     const uint32_t maxEncounterType = NUM_METATILE_ENCOUNTER_TYPES - 1;
     if (encounterTypeMask && packer.clamp(maxEncounterType) != maxEncounterType) {
-        logWarn(QString("Metatile Encounter Type mask '0x%1' is insufficient to contain all %2 available options.")
-                            .arg(QString::number(encounterTypeMask, 16).toUpper())
+        logWarn(QString("Metatile Encounter Type mask '%1' is insufficient to contain all %2 available options.")
+                            .arg(Util::toHexString(encounterTypeMask))
                             .arg(maxEncounterType + 1));
     }
     attributePackers.insert(Metatile::Attr::EncounterType, packer);
@@ -156,8 +157,8 @@ void Metatile::setLayout(Project * project) {
     packer.setMask(layerTypeMask);
     const uint32_t maxLayerType = NUM_METATILE_LAYER_TYPES - 1;
     if (layerTypeMask && packer.clamp(maxLayerType) != maxLayerType) {
-        logWarn(QString("Metatile Layer Type mask '0x%1' is insufficient to contain all %2 available options.")
-                            .arg(QString::number(layerTypeMask, 16).toUpper())
+        logWarn(QString("Metatile Layer Type mask '%1' is insufficient to contain all %2 available options.")
+                            .arg(Util::toHexString(layerTypeMask))
                             .arg(maxLayerType + 1));
     }
     attributePackers.insert(Metatile::Attr::LayerType, packer);
