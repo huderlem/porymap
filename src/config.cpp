@@ -125,6 +125,8 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
     {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
     {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
+    {ProjectIdentifier::regex_encounter_types,         {"regex_encounter_types",         "\\bTILE_ENCOUNTER_"}},
+    {ProjectIdentifier::regex_terrain_types,           {"regex_terrain_types",           "\\bTILE_TERRAIN_"}},
     {ProjectIdentifier::regex_gbapal,                  {"regex_gbapal",                  "\\.gbapal(\\.[\\w]+)?$"}},
     {ProjectIdentifier::regex_bpp,                     {"regex_bpp",                     "\\.[\\d]+bpp(\\.[\\w]+)?$"}},
     // Other

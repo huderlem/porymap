@@ -98,19 +98,8 @@ QString ParseUtil::loadTextFile(const QString &path, QString *error) {
     auto it = this->fileCache.constFind(path);
     if (it != this->fileCache.constEnd()) {
         // Load text file from cache
-        //logWarn(QString("CACHE HIT ON %1").arg(path));
         return it.value();
     }
-
-/* TODO: Remove
-    static QSet<QString> parsedFiles;
-    if (parsedFiles.contains(path)) {
-        logWarn(QString("CACHE MISS ON %1").arg(path));
-    } else {
-        parsedFiles.insert(path);
-    }
-*/
-
     return readTextFile(pathWithRoot(path), error);
 }
 

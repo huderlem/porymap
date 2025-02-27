@@ -134,10 +134,9 @@ void TilesetEditor::setAttributesUi() {
 
     // Terrain Type
     if (projectConfig.metatileTerrainTypeMask) {
-        this->ui->comboBox_terrainType->addItem("Normal", TERRAIN_NONE);
-        this->ui->comboBox_terrainType->addItem("Grass", TERRAIN_GRASS);
-        this->ui->comboBox_terrainType->addItem("Water", TERRAIN_WATER);
-        this->ui->comboBox_terrainType->addItem("Waterfall", TERRAIN_WATERFALL);
+        for (auto i = project->terrainTypeToName.constBegin(); i != project->terrainTypeToName.constEnd(); i++) {
+            this->ui->comboBox_terrainType->addItem(i.value(), i.key());
+        }
         this->ui->comboBox_terrainType->setEditable(false);
         this->ui->comboBox_terrainType->setMinimumContentsLength(0);
     } else {
@@ -147,9 +146,9 @@ void TilesetEditor::setAttributesUi() {
 
     // Encounter Type
     if (projectConfig.metatileEncounterTypeMask) {
-        this->ui->comboBox_encounterType->addItem("None", ENCOUNTER_NONE);
-        this->ui->comboBox_encounterType->addItem("Land", ENCOUNTER_LAND);
-        this->ui->comboBox_encounterType->addItem("Water", ENCOUNTER_WATER);
+        for (auto i = project->encounterTypeToName.constBegin(); i != project->encounterTypeToName.constEnd(); i++) {
+            this->ui->comboBox_encounterType->addItem(i.value(), i.key());
+        }
         this->ui->comboBox_encounterType->setEditable(false);
         this->ui->comboBox_encounterType->setMinimumContentsLength(0);
     } else {
@@ -159,9 +158,9 @@ void TilesetEditor::setAttributesUi() {
 
     // Layer Type
     if (!projectConfig.tripleLayerMetatilesEnabled) {
-        this->ui->comboBox_layerType->addItem("Normal - Middle/Top", METATILE_LAYER_MIDDLE_TOP);
-        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", METATILE_LAYER_BOTTOM_MIDDLE);
-        this->ui->comboBox_layerType->addItem("Split - Bottom/Top", METATILE_LAYER_BOTTOM_TOP);
+        this->ui->comboBox_layerType->addItem("Normal - Middle/Top",     Metatile::LayerType::Normal);
+        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", Metatile::LayerType::Covered);
+        this->ui->comboBox_layerType->addItem("Split - Bottom/Top",      Metatile::LayerType::Split);
         this->ui->comboBox_layerType->setEditable(false);
         this->ui->comboBox_layerType->setMinimumContentsLength(0);
         if (!projectConfig.metatileLayerTypeMask) {
@@ -607,6 +606,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
     }
 }
 
+// TODO: Needs to read data from item, not index of item.
 void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
 {
     if (this->metatile) {
@@ -616,6 +616,7 @@ void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
     }
 }
 
+// TODO: Needs to read data from item, not index of item.
 void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
 {
     if (this->metatile) {

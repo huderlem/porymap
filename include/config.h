@@ -242,6 +242,8 @@ enum ProjectIdentifier {
     regex_sign_facing_directions,
     regex_trainer_types,
     regex_music,
+    regex_encounter_types,
+    regex_terrain_types,
     regex_gbapal,
     regex_bpp,
     pals_output_extension,

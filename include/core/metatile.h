@@ -11,27 +11,6 @@
 
 class Project;
 
-enum {
-    METATILE_LAYER_MIDDLE_TOP,
-    METATILE_LAYER_BOTTOM_MIDDLE,
-    METATILE_LAYER_BOTTOM_TOP,
-    NUM_METATILE_LAYER_TYPES
-};
-
-enum {
-    ENCOUNTER_NONE,
-    ENCOUNTER_LAND,
-    ENCOUNTER_WATER,
-    NUM_METATILE_ENCOUNTER_TYPES
-};
-
-enum {
-    TERRAIN_NONE,
-    TERRAIN_GRASS,
-    TERRAIN_WATER,
-    TERRAIN_WATERFALL,
-    NUM_METATILE_TERRAIN_TYPES
-};
 
 class Metatile
 {
@@ -40,6 +19,13 @@ public:
     Metatile(const Metatile &other) = default;
     Metatile &operator=(const Metatile &other) = default;
     Metatile(const int numTiles);
+
+    enum LayerType {
+        Normal,
+        Covered,
+        Split,
+        Count
+    };
 
     enum Attr {
         Behavior,

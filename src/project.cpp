@@ -134,6 +134,7 @@ void Project::resetFileCache() {
         projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles),
         // We need separate sets of constants from these files
         projectConfig.getFilePath(ProjectFilePath::constants_map_types),
+        projectConfig.getFilePath(ProjectFilePath::global_fieldmap),
     };
     for (const auto &path : filepaths) {
         this->parser.cacheFile(path);
@@ -2185,6 +2186,9 @@ bool Project::readFieldmapProperties() {
 
 // Read data masks for Blocks and metatile attributes.
 bool Project::readFieldmapMasks() {
+    this->encounterTypeToName.clear();
+    this->terrainTypeToName.clear();
+
     const QString metatileIdMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_metatile);
     const QString collisionMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_collision);
     const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
@@ -2197,7 +2201,7 @@ bool Project::readFieldmapMasks() {
         behaviorMaskName,
         layerTypeMaskName,
     };
-    QString globalFieldmap = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
+    const QString globalFieldmap = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
     fileWatcher.addPath(root + "/" + globalFieldmap);
     QMap<QString, int> defines = parser.readCDefinesByName(globalFieldmap, searchNames);
 
@@ -2281,6 +2285,32 @@ bool Project::readFieldmapMasks() {
             }
         }
     }
+
+    // Read #defines for encounter and terrain types to populate in the Tileset Editor dropdowns (if necessary)
+    QString error;
+    if (projectConfig.metatileEncounterTypeMask) {
+        QMap<QString, int> defines = parser.readCDefinesByRegex(globalFieldmap, {projectConfig.getIdentifier(ProjectIdentifier::regex_encounter_types)}, &error);
+        if (!error.isEmpty()) {
+            logWarn(QString("Failed to read encounter type constants from '%1': %2").arg(globalFieldmap).arg(error));
+            error = QString();
+        } else {
+            for (auto i = defines.constBegin(); i != defines.constEnd(); i++) {
+                this->encounterTypeToName.insert(static_cast<uint32_t>(i.value()), i.key());
+            }
+        }
+    }
+    if (projectConfig.metatileTerrainTypeMask) {
+        QMap<QString, int> defines = parser.readCDefinesByRegex(globalFieldmap, {projectConfig.getIdentifier(ProjectIdentifier::regex_terrain_types)}, &error);
+        if (!error.isEmpty()) {
+            logWarn(QString("Failed to read terrain type constants from '%1': %2").arg(globalFieldmap).arg(error));
+            error = QString();
+        } else {
+            for (auto i = defines.constBegin(); i != defines.constEnd(); i++) {
+                this->terrainTypeToName.insert(static_cast<uint32_t>(i.value()), i.key());
+            }
+        }
+    }
+
     return true;
 }
 

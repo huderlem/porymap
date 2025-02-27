@@ -72,19 +72,19 @@ QImage getMetatileImage(
             switch (layerType)
             {
             default:
-            case METATILE_LAYER_MIDDLE_TOP:
+            case Metatile::LayerType::Normal:
                 if (l == 0)
                     tile = Tile(projectConfig.unusedTileNormal);
                 else // Tiles are on layers 1 and 2
                     tile = metatile->tiles.value(tileOffset + ((l - 1) * 4));
                 break;
-            case METATILE_LAYER_BOTTOM_MIDDLE:
+            case Metatile::LayerType::Covered:
                 if (l == 2)
                     tile = Tile(projectConfig.unusedTileCovered);
                 else // Tiles are on layers 0 and 1
                     tile = metatile->tiles.value(tileOffset + (l * 4));
                 break;
-            case METATILE_LAYER_BOTTOM_TOP:
+            case Metatile::LayerType::Split:
                 if (l == 1)
                     tile = Tile(projectConfig.unusedTileSplit);
                 else // Tiles are on layers 0 and 2
