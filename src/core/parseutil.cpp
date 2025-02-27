@@ -368,11 +368,11 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     return paths;
 }
 
-bool ParseUtil::defineNameMatchesFilter(const QString &name, const QStringList &filterList) const {
+bool ParseUtil::defineNameMatchesFilter(const QString &name, const QSet<QString> &filterList) const {
     return filterList.contains(name);
 }
 
-bool ParseUtil::defineNameMatchesFilter(const QString &name, const QList<QRegularExpression> &filterList) const {
+bool ParseUtil::defineNameMatchesFilter(const QString &name, const QSet<QRegularExpression> &filterList) const {
     for (auto filter : filterList) {
         if (filter.match(name).hasMatch())
             return true;
@@ -380,7 +380,7 @@ bool ParseUtil::defineNameMatchesFilter(const QString &name, const QList<QRegula
     return false;
 }
 
-ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const QStringList &filterList, bool useRegex, QString *error) {
+ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error) {
     ParsedDefines result;
     this->file = filename;
 
@@ -402,10 +402,10 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
         return result;
 
     // If necessary, construct regular expressions from filter list
-    QList<QRegularExpression> filterList_Regex;
+    QSet<QRegularExpression> filterList_Regex;
     if (useRegex) {
         for (auto filter : filterList) {
-            filterList_Regex.append(QRegularExpression(filter));
+            filterList_Regex.insert(QRegularExpression(filter));
         }
     }
 
@@ -463,7 +463,7 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
 }
 
 // Read all the define names and their expressions in the specified file, then evaluate the ones matching the search text (and any they depend on).
-QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex, QString *error) {
+QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error) {
     ParsedDefines defines = readCDefines(filename, filterList, useRegex, error);
 
     // Evaluate defines
@@ -483,19 +483,19 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
 }
 
 // Find and evaluate a specific set of defines with known names.
-QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QStringList &names, QString *error) {
+QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error) {
     return evaluateCDefines(filename, names, false, error);
 }
 
 // Find and evaluate an unknown list of defines with a known name pattern.
-QMap<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QStringList &regexList, QString *error) {
+QMap<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error) {
     return evaluateCDefines(filename, regexList, true, error);
 }
 
 // Find an unknown list of defines with a known name pattern.
 // Similar to readCDefinesByRegex, but for cases where we only need to show a list of define names.
 // We can skip evaluating any expressions (and by extension skip reporting any errors from this process).
-QStringList ParseUtil::readCDefineNames(const QString &filename, const QStringList &regexList, QString *error) {
+QStringList ParseUtil::readCDefineNames(const QString &filename, const QSet<QString> &regexList, QString *error) {
     return readCDefines(filename, regexList, true, error).filteredNames;
 }
 
