@@ -2739,6 +2739,9 @@ void MainWindow::on_actionPreferences_triggered() {
         connect(preferenceEditor, &PreferenceEditor::themeChanged, this, &MainWindow::setTheme);
         connect(preferenceEditor, &PreferenceEditor::themeChanged, editor, &Editor::maskNonVisibleConnectionTiles);
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::togglePreferenceSpecificUi);
+        // Changes to porymapConfig.loadAllEventScripts or porymapConfig.eventSelectionShapeMode
+        // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved, editor, &Editor::updateEvents);
         connect(preferenceEditor, &PreferenceEditor::scriptSettingsChanged, editor->project, &Project::readEventScriptLabels);
     }
 
@@ -2753,10 +2756,6 @@ void MainWindow::togglePreferenceSpecificUi() {
 
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();
-
-    // Changes to porymapConfig.loadAllEventScripts or porymapConfig.eventSelectionShapeMode
-    // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
-    this->editor->updateEvents();
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {
