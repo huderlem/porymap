@@ -73,19 +73,20 @@ void Event::modify() {
     this->map->modify();
 }
 
-const QMap<Event::Group, QString> groupToStringMap = {
-    {Event::Group::Object, "Object"},
-    {Event::Group::Warp, "Warp"},
-    {Event::Group::Coord, "Trigger"},
-    {Event::Group::Bg, "BG"},
-    {Event::Group::Heal, "Heal Location"},
-};
-
 QString Event::groupToString(Event::Group group) {
+    static const QMap<Event::Group, QString> groupToStringMap = {
+        {Event::Group::Object, "Object"},
+        {Event::Group::Warp, "Warp"},
+        {Event::Group::Coord, "Trigger"},
+        {Event::Group::Bg, "BG"},
+        {Event::Group::Heal, "Heal Location"},
+    };
     return groupToStringMap.value(group);
 }
 
-const QMap<Event::Type, QString> typeToStringMap = {
+// These are the expected key names used in the map.json files.
+// We re-use them for key names in the copy/paste JSON data,
+const QMap<Event::Type, QString> typeToJsonKeyMap = {
     {Event::Type::Object, "object"},
     {Event::Type::CloneObject, "clone_object"},
     {Event::Type::Warp, "warp"},
@@ -97,12 +98,32 @@ const QMap<Event::Type, QString> typeToStringMap = {
     {Event::Type::HealLocation, "heal_location"},
 };
 
-QString Event::typeToString(Event::Type type) {
-    return typeToStringMap.value(type);
+QString Event::typeToJsonKey(Event::Type type) {
+    return typeToJsonKeyMap.value(type);
 }
 
-Event::Type Event::typeFromString(QString type) {
-    return typeToStringMap.key(type, Event::Type::None);
+Event::Type Event::typeFromJsonKey(QString type) {
+    return typeToJsonKeyMap.key(type, Event::Type::None);
+}
+
+QList<Event::Type> Event::types() {
+    static QList<Event::Type> typeList = typeToJsonKeyMap.keys();
+    return typeList;
+}
+
+QString Event::typeToString(Event::Type type) {
+    const QMap<Event::Type, QString> typeToStringMap = {
+        {Event::Type::Object, "Object"},
+        {Event::Type::CloneObject, "Clone Object"},
+        {Event::Type::Warp, "Warp"},
+        {Event::Type::Trigger, "Trigger"},
+        {Event::Type::WeatherTrigger, "Weather"},
+        {Event::Type::Sign, "Sign"},
+        {Event::Type::HiddenItem, "Hidden Item"},
+        {Event::Type::SecretBase, "Secret Base"},
+        {Event::Type::HealLocation, "Heal Location"},
+    };
+    return typeToStringMap.value(type);
 }
 
 void Event::loadPixmap(Project *project) {

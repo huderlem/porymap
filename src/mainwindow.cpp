@@ -1100,9 +1100,9 @@ bool MainWindow::setProjectUI() {
     // Wild Encounters tab
     ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, editor->project->wildEncountersLoaded);
 
-    ui->newEventToolButton->newWeatherTriggerAction->setVisible(projectConfig.eventWeatherTriggerEnabled);
-    ui->newEventToolButton->newSecretBaseAction->setVisible(projectConfig.eventSecretBaseEnabled);
-    ui->newEventToolButton->newCloneObjectAction->setVisible(projectConfig.eventCloneObjectEnabled);
+    ui->newEventToolButton->setEventTypeVisible(Event::Type::WeatherTrigger, projectConfig.eventWeatherTriggerEnabled);
+    ui->newEventToolButton->setEventTypeVisible(Event::Type::SecretBase, projectConfig.eventSecretBaseEnabled);
+    ui->newEventToolButton->setEventTypeVisible(Event::Type::CloneObject, projectConfig.eventCloneObjectEnabled);
 
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
@@ -1638,7 +1638,7 @@ void MainWindow::copy() {
                 OrderedJson::array eventsArray;
                 for (const auto &event : this->editor->selectedEvents) {
                     OrderedJson::object eventContainer;
-                    eventContainer["event_type"] = Event::typeToString(event->getEventType());
+                    eventContainer["event_type"] = Event::typeToJsonKey(event->getEventType());
                     OrderedJson::object eventJson = event->buildEventJson(editor->project);
                     eventContainer["event"] = eventJson;
                     eventsArray.append(eventContainer);
@@ -1749,7 +1749,7 @@ void MainWindow::paste() {
                 QJsonArray events = pasteObject["events"].toArray();
                 for (QJsonValue event : events) {
                     // paste the event to the map
-                    Event::Type type = Event::typeFromString(event["event_type"].toString());
+                    Event::Type type = Event::typeFromJsonKey(event["event_type"].toString());
                     Event *pasteEvent = Event::create(type);
                     if (!pasteEvent)
                         continue;
@@ -1981,7 +1981,7 @@ void MainWindow::resetMapViewScale() {
 
 void MainWindow::tryAddEventTab(QWidget * tab) {
     auto group = getEventGroupFromTabWidget(tab);
-    if (editor->map->getNumEvents(group))
+    if (this->editor->map && this->editor->map->getNumEvents(group))
         ui->tabWidget_EventType->addTab(tab, QString("%1s").arg(Event::groupToString(group)));
 }
 
@@ -2109,6 +2109,12 @@ void MainWindow::updateSelectedEvents() {
         ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
     }
 
+    // (Currently 'events' can't be empty here, but we'll check anyway in case that changes)
+    if (!events.isEmpty()) {
+        // Set the 'New Event' button to be the type of the most recently-selected event
+        ui->newEventToolButton->selectEventType(events.constLast()->getEventType());
+    }
+
     this->isProgrammaticEventTabChange = false;
 
     QList<QFrame *> frames;
@@ -2168,27 +2174,6 @@ void MainWindow::eventTabChanged(int index) {
     if (editor->map) {
         Event::Group group = getEventGroupFromTabWidget(ui->tabWidget_EventType->widget(index));
         Event *selectedEvent = this->lastSelectedEvent.value(group, nullptr);
-
-        switch (group) {
-        case Event::Group::Object:
-            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newObjectAction);
-            break;
-        case Event::Group::Warp:
-            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newWarpAction);
-            break;
-        case Event::Group::Coord:
-            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newTriggerAction);
-            break;
-        case Event::Group::Bg:
-            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newSignAction);
-            break;
-        case Event::Group::Heal:
-            ui->newEventToolButton->setDefaultAction(ui->newEventToolButton->newHealLocationAction);
-            break;
-        default:
-            break;
-        }
-
         if (!isProgrammaticEventTabChange) {
             if (!selectedEvent) selectedEvent = this->editor->map->getEvent(group, 0);
             this->editor->selectMapEvent(selectedEvent);

@@ -206,7 +206,7 @@ bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
 
 bool Project::loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType) {
     QString typeString = ParseUtil::jsonToQString(json["type"]);
-    Event::Type type = typeString.isEmpty() ? defaultType : Event::typeFromString(typeString);
+    Event::Type type = typeString.isEmpty() ? defaultType : Event::typeFromJsonKey(typeString);
     Event* event = Event::create(type);
     if (!event) {
         return false;

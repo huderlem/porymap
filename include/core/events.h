@@ -66,7 +66,6 @@ public:
         Trigger, WeatherTrigger,
         Sign, HiddenItem, SecretBase,
         HealLocation,
-        Generic,
         None,
     };
 
@@ -168,7 +167,9 @@ public:
 
     static QString groupToString(Event::Group group);
     static QString typeToString(Event::Type type);
-    static Event::Type typeFromString(QString type);
+    static QString typeToJsonKey(Event::Type type);
+    static Event::Type typeFromJsonKey(QString type);
+    static QList<Event::Type> types();
 
 // protected attributes
 protected:
