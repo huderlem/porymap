@@ -112,7 +112,7 @@ QList<Event::Type> Event::types() {
 }
 
 QString Event::typeToString(Event::Type type) {
-    const QMap<Event::Type, QString> typeToStringMap = {
+    static const QMap<Event::Type, QString> typeToStringMap = {
         {Event::Type::Object, "Object"},
         {Event::Type::CloneObject, "Clone Object"},
         {Event::Type::Warp, "Warp"},

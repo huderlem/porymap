@@ -2109,7 +2109,6 @@ void MainWindow::updateSelectedEvents() {
         ui->tabWidget_EventType->setCurrentWidget(ui->tab_Multiple);
     }
 
-    // (Currently 'events' can't be empty here, but we'll check anyway in case that changes)
     if (!events.isEmpty()) {
         // Set the 'New Event' button to be the type of the most recently-selected event
         ui->newEventToolButton->selectEventType(events.constLast()->getEventType());
