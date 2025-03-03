@@ -10,6 +10,7 @@
 #include "filedialog.h"
 #include "validator.h"
 #include "orderedjson.h"
+#include "utility.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -312,7 +313,7 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     map->setNeedsHealLocation(settings.canFlyTo);
 
     // Generate a unique MAP constant.
-    map->setConstantName(toUniqueIdentifier(Map::mapConstantFromName(map->name())));
+    map->setConstantName(toUniqueIdentifier(map->expectedConstantName()));
 
     // Make sure we keep the order of the map names the same as in the map group order.
     int mapNamePos;
@@ -1495,7 +1496,7 @@ bool Project::readTilesetMetatileLabels() {
     QString metatileLabelsFilename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
 
-    const QStringList regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix))};
+    const QSet<QString> regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix))};
     QMap<QString, int> defines = parser.readCDefinesByRegex(metatileLabelsFilename, regexList);
 
     for (QString label : defines.keys()) {
@@ -2064,8 +2065,8 @@ bool Project::readTilesetLabels() {
         }
     }
 
-    numericalModeSort(this->primaryTilesetLabels);
-    numericalModeSort(this->secondaryTilesetLabels);
+    Util::numericalModeSort(this->primaryTilesetLabels);
+    Util::numericalModeSort(this->secondaryTilesetLabels);
 
     bool success = true;
     if (this->secondaryTilesetLabels.isEmpty()) {
@@ -2087,7 +2088,7 @@ bool Project::readFieldmapProperties() {
     const QString numPalsTotalName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_total);
     const QString maxMapSizeName = projectConfig.getIdentifier(ProjectIdentifier::define_map_size);
     const QString numTilesPerMetatileName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_per_metatile);
-    const QStringList names = {
+    const QSet<QString> names = {
         numTilesPrimaryName,
         numTilesTotalName,
         numMetatilesPrimaryName,
@@ -2171,7 +2172,7 @@ bool Project::readFieldmapMasks() {
     const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
     const QString behaviorMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior);
     const QString layerTypeMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer);
-    const QStringList searchNames = {
+    const QSet<QString> searchNames = {
         metatileIdMaskName,
         collisionMaskName,
         elevationMaskName,
@@ -2196,10 +2197,10 @@ bool Project::readFieldmapMasks() {
             return false;
         *value = static_cast<uint16_t>(it.value());
         if (*value != it.value()){
-            logWarn(QString("Value for %1 truncated from '0x%2' to '0x%3'")
+            logWarn(QString("Value for %1 truncated from '%2' to '%3'")
                 .arg(name)
-                .arg(QString::number(it.value(), 16).toUpper())
-                .arg(QString::number(*value, 16).toUpper()));
+                .arg(Util::toHexString(it.value()))
+                .arg(Util::toHexString(*value)));
         }
         return true;
     };
@@ -2339,7 +2340,7 @@ bool Project::readRegionMapSections() {
     if (!this->mapSectionIdNames.contains(defaultName)) {
         this->mapSectionIdNames.append(defaultName);
     }
-    numericalModeSort(this->mapSectionIdNames);
+    Util::numericalModeSort(this->mapSectionIdNames);
 
     return true;
 }
@@ -2363,7 +2364,7 @@ void Project::addNewMapsec(const QString &idName) {
     }
 
     this->mapSectionIdNames.append(idName);
-    numericalModeSort(this->mapSectionIdNames);
+    Util::numericalModeSort(this->mapSectionIdNames);
 
     this->hasUnsavedDataChanges = true;
 
@@ -2428,44 +2429,40 @@ bool Project::readHealLocations() {
 }
 
 bool Project::readItemNames() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_items)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_items);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->itemNames = parser.readCDefineNames(filename, regexList, &error);
+    this->itemNames = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_items)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read item constants from '%1': %2").arg(filename).arg(error));
     return true;
 }
 
 bool Project::readFlagNames() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_flags)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_flags);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->flagNames = parser.readCDefineNames(filename, regexList, &error);
+    this->flagNames = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_flags)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read flag constants from '%1': %2").arg(filename).arg(error));
     return true;
 }
 
 bool Project::readVarNames() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_vars)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_vars);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->varNames = parser.readCDefineNames(filename, regexList, &error);
+    this->varNames = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_vars)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read var constants from '%1': %2").arg(filename).arg(error));
     return true;
 }
 
 bool Project::readMovementTypes() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_movement_types)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_event_movement);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->movementTypes = parser.readCDefineNames(filename, regexList, &error);
+    this->movementTypes = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_movement_types)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read movement type constants from '%1': %2").arg(filename).arg(error));
     return true;
@@ -2482,33 +2479,30 @@ bool Project::readInitialFacingDirections() {
 }
 
 bool Project::readMapTypes() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_map_types)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->mapTypes = parser.readCDefineNames(filename, regexList, &error);
+    this->mapTypes = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_map_types)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read map type constants from '%1': %2").arg(filename).arg(error));
     return true;
 }
 
 bool Project::readMapBattleScenes() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_battle_scenes)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_map_types);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->mapBattleScenes = parser.readCDefineNames(filename, regexList, &error);
+    this->mapBattleScenes = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_battle_scenes)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read map battle scene constants from '%1': %2").arg(filename).arg(error));
     return true;
 }
 
 bool Project::readWeatherNames() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_weather)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->weatherNames = parser.readCDefineNames(filename, regexList, &error);
+    this->weatherNames = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_weather)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read weather constants from '%1': %2").arg(filename).arg(error));
     return true;
@@ -2518,11 +2512,10 @@ bool Project::readCoordEventWeatherNames() {
     if (!projectConfig.eventWeatherTriggerEnabled)
         return true;
 
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_coord_event_weather)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_weather);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->coordEventWeatherNames = parser.readCDefineNames(filename, regexList, &error);
+    this->coordEventWeatherNames = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_coord_event_weather)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read coord event weather constants from '%1': %2").arg(filename).arg(error));
     return true;
@@ -2532,33 +2525,30 @@ bool Project::readSecretBaseIds() {
     if (!projectConfig.eventSecretBaseEnabled)
         return true;
 
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_secret_bases)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_secret_bases);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->secretBaseIds = parser.readCDefineNames(filename, regexList, &error);
+    this->secretBaseIds = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_secret_bases)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read secret base id constants from '%1': %2").arg(filename).arg(error));
     return true;
 }
 
 bool Project::readBgEventFacingDirections() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_sign_facing_directions)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_event_bg);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->bgEventFacingDirections = parser.readCDefineNames(filename, regexList, &error);
+    this->bgEventFacingDirections = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_sign_facing_directions)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read bg event facing direction constants from '%1': %2").arg(filename).arg(error));
     return true;
 }
 
 bool Project::readTrainerTypes() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_trainer_types)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_trainer_types);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->trainerTypes = parser.readCDefineNames(filename, regexList, &error);
+    this->trainerTypes = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_trainer_types)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read trainer type constants from '%1': %2").arg(filename).arg(error));
     return true;
@@ -2568,11 +2558,10 @@ bool Project::readMetatileBehaviors() {
     this->metatileBehaviorMap.clear();
     this->metatileBehaviorMapInverse.clear();
 
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    QMap<QString, int> defines = parser.readCDefinesByRegex(filename, regexList, &error);
+    QMap<QString, int> defines = parser.readCDefinesByRegex(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)}, &error);
     if (defines.isEmpty() && projectConfig.metatileBehaviorMask) {
         // Not having any metatile behavior names is ok (their values will be displayed instead)
         // but if the user's metatiles can have nonzero values then warn them, as they likely want names.
@@ -2591,27 +2580,25 @@ bool Project::readMetatileBehaviors() {
 }
 
 bool Project::readSongNames() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_music)};
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_songs);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->songNames = parser.readCDefineNames(filename, regexList, &error);
+    this->songNames = parser.readCDefineNames(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_music)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read song names from '%1': %2").arg(filename).arg(error));
 
     // Song names don't have a very useful order (esp. if we include SE_* values), so sort them alphabetically.
     // The default song should be the first in the list, not the first alphabetically, so save that before sorting.
     this->defaultSong = this->songNames.value(0, "0");
-    numericalModeSort(this->songNames);
+    Util::numericalModeSort(this->songNames);
     return true;
 }
 
 bool Project::readObjEventGfxConstants() {
-    const QStringList regexList = {projectConfig.getIdentifier(ProjectIdentifier::regex_obj_event_gfx)};
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_events);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->gfxDefines = parser.readCDefinesByRegex(filename, regexList, &error);
+    this->gfxDefines = parser.readCDefinesByRegex(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_obj_event_gfx)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read object event graphics constants from '%1': %2").arg(filename).arg(error));
     return true;
@@ -2937,101 +2924,122 @@ QPixmap Project::getEventPixmap(Event::Group group) {
 
 bool Project::readSpeciesIconPaths() {
     this->speciesToIconPath.clear();
+    this->speciesNames.clear();
 
     // Read map of species constants to icon names
     const QString srcfilename = projectConfig.getFilePath(ProjectFilePath::pokemon_icon_table);
-    fileWatcher.addPath(root + "/" + srcfilename);
+    fileWatcher.addPath(this->root + "/" + srcfilename);
     const QString tableName = projectConfig.getIdentifier(ProjectIdentifier::symbol_pokemon_icon_table);
     const QMap<QString, QString> monIconNames = parser.readNamedIndexCArray(srcfilename, tableName);
 
-    // Read map of icon names to filepaths
-    const QString incfilename = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
-    fileWatcher.addPath(root + "/" + incfilename);
-    const QMap<QString, QString> iconIncbins = parser.readCIncbinMulti(incfilename);
-
     // Read species constants. If this fails we can get them from the icon table (but we shouldn't rely on it).
-    const QStringList regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix))};
+    const QString speciesPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix);
     const QString constantsFilename = projectConfig.getFilePath(ProjectFilePath::constants_species);
-    fileWatcher.addPath(root + "/" + constantsFilename);
-    QStringList speciesNames = parser.readCDefineNames(constantsFilename, regexList);
-    if (speciesNames.isEmpty())
-        speciesNames = monIconNames.keys();
+    fileWatcher.addPath(this->root + "/" + constantsFilename);
+    this->speciesNames = parser.readCDefineNames(constantsFilename, {QString("\\b%1").arg(speciesPrefix)});
+    if (this->speciesNames.isEmpty()) {
+        this->speciesNames = monIconNames.keys();
+    }
+    this->speciesNames.sort();
 
-    // For each species, use the information gathered above to find the icon image.
-    bool missingIcons = false;
-    for (auto species : speciesNames) {
-        QString path = QString();
-        if (monIconNames.contains(species) && iconIncbins.contains(monIconNames.value(species))) {
-            // We have the icon filepath from the icon table
-            path = QString("%1/%2").arg(root).arg(this->fixGraphicPath(iconIncbins[monIconNames.value(species)]));
-        } else {
-            // Failed to read icon filepath from the icon table, check filepaths where icons are normally located.
-            // Try to use the icon name (if we have it) to determine the directory, then try the species name.
-            // The name permuting is overkill, but it's making up for some of the fragility in the way we find icon paths.
-            QStringList possibleDirNames;
-            if (monIconNames.contains(species)) {
-                // Ex: For 'gMonIcon_QuestionMark' try 'question_mark'
-                static const QRegularExpression re("([a-z])([A-Z0-9])");
-                QString iconName = monIconNames.value(species);
-                iconName = iconName.mid(iconName.indexOf("_") + 1); // jump past prefix ('gMonIcon')
-                possibleDirNames.append(iconName.replace(re, "\\1_\\2").toLower());
-            }
-
-            // Ex: For 'SPECIES_FOO_BAR_BAZ' try 'foo_bar_baz'
-            possibleDirNames.append(species.mid(8).toLower());
-
-            // Permute paths with underscores.
-            // Ex: Try 'foo_bar/baz', 'foo/bar_baz', 'foobarbaz', 'foo_bar', and 'foo'
-            QStringList permutedNames;
-            for (auto dir : possibleDirNames) {
-                if (!dir.contains("_")) continue;
-                for (int i = dir.indexOf("_"); i > -1; i = dir.indexOf("_", i + 1)) {
-                    QString temp = dir;
-                    permutedNames.prepend(temp.replace(i, 1, "/"));
-                    permutedNames.append(dir.left(i)); // Prepend the others so the most generic name ('foo') ends up last
+    // If we successfully found the species icon table we can use this data to get the filepath for each species icon.
+    // For any species not in the table, or if we failed to find the table at all, we will have to predict where the icon file is.
+    // That can require checking a lot of files (especially for projects with many species), so to save time on startup we only
+    // do this on request in Project::getDefaultSpeciesIconPath.
+    if (!monIconNames.isEmpty()) {
+        const QString iconGraphicsFile = projectConfig.getFilePath(ProjectFilePath::data_pokemon_gfx);
+        fileWatcher.addPath(this->root + "/" + iconGraphicsFile);
+        QMap<QString, QString> iconNameToFilepath = parser.readCIncbinMulti(iconGraphicsFile);
+        
+        for (auto i = monIconNames.constBegin(); i != monIconNames.constEnd(); i++) {
+            QString path;
+            QString species = i.key();
+            QString iconName = i.value();
+            if (iconNameToFilepath.contains(iconName)) {
+                path = fixGraphicPath(iconNameToFilepath.value(iconName));
+            } else {
+                // We have an icon name for this species, but we haven't found its filepath.
+                // Try to find the icon file using the full icon name, and the icon name if we assume it has a prefix.
+                // Ex: For 'gMonIcon_QuestionMark' search for files by permuting through directories using 'question_mark' and 'g_mon_icon_question_mark.
+                static const QRegularExpression re_caseChange("([a-z])([A-Z0-9])");
+                QStringList dirNames;
+                if (iconName.contains("_")) {
+                    QString iconNameNoPrefix = iconName.mid(iconName.indexOf("_") + 1);
+                    dirNames.append(iconNameNoPrefix.replace(re_caseChange, "\\1_\\2").toLower());
                 }
-                permutedNames.prepend(dir.remove("_"));
+                QString iconNameWithPrefix = iconName; // Leave iconName unchanged by .replace
+                dirNames.append(iconNameWithPrefix.replace(re_caseChange, "\\1_\\2").toLower());
+                path = iconNameToFilepath[iconName] = findSpeciesIconPath(dirNames);
             }
-            possibleDirNames.append(permutedNames);
-
-            possibleDirNames.removeDuplicates();
-            for (auto dir : possibleDirNames) {
-                if (dir.isEmpty()) continue;
-                const QString stdPath = QString("%1/%2%3/icon.png")
-                                                .arg(root)
-                                                .arg(projectConfig.getFilePath(ProjectFilePath::pokemon_gfx))
-                                                .arg(dir);
-                if (QFile::exists(stdPath)) {
-                    // Icon found at a normal filepath
-                    path = stdPath;
-                    break;
-                }
-            }
-
-            if (path.isEmpty() && projectConfig.getPokemonIconPath(species).isEmpty()) {
-                // Failed to find icon, this species will use a placeholder icon.
-                logWarn(QString("Failed to find Pokémon icon for '%1'").arg(species));
-                missingIcons = true;
+            if (!path.isEmpty()) {
+                this->speciesToIconPath.insert(species, QString("%1/%2").arg(this->root).arg(path));
             }
         }
-        this->speciesToIconPath.insert(species, path);
     }
-
-    // Logging this alongside every warning (if there are multiple) is obnoxious, just do it once at the end.
-    if (missingIcons) logInfo("Pokémon icon filepaths can be specified under 'Options->Project Settings'");
-
     return true;
 }
 
-QPixmap Project::getSpeciesIcon(const QString &species) const {
+QString Project::getDefaultSpeciesIconPath(const QString &species) {
+    if (this->speciesToIconPath.contains(species)) {
+        // We already know the icon path for this species (either because we read it from the project, or we found it already).
+        return this->speciesToIconPath.value(species);
+    }
+    if (!this->speciesNames.contains(species)) {
+        // Don't bother searching for a path if we don't recognize the species name.
+        return QString();
+    }
+
+    // Ex: For 'SPECIES_FOO_BAR_BAZ' search for files by permuting through directories using 'foo_bar_baz'.
+    const QString speciesPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix);
+    const QString path = findSpeciesIconPath({species.mid(speciesPrefix.length()).toLower()});
+    this->speciesToIconPath.insert(species, path);
+
+    // We failed to find a default icon path, this species will use a placeholder icon.
+    // If the user has no custom icon path for this species, tell them they can provide one.
+    if (path.isEmpty() && projectConfig.getPokemonIconPath(species).isEmpty()) {
+        logWarn(QString("Failed to find Pokémon icon for '%1'. The filepath can be specified under 'Options->Project Settings'").arg(species));
+    }
+    return path;
+}
+
+// The name permuting in here is overkill, but it's making up for some of the fragility in the way we find pokémon icon paths.
+// For pokeemerald-expansion in particular this function is solely responsible for finding pokémon icons, because they have no icon table.
+QString Project::findSpeciesIconPath(const QStringList &names) const {
+    QStringList possibleDirNames = names;
+
+    // Permute paths with underscores.
+    // Ex: For a base name of 'foo_bar_baz', try 'foo_bar/baz', 'foo/bar_baz', 'foobarbaz', 'foo_bar', and 'foo'.
+    QStringList permutedNames;
+    for (auto dir : possibleDirNames) {
+        if (!dir.contains("_")) continue;
+        for (int i = dir.indexOf("_"); i > -1; i = dir.indexOf("_", i + 1)) {
+            QString temp = dir;
+            permutedNames.prepend(temp.replace(i, 1, "/"));
+            permutedNames.append(dir.left(i)); // Prepend the others so the most generic name ('foo') ends up last
+        }
+        permutedNames.prepend(dir.remove("_"));
+    }
+    possibleDirNames.append(permutedNames);
+    possibleDirNames.removeDuplicates();
+
+    const QString basePath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::pokemon_gfx));
+    for (const auto &dir : possibleDirNames) {
+        if (dir.isEmpty()) continue;
+
+        const QString path = QString("%1%2/icon.png").arg(basePath).arg(dir);
+        if (QFile::exists(path))
+            return path;
+    }
+    return QString();
+}
+
+QPixmap Project::getSpeciesIcon(const QString &species) {
     QPixmap pixmap;
     if (!QPixmapCache::find(species, &pixmap)) {
         // Prefer path from config. If not present, use the path parsed from project files
-        QString path = projectConfig.getPokemonIconPath(species);
+        QString path = Project::getExistingFilepath(projectConfig.getPokemonIconPath(species));
         if (path.isEmpty()) {
-            path = this->speciesToIconPath.value(species);
-        } else {
-            path = Project::getExistingFilepath(path);
+            path = getDefaultSpeciesIconPath(species);
         }
 
         QImage img(path);
@@ -3209,15 +3217,4 @@ bool Project::hasUnsavedChanges() {
             return true;
     }
     return false;
-}
-
-// TODO: This belongs in a more general utility file, once we have one.
-// Sometimes we want to sort names alphabetically to make them easier to find in large combo box lists.
-// QStringList::sort (as of writing) can only sort numbers in lexical order, which has an undesirable
-// effect (e.g. MAPSEC_ROUTE_10 comes after MAPSEC_ROUTE_1, rather than MAPSEC_ROUTE_9).
-// We can use QCollator to sort these lists with better handling for numbers.
-void Project::numericalModeSort(QStringList &list) {
-    QCollator collator;
-    collator.setNumericMode(true);
-    std::sort(list.begin(), list.end(), collator);
 }

@@ -10,6 +10,7 @@
 #include "filedialog.h"
 #include "validator.h"
 #include "eventfilters.h"
+#include "utility.h"
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QCloseEvent>
@@ -420,9 +421,7 @@ void TilesetEditor::queueMetatileReload(uint16_t metatileId) {
 }
 
 void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
-    QString message = QString("Tile: 0x%1")
-                        .arg(QString("%1").arg(tile, 3, 16, QChar('0')).toUpper());
-    this->ui->statusbar->showMessage(message);
+    this->ui->statusbar->showMessage(QString("Tile: %1").arg(Util::toHexString(tile, 3)));
 }
 
 void TilesetEditor::onHoveredTileCleared() {

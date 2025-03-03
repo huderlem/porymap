@@ -3,6 +3,7 @@
 #include "shortcut.h"
 #include "map.h"
 #include "validator.h"
+#include "utility.h"
 #include <QDir>
 #include <QFile>
 #include <QFormLayout>
@@ -101,6 +102,7 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_attribute_encounter,    {"define_attribute_encounter",    "METATILE_ATTRIBUTE_ENCOUNTER_TYPE"}},
     {ProjectIdentifier::define_metatile_label_prefix,  {"define_metatile_label_prefix",  "METATILE_"}},
     {ProjectIdentifier::define_heal_locations_prefix,  {"define_heal_locations_prefix",  "HEAL_LOCATION_"}},
+    {ProjectIdentifier::define_layout_prefix,          {"define_layout_prefix",          "LAYOUT_"}},
     {ProjectIdentifier::define_map_prefix,             {"define_map_prefix",             "MAP_"}},
     {ProjectIdentifier::define_map_dynamic,            {"define_map_dynamic",            "DYNAMIC"}},
     {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "UNDEFINED"}},
@@ -876,16 +878,16 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
     map.insert("set_transparent_pixels_black", QString::number(this->setTransparentPixelsBlack));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
-    map.insert("metatile_behavior_mask", "0x" + QString::number(this->metatileBehaviorMask, 16).toUpper());
-    map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
-    map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
-    map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
-    map.insert("block_metatile_id_mask", "0x" + QString::number(this->blockMetatileIdMask, 16).toUpper());
-    map.insert("block_collision_mask", "0x" + QString::number(this->blockCollisionMask, 16).toUpper());
-    map.insert("block_elevation_mask", "0x" + QString::number(this->blockElevationMask, 16).toUpper());
-    map.insert("unused_tile_normal", "0x" + QString::number(this->unusedTileNormal, 16).toUpper());
-    map.insert("unused_tile_covered", "0x" + QString::number(this->unusedTileCovered, 16).toUpper());
-    map.insert("unused_tile_split", "0x" + QString::number(this->unusedTileSplit, 16).toUpper());
+    map.insert("metatile_behavior_mask", Util::toHexString(this->metatileBehaviorMask));
+    map.insert("metatile_terrain_type_mask", Util::toHexString(this->metatileTerrainTypeMask));
+    map.insert("metatile_encounter_type_mask", Util::toHexString(this->metatileEncounterTypeMask));
+    map.insert("metatile_layer_type_mask", Util::toHexString(this->metatileLayerTypeMask));
+    map.insert("block_metatile_id_mask", Util::toHexString(this->blockMetatileIdMask));
+    map.insert("block_collision_mask", Util::toHexString(this->blockCollisionMask));
+    map.insert("block_elevation_mask", Util::toHexString(this->blockElevationMask));
+    map.insert("unused_tile_normal", Util::toHexString(this->unusedTileNormal));
+    map.insert("unused_tile_covered", Util::toHexString(this->unusedTileCovered));
+    map.insert("unused_tile_split", Util::toHexString(this->unusedTileSplit));
     map.insert("enable_map_allow_flags", QString::number(this->mapAllowFlagsEnabled));
     map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
     map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);

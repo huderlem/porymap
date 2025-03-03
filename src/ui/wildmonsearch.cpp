@@ -22,7 +22,7 @@ WildMonSearch::WildMonSearch(Project *project, QWidget *parent) :
     ui->setupUi(this);
 
     // Set up species combo box
-    ui->comboBox_Search->addItems(project->speciesToIconPath.keys());
+    ui->comboBox_Search->addItems(project->speciesNames);
     ui->comboBox_Search->setCurrentText(QString());
     ui->comboBox_Search->lineEdit()->setPlaceholderText(Project::getEmptySpeciesName());
     connect(ui->comboBox_Search, &QComboBox::currentTextChanged, this, &WildMonSearch::updateResults);

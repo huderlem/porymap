@@ -21,7 +21,7 @@ void SpeciesComboDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
 QWidget *SpeciesComboDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const {
     NoScrollComboBox *editor = new NoScrollComboBox(parent);
     editor->setFrame(false);
-    editor->addItems(this->project->speciesToIconPath.keys());
+    editor->addItems(this->project->speciesNames);
     return editor;
 }
 

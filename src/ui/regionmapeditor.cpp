@@ -6,6 +6,7 @@
 #include "shortcut.h"
 #include "config.h"
 #include "log.h"
+#include "utility.h"
 
 #include <QDir>
 #include <QDialog>
@@ -793,8 +794,7 @@ void RegionMapEditor::onRegionMapTileSelectorSelectedTileChanged(unsigned id) {
 }
 
 void RegionMapEditor::onRegionMapTileSelectorHoveredTileChanged(unsigned tileId) {
-    QString message = QString("Tile: 0x") + QString("%1").arg(tileId, 4, 16, QChar('0')).toUpper();
-    this->ui->statusbar->showMessage(message);
+    this->ui->statusbar->showMessage(QString("Tile: %1").arg(Util::toHexString(tileId, 4)));
 }
 
 void RegionMapEditor::onRegionMapTileSelectorHoveredTileCleared() {

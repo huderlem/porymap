@@ -2,11 +2,9 @@
 #include "editor.h"
 #include "movablerect.h"
 #include "config.h"
+#include "utility.h"
 
 #include "ui_resizelayoutpopup.h"
-
-// TODO: put this in a util file or something
-extern int roundUp(int, int);
 
 CheckeredBgScene::CheckeredBgScene(QObject *parent) : QGraphicsScene(parent) { }
 
@@ -62,7 +60,7 @@ void BoundedPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
 QVariant BoundedPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         QPointF newPos = value.toPointF();
-        return QPointF(roundUp(newPos.x(), 16), roundUp(newPos.y(), 16));
+        return QPointF(Util::roundUp(newPos.x(), 16), Util::roundUp(newPos.y(), 16));
     }
     else
         return QGraphicsItem::itemChange(change, value);

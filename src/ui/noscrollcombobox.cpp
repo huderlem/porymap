@@ -1,4 +1,5 @@
 #include "noscrollcombobox.h"
+#include "utility.h"
 
 #include <QCompleter>
 #include <QLineEdit>
@@ -82,7 +83,7 @@ void NoScrollComboBox::setNumberItem(int value)
 
 void NoScrollComboBox::setHexItem(uint32_t value)
 {
-    this->setItem(this->findData(value), "0x" + QString::number(value, 16).toUpper());
+    this->setItem(this->findData(value), Util::toHexString(value));
 }
 
 void NoScrollComboBox::setClearButtonEnabled(bool enabled) {

@@ -3,6 +3,7 @@
 #include "noscrollcombobox.h"
 #include "prefab.h"
 #include "filedialog.h"
+#include "utility.h"
 
 #include <QAbstractButton>
 #include <QFormLayout>
@@ -103,7 +104,7 @@ void ProjectSettingsEditor::initUi() {
     if (project) {
         ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
         ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
-        ui->comboBox_IconSpecies->addItems(project->speciesToIconPath.keys());
+        ui->comboBox_IconSpecies->addItems(project->speciesNames);
         ui->comboBox_WarpBehaviors->addItems(project->metatileBehaviorMap.keys());
     }
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
@@ -277,11 +278,11 @@ void ProjectSettingsEditor::updatePokemonIconPath(const QString &newSpecies) {
     if (!project) return;
 
     // If user was editing a path for a valid species, record filepath text before we wipe it.
-    if (!this->prevIconSpecies.isEmpty() && this->project->speciesToIconPath.contains(this->prevIconSpecies))
+    if (!this->prevIconSpecies.isEmpty() && this->project->speciesNames.contains(this->prevIconSpecies))
         this->editedPokemonIconPaths[this->prevIconSpecies] = ui->lineEdit_PokemonIcon->text();
 
     QString editedPath = this->editedPokemonIconPaths.value(newSpecies);
-    QString defaultPath = this->project->speciesToIconPath.value(newSpecies);
+    QString defaultPath = this->project->getDefaultSpeciesIconPath(newSpecies);
 
     ui->lineEdit_PokemonIcon->setText(this->stripProjectDir(editedPath));
     ui->lineEdit_PokemonIcon->setPlaceholderText(this->stripProjectDir(defaultPath));
@@ -294,7 +295,7 @@ QStringList ProjectSettingsEditor::getWarpBehaviorsList() {
 
 void ProjectSettingsEditor::setWarpBehaviorsList(QStringList list) {
     list.removeDuplicates();
-    Project::numericalModeSort(list);
+    Util::numericalModeSort(list);
     ui->textEdit_WarpBehaviors->setText(list.join("\n"));
 }
 
@@ -566,7 +567,7 @@ void ProjectSettingsEditor::save() {
 
     // Save pokemon icon paths
     const QString species = ui->comboBox_IconSpecies->currentText();
-    if (this->project->speciesToIconPath.contains(species))
+    if (this->project->speciesNames.contains(species))
         this->editedPokemonIconPaths.insert(species, ui->lineEdit_PokemonIcon->text());
     for (auto i = this->editedPokemonIconPaths.cbegin(), end = this->editedPokemonIconPaths.cend(); i != end; i++)
         projectConfig.setPokemonIconPath(i.key(), i.value());

@@ -220,6 +220,7 @@ enum ProjectIdentifier {
     define_attribute_encounter,
     define_metatile_label_prefix,
     define_heal_locations_prefix,
+    define_layout_prefix,
     define_map_prefix,
     define_map_dynamic,
     define_map_empty,

@@ -2,7 +2,7 @@
 #include "map.h"
 #include "imageproviders.h"
 #include "scripting.h"
-
+#include "utility.h"
 #include "editcommands.h"
 
 #include <QTime>
@@ -56,14 +56,9 @@ void Map::setLayout(Layout *layout) {
     }
 }
 
-QString Map::mapConstantFromName(QString mapName, bool includePrefix) {
-    // Transform map names of the form 'GraniteCave_B1F` into map constants like 'MAP_GRANITE_CAVE_B1F'.
-    static const QRegularExpression caseChange("([a-z])([A-Z])");
-    QString nameWithUnderscores = mapName.replace(caseChange, "\\1_\\2");
-    const QString prefix = includePrefix ? projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) : "";
-    QString withMapAndUppercase = prefix + nameWithUnderscores.toUpper();
-    static const QRegularExpression underscores("_+");
-    return withMapAndUppercase.replace(underscores, "_");
+// We don't enforce this for existing maps, but for creating new maps we need to formulaically generate a new MAP_NAME ID.
+QString Map::mapConstantFromName(const QString &name) {
+    return projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) + Util::toDefineCase(name);
 }
 
 int Map::getWidth() const {

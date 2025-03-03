@@ -2,6 +2,7 @@
 #include "wildmonchart.h"
 #include "ui_wildmonchart.h"
 #include "config.h"
+#include "utility.h"
 
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
 
@@ -367,13 +368,7 @@ QChart* WildMonChart::createLevelDistributionChart() {
     series->attachAxis(axisY);
 
     // We round the y-axis max up to a multiple of 5.
-    auto roundUp = [](int num, int multiple) {
-        auto remainder = num % multiple;
-        if (remainder == 0)
-            return num;
-        return num + multiple - remainder;
-    };
-    axisY->setMax(roundUp(qCeil(axisY->max()), 5));
+    axisY->setMax(Util::roundUp(qCeil(axisY->max()), 5));
 
     return chart;
 }
