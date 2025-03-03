@@ -14,11 +14,7 @@ int MetatileSelector::numPrimaryMetatilesRounded() const {
     return ceil((double)this->primaryTileset->numMetatiles() / this->numMetatilesWide) * this->numMetatilesWide;
 }
 
-void MetatileSelector::draw() {
-    if (!this->primaryTileset || !this->secondaryTileset) {
-        this->setPixmap(QPixmap());
-    }
-
+void MetatileSelector::updateBasePixmap() {
     int primaryLength = this->numPrimaryMetatilesRounded();
     int length_ = primaryLength + this->secondaryTileset->numMetatiles();
     int height_ = length_ / this->numMetatilesWide;
@@ -39,12 +35,20 @@ void MetatileSelector::draw() {
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         painter.drawImage(metatile_origin, metatile_image);
     }
-
     painter.end();
-    this->setPixmap(QPixmap::fromImage(image));
+    this->basePixmap = QPixmap::fromImage(image);
+}
 
+void MetatileSelector::draw() {
+    if (this->basePixmap.isNull())
+        updateBasePixmap();
+    setPixmap(this->basePixmap);
+    drawSelection();
+}
+
+void MetatileSelector::drawSelection() {
     if (!this->prefabSelection && (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1))) {
-        this->drawSelection();
+        SelectablePixmapItem::drawSelection();
     }
 }
 
@@ -76,7 +80,9 @@ void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTi
         this->updateExternalSelectedMetatiles();
     else
         this->updateSelectedMetatiles();
-    this->draw();
+
+    updateBasePixmap();
+    draw();
 }
 
 MetatileSelection MetatileSelector::getMetatileSelection() {

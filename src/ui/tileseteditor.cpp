@@ -475,7 +475,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
         }
     }
 
-    this->metatileSelector->draw();
+    this->metatileSelector->drawSelectedMetatile();
     this->metatileLayersItem->draw();
     this->tileSelector->draw();
     this->commitMetatileChange(prevMetatile);
@@ -603,7 +603,7 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->setLayerType(layerType);
         this->commitMetatileChange(prevMetatile);
-        this->metatileSelector->draw(); // Changing the layer type can affect how fully transparent metatiles appear
+        this->metatileSelector->drawSelectedMetatile(); // Changing the layer type can affect how fully transparent metatiles appear
     }
 }
 
@@ -860,7 +860,7 @@ bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src, Q
     this->metatile = dest;
     *this->metatile = *src;
     this->metatileSelector->select(metatileId);
-    this->metatileSelector->draw();
+    this->metatileSelector->drawMetatile(metatileId);
     this->metatileLayersItem->draw();
     this->metatileLayersItem->clearLastModifiedCoords();
     this->metatileLayersItem->clearLastHoveredCoords();

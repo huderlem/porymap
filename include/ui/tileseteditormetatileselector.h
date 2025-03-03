@@ -11,9 +11,13 @@ class TilesetEditorMetatileSelector: public SelectablePixmapItem {
 public:
     TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout);
     Layout *layout = nullptr;
-    void draw();
+
+    void draw() override;
+    void drawMetatile(uint16_t metatileId);
+    void drawSelectedMetatile();
+
     bool select(uint16_t metatileId);
-    void setTilesets(Tileset*, Tileset*, bool draw = true);
+    void setTilesets(Tileset*, Tileset*);
     uint16_t getSelectedMetatileId();
     void updateSelectedMetatile();
     QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId);
@@ -27,18 +31,21 @@ public:
     bool showDivider = false;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
 
 private:
+    QImage baseImage;
+    QPixmap basePixmap;
     Tileset *primaryTileset = nullptr;
     Tileset *secondaryTileset = nullptr;
-    uint16_t selectedMetatile;
+    uint16_t selectedMetatileId;
     int numMetatilesWide;
     int numMetatilesHigh;
+    void updateBasePixmap();
     uint16_t getMetatileId(int x, int y);
     QPoint getMetatileIdCoords(uint16_t);
     bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
