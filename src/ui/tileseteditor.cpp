@@ -34,7 +34,10 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
     ui->spinBox_paletteSelector->setMinimum(0);
     ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
-    ui->lineEdit_metatileLabel->setValidator(new IdentifierValidator(this));
+
+    auto validator = new IdentifierValidator(this);
+    validator->setAllowEmpty(true);
+    ui->lineEdit_metatileLabel->setValidator(validator);
 
     ActiveWindowFilter *filter = new ActiveWindowFilter(this);
     connect(filter, &ActiveWindowFilter::activated, this, &TilesetEditor::onWindowActivated);

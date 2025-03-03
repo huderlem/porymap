@@ -182,9 +182,11 @@ bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTi
     if (!tileset)
         return false;
 
-    IdentifierValidator validator;
-    if (!validator.isValid(label))
-        return false;
+    if (!label.isEmpty()) {
+        IdentifierValidator validator;
+        if (!validator.isValid(label))
+            return false;
+    }
 
     tileset->metatileLabels[metatileId] = label;
     return true;

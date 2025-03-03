@@ -52,8 +52,11 @@ public:
         : PrefixValidator(prefix, re_identifier, parent) {};
     ~IdentifierValidator() {};
 
+    void setAllowEmpty(bool allowEmpty);
+
 private:
     static const QRegularExpression re_identifier;
+    static const QRegularExpression re_identifierOrEmpty;
 };
 
 class UppercaseValidator : public QValidator {

@@ -2,7 +2,11 @@
 
 // Identifiers must only contain word characters, and cannot start with a digit.
 const QRegularExpression IdentifierValidator::re_identifier = QRegularExpression("[A-Za-z_]+[\\w]*");
+const QRegularExpression IdentifierValidator::re_identifierOrEmpty = QRegularExpression("(^$|[A-Za-z_]+[\\w]*)");
 
+void IdentifierValidator::setAllowEmpty(bool allowEmpty) {
+    this->setRegularExpression(allowEmpty ? re_identifierOrEmpty : re_identifier);
+}
 
 bool PrefixValidator::missingPrefix(const QString &input) const {
     return !m_prefix.isEmpty() && !input.startsWith(m_prefix);
