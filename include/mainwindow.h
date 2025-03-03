@@ -200,6 +200,7 @@ private slots:
     void applyUserShortcuts();
     void markMapEdited();
     void markSpecificMapEdited(Map*);
+    void markLayoutEdited();
 
     void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();

@@ -25,6 +25,7 @@ public:
 
 
     bool loaded = false;
+    bool hasUnsavedDataChanges = false;
 
     QString id;
     QString name;

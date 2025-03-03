@@ -339,7 +339,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
     connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
-    connect(this->editor, &Editor::wildMonTableEdited, [this] { this->markMapEdited(); });
+    connect(this->editor, &Editor::wildMonTableEdited, this,  &MainWindow::markMapEdited);
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
@@ -509,6 +509,15 @@ void MainWindow::markSpecificMapEdited(Map* map) {
 
     if (editor && editor->map == map)
         updateWindowTitle();
+    updateMapList();
+}
+
+void MainWindow::markLayoutEdited() {
+    if (!this->editor->layout)
+        return;
+    this->editor->layout->hasUnsavedDataChanges = true;
+
+    updateWindowTitle();
     updateMapList();
 }
 
@@ -2585,7 +2594,7 @@ void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &ti
         redrawMapScene();
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
-        markMapEdited();
+        markLayoutEdited();
     }
 }
 
@@ -2596,7 +2605,7 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
         redrawMapScene();
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
-        markMapEdited();
+        markLayoutEdited();
     }
 }
 
