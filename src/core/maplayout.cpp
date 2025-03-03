@@ -437,6 +437,11 @@ QPixmap Layout::getLayoutItemPixmap() {
     return this->layoutItem ? this->layoutItem->pixmap() : QPixmap();
 }
 
+void Layout::setClean() {
+    this->editHistory.setClean();
+    this->hasUnsavedDataChanges = false;
+}
+
 bool Layout::hasUnsavedChanges() const {
     return !this->editHistory.isClean() || this->hasUnsavedDataChanges || !this->newFolderPath.isEmpty();
 }

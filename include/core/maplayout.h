@@ -114,6 +114,7 @@ public:
     void clearBorderCache();
     void cacheBorder();
 
+    void setClean();
     bool hasUnsavedChanges() const;
 
     bool layoutBlockChanged(int i, const Blockdata &cache);

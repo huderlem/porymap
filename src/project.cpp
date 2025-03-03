@@ -1288,7 +1288,7 @@ void Project::saveLayout(Layout *layout) {
     // Update global data structures with current map data.
     updateLayout(layout);
 
-    layout->editHistory.setClean();
+    layout->setClean();
 }
 
 void Project::updateLayout(Layout *layout) {
