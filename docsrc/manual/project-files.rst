@@ -131,3 +131,7 @@ In addition to these files, there are some specific symbol and macro names that 
    ``regex_sign_facing_directions``, ``\bBG_EVENT_PLAYER_FACING_``, regex to find sign facing direction macro names
    ``regex_trainer_types``, ``\bTRAINER_TYPE_``, regex to find trainer type macro names
    ``regex_music``, ``\b(SE|MUS)_``, regex to find music macro names
+   ``regex_gbapal``, ``\.gbapal(\.[\w]+)?$``, regex to get the expected file extension for ``.pal`` data files
+   ``regex_bpp``, ``\.[\d]+bpp(\.[\w]+)?$``, regex to get the expected file extension for ``.png`` data files
+   ``pals_output_extension``, ``.gbapal``, the file extension to output for a new tileset's palette data files
+   ``tiles_output_extension``, ``.4bpp.lz``, the file extension to output for a new tileset's tiles image data file

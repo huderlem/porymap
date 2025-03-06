@@ -33,7 +33,9 @@ int Project::max_map_data_size = 10240; // 0x2800
 int Project::default_map_dimension = 20;
 
 Project::Project(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    re_gbapalExtension(projectConfig.getIdentifier(ProjectIdentifier::regex_gbapal)),
+    re_bppExtension(projectConfig.getIdentifier(ProjectIdentifier::regex_bpp))
 {
     QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
 }
@@ -2654,16 +2656,12 @@ void Project::insertGlobalScriptLabels(QStringList &scriptLabels) const {
 }
 
 QString Project::fixPalettePath(QString path) {
-    static const QRegularExpression re_gbapal("\\.gbapal$");
-    path = path.replace(re_gbapal, ".pal");
+    path.replace(this->re_gbapalExtension, ".pal");
     return path;
 }
 
 QString Project::fixGraphicPath(QString path) {
-    static const QRegularExpression re_lz("\\.lz$");
-    path = path.replace(re_lz, "");
-    static const QRegularExpression re_bpp("\\.[1248]bpp$");
-    path = path.replace(re_bpp, ".png");
+    path.replace(this->re_bppExtension, ".png");
     return path;
 }
 
