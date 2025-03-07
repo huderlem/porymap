@@ -1148,6 +1148,7 @@ void Editor::unsetMap() {
         this->map->pruneEditHistory();
         this->map->disconnect(this);
     }
+    clearMapEvents();
     clearMapConnections();
 
     this->map = nullptr;
