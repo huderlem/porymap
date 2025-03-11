@@ -198,6 +198,32 @@ void Editor::clearWildMonTables() {
     emit wildMonTableClosed();
 }
 
+int Editor::GetSortedItemIndex(QComboBox *combo, QString item) {
+    int count = 0;
+    QStringList labelList;
+
+    for (count = 0; count < combo->count(); count++)
+        labelList.append(combo->itemText(count));
+
+    labelList.append(item);
+    labelList.sort();
+
+    return labelList.indexOf(item);
+}
+
+void Editor::SortComboBox(QComboBox *combo) {
+    int count = 0;
+    QStringList labelList;
+
+    for (count = 0; count < combo->count(); count++)
+        labelList.append(combo->itemText(count));
+
+    combo->clear();
+    labelList.sort();
+
+    combo->addItems(labelList);
+}
+
 void Editor::displayWildMonTables() {
     clearWildMonTables();
 
@@ -207,17 +233,17 @@ void Editor::displayWildMonTables() {
     }
 
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+    QStringList labelComboStrings;
     for (auto groupPair : project->wildMonData[map->constantName()])
-        labelCombo->addItem(groupPair.first);
+        labelComboStrings.append(groupPair.first);
 
+    labelComboStrings.sort();
+    labelCombo->addItems(labelComboStrings);
     labelCombo->setCurrentText(labelCombo->itemText(0));
 
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     int labelIndex = 0;
-    for (auto labelPair : project->wildMonData[map->constantName()]) {
-
-        QString label = labelPair.first;
-
+    for (QString label : labelComboStrings) {
         WildPokemonHeader header = project->wildMonData[map->constantName()][label];
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
@@ -316,6 +342,9 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
+        int newItemIndex;
+        QString tempItemLabel;
+
         WildPokemonHeader header;
         for (EncounterField& monField : project->wildMonFields) {
             QString fieldName = monField.name;
@@ -323,11 +352,15 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             header.wildMons[fieldName].encounterRate = 0;
         }
 
-        MonTabWidget *tabWidget = new MonTabWidget(this);
-        stack->insertWidget(stack->count(), tabWidget);
+        tempItemLabel = lineEdit->text();
+        newItemIndex = GetSortedItemIndex(labelCombo, tempItemLabel);
+        labelCombo->addItem(tempItemLabel);
+        SortComboBox(labelCombo);
 
-        labelCombo->addItem(lineEdit->text());
-        labelCombo->setCurrentIndex(labelCombo->count() - 1);
+        labelCombo->setCurrentIndex(newItemIndex);
+
+        MonTabWidget *tabWidget = new MonTabWidget(this);
+        stack->insertWidget(newItemIndex, tabWidget);
 
         int tabIndex = 0;
         for (EncounterField &monField : project->wildMonFields) {
