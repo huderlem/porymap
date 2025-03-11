@@ -87,6 +87,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix some problems with tileset detection when importing maps from AdvanceMap.
 - Fix certain input fields allowing invalid identifiers, like names starting with numbers.
 - Fix crash in the Shortcuts Editor when applying changes after closing certain windows.
+- Fix the Shortcuts Editor clearing shortcuts after selecting them.
 - Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
 - The Metatile / Tile usage counts in the Tileset Editor now update to reflect changes.
 - Fix regression that stopped the map zoom from centering on the cursor.
