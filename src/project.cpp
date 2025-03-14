@@ -467,11 +467,6 @@ bool Project::readMapLayouts() {
     }
 
     QJsonObject layoutsObj = layoutsDoc.object();
-    QJsonArray layouts = layoutsObj["layouts"].toArray();
-    if (layouts.size() == 0) {
-        logError(QString("'layouts' array is missing from %1.").arg(layoutsFilepath));
-        return false;
-    }
 
     this->layoutsLabel = ParseUtil::jsonToQString(layoutsObj["layouts_table_label"]);
     if (this->layoutsLabel.isEmpty()) {
@@ -481,6 +476,7 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
+    QJsonArray layouts = layoutsObj["layouts"].toArray();
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
@@ -561,6 +557,11 @@ bool Project::readMapLayouts() {
         this->mapLayoutsMaster.insert(layout->id, layout->copy());
         this->layoutIds.append(layout->id);
         this->layoutIdsMaster.append(layout->id);
+    }
+
+    if (this->mapLayouts.isEmpty()) {
+        logError(QString("Failed to read any map layouts from '%1'. At least one map layout is required.").arg(layoutsFilepath));
+        return false;
     }
 
     return true;
@@ -1834,16 +1835,7 @@ bool Project::readMapGroups() {
         }
     }
 
-    // TODO: This might be ok now that we have layout-only mode?
-    if (this->groupNames.isEmpty()) {
-        logError(QString("Failed to find any map groups in %1").arg(filepath));
-        return false;
-    }
-    // TODO: This might be ok now that we have layout-only mode?
-    if (this->maps.isEmpty()) {
-        logError(QString("Failed to find any maps in %1").arg(filepath));
-        return false;
-    }
+    // Note: Not successfully reading any maps or map groups is ok. We only require at least 1 map layout.
 
     if (!failedMapNames.isEmpty()) {
         // At least 1 map was excluded due to an error.
@@ -1951,7 +1943,7 @@ QString Project::toUniqueIdentifier(const QString &identifier) const {
 
 void Project::initNewMapSettings() {
     this->newMapSettings.name = QString();
-    this->newMapSettings.group = this->groupNames.at(0);
+    this->newMapSettings.group = this->groupNames.value(0);
     this->newMapSettings.canFlyTo = false;
 
     this->newMapSettings.layout.folderName = this->newMapSettings.name;
