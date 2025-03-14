@@ -258,6 +258,9 @@ private:
     QMap<QString, QString> facingDirections;
     QMap<QString, QString> speciesToIconPath;
 
+    const QRegularExpression re_gbapalExtension;
+    const QRegularExpression re_bppExtension;
+
     struct EventGraphics
     {
         QString filepath;
