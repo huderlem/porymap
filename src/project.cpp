@@ -346,11 +346,8 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     }
     map->setLayout(layout);
 
-    const QString location = map->header()->location();
-    if (!this->mapSectionIdNames.contains(location) && isValidNewIdentifier(location)) {
-        // Unrecognized MAPSEC name, we can automatically add a new MAPSEC for it.
-        addNewMapsec(location);
-    }
+    // Try to record the MAPSEC name in case this is a new name.
+    addNewMapsec(map->header()->location());
 
     this->mapNames.insert(mapNamePos, map->name());
     this->groupNameToMapNames[settings.group].append(map->name());
@@ -1251,6 +1248,9 @@ void Project::saveMap(Map *map, bool skipLayout) {
 
     if (!skipLayout) saveLayout(map->layout());
 
+    // Try to record the MAPSEC name in case this is a new name.
+    addNewMapsec(map->header()->location());
+
     map->setClean();
 }
 
@@ -1925,8 +1925,8 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
 }
 
 // For some arbitrary string, return true if it's both a valid identifier name and not one that's already in-use.
-bool Project::isValidNewIdentifier(QString identifier) const {
-    IdentifierValidator validator;
+bool Project::isValidNewIdentifier(const QString &identifier) const {
+    static const IdentifierValidator validator;
     return validator.isValid(identifier) && isIdentifierUnique(identifier);
 }
 
@@ -2332,8 +2332,18 @@ QString Project::getMapGroupPrefix() {
     return QStringLiteral("gMapGroup_");
 }
 
-// This function assumes a valid and unique name
-void Project::addNewMapsec(const QString &idName) {
+bool Project::addNewMapsec(const QString &idName, const QString &displayName) {
+    if (this->mapSectionIdNames.contains(idName)) {
+        // Already added
+        return false;
+    }
+
+    IdentifierValidator validator(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix));
+    if (!validator.isValid(idName)) {
+        logWarn(QString("Cannot add new MAPSEC with invalid name '%1'").arg(idName));
+        return false;
+    }
+
     if (this->mapSectionIdNamesSaveOrder.last() == getEmptyMapsecName()) {
         // If the default map section name (MAPSEC_NONE) is last in the list we'll keep it last in the list.
         this->mapSectionIdNamesSaveOrder.insert(this->mapSectionIdNames.length() - 1, idName);
@@ -2348,6 +2358,8 @@ void Project::addNewMapsec(const QString &idName) {
 
     emit mapSectionAdded(idName);
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
+    if (!displayName.isEmpty()) setMapsecDisplayName(idName, displayName);
+    return true;
 }
 
 void Project::removeMapsec(const QString &idName) {

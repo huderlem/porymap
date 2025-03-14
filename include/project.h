@@ -131,7 +131,7 @@ public:
     Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
     Tileset *createNewTileset(QString name, bool secondary, bool checkerboardFill);
     bool isIdentifierUnique(const QString &identifier) const;
-    bool isValidNewIdentifier(QString identifier) const;
+    bool isValidNewIdentifier(const QString &identifier) const;
     QString toUniqueIdentifier(const QString &identifier) const;
     QString getProjectTitle() const;
     QString getNewHealLocationName(const Map* map) const;
@@ -147,7 +147,7 @@ public:
     QString getDefaultSpeciesIconPath(const QString &species);
     QPixmap getSpeciesIcon(const QString &species);
 
-    void addNewMapsec(const QString &idName);
+    bool addNewMapsec(const QString &idName, const QString &displayName = QString());
     void removeMapsec(const QString &idName);
     QString getMapsecDisplayName(const QString &idName) const { return this->mapSectionDisplayNames.value(idName); }
     void setMapsecDisplayName(const QString &idName, const QString &displayName);

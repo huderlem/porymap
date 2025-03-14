@@ -34,7 +34,7 @@ public:
     QString prefix() const { return m_prefix; }
     void setPrefix(const QString &prefix);
 
-    bool isValid(QString &input) const;
+    bool isValid(const QString &input) const;
 
 private:
     QString m_prefix;
