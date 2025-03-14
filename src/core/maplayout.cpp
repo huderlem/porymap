@@ -168,8 +168,7 @@ void Layout::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bo
         Scripting::cb_MapResized(oldWidth, oldHeight, newWidth, newHeight);
     }
 
-    emit layoutChanged(this);
-    emit layoutDimensionsChanged(QSize(getWidth(), getHeight()));
+    emit dimensionsChanged(QSize(getWidth(), getHeight()));
 }
 
 void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata) {
@@ -194,8 +193,7 @@ void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata) {
     this->width = newWidth;
     this->height = newHeight;
 
-    emit layoutChanged(this);
-    emit layoutDimensionsChanged(QSize(getWidth(), getHeight()));
+    emit dimensionsChanged(QSize(getWidth(), getHeight()));
 }
 
 void Layout::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {
@@ -211,8 +209,6 @@ void Layout::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockda
     if (enableScriptCallback && (oldWidth != newWidth || oldHeight != newHeight)) {
         Scripting::cb_BorderResized(oldWidth, oldHeight, newWidth, newHeight);
     }
-
-    emit layoutChanged(this);
 }
 
 void Layout::setNewDimensionsBlockdata(int newWidth, int newHeight) {

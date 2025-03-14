@@ -1204,7 +1204,7 @@ bool Editor::setLayout(QString layoutId) {
     editGroup.addStack(&this->layout->editHistory);
 
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
-    connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
+    connect(this->layout, &Layout::dimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
     ui->comboBox_PrimaryTileset->blockSignals(true);
     ui->comboBox_SecondaryTileset->blockSignals(true);

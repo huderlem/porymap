@@ -926,7 +926,11 @@ bool MainWindow::setMap(QString map_name) {
 
     connect(editor->map, &Map::modified, this, &MainWindow::markMapEdited, Qt::UniqueConnection);
 
-    connect(editor->layout, &Layout::layoutChanged, this, &MainWindow::onLayoutChanged, Qt::UniqueConnection);
+    // If the map's MAPSEC / layout changes, update the map's position in the map list.
+    // These are doing more work than necessary, rather than rebuilding the entire list they should find and relocate the appropriate row.
+    connect(editor->map, &Map::layoutChanged, this, &MainWindow::rebuildMapList_Layouts, Qt::UniqueConnection);
+    connect(editor->map->header(), &MapHeader::locationChanged, this, &MainWindow::rebuildMapList_Locations, Qt::UniqueConnection);
+
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
     userConfig.recentMapOrLayout = map_name;
@@ -1539,6 +1543,19 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
     if (toolbar) toolbar->setFilterLocked(false);
 }
 
+void MainWindow::rebuildMapList_Locations() {
+    this->mapLocationModel->deleteLater();
+    this->mapLocationModel = new MapLocationModel(this->editor->project);
+    this->locationListProxyModel->setSourceModel(this->mapLocationModel);
+    resetMapListFilters();
+}
+void MainWindow::rebuildMapList_Layouts() {
+    this->layoutTreeModel->deleteLater();
+    this->layoutTreeModel = new LayoutTreeModel(this->editor->project);
+    this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
+    resetMapListFilters();
+}
+
 void MainWindow::updateMapList() {
     // Get the name of the open map/layout (or clear the relevant selection if there is none).
     QString activeItemName; 
@@ -1583,9 +1600,9 @@ void MainWindow::save(bool currentOnly) {
 
     if (!porymapConfig.shownInGameReloadMessage) {
         // Show a one-time warning that the user may need to reload their map to see their new changes.
-        static const QString message = QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
-                                                      "the changes may not appear until you leave the map and return.");
-        InfoMessage::show(message, this);
+        InfoMessage::show(QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
+                                         "the changes may not appear until you leave the map and return."),
+                          this);
         porymapConfig.shownInGameReloadMessage = true;
     }
 
@@ -2418,10 +2435,6 @@ void MainWindow::onOpenConnectedMap(MapConnection *connection) {
         return;
     if (userSetMap(connection->targetMapName()))
         editor->setSelectedConnection(connection->findMirror());
-}
-
-void MainWindow::onLayoutChanged(Layout *) {
-    updateMapList();
 }
 
 void MainWindow::onMapLoaded(Map *map) {

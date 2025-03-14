@@ -141,9 +141,7 @@ private:
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
 
 signals:
-    void layoutChanged(Layout *layout);
-    //void modified();
-    void layoutDimensionsChanged(const QSize &size);
+    void dimensionsChanged(const QSize &size);
     void needsRedrawing();
 };
 

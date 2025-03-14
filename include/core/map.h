@@ -48,7 +48,7 @@ public:
     static QString mapConstantFromName(const QString &name);
     QString expectedConstantName() const { return Map::mapConstantFromName(m_name); }
 
-    void setLayout(Layout *layout) { m_layout = layout; }
+    void setLayout(Layout *layout);
     Layout* layout() const { return m_layout; }
 
     int getWidth() const;
@@ -143,6 +143,7 @@ signals:
     void openScriptRequested(QString label);
     void connectionAdded(MapConnection*);
     void connectionRemoved(MapConnection*);
+    void layoutChanged();
 };
 
 #endif // MAP_H

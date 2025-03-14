@@ -47,6 +47,14 @@ Map::~Map() {
     deleteConnections();
 }
 
+// Note: Map does not take ownership of layout
+void Map::setLayout(Layout *layout) {
+    if (layout == m_layout)
+        return;
+    m_layout = layout;
+    emit layoutChanged();
+}
+
 // We don't enforce this for existing maps, but for creating new maps we need to formulaically generate a new MAP_NAME ID.
 QString Map::mapConstantFromName(const QString &name) {
     return projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) + Util::toDefineCase(name);

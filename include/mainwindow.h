@@ -186,7 +186,6 @@ private slots:
     void copy();
     void paste();
 
-    void onLayoutChanged(Layout *layout);
     void onOpenConnectedMap(MapConnection*);
     void onTilesetsSaved(QString, QString);
     void onNewMapCreated(Map *newMap, const QString &groupName);
@@ -383,6 +382,8 @@ private:
 
     void refreshRecentProjectsMenu();
 
+    void rebuildMapList_Locations();
+    void rebuildMapList_Layouts();
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
     void onMapListTabChanged(int index);
