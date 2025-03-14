@@ -104,7 +104,7 @@ QStandardItem *MapListModel::createMapItem(const QString &mapName, QStandardItem
     map->setData(mapName, MapListUserRoles::NameRole);
     map->setData("map_name", MapListUserRoles::TypeRole);
     map->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemNeverHasChildren);
-    map->setToolTip(this->project->mapNamesToMapConstants.value(mapName));
+    map->setToolTip(this->project->getMapConstant(mapName));
     this->mapItems.insert(mapName, map);
     return map;
 }
@@ -164,10 +164,10 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
             if (name == this->activeItemName)
                 return this->mapOpenedIcon;
 
-            const Map* map = this->project->mapCache.value(name);
-            if (!map)
+            const Map* map = this->project->getMap(name);
+            if (!map || !map->loaded())
                 return this->mapGrayIcon;
-            return map->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon; 
+            return map->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon;
         } else if (type == this->folderTypeName) {
             // Decorating map folder in the map list
             return item->hasChildren() ? this->mapFolderIcon : this->emptyMapFolderIcon;
@@ -446,7 +446,7 @@ MapLocationModel::MapLocationModel(Project *project, QObject *parent) : MapListM
         insertMapFolderItem(idName);
     }
     for (const auto &mapName : this->project->mapNames) {
-        insertMapItem(mapName, this->project->mapNameToMapSectionName.value(mapName));
+        insertMapItem(mapName, this->project->getMapLocation(mapName));
     }
 }
 
@@ -470,7 +470,7 @@ LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListMod
         insertMapFolderItem(layoutId);
     }
     for (const auto &mapName : this->project->mapNames) {
-        insertMapItem(mapName, this->project->mapNameToLayoutId.value(mapName));
+        insertMapItem(mapName, this->project->getMapLayoutId(mapName));
     }
 }
 

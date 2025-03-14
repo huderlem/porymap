@@ -1384,7 +1384,7 @@ void MainWindow::openNewMapDialog() {
 }
 
 void MainWindow::openDuplicateMapDialog(const QString &mapName) {
-    const Map *map = this->editor->project->getMap(mapName);
+    const Map *map = this->editor->project->loadMap(mapName);
     if (map) {
         auto dialog = new NewMapDialog(this->editor->project, map, this);
         dialog->open();

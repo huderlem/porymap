@@ -48,11 +48,8 @@ public:
     static QString mapConstantFromName(const QString &name);
     QString expectedConstantName() const { return Map::mapConstantFromName(m_name); }
 
-    void setLayout(Layout *layout);
+    void setLayout(Layout *layout) { m_layout = layout; }
     Layout* layout() const { return m_layout; }
-
-    void setLayoutId(const QString &layoutId) { m_layoutId = layoutId; }
-    QString layoutId() const { return m_layoutId; }
 
     int getWidth() const;
     int getHeight() const;
@@ -71,10 +68,12 @@ public:
     void setNeedsHealLocation(bool needsHealLocation) { m_needsHealLocation = needsHealLocation; }
     void setIsPersistedToFile(bool persistedToFile) { m_isPersistedToFile = persistedToFile; }
     void setHasUnsavedDataChanges(bool unsavedDataChanges) { m_hasUnsavedDataChanges = unsavedDataChanges; }
+    void setLoaded(bool loaded) { m_loaded = loaded; }
 
     bool needsHealLocation() const { return m_needsHealLocation; }
     bool isPersistedToFile() const { return m_isPersistedToFile; }
     bool hasUnsavedDataChanges() const { return m_hasUnsavedDataChanges; }
+    bool loaded() const { return m_loaded; }
 
     void resetEvents();
     QList<Event *> getEvents(Event::Group group = Event::Group::None) const;
@@ -109,7 +108,6 @@ public:
 private:
     QString m_name;
     QString m_constantName;
-    QString m_layoutId;
     QString m_sharedEventsMap = "";
     QString m_sharedScriptsMap = "";
 
@@ -123,6 +121,7 @@ private:
     bool m_hasUnsavedDataChanges = false;
     bool m_needsHealLocation = false;
     bool m_scriptsLoaded = false;
+    bool m_loaded = false;
 
     QMap<Event::Group, QList<Event *>> m_events;
     QSet<Event *> m_ownedEvents; // for memory management

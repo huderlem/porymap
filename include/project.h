@@ -37,9 +37,6 @@ public:
     QStringList healLocationSaveOrder;
     QMap<QString, QList<HealLocationEvent*>> healLocations;
     QMap<QString, QString> mapConstantsToMapNames;
-    QMap<QString, QString> mapNamesToMapConstants;
-    QMap<QString, QString> mapNameToLayoutId;
-    QMap<QString, QString> mapNameToMapSectionName;
     QString layoutsLabel;
     QStringList layoutIds;
     QStringList layoutIdsMaster;
@@ -81,7 +78,7 @@ public:
 
     void set_root(QString);
 
-    void clearMapCache();
+    void clearMaps();
     void clearTilesetCache();
     void clearMapLayouts();
     void clearEventGraphics();
@@ -90,9 +87,10 @@ public:
     bool sanityCheck();
     bool load();
 
-    QMap<QString, Map*> mapCache;
-    Map* loadMap(QString);
-    Map* getMap(QString);
+    Map* loadMap(const QString &mapName);
+
+    // Note: This does not guarantee the map is loaded.
+    Map* getMap(const QString &mapName) { return this->maps.value(mapName); }
 
     QMap<QString, Tileset*> tilesetCache;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
@@ -111,7 +109,10 @@ public:
 
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
-    QString mapNameToMapGroup(const QString &mapName);
+    QString mapNameToMapGroup(const QString &mapName) const;
+    QString getMapConstant(const QString &mapName, const QString &defaultValue = QString()) const;
+    QString getMapLayoutId(const QString &mapName, const QString &defaultValue = QString()) const;
+    QString getMapLocation(const QString &mapName, const QString &defaultValue = QString()) const;
 
     struct NewMapSettings {
         QString name;
@@ -253,10 +254,11 @@ public:
     static QString getMapGroupPrefix();
 
 private:
-    QMap<QString, QString> mapSectionDisplayNames;
+    QHash<QString, QString> mapSectionDisplayNames;
     QMap<QString, qint64> modifiedFileTimestamps;
     QMap<QString, QString> facingDirections;
-    QMap<QString, QString> speciesToIconPath;
+    QHash<QString, QString> speciesToIconPath;
+    QHash<QString, Map*> maps;
 
     const QRegularExpression re_gbapalExtension;
     const QRegularExpression re_bppExtension;
