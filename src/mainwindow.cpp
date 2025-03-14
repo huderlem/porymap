@@ -1064,13 +1064,26 @@ void MainWindow::displayMapProperties() {
 }
 
 void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &text) {
-    if (editor && editor->project && editor->map) {
-        if (editor->project->mapLayouts.contains(text)) {
-            editor->map->setLayout(editor->project->loadLayout(text));
-            setMap(editor->map->name());
-            markMapEdited();
-        }
+    if (!this->editor || !this->editor->project || !this->editor->map)
+        return;
+
+    if (!this->editor->project->mapLayouts.contains(text)) {
+        // User may be in the middle of typing the name of a layout, don't bother trying to load it.
+        return;
     }
+
+    Layout* layout = this->editor->project->loadLayout(text);
+    if (!layout) {
+        RecentErrorMessage::show(QString("Unable to set layout '%1'.").arg(text), this);
+
+        // New layout failed to load, restore previous layout
+        const QSignalBlocker b(ui->comboBox_LayoutSelector);
+        ui->comboBox_LayoutSelector->setCurrentText(this->editor->map->layout()->id);
+        return;
+    }
+    this->editor->map->setLayout(layout);
+    setMap(this->editor->map->name());
+    markMapEdited();
 }
 
 // Update the UI using information we've read from the user's project files.
