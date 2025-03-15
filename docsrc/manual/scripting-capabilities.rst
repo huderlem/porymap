@@ -153,10 +153,17 @@ Callbacks
 
 .. js:function:: onMapOpened(mapName)
 
-   Called when a map or layout is opened.
+   Called when a map is opened.
 
-   :param mapName: the name of the opened map or layout
+   :param mapName: the name of the opened map
    :type mapName: string
+
+.. js:function:: onLayoutOpened(layoutName)
+
+   Called when a layout is opened, either by selecting a new map/layout in the map list or swapping the layout for the current map.
+
+   :param layoutName: the name of the opened layout
+   :type layoutName: string
 
 .. js:function:: onBlockChanged(x, y, prevBlock, newBlock)
 

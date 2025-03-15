@@ -988,7 +988,6 @@ bool MainWindow::setLayout(QString layoutId) {
 
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
-    Scripting::cb_MapOpened(layout->name);
     updateTilesetEditor();
 
     userConfig.recentMapOrLayout = layoutId;
@@ -2848,13 +2847,10 @@ void MainWindow::reloadScriptEngine() {
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.projectDir);
     if (this->editor) {
-        QString curName;
+        if (this->editor->layout)
+            Scripting::cb_LayoutOpened(this->editor->layout->name);
         if (this->editor->map)
-            curName = this->editor->map->name();
-        else if (editor->layout)
-            curName = this->editor->layout->name;
-
-        Scripting::cb_MapOpened(curName);
+            Scripting::cb_MapOpened(this->editor->map->name());
     }
 }
 

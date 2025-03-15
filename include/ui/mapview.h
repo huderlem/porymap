@@ -70,11 +70,13 @@ public:
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
 
-private:
-    QMap<int, Overlay*> overlayMap;
 protected:
     virtual void drawForeground(QPainter *painter, const QRectF &rect) override;
     virtual void keyPressEvent(QKeyEvent*) override;
+private:
+    QMap<int, Overlay*> overlayMap;
+
+    void updateScene();
 };
 
 #endif // GRAPHICSVIEW_H
