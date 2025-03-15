@@ -204,6 +204,7 @@ private slots:
     void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();
     void on_action_Exit_triggered();
+    void onLayoutSelectorEditingFinished();
     void on_comboBox_LayoutSelector_currentTextChanged(const QString &text);
     void on_actionShortcuts_triggered();
 

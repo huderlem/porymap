@@ -298,6 +298,7 @@ void MainWindow::initExtraSignals() {
     connect(ui->action_NewMap, &QAction::triggered, this, &MainWindow::openNewMapDialog);
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
     connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
+    connect(ui->comboBox_LayoutSelector->lineEdit(), &QLineEdit::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -1088,6 +1089,18 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
     this->editor->map->setLayout(layout);
     setMap(this->editor->map->name());
     markMapEdited();
+}
+
+void MainWindow::onLayoutSelectorEditingFinished() {
+    if (!this->editor || !this->editor->project || !this->editor->layout)
+        return;
+
+    // If the user left the layout selector in an invalid state, restore it so that it displays the current layout.
+    const QString text = ui->comboBox_LayoutSelector->currentText();
+    if (!this->editor->project->mapLayouts.contains(text)) {
+        const QSignalBlocker b(ui->comboBox_LayoutSelector);
+        ui->comboBox_LayoutSelector->setCurrentText(this->editor->layout->id);
+    }
 }
 
 // Update the UI using information we've read from the user's project files.
