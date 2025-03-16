@@ -22,7 +22,6 @@ public:
 
     static QString layoutConstantFromName(const QString &name);
 
-    bool loaded = false;
     bool hasUnsavedDataChanges = false;
 
     QString id;

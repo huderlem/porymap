@@ -130,6 +130,7 @@ QString Project::getProjectTitle() const {
 void Project::clearMaps() {
     qDeleteAll(this->maps);
     this->maps.clear();
+    this->loadedMapNames.clear();
 }
 
 void Project::clearTilesetCache() {
@@ -142,14 +143,15 @@ Map* Project::loadMap(const QString &mapName) {
     if (!map)
         return nullptr;
 
-    if (map->loaded())
+    if (isMapLoaded(map))
         return map;
 
     if (!(loadMapData(map) && loadMapLayout(map)))
         return nullptr;
 
-    map->setLoaded(true);
+    this->loadedMapNames.insert(mapName);
     emit mapLoaded(map);
+
     return map;
 }
 
@@ -393,14 +395,14 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
     }
 
     // No need for a full load, we already have all the blockdata.
-    layout->loaded = loadLayoutTilesets(layout);
-    if (!layout->loaded) {
+    if (!loadLayoutTilesets(layout)) {
         delete layout;
         return nullptr;
     }
 
     this->mapLayouts.insert(layout->id, layout);
     this->layoutIds.append(layout->id);
+    this->loadedLayoutIds.insert(layout->id);
 
     emit layoutCreated(layout);
 
@@ -408,14 +410,14 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
 }
 
 bool Project::loadLayout(Layout *layout) {
-    if (!layout->loaded) {
+    if (!isLayoutLoaded(layout)) {
         // Force these to run even if one fails
         bool loadedTilesets = loadLayoutTilesets(layout);
         bool loadedBlockdata = loadBlockdata(layout);
         bool loadedBorder = loadLayoutBorder(layout);
 
         if (loadedTilesets && loadedBlockdata && loadedBorder) {
-            layout->loaded = true;
+            this->loadedLayoutIds.insert(layout->id);
             return true;
         } else {
             return false;
@@ -448,6 +450,7 @@ void Project::clearMapLayouts() {
     this->mapLayoutsMaster.clear();
     this->layoutIds.clear();
     this->layoutIdsMaster.clear();
+    this->loadedLayoutIds.clear();
 }
 
 bool Project::readMapLayouts() {
@@ -1115,7 +1118,7 @@ void Project::saveAll() {
 }
 
 void Project::saveMap(Map *map, bool skipLayout) {
-    if (!map || !map->loaded()) return;
+    if (!map || !isMapLoaded(map)) return;
 
     // Create/Modify a few collateral files for brand new maps.
     const QString folderPath = projectConfig.getFilePath(ProjectFilePath::data_map_folders) + map->name();
@@ -1255,7 +1258,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
 }
 
 void Project::saveLayout(Layout *layout) {
-    if (!layout || !layout->loaded)
+    if (!layout || !isLayoutLoaded(layout))
         return;
 
     if (!layout->newFolderPath.isEmpty()) {
@@ -1912,10 +1915,8 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
     if (this->encounterGroupLabels.contains(identifier))
         return false;
     // Check event IDs
-    for (const auto &map : this->maps) {
-        if (!map->loaded()) continue;
-        auto events = map->getEvents();
-        for (const auto &event : events) {
+    for (const auto &mapName : this->loadedMapNames) {
+        for (const auto &event : this->maps.value(mapName)->getEvents()) {
             QString idName = event->getIdName();
             if (!idName.isEmpty() && idName == identifier)
                 return false;

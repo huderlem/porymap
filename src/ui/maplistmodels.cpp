@@ -165,7 +165,7 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
                 return this->mapOpenedIcon;
 
             const Map* map = this->project->getMap(name);
-            if (!map || !map->loaded())
+            if (!this->project->isMapLoaded(map))
                 return this->mapGrayIcon;
             return map->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon;
         } else if (type == this->folderTypeName) {
@@ -510,7 +510,7 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
                 return this->mapOpenedIcon;
 
             const Layout* layout = this->project->mapLayouts.value(name);
-            if (!layout || !layout->loaded)
+            if (!this->project->isLayoutLoaded(layout))
                 return this->mapGrayIcon;
             return layout->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon;
         }

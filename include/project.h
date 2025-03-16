@@ -92,6 +92,11 @@ public:
     // Note: This does not guarantee the map is loaded.
     Map* getMap(const QString &mapName) { return this->maps.value(mapName); }
 
+    bool isMapLoaded(const Map *map) const { return map && isMapLoaded(map->name()); }
+    bool isMapLoaded(const QString &mapName) const { return this->loadedMapNames.contains(mapName); }
+    bool isLayoutLoaded(const Layout *layout) const { return layout && isLayoutLoaded(layout->id); }
+    bool isLayoutLoaded(const QString &layoutId) const { return this->loadedLayoutIds.contains(layoutId); }
+
     QMap<QString, Tileset*> tilesetCache;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
@@ -259,6 +264,15 @@ private:
     QMap<QString, QString> facingDirections;
     QHash<QString, QString> speciesToIconPath;
     QHash<QString, Map*> maps;
+
+    // Maps/layouts represented in these sets have been fully loaded from the project.
+    // If a valid map name / layout id is not in these sets, a Map / Layout object exists
+    // for it in Project::maps / Project::mapLayouts, but it has been minimally populated
+    // (i.e. for a map layout it only has the data read from layouts.json, none of its assets
+    // have been loaded, and for a map it only has the data needed to identify it in the map
+    // list, none of the rest of its data in map.json).
+    QSet<QString> loadedMapNames;
+    QSet<QString> loadedLayoutIds;
 
     const QRegularExpression re_gbapalExtension;
     const QRegularExpression re_bppExtension;
