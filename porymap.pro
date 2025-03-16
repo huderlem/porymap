@@ -30,7 +30,7 @@ win32 {
 
 DEFINES += PORYMAP_LATEST_COMMIT=\\\"$$LATEST_COMMIT\\\"
 
-VERSION = 5.4.1
+VERSION = 6.0.0
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/core/advancemapparser.cpp \
