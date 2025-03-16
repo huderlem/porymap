@@ -449,6 +449,27 @@ void MainWindow::initMapList() {
     ui->mapListToolBar_Locations->setEditsAllowedButtonVisible(false);
     ui->mapListToolBar_Layouts->setEditsAllowedButtonVisible(false);
 
+    // Initialize settings from config
+    ui->mapListToolBar_Groups->setEditsAllowed(porymapConfig.mapListEditGroupsEnabled);
+    for (auto i = porymapConfig.mapListHideEmptyEnabled.constBegin(); i != porymapConfig.mapListHideEmptyEnabled.constEnd(); i++) {
+        auto toolbar = getMapListToolBar(i.key());
+        if (toolbar) toolbar->setEmptyFoldersVisible(!i.value());
+    }
+
+    // Update config if map list settings change
+    connect(ui->mapListToolBar_Groups, &MapListToolBar::editsAllowedChanged, [](bool allowed) {
+        porymapConfig.mapListEditGroupsEnabled = allowed;
+    });
+    connect(ui->mapListToolBar_Groups, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
+        porymapConfig.mapListHideEmptyEnabled[MapListTab::Groups] = !visible;
+    });
+    connect(ui->mapListToolBar_Locations, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
+        porymapConfig.mapListHideEmptyEnabled[MapListTab::Locations] = !visible;
+    });
+    connect(ui->mapListToolBar_Layouts, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
+        porymapConfig.mapListHideEmptyEnabled[MapListTab::Layouts] = !visible;
+    });
+
     // When map list search filter is cleared we want the current map/layout in the editor to be visible in the list.
     connect(ui->mapListToolBar_Groups,    &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);
     connect(ui->mapListToolBar_Locations, &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);
@@ -1149,7 +1170,8 @@ bool MainWindow::setProjectUI() {
     // map models
     this->mapGroupModel = new MapGroupModel(editor->project);
     this->groupListProxyModel = new FilterChildrenProxyModel();
-    groupListProxyModel->setSourceModel(this->mapGroupModel);
+    this->groupListProxyModel->setSourceModel(this->mapGroupModel);
+    this->groupListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Groups]);
     ui->mapList->setModel(groupListProxyModel);
 
     this->ui->mapList->setItemDelegateForColumn(0, new GroupNameDelegate(this->editor->project, this));
@@ -1157,13 +1179,16 @@ bool MainWindow::setProjectUI() {
 
     this->mapLocationModel = new MapLocationModel(editor->project);
     this->locationListProxyModel = new FilterChildrenProxyModel();
-    locationListProxyModel->setSourceModel(this->mapLocationModel);
+    this->locationListProxyModel->setSourceModel(this->mapLocationModel);
+    this->locationListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Locations]);
+
     ui->locationList->setModel(locationListProxyModel);
     ui->locationList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
+    this->layoutListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Layouts]);
     ui->layoutList->setModel(layoutListProxyModel);
     ui->layoutList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
@@ -2708,13 +2733,17 @@ void MainWindow::initTilesetEditor() {
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
-MapListToolBar* MainWindow::getCurrentMapListToolBar() {
-    switch (ui->mapListContainer->currentIndex()) {
+MapListToolBar* MainWindow::getMapListToolBar(int tab) {
+    switch (tab) {
     case MapListTab::Groups:    return ui->mapListToolBar_Groups;
     case MapListTab::Locations: return ui->mapListToolBar_Locations;
     case MapListTab::Layouts:   return ui->mapListToolBar_Layouts;
     default: return nullptr;
     }
+}
+
+MapListToolBar* MainWindow::getCurrentMapListToolBar() {
+    return getMapListToolBar(ui->mapListContainer->currentIndex());
 }
 
 MapTree* MainWindow::getCurrentMapList() {

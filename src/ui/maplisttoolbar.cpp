@@ -4,11 +4,6 @@
 
 #include <QToolTip>
 
-/*
-    TODO: The button states for each tool bar (just the two toggleable buttons, hide empty folders and allow editing)
-          should be saved in the config. This will be cleaner/easier once the config is JSON, so holding off on that for now.
-*/
-
 MapListToolBar::MapListToolBar(QWidget *parent)
     : QFrame(parent)
     , ui(new Ui::MapListToolBar)
@@ -18,7 +13,7 @@ MapListToolBar::MapListToolBar(QWidget *parent)
     ui->button_ToggleEmptyFolders->setChecked(!m_emptyFoldersVisible);
     ui->button_ToggleEdit->setChecked(m_editsAllowed);
 
-    connect(ui->button_AddFolder, &QAbstractButton::clicked, this, &MapListToolBar::addFolderClicked); // TODO: Tool tip
+    connect(ui->button_AddFolder, &QAbstractButton::clicked, this, &MapListToolBar::addFolderClicked);
     connect(ui->button_ExpandAll, &QAbstractButton::clicked, this, &MapListToolBar::expandList);
     connect(ui->button_CollapseAll, &QAbstractButton::clicked, this, &MapListToolBar::collapseList);
     connect(ui->button_ToggleEdit, &QAbstractButton::clicked, this, &MapListToolBar::toggleEditsAllowed);
@@ -57,28 +52,30 @@ void MapListToolBar::toggleEditsAllowed() {
 }
 
 void MapListToolBar::setEditsAllowed(bool allowed) {
-     m_editsAllowed = allowed;
+    if (m_list) {
+        if (allowed) {
+            m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+            m_list->setDragEnabled(true);
+            m_list->setAcceptDrops(true);
+            m_list->setDropIndicatorShown(true);
+            m_list->setDragDropMode(QAbstractItemView::InternalMove);
+            m_list->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+        } else {
+            m_list->setSelectionMode(QAbstractItemView::NoSelection);
+            m_list->setDragEnabled(false);
+            m_list->setAcceptDrops(false);
+            m_list->setDropIndicatorShown(false);
+            m_list->setDragDropMode(QAbstractItemView::NoDragDrop);
+            m_list->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        }
+    }
 
-     const QSignalBlocker b(ui->button_ToggleEdit);
-     ui->button_ToggleEdit->setChecked(allowed);
+    const QSignalBlocker b(ui->button_ToggleEdit);
+    ui->button_ToggleEdit->setChecked(allowed);
 
-    if (!m_list)
-        return;
-
-    if (allowed) {
-        m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_list->setDragEnabled(true);
-        m_list->setAcceptDrops(true);
-        m_list->setDropIndicatorShown(true);
-        m_list->setDragDropMode(QAbstractItemView::InternalMove);
-        m_list->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
-    } else {
-        m_list->setSelectionMode(QAbstractItemView::NoSelection);
-        m_list->setDragEnabled(false);
-        m_list->setAcceptDrops(false);
-        m_list->setDropIndicatorShown(false);
-        m_list->setDragDropMode(QAbstractItemView::NoDragDrop);
-        m_list->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    if (m_editsAllowed != allowed) {
+        m_editsAllowed = allowed;
+        emit editsAllowedChanged(allowed);
     }
 }
 
@@ -87,8 +84,6 @@ void MapListToolBar::toggleEmptyFolders() {
 }
 
 void MapListToolBar::setEmptyFoldersVisible(bool visible) {
-    m_emptyFoldersVisible = visible;
-
     if (m_list) {
         auto model = static_cast<FilterChildrenProxyModel*>(m_list->model());
         if (model) {
@@ -103,6 +98,11 @@ void MapListToolBar::setEmptyFoldersVisible(bool visible) {
 
     const QSignalBlocker b(ui->button_ToggleEmptyFolders);
     ui->button_ToggleEmptyFolders->setChecked(!visible);
+
+    if (m_emptyFoldersVisible != visible) {
+        m_emptyFoldersVisible = visible;
+        emit emptyFoldersVisibleChanged(visible);
+    }
 }
 
 void MapListToolBar::expandList() {

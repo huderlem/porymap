@@ -423,6 +423,7 @@ private:
     double getMetatilesZoomScale();
     void redrawMetatileSelection();
     void scrollMetatileSelectorToSelection();
+    MapListToolBar* getMapListToolBar(int tab);
     MapListToolBar* getCurrentMapListToolBar();
     MapTree* getCurrentMapList();
     void setLocationComboBoxes(const QStringList &locations);
