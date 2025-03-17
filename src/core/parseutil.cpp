@@ -677,7 +677,6 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath, QS
 }
 
 bool ParseUtil::tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath, QString *error) {
-    QString err;
     QString jsonTxt = readTextFile(filepath, error);
     if (error && !error->isEmpty()) {
         return false;

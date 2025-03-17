@@ -692,7 +692,6 @@ void Project::saveRegionMapSections() {
         return;
     }
 
-    const QString emptyMapsecName = getEmptyMapsecName();
     OrderedJson::array mapSectionArray;
     for (const auto &idName : this->mapSectionIdNamesSaveOrder) {
         OrderedJson::object mapSectionObj;
@@ -889,11 +888,12 @@ void Project::updateTilesetMetatileLabels(Tileset *tileset) {
     // Erase old labels, then repopulate with new labels
     const QString prefix = tileset->getMetatileLabelPrefix();
     this->metatileLabelsMap[tileset->name].clear();
-    for (int metatileId : tileset->metatileLabels.keys()) {
-        if (tileset->metatileLabels[metatileId].isEmpty())
-            continue;
-        QString label = prefix + tileset->metatileLabels[metatileId];
-        this->metatileLabelsMap[tileset->name][label] = metatileId;
+    for (auto i = tileset->metatileLabels.constBegin(); i != tileset->metatileLabels.constEnd(); i++) {
+        uint16_t metatileId = i.key();
+        QString label = i.value();
+        if (!label.isEmpty()) {
+            this->metatileLabelsMap[tileset->name][prefix + label] = metatileId;
+        }
     }
 }
 
@@ -932,11 +932,12 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
     const QString guardName = "GUARD_METATILE_LABELS_H";
     QString outputText = QString("#ifndef %1\n#define %1\n").arg(guardName);
 
-    for (QString tilesetName : metatileLabelsMap.keys()) {
-        if (metatileLabelsMap[tilesetName].size() == 0)
+    for (auto i = this->metatileLabelsMap.constBegin(); i != this->metatileLabelsMap.constEnd(); i++) {
+        const QString tilesetName = i.key();
+        const QMap<QString, uint16_t> tilesetMetatileLabels = i.value();
+        if (tilesetMetatileLabels.isEmpty())
             continue;
-        outputText += QString("\n// %1\n").arg(tilesetName);
-        outputText += buildMetatileLabelsText(metatileLabelsMap[tilesetName]);
+        outputText += QString("\n// %1\n%2").arg(tilesetName).arg(buildMetatileLabelsText(tilesetMetatileLabels));
     }
 
     if (unusedMetatileLabels.size() != 0) {
@@ -1499,10 +1500,10 @@ bool Project::readTilesetMetatileLabels() {
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
 
     const QSet<QString> regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix))};
-    QMap<QString, int> defines = parser.readCDefinesByRegex(metatileLabelsFilename, regexList);
-
-    for (QString label : defines.keys()) {
-        uint32_t metatileId = static_cast<uint32_t>(defines[label]);
+    const QMap<QString, int> defines = parser.readCDefinesByRegex(metatileLabelsFilename, regexList);
+    for (auto i = defines.constBegin(); i != defines.constEnd(); i++) {
+        QString label = i.key();
+        uint32_t metatileId = i.value();
         if (metatileId > Block::maxValue) {
             metatileId &= Block::maxValue;
             logWarn(QString("Value of metatile label '%1' truncated to %2").arg(label).arg(Metatile::getMetatileIdString(metatileId)));

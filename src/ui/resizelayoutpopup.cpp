@@ -172,7 +172,7 @@ void ResizeLayoutPopup::setupLayoutView() {
     scene->addItem(outline);
 
     layoutPixmap->setBoundary(outline);
-    this->outline->rectUpdated(outline->rect().toAlignedRect());
+    emit this->outline->rectUpdated(outline->rect().toAlignedRect());
 
     // TODO: is this an ideal size for all maps, or should this adjust based on starting dimensions?
     this->ui->graphicsView->setTransform(QTransform::fromScale(0.5, 0.5));
