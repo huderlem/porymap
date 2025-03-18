@@ -1757,10 +1757,8 @@ bool Project::readMapGroups() {
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
     QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
 
-    // Save special "Dynamic" constant
     const QString dynamicMapName = getDynamicMapName();
-    this->mapConstantsToMapNames.insert(getDynamicMapDefineName(), dynamicMapName);
-    this->mapNames.append(dynamicMapName);
+    const QString dynamicMapConstant = getDynamicMapDefineName();
 
     // Process the map group lists
     QStringList failedMapNames;
@@ -1772,6 +1770,11 @@ bool Project::readMapGroups() {
         // Process the names in this map group
         for (int j = 0; j < mapNamesJson.size(); j++) {
             const QString mapName = ParseUtil::jsonToQString(mapNamesJson.at(j));
+            if (mapName == dynamicMapName) {
+                logWarn(QString("Ignoring map with reserved name '%1'.").arg(mapName));
+                failedMapNames.append(mapName);
+                continue;
+            }
             if (this->mapNames.contains(mapName)) {
                 logWarn(QString("Ignoring repeated map name '%1'.").arg(mapName));
                 failedMapNames.append(mapName);
@@ -1790,6 +1793,11 @@ bool Project::readMapGroups() {
             const QString mapConstant = ParseUtil::jsonToQString(mapObj["id"]);
             if (mapConstant.isEmpty()) {
                 logWarn(QString("Map '%1' is missing an \"id\" value and will be ignored.").arg(mapName));
+                failedMapNames.append(mapName);
+                continue;
+            }
+            if (mapConstant == dynamicMapConstant) {
+                logWarn(QString("Ignoring map with reserved \"id\" value '%1'.").arg(mapName));
                 failedMapNames.append(mapName);
                 continue;
             }
@@ -1845,6 +1853,10 @@ bool Project::readMapGroups() {
         // User should be alerted of this, rather than just silently logging the details.
         emit mapsExcluded(failedMapNames);
     }
+
+    // Save special "Dynamic" constant
+    this->mapConstantsToMapNames.insert(dynamicMapConstant, dynamicMapName);
+    this->mapNames.append(dynamicMapName);
 
     return true;
 }
