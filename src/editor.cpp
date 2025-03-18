@@ -354,9 +354,9 @@ void Editor::addNewWildMonGroup(QWidget *window) {
 
         tempItemLabel = lineEdit->text();
         newItemIndex = GetSortedItemIndex(labelCombo, tempItemLabel);
+        
         labelCombo->addItem(tempItemLabel);
         SortComboBox(labelCombo);
-
         labelCombo->setCurrentIndex(newItemIndex);
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
