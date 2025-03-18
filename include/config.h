@@ -242,6 +242,10 @@ enum ProjectIdentifier {
     regex_sign_facing_directions,
     regex_trainer_types,
     regex_music,
+    regex_gbapal,
+    regex_bpp,
+    pals_output_extension,
+    tiles_output_extension,
 };
 
 enum ProjectFilePath {

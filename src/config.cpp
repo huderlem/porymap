@@ -125,6 +125,11 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
     {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
     {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
+    {ProjectIdentifier::regex_gbapal,                  {"regex_gbapal",                  "\\.gbapal(\\.[\\w]+)?$"}},
+    {ProjectIdentifier::regex_bpp,                     {"regex_bpp",                     "\\.[\\d]+bpp(\\.[\\w]+)?$"}},
+    // Other
+    {ProjectIdentifier::pals_output_extension,         {"pals_output_extension",         ".gbapal"}},
+    {ProjectIdentifier::tiles_output_extension,        {"tiles_output_extension",        ".4bpp.lz"}},
 };
 
 const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths = {

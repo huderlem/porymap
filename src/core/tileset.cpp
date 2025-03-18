@@ -304,8 +304,9 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
     }
 
     const QString tilesetDir = this->getExpectedDir();
-    const QString tilesPath = tilesetDir + "/tiles.4bpp.lz";
+    const QString tilesPath = QString("%1/tiles%2").arg(tilesetDir).arg(projectConfig.getIdentifier(ProjectIdentifier::tiles_output_extension));
     const QString palettesPath = tilesetDir + "/palettes/";
+    const QString palettesExt = projectConfig.getIdentifier(ProjectIdentifier::pals_output_extension);
 
     QString dataString = "\n";
     if (usingAsm) {
@@ -313,7 +314,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
         dataString.append("\t.align 2\n");
         dataString.append(QString("gTilesetPalettes_%1::\n").arg(friendlyName));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
-            dataString.append(QString("\t.incbin \"%1%2.gbapal\"\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')));
+            dataString.append(QString("\t.incbin \"%1%2%3\"\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')).arg(palettesExt));
         dataString.append("\n\t.align 2\n");
         dataString.append(QString("gTilesetTiles_%1::\n").arg(friendlyName));
         dataString.append(QString("\t.incbin \"%1\"\n").arg(tilesPath));
@@ -321,7 +322,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
         // Append to C file
         dataString.append(QString("const u16 gTilesetPalettes_%1[][16] =\n{\n").arg(friendlyName));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
-            dataString.append(QString("    INCBIN_U16(\"%1%2.gbapal\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')));
+            dataString.append(QString("    INCBIN_U16(\"%1%2%3\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')).arg(palettesExt));
         dataString.append("};\n");
         dataString.append(QString("\nconst u32 gTilesetTiles_%1[] = INCBIN_U32(\"%2\");\n").arg(friendlyName, tilesPath));
     }
