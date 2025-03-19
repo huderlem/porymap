@@ -279,6 +279,7 @@ private:
 
     void ignoreWatchedFileTemporarily(QString filepath);
     void recordFileChange(const QString &filepath);
+    void resetFileCache();
 
     QString findSpeciesIconPath(const QStringList &names) const;
 

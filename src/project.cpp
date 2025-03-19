@@ -78,6 +78,7 @@ bool Project::sanityCheck() {
 }
 
 bool Project::load() {
+    resetFileCache();
     this->disabledSettingsNames.clear();
     bool success = readMapLayouts()
                 && readRegionMapSections()
@@ -117,6 +118,26 @@ bool Project::load() {
         applyParsedLimits();
     }
     return success;
+}
+
+void Project::resetFileCache() {
+    this->parser.clearFileCache();
+
+    const QSet<QString> filepaths = {
+        // Whenever we load a tileset we'll need to parse some data from these files, so we cache them to avoid the overhead of opening the files.
+        // We don't know yet whether the project uses C or asm tileset data, so try to cache both (we'll ignore errors from missing files).
+        projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm),
+        projectConfig.getFilePath(ProjectFilePath::tilesets_graphics_asm),
+        projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles_asm),
+        projectConfig.getFilePath(ProjectFilePath::tilesets_headers),
+        projectConfig.getFilePath(ProjectFilePath::tilesets_graphics),
+        projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles),
+        // We need separate sets of constants from these files
+        projectConfig.getFilePath(ProjectFilePath::constants_map_types),
+    };
+    for (const auto &path : filepaths) {
+        this->parser.cacheFile(path);
+    }
 }
 
 QString Project::getProjectTitle() const {
@@ -200,7 +221,7 @@ void Project::initTopLevelMapFields() {
 bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
     const QString mapFilepath = QString("%1%2/map.json").arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders)).arg(mapName);
     QString error;
-    if (!parser.tryParseJsonFile(out, QString("%1/%2").arg(this->root).arg(mapFilepath), &error)) {
+    if (!parser.tryParseJsonFile(out, mapFilepath, &error)) {
         logError(QString("Failed to read map data from '%1': %2").arg(mapFilepath).arg(error));
         return false;
     }
@@ -477,12 +498,11 @@ bool Project::readMapLayouts() {
     clearMapLayouts();
 
     const QString layoutsFilepath = projectConfig.getFilePath(ProjectFilePath::json_layouts);
-    const QString fullFilepath = QString("%1/%2").arg(this->root).arg(layoutsFilepath);
-    fileWatcher.addPath(fullFilepath);
+    fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(layoutsFilepath));
     QJsonDocument layoutsDoc;
     QString error;
-    if (!parser.tryParseJsonFile(&layoutsDoc, fullFilepath, &error)) {
-        logError(QString("Failed to read map layouts from '%1': %2").arg(fullFilepath).arg(error));
+    if (!parser.tryParseJsonFile(&layoutsDoc, layoutsFilepath, &error)) {
+        logError(QString("Failed to read map layouts from '%1': %2").arg(layoutsFilepath).arg(error));
         return false;
     }
 
@@ -979,9 +999,6 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     return true;
 }
 
-// TODO: We are parsing the tileset headers file whenever we load a tileset for the first time.
-//       At a minimum this means we're parsing the file three times per session (twice here for the first map's tilesets, once on launch in Project::readTilesetLabels).
-//       We can cache the header data instead and only parse it once on launch.
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     auto memberMap = Tileset::getHeaderMemberMap(this->usingAsmTilesets);
     if (this->usingAsmTilesets) {
@@ -1634,15 +1651,14 @@ bool Project::readWildMonData() {
     this->pokemonMaxLevel = qMax(this->pokemonMinLevel, this->pokemonMaxLevel);
 
     // Read encounter data
-    const QString wildMonJsonBaseFilepath = projectConfig.getFilePath(ProjectFilePath::json_wild_encounters);
-    QString wildMonJsonFilepath = QString("%1/%2").arg(root).arg(wildMonJsonBaseFilepath);
-    fileWatcher.addPath(wildMonJsonFilepath);
+    const QString wildMonJsonFilepath = projectConfig.getFilePath(ProjectFilePath::json_wild_encounters);
+    fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(wildMonJsonFilepath));
 
     OrderedJson::object wildMonObj;
     QString error;
     if (!parser.tryParseOrderedJsonFile(&wildMonObj, wildMonJsonFilepath, &error)) {
         // Failing to read wild encounters data is not a critical error, the encounter editor will just be disabled
-        logWarn(QString("Failed to read wild encounters from '%1': %2").arg(wildMonJsonBaseFilepath).arg(error));
+        logWarn(QString("Failed to read wild encounters from '%1': %2").arg(wildMonJsonFilepath).arg(error));
         return true;
     }
 
@@ -1768,8 +1784,8 @@ bool Project::readMapGroups() {
 
     this->initTopLevelMapFields();
 
-    const QString filepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_map_groups);
-    fileWatcher.addPath(filepath);
+    const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_map_groups);
+    fileWatcher.addPath(root + "/" + filepath);
     QJsonDocument mapGroupsDoc;
     QString error;
     if (!parser.tryParseJsonFile(&mapGroupsDoc, filepath, &error)) {
@@ -2277,14 +2293,13 @@ bool Project::readRegionMapSections() {
     const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
 
     QJsonDocument doc;
-    const QString baseFilepath = projectConfig.getFilePath(ProjectFilePath::json_region_map_entries);
-    const QString filepath = QString("%1/%2").arg(this->root).arg(baseFilepath);
+    const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_region_map_entries);
     QString error;
     if (!parser.tryParseJsonFile(&doc, filepath, &error)) {
-        logError(QString("Failed to read region map sections from '%1': %2").arg(baseFilepath).arg(error));
+        logError(QString("Failed to read region map sections from '%1': %2").arg(filepath).arg(error));
         return false;
     }
-    fileWatcher.addPath(filepath);
+    fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filepath));
 
     QJsonArray mapSections = doc.object()["map_sections"].toArray();
     for (int i = 0; i < mapSections.size(); i++) {
@@ -2300,13 +2315,13 @@ bool Project::readRegionMapSections() {
                 // ignoring everything here and then wiping the file's data when we save later.
                 idField = oldIdField;
             } else {
-                logWarn(QString("Ignoring data for map section %1 in '%2'. Missing required field \"%3\"").arg(i).arg(baseFilepath).arg(idField));
+                logWarn(QString("Ignoring data for map section %1 in '%2'. Missing required field \"%3\"").arg(i).arg(filepath).arg(idField));
                 continue;
             }
         }
         const QString idName = ParseUtil::jsonToQString(mapSectionObj[idField]);
         if (!idName.startsWith(requiredPrefix)) {
-            logWarn(QString("Ignoring data for map section '%1' in '%2'. IDs must start with the prefix '%3'").arg(idName).arg(baseFilepath).arg(requiredPrefix));
+            logWarn(QString("Ignoring data for map section '%1' in '%2'. IDs must start with the prefix '%3'").arg(idName).arg(filepath).arg(requiredPrefix));
             continue;
         }
 
@@ -2404,21 +2419,20 @@ bool Project::readHealLocations() {
     clearHealLocations();
 
     QJsonDocument doc;
-    const QString baseFilepath = projectConfig.getFilePath(ProjectFilePath::json_heal_locations);
-    const QString filepath = QString("%1/%2").arg(this->root).arg(baseFilepath);
+    const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_heal_locations);
     QString error;
     if (!parser.tryParseJsonFile(&doc, filepath, &error)) {
-        logError(QString("Failed to read heal locations from '%1': %2").arg(baseFilepath).arg(error));
+        logError(QString("Failed to read heal locations from '%1': %2").arg(filepath).arg(error));
         return false;
     }
-    fileWatcher.addPath(filepath);
+    fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filepath));
 
     QJsonArray healLocations = doc.object()["heal_locations"].toArray();
     for (int i = 0; i < healLocations.size(); i++) {
         QJsonObject healLocationObj = healLocations.at(i).toObject();
         static const QString mapField = QStringLiteral("map");
         if (!healLocationObj.contains(mapField)) {
-            logWarn(QString("Ignoring data for heal location %1 in '%2'. Missing required field \"%3\"").arg(i).arg(baseFilepath).arg(mapField));
+            logWarn(QString("Ignoring data for heal location %1 in '%2'. Missing required field \"%3\"").arg(i).arg(filepath).arg(mapField));
             continue;
         }
 

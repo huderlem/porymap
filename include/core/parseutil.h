@@ -45,7 +45,8 @@ public:
     ParseUtil();
     void set_root(const QString &dir);
     static QString readTextFile(const QString &path, QString *error = nullptr);
-    void invalidateTextFile(const QString &path);
+    bool cacheFile(const QString &path, QString *error = nullptr);
+    void clearFileCache() { this->fileCache.clear(); }
     static int textFileLineCount(const QString &path);
     QList<QStringList> parseAsm(const QString &filename);
     QStringList readCArray(const QString &filename, const QString &label);
@@ -87,6 +88,7 @@ private:
     QString text;
     QString file;
     QString curDefine;
+    QHash<QString, QString> fileCache;
     QHash<QString, QStringList> errorMap;
     int evaluateDefine(const QString&, const QString &, QMap<QString, int>*, QMap<QString, QString>*);
     QList<Token> tokenizeExpression(QString, QMap<QString, int>*, QMap<QString, QString>*);
@@ -105,6 +107,8 @@ private:
     QMap<QString, int> evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error);
     bool defineNameMatchesFilter(const QString &name, const QSet<QString> &filterList) const;
     bool defineNameMatchesFilter(const QString &name, const QSet<QRegularExpression> &filterList) const;
+    QString loadTextFile(const QString &path, QString *error = nullptr);
+    QString pathWithRoot(const QString &path);
 
     static const QRegularExpression re_incScriptLabel;
     static const QRegularExpression re_globalIncScriptLabel;
