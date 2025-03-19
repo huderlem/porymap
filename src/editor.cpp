@@ -198,20 +198,16 @@ void Editor::clearWildMonTables() {
     emit wildMonTableClosed();
 }
 
-int Editor::GetSortedItemIndex(QComboBox *combo, QString item) {
-    int count = 0;
-    QStringList labelList;
-
-    for (count = 0; count < combo->count(); count++)
-        labelList.append(combo->itemText(count));
-
-    labelList.append(item);
-    labelList.sort();
-
-    return labelList.indexOf(item);
+int Editor::getSortedItemIndex(QComboBox *combo, QString item) {
+    int i = 0;
+    for (; i < combo->count(); i++) {
+        if (item < combo->itemText(i))
+            break;
+    }
+    return i;
 }
 
-void Editor::SortComboBox(QComboBox *combo) {
+void Editor::sortComboBox(QComboBox *combo) {
     int count = 0;
     QStringList labelList;
 
@@ -342,9 +338,6 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     form.addRow(&buttonBox);
 
     if (dialog.exec() == QDialog::Accepted) {
-        int newItemIndex;
-        QString tempItemLabel;
-
         WildPokemonHeader header;
         for (EncounterField& monField : project->wildMonFields) {
             QString fieldName = monField.name;
@@ -352,11 +345,11 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             header.wildMons[fieldName].encounterRate = 0;
         }
 
-        tempItemLabel = lineEdit->text();
-        newItemIndex = GetSortedItemIndex(labelCombo, tempItemLabel);
+        QString tempItemLabel = lineEdit->text();
+        int newItemIndex = getSortedItemIndex(labelCombo, tempItemLabel);
         
-        labelCombo->addItem(tempItemLabel);
-        SortComboBox(labelCombo);
+        labelCombo->insertItem(newItemIndex, tempItemLabel);
+        sortComboBox(labelCombo);
         labelCombo->setCurrentIndex(newItemIndex);
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
