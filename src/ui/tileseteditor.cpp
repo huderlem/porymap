@@ -43,6 +43,17 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     connect(filter, &ActiveWindowFilter::activated, this, &TilesetEditor::onWindowActivated);
     this->installEventFilter(filter);
 
+    // Update the metatile's attributes values when the attribute combo boxes are edited.
+    connect(ui->comboBox_metatileBehaviors->lineEdit(), &QLineEdit::editingFinished, [this] {
+        setAttributeFromComboBox(Metatile::Attr::Behavior, ui->comboBox_metatileBehaviors);
+    });
+    connect(ui->comboBox_encounterType->lineEdit(),     &QLineEdit::editingFinished, [this] {
+        setAttributeFromComboBox(Metatile::Attr::EncounterType, ui->comboBox_encounterType);
+    });
+    connect(ui->comboBox_terrainType->lineEdit(),       &QLineEdit::editingFinished, [this] {
+        setAttributeFromComboBox(Metatile::Attr::TerrainType, ui->comboBox_terrainType);
+    });
+
     setAttributesUi();
     initMetatileSelector();
     initMetatileLayersItem();
@@ -137,7 +148,6 @@ void TilesetEditor::setAttributesUi() {
         for (auto i = project->terrainTypeToName.constBegin(); i != project->terrainTypeToName.constEnd(); i++) {
             this->ui->comboBox_terrainType->addItem(i.value(), i.key());
         }
-        this->ui->comboBox_terrainType->setEditable(false);
         this->ui->comboBox_terrainType->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_terrainType->setVisible(false);
@@ -149,7 +159,6 @@ void TilesetEditor::setAttributesUi() {
         for (auto i = project->encounterTypeToName.constBegin(); i != project->encounterTypeToName.constEnd(); i++) {
             this->ui->comboBox_encounterType->addItem(i.value(), i.key());
         }
-        this->ui->comboBox_encounterType->setEditable(false);
         this->ui->comboBox_encounterType->setMinimumContentsLength(0);
     } else {
         this->ui->comboBox_encounterType->setVisible(false);
@@ -535,30 +544,6 @@ void TilesetEditor::on_checkBox_yFlip_stateChanged(int checked)
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
-void TilesetEditor::on_comboBox_metatileBehaviors_currentTextChanged(const QString &metatileBehavior)
-{
-    if (this->metatile) {
-        uint32_t behavior;
-        if (project->metatileBehaviorMap.contains(metatileBehavior)) {
-            behavior = project->metatileBehaviorMap[metatileBehavior];
-        } else {
-            // Check if user has entered a number value instead
-            bool ok;
-            behavior = metatileBehavior.toUInt(&ok, 0);
-            if (!ok) return;
-        }
-
-        // This function can also be called when the user selects
-        // a different metatile. Stop this from being considered a change.
-        if (this->metatile->behavior() == behavior)
-            return;
-
-        Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->setBehavior(behavior);
-        this->commitMetatileChange(prevMetatile);
-    }
-}
-
 void TilesetEditor::setMetatileLabel(QString label)
 {
     this->ui->lineEdit_metatileLabel->setText(label);
@@ -606,24 +591,40 @@ void TilesetEditor::on_comboBox_layerType_activated(int layerType)
     }
 }
 
-// TODO: Needs to read data from item, not index of item.
-void TilesetEditor::on_comboBox_encounterType_activated(int encounterType)
-{
-    if (this->metatile) {
-        Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->setEncounterType(encounterType);
-        this->commitMetatileChange(prevMetatile);
+uint32_t TilesetEditor::attributeNameToValue(Metatile::Attr attribute, const QString &text, bool *ok) {
+    if (ok) *ok = true;
+    if (attribute == Metatile::Attr::Behavior) {
+        auto it = project->metatileBehaviorMap.constFind(text);
+        if (it != project->metatileBehaviorMap.constEnd())
+            return it.value();
+    } else if (attribute == Metatile::Attr::EncounterType) {
+        for (auto i = project->encounterTypeToName.constBegin(); i != project->encounterTypeToName.constEnd(); i++) {
+            if (i.value() == text) return i.key();
+        }
+    } else if (attribute == Metatile::Attr::TerrainType) {
+        for (auto i = project->terrainTypeToName.constBegin(); i != project->terrainTypeToName.constEnd(); i++) {
+            if (i.value() == text) return i.key();
+        }
     }
+    return text.toUInt(ok, 0);
 }
 
-// TODO: Needs to read data from item, not index of item.
-void TilesetEditor::on_comboBox_terrainType_activated(int terrainType)
-{
-    if (this->metatile) {
+void TilesetEditor::setAttributeFromComboBox(Metatile::Attr attribute, NoScrollComboBox *combo) {
+    if (!this->metatile)
+        return;
+
+    bool ok;
+    uint32_t newValue = this->attributeNameToValue(attribute, combo->currentText(), &ok);
+    if (ok && newValue != this->metatile->getAttribute(attribute)) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
-        this->metatile->setTerrainType(terrainType);
+        this->metatile->setAttribute(attribute, newValue);
         this->commitMetatileChange(prevMetatile);
     }
+
+    // Update the text in the combo box to reflect the final value.
+    // The text may change if the input text was invalid, the value was too large to fit, or if a number was entered that we know an identifier for.
+    const QSignalBlocker b(combo);
+    combo->setHexItem(this->metatile->getAttribute(attribute));
 }
 
 void TilesetEditor::on_actionSave_Tileset_triggered()
