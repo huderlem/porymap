@@ -88,7 +88,7 @@ QString Event::groupToString(Event::Group group) {
 // We re-use them for key names in the copy/paste JSON data,
 const QMap<Event::Type, QString> typeToJsonKeyMap = {
     {Event::Type::Object, "object"},
-    {Event::Type::CloneObject, "clone_object"},
+    {Event::Type::CloneObject, "clone"},
     {Event::Type::Warp, "warp"},
     {Event::Type::Trigger, "trigger"},
     {Event::Type::WeatherTrigger, "weather"},
@@ -165,7 +165,7 @@ OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     OrderedJson::object objectJson;
 
     if (projectConfig.eventCloneObjectEnabled) {
-        objectJson["type"] = "object";
+        objectJson["type"] = Event::typeToJsonKey(Event::Type::Object);
     }
     QString idName = this->getIdName();
     if (!idName.isEmpty())
@@ -276,7 +276,7 @@ EventFrame *CloneObjectEvent::createEventFrame() {
 OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     OrderedJson::object cloneJson;
 
-    cloneJson["type"] = "clone";
+    cloneJson["type"] = Event::typeToJsonKey(Event::Type::CloneObject);
     QString idName = this->getIdName();
     if (!idName.isEmpty())
         cloneJson["local_id"] = idName;
@@ -458,7 +458,7 @@ EventFrame *TriggerEvent::createEventFrame() {
 OrderedJson::object TriggerEvent::buildEventJson(Project *) {
     OrderedJson::object triggerJson;
 
-    triggerJson["type"] = "trigger";
+    triggerJson["type"] = Event::typeToJsonKey(Event::Type::Trigger);
     triggerJson["x"] = this->getX();
     triggerJson["y"] = this->getY();
     triggerJson["elevation"] = this->getElevation();
@@ -532,7 +532,7 @@ EventFrame *WeatherTriggerEvent::createEventFrame() {
 OrderedJson::object WeatherTriggerEvent::buildEventJson(Project *) {
     OrderedJson::object weatherJson;
 
-    weatherJson["type"] = "weather";
+    weatherJson["type"] = Event::typeToJsonKey(Event::Type::WeatherTrigger);
     weatherJson["x"] = this->getX();
     weatherJson["y"] = this->getY();
     weatherJson["elevation"] = this->getElevation();
@@ -599,7 +599,7 @@ EventFrame *SignEvent::createEventFrame() {
 OrderedJson::object SignEvent::buildEventJson(Project *) {
     OrderedJson::object signJson;
 
-    signJson["type"] = "sign";
+    signJson["type"] = Event::typeToJsonKey(Event::Type::Sign);
     signJson["x"] = this->getX();
     signJson["y"] = this->getY();
     signJson["elevation"] = this->getElevation();
@@ -672,7 +672,7 @@ EventFrame *HiddenItemEvent::createEventFrame() {
 OrderedJson::object HiddenItemEvent::buildEventJson(Project *) {
     OrderedJson::object hiddenItemJson;
 
-    hiddenItemJson["type"] = "hidden_item";
+    hiddenItemJson["type"] = Event::typeToJsonKey(Event::Type::HiddenItem);
     hiddenItemJson["x"] = this->getX();
     hiddenItemJson["y"] = this->getY();
     hiddenItemJson["elevation"] = this->getElevation();
@@ -765,7 +765,7 @@ EventFrame *SecretBaseEvent::createEventFrame() {
 OrderedJson::object SecretBaseEvent::buildEventJson(Project *) {
     OrderedJson::object secretBaseJson;
 
-    secretBaseJson["type"] = "secret_base";
+    secretBaseJson["type"] = Event::typeToJsonKey(Event::Type::SecretBase);
     secretBaseJson["x"] = this->getX();
     secretBaseJson["y"] = this->getY();
     secretBaseJson["elevation"] = this->getElevation();
