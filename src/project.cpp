@@ -2357,7 +2357,7 @@ bool Project::addNewMapsec(const QString &idName, const QString &displayName) {
         return false;
     }
 
-    if (this->mapSectionIdNamesSaveOrder.last() == getEmptyMapsecName()) {
+    if (!this->mapSectionIdNamesSaveOrder.isEmpty() && this->mapSectionIdNamesSaveOrder.last() == getEmptyMapsecName()) {
         // If the default map section name (MAPSEC_NONE) is last in the list we'll keep it last in the list.
         this->mapSectionIdNamesSaveOrder.insert(this->mapSectionIdNames.length() - 1, idName);
     } else {
