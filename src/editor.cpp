@@ -207,19 +207,6 @@ int Editor::getSortedItemIndex(QComboBox *combo, QString item) {
     return i;
 }
 
-void Editor::sortComboBox(QComboBox *combo) {
-    int count = 0;
-    QStringList labelList;
-
-    for (count = 0; count < combo->count(); count++)
-        labelList.append(combo->itemText(count));
-
-    combo->clear();
-    labelList.sort();
-
-    combo->addItems(labelList);
-}
-
 void Editor::displayWildMonTables() {
     clearWildMonTables();
 
@@ -349,11 +336,8 @@ void Editor::addNewWildMonGroup(QWidget *window) {
         int newItemIndex = getSortedItemIndex(labelCombo, tempItemLabel);
         
         labelCombo->insertItem(newItemIndex, tempItemLabel);
-        sortComboBox(labelCombo);
-        labelCombo->setCurrentIndex(newItemIndex);
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
-        stack->insertWidget(newItemIndex, tabWidget);
 
         int tabIndex = 0;
         for (EncounterField &monField : project->wildMonFields) {
@@ -379,6 +363,10 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             }
             tabIndex++;
         }
+
+        stack->insertWidget(newItemIndex, tabWidget);
+        labelCombo->setCurrentIndex(newItemIndex);
+
         saveEncounterTabData();
         emit wildMonTableEdited();
     }

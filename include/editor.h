@@ -216,7 +216,6 @@ private:
     void clearMapGrid();
     void clearWildMonTables();
     int getSortedItemIndex(QComboBox *combo, QString item);
-    void sortComboBox(QComboBox *combo);
     void updateBorderVisibility();
     void removeConnectionPixmap(MapConnection *connection);
     void displayConnection(MapConnection *connection);
