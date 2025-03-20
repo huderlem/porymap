@@ -198,6 +198,15 @@ void Editor::clearWildMonTables() {
     emit wildMonTableClosed();
 }
 
+int Editor::getSortedItemIndex(QComboBox *combo, QString item) {
+    int i = 0;
+    for (; i < combo->count(); i++) {
+        if (item < combo->itemText(i))
+            break;
+    }
+    return i;
+}
+
 void Editor::displayWildMonTables() {
     clearWildMonTables();
 
@@ -207,17 +216,17 @@ void Editor::displayWildMonTables() {
     }
 
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+    QStringList labelComboStrings;
     for (auto groupPair : project->wildMonData[map->constantName()])
-        labelCombo->addItem(groupPair.first);
+        labelComboStrings.append(groupPair.first);
 
+    labelComboStrings.sort();
+    labelCombo->addItems(labelComboStrings);
     labelCombo->setCurrentText(labelCombo->itemText(0));
 
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     int labelIndex = 0;
-    for (auto labelPair : project->wildMonData[map->constantName()]) {
-
-        QString label = labelPair.first;
-
+    for (QString label : labelComboStrings) {
         WildPokemonHeader header = project->wildMonData[map->constantName()][label];
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
@@ -323,11 +332,12 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             header.wildMons[fieldName].encounterRate = 0;
         }
 
-        MonTabWidget *tabWidget = new MonTabWidget(this);
-        stack->insertWidget(stack->count(), tabWidget);
+        QString tempItemLabel = lineEdit->text();
+        int newItemIndex = getSortedItemIndex(labelCombo, tempItemLabel);
+        
+        labelCombo->insertItem(newItemIndex, tempItemLabel);
 
-        labelCombo->addItem(lineEdit->text());
-        labelCombo->setCurrentIndex(labelCombo->count() - 1);
+        MonTabWidget *tabWidget = new MonTabWidget(this);
 
         int tabIndex = 0;
         for (EncounterField &monField : project->wildMonFields) {
@@ -353,6 +363,10 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             }
             tabIndex++;
         }
+
+        stack->insertWidget(newItemIndex, tabWidget);
+        labelCombo->setCurrentIndex(newItemIndex);
+
         saveEncounterTabData();
         emit wildMonTableEdited();
     }
