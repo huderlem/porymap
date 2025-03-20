@@ -10,61 +10,71 @@
 
 #define STITCH_MODE_BORDER_DISTANCE 2
 
-QString getTitle(ImageExporterMode mode) {
+QString MapImageExporter::getTitle(ImageExporterMode mode) {
     switch (mode)
     {
         case ImageExporterMode::Normal:
-            return "Export Map Image";
+            return QString("Export %1 Image").arg(m_map ? "Map" : "Layout");
         case ImageExporterMode::Stitch:
-            return "Export Map Stitch Image";
+            return QStringLiteral("Export Map Stitch Image");
         case ImageExporterMode::Timelapse:
-            return "Export Map Timelapse Image";
+            return QString("Export %1 Timelapse Image").arg(m_map ? "Map" : "Layout");
     }
     return "";
 }
 
-QString getDescription(ImageExporterMode mode) {
+QString MapImageExporter::getDescription(ImageExporterMode mode) {
     switch (mode)
     {
         case ImageExporterMode::Normal:
-            return "Exports an image of the selected map.";
+            return QString("Exports an image of the selected %1.").arg(m_map ? "Map" : "Layout");
         case ImageExporterMode::Stitch:
             return "Exports a combined image of all the maps connected to the selected map.";
         case ImageExporterMode::Timelapse:
-            return "Exports a GIF of the edit history for the selected map.";
+            return QString("Exports a GIF of the edit history for the selected %1.").arg(m_map ? "Map" : "Layout");
     }
     return "";
 }
 
-MapImageExporter::MapImageExporter(QWidget *parent, Editor *editor, ImageExporterMode mode) :
+MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, Layout *layout, ImageExporterMode mode) :
     QDialog(parent),
-    ui(new Ui::MapImageExporter)
+    ui(new Ui::MapImageExporter),
+    m_project(project),
+    m_map(map),
+    m_layout(layout),
+    m_mode(mode)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
-    m_map = editor->map;
-    m_layout = editor->layout;
-    m_editor = editor;
-    m_mode = mode;
     setWindowTitle(getTitle(m_mode));
     ui->label_Description->setText(getDescription(m_mode));
-    ui->groupBox_Connections->setVisible(m_mode != ImageExporterMode::Stitch);
+    ui->groupBox_Connections->setVisible(m_map && m_mode != ImageExporterMode::Stitch);
     ui->groupBox_Timelapse->setVisible(m_mode == ImageExporterMode::Timelapse);
+    ui->groupBox_Events->setVisible(m_map != nullptr);
 
-    if (m_map) {
-        ui->comboBox_MapSelection->addItems(editor->project->mapNames);
-        ui->comboBox_MapSelection->setCurrentText(m_map->name());
-        ui->comboBox_MapSelection->setEnabled(false);// TODO: allow selecting map from drop-down
+    // Initialize map selector.
+    if (m_mode != ImageExporterMode::Timelapse) {
+        if (m_map) {
+            ui->comboBox_MapSelection->addItems(m_project->mapNames);
+            ui->comboBox_MapSelection->setCurrentText(m_map->name());
+            ui->label_MapSelection->setText(m_mode == ImageExporterMode::Stitch ? QStringLiteral("Starting Map") : QStringLiteral("Map"));
+        } else if (m_layout) {
+            ui->comboBox_MapSelection->addItems(m_project->layoutIds);
+            ui->comboBox_MapSelection->setCurrentText(m_layout->id);
+            ui->label_MapSelection->setText(QStringLiteral("Layout"));
+        }
     } else {
-        // Some settings only apply to maps. When exporting an image in layout-only mode we hide them.
+        // At the moment edit history for events (and the DraggablePixmapItem class)
+        // depend on the editor and assume their map is the current map.
+        // Until this is resolved the selected map cannot be changed in Timelapse mode.
         ui->comboBox_MapSelection->setVisible(false);
         ui->label_MapSelection->setVisible(false);
-        ui->groupBox_Events->setVisible(false);
-        ui->groupBox_Connections->setVisible(false);
     }
+    ui->graphicsView_Preview->setFocus();
 
     connect(ui->pushButton_Save,   &QPushButton::pressed, this, &MapImageExporter::saveImage);
     connect(ui->pushButton_Cancel, &QPushButton::pressed, this, &MapImageExporter::close);
+    connect(ui->comboBox_MapSelection, &QComboBox::currentTextChanged, this, &MapImageExporter::updateMapSelection);
 }
 
 MapImageExporter::~MapImageExporter() {
@@ -84,6 +94,25 @@ void MapImageExporter::resizeEvent(QResizeEvent *event) {
     scalePreview();
 }
 
+void MapImageExporter::updateMapSelection(const QString &text) {
+    if (m_map) {
+        if (!m_project->mapNames.contains(text))
+            return;
+        Map *newMap = m_project->loadMap(text);
+        if (newMap == m_map)
+            return;
+        m_map = newMap;
+    } else {
+        if (!m_project->layoutIds.contains(text))
+            return;
+        Layout *newLayout = m_project->loadLayout(text);
+        if (newLayout == m_layout)
+            return;
+        m_layout = newLayout;
+    }
+    updatePreview();
+}
+
 void MapImageExporter::saveImage() {
     // Make sure preview is up-to-date before we save.
     if (m_preview.isNull())
@@ -91,7 +120,6 @@ void MapImageExporter::saveImage() {
     if (m_preview.isNull())
         return;
 
-    const QString title = getTitle(m_mode);
     const QString itemName = m_map ? m_map->name() : m_layout->name;
     QString defaultFilename;
     switch (m_mode)
@@ -112,7 +140,7 @@ void MapImageExporter::saveImage() {
             .arg(defaultFilename)
             .arg(m_mode == ImageExporterMode::Timelapse ? "gif" : "png");
     QString filter = m_mode == ImageExporterMode::Timelapse ? "Image Files (*.gif)" : "Image Files (*.png *.jpg *.bmp)";
-    QString filepath = FileDialog::getSaveFileName(this, title, defaultFilepath, filter);
+    QString filepath = FileDialog::getSaveFileName(this, windowTitle(), defaultFilepath, filter);
     if (!filepath.isEmpty()) {
         switch (m_mode) {
             case ImageExporterMode::Normal:
@@ -275,7 +303,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
     QSet<QString> visited;
     QList<StitchedMap> stitchedMaps;
     QList<StitchedMap> unvisited;
-    unvisited.append(StitchedMap{0, 0, m_editor->map});
+    unvisited.append(StitchedMap{0, 0, m_map});
 
     progress->setLabelText("Gathering stitched maps...");
     while (!unvisited.isEmpty()) {
@@ -291,31 +319,10 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
         visited.insert(cur.map->name());
         stitchedMaps.append(cur);
 
-        for (MapConnection *connection : cur.map->getConnections()) {
-            const QString direction = connection->direction();
-            int x = cur.x;
-            int y = cur.y;
-            int offset = connection->offset();
-            Map *connectionMap = connection->targetMap();
-            if (!connectionMap)
-                continue;
-            if (direction == "up") {
-                x += offset;
-                y -= connectionMap->getHeight();
-            } else if (direction == "down") {
-                x += offset;
-                y += cur.map->getHeight();
-            } else if (direction == "left") {
-                x -= connectionMap->getWidth();
-                y += offset;
-            } else if (direction == "right") {
-                x += cur.map->getWidth();
-                y += offset;
-            } else {
-                // Ignore Dive/Emerge connections and unrecognized directions
-                continue;
-            }
-            unvisited.append(StitchedMap{x, y, connectionMap});
+        for (const auto &connection : cur.map->getConnections()) {
+            if (!connection->isCardinal()) continue;
+            QPoint pos = connection->relativePos();
+            unvisited.append(StitchedMap{cur.x + pos.x(), cur.y + pos.y(), connection->targetMap()});
         }
     }
 
@@ -441,7 +448,7 @@ QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout, bool ignoreBo
     if (m_settings.showCollision) {
         QPainter collisionPainter(&pixmap);
         layout->renderCollision(true);
-        collisionPainter.setOpacity(m_editor->collisionOpacity);
+        collisionPainter.setOpacity(static_cast<qreal>(porymapConfig.collisionOpacity) / 100);
         collisionPainter.drawPixmap(0, 0, layout->collision_pixmap);
         collisionPainter.end();
     }
@@ -452,8 +459,8 @@ QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout, bool ignoreBo
     if (!ignoreBorder && m_settings.showBorder) {
         int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
         layout->renderBorder();
-        int borderHorzDist = m_editor->getBorderDrawDistance(layout->getBorderWidth());
-        int borderVertDist = m_editor->getBorderDrawDistance(layout->getBorderHeight());
+        int borderHorzDist = layout->getBorderDrawWidth();
+        int borderVertDist = layout->getBorderDrawHeight();
         borderWidth = borderDistance * 16;
         borderHeight = borderDistance * 16;
         QPixmap newPixmap = QPixmap(layout->pixmap.width() + borderWidth * 2, layout->pixmap.height() + borderHeight * 2);
@@ -487,17 +494,20 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
         QPainter connectionPainter(&pixmap);
         
         int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
-        int borderWidth = borderDistance * 16;
-        int borderHeight = borderDistance * 16;
-        // TODO: Reading the connections from the editor and not 'map' is incorrect.
-        for (auto connectionItem : m_editor->connection_items) {
-            const QString direction = connectionItem->connection->direction();
-            if ((m_settings.showUpConnections && direction == "up")
-             || (m_settings.showDownConnections && direction == "down")
-             || (m_settings.showLeftConnections && direction == "left")
-             || (m_settings.showRightConnections && direction == "right"))
-                connectionPainter.drawImage(connectionItem->x() + borderWidth, connectionItem->y() + borderHeight,
-                                            connectionItem->connection->getPixmap().toImage());
+        for (const auto &connection : m_map->getConnections()) {
+            const QString direction = connection->direction();
+            if (direction == "up") {
+                if (!m_settings.showUpConnections) continue;
+            } else if (direction == "down") {
+                if (!m_settings.showDownConnections) continue;
+            } else if (direction == "left") {
+                if (!m_settings.showLeftConnections) continue;
+            } else if (direction == "right") {
+                if (!m_settings.showRightConnections) continue;
+            } else continue; // Ignore any other directions
+
+            QPoint pos = connection->relativePos(true);
+            connectionPainter.drawImage((pos.x() + borderDistance) * 16, (pos.y() + borderDistance) * 16, connection->render().toImage());
         }
         connectionPainter.end();
     }
@@ -517,7 +527,8 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
              || (m_settings.showBGs && group == Event::Group::Bg)
              || (m_settings.showTriggers && group == Event::Group::Coord)
              || (m_settings.showHealLocations && group == Event::Group::Heal)) {
-                m_editor->project->loadEventPixmap(event);
+                m_project->loadEventPixmap(event);
+                eventPainter.setOpacity(event->getUsesDefaultPixmap() ? 0.7 : 1.0);
                 eventPainter.drawImage(QPoint(event->getPixelX() + pixelOffset, event->getPixelY() + pixelOffset), event->getPixmap().toImage());
             }
         }

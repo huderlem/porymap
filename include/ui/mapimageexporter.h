@@ -1,10 +1,7 @@
 #ifndef MAPIMAGEEXPORTER_H
 #define MAPIMAGEEXPORTER_H
 
-#include "map.h"
-#include "editor.h"
-
-#include <QDialog>
+#include "project.h"
 
 namespace Ui {
 class MapImageExporter;
@@ -39,15 +36,21 @@ class MapImageExporter : public QDialog
     Q_OBJECT
 
 public:
-    explicit MapImageExporter(QWidget *parent, Editor *editor, ImageExporterMode mode);
+    explicit MapImageExporter(QWidget *parent, Project *project, Layout *layout, ImageExporterMode mode = ImageExporterMode::Normal)
+                        : MapImageExporter(parent, project, nullptr, layout, mode) {};
+    explicit MapImageExporter(QWidget *parent, Project *project, Map *map, ImageExporterMode mode = ImageExporterMode::Normal)
+                        : MapImageExporter(parent, project, map, map->layout(), mode) {};
     ~MapImageExporter();
 
-private:
-    Ui::MapImageExporter *ui;
+    ImageExporterMode mode() const { return m_mode; }
 
-    Layout *m_layout = nullptr;
+private:
+    explicit MapImageExporter(QWidget *parent, Project *project, Map *map, Layout *layout, ImageExporterMode mode);
+
+    Ui::MapImageExporter *ui;
+    Project *m_project = nullptr;
     Map *m_map = nullptr;
-    Editor *m_editor = nullptr;
+    Layout *m_layout = nullptr;
     QGraphicsScene *m_scene = nullptr;
 
     QPixmap m_preview;
@@ -55,6 +58,8 @@ private:
     ImageExporterSettings m_settings;
     ImageExporterMode m_mode = ImageExporterMode::Normal;
 
+    QString getTitle(ImageExporterMode mode);
+    QString getDescription(ImageExporterMode mode);
     void updatePreview();
     void scalePreview();
     void updateShowBorderState();
@@ -65,6 +70,7 @@ private:
     QPixmap getFormattedLayoutPixmap(Layout *layout, bool ignoreBorder = false, bool ignoreGrid = false);
     void paintGrid(QPixmap *pixmap, bool ignoreBorder = false);
     bool historyItemAppliesToFrame(const QUndoCommand *command);
+    void updateMapSelection(const QString &text);
 
 protected:
     virtual void showEvent(QShowEvent *) override;

@@ -2492,12 +2492,19 @@ void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered() {
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     if (!editor->project) return;
 
-    // If the user is requesting this window again we assume it's for a new
-    // window (the map/mode may have changed), so delete the old window.
-    if (this->mapImageExporter)
+    // If the user is requesting this window again with a different mode
+    // then we'll recreate the window with the new mode.
+    if (this->mapImageExporter && this->mapImageExporter->mode() != mode)
         delete this->mapImageExporter;
 
-    this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
+    if (!this->mapImageExporter) {
+        // Open new image export window
+        if (this->editor->map){
+            this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->map, mode);
+        } else if (this->editor->layout) {
+            this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->layout, mode);
+        }
+    }
 
     openSubWindow(this->mapImageExporter);
 }

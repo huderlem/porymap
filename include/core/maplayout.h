@@ -95,6 +95,8 @@ public:
     int getHeight() const { return height; }
     int getBorderWidth() const { return border_width; }
     int getBorderHeight() const { return border_height; }
+    int getBorderDrawWidth() const;
+    int getBorderDrawHeight() const;
 
     bool isWithinBounds(int x, int y);
     bool isWithinBorderBounds(int x, int y);
@@ -139,6 +141,8 @@ public:
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
+
+    static int getBorderDrawDistance(int dimension, qreal minimum);
 
 signals:
     void layoutChanged(Layout *layout);

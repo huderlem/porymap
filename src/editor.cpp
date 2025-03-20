@@ -761,7 +761,7 @@ void Editor::displayConnection(MapConnection *connection) {
     if (!connection)
         return;
 
-    if (MapConnection::isDiving(connection->direction())) {
+    if (connection->isDiving()) {
         displayDivingConnection(connection);
         return;
     }
@@ -826,7 +826,7 @@ void Editor::removeConnectionPixmap(MapConnection *connection) {
     if (!connection)
         return;
 
-    if (MapConnection::isDiving(connection->direction())) {
+    if (connection->isDiving()) {
         removeDivingMapPixmap(connection);
         return;
     }
@@ -1790,8 +1790,8 @@ void Editor::displayMapBorder() {
 
     int borderWidth = this->layout->getBorderWidth();
     int borderHeight = this->layout->getBorderHeight();
-    int borderHorzDist = getBorderDrawDistance(borderWidth);
-    int borderVertDist = getBorderDrawDistance(borderHeight);
+    int borderHorzDist = this->layout->getBorderDrawWidth();
+    int borderVertDist = this->layout->getBorderDrawHeight();
     QPixmap pixmap = this->layout->renderBorder();
     for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += borderHeight)
     for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += borderWidth) {
@@ -1814,17 +1814,6 @@ void Editor::updateMapBorder() {
 void Editor::updateMapConnections() {
     for (auto item : connection_items)
         item->render(true);
-}
-
-int Editor::getBorderDrawDistance(int dimension) {
-    // Draw sufficient border blocks to fill the player's view (BORDER_DISTANCE)
-    if (dimension >= BORDER_DISTANCE) {
-        return dimension;
-    } else if (dimension) {
-        return dimension * (BORDER_DISTANCE / dimension + (BORDER_DISTANCE % dimension ? 1 : 0));
-    } else {
-        return BORDER_DISTANCE;
-    }
 }
 
 void Editor::toggleGrid(bool checked) {

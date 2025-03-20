@@ -233,10 +233,6 @@ void Map::deleteConnections() {
     m_connections.clear();
 }
 
-QList<MapConnection*> Map::getConnections() const {
-    return m_connections;
-}
-
 void Map::addConnection(MapConnection *connection) {
     if (!connection || m_connections.contains(connection))
         return;
@@ -244,7 +240,7 @@ void Map::addConnection(MapConnection *connection) {
     // Maps should only have one Dive/Emerge connection at a time.
     // (Users can technically have more by editing their data manually, but we will only display one at a time)
     // Any additional connections being added (this can happen via mirroring) are tracked for deleting but otherwise ignored.
-    if (MapConnection::isDiving(connection->direction())) {
+    if (connection->isDiving()) {
         for (const auto &i : m_connections) {
             if (i->direction() == connection->direction()) {
                 trackConnection(connection);

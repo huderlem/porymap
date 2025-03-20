@@ -58,6 +58,25 @@ bool Layout::isWithinBorderBounds(int x, int y) {
     return (x >= 0 && x < this->getBorderWidth() && y >= 0 && y < this->getBorderHeight());
 }
 
+int Layout::getBorderDrawWidth() const {
+    return getBorderDrawDistance(border_width, BORDER_DISTANCE);
+}
+
+int Layout::getBorderDrawHeight() const {
+    return getBorderDrawDistance(border_height, BORDER_DISTANCE);
+}
+
+// We need to draw sufficient border blocks to fill the area that gets loaded around the player in-game (BORDER_DISTANCE).
+// Note that this is not the same as the player's view distance.
+// The result will be some multiple of the input dimension, because we only draw the border in increments of its full width/height.
+int Layout::getBorderDrawDistance(int dimension, qreal minimum) {
+    if (dimension >= minimum)
+        return dimension;
+
+    // Get first multiple of dimension >= the minimum
+    return dimension * qCeil(minimum / qMax(dimension, 1));
+}
+
 bool Layout::getBlock(int x, int y, Block *out) {
     if (isWithinBounds(x, y)) {
         int i = y * getWidth() + x;
