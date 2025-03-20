@@ -281,7 +281,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
         }
     });
     // Give a default value to the label.
-    lineEdit->setText(QString("g%1%2").arg(map->name()).arg(stack->count()));
+    lineEdit->setText(this->project->toUniqueIdentifier("g" + map->name()));
 
     // Fields [x] copy from existing
     QLabel *fieldsLabel = new QLabel("Fields:");
