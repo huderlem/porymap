@@ -170,6 +170,7 @@ public:
     static QString typeToJsonKey(Event::Type type);
     static Event::Type typeFromJsonKey(QString type);
     static QList<Event::Type> types();
+    static QList<Event::Group> groups();
 
 // protected attributes
 protected:

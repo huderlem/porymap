@@ -272,19 +272,18 @@ bool MapImageExporter::historyItemAppliesToFrame(const QUndoCommand *command) {
         case CommandId::ID_MapConnectionChangeMap:
         case CommandId::ID_MapConnectionAdd:
         case CommandId::ID_MapConnectionRemove:
-            return m_settings.showUpConnections || m_settings.showDownConnections || m_settings.showLeftConnections || m_settings.showRightConnections;
+            return connectionsEnabled();
         case CommandId::ID_EventMove:
         case CommandId::ID_EventShift:
         case CommandId::ID_EventCreate:
         case CommandId::ID_EventDelete:
         case CommandId::ID_EventDuplicate: {
-            bool eventTypeIsApplicable =
-                       (m_settings.showObjects       && (command->id() & IDMask_EventType_Object)  != 0)
-                    || (m_settings.showWarps         && (command->id() & IDMask_EventType_Warp)    != 0)
-                    || (m_settings.showBGs           && (command->id() & IDMask_EventType_BG)      != 0)
-                    || (m_settings.showTriggers      && (command->id() & IDMask_EventType_Trigger) != 0)
-                    || (m_settings.showHealLocations && (command->id() & IDMask_EventType_Heal)    != 0);
-            return eventTypeIsApplicable;
+            if (command->id() & IDMask_EventType_Object)  return m_settings.showEvents.contains(Event::Group::Object);
+            if (command->id() & IDMask_EventType_Warp)    return m_settings.showEvents.contains(Event::Group::Warp);
+            if (command->id() & IDMask_EventType_BG)      return m_settings.showEvents.contains(Event::Group::Bg);
+            if (command->id() & IDMask_EventType_Trigger) return m_settings.showEvents.contains(Event::Group::Coord);
+            if (command->id() & IDMask_EventType_Heal)    return m_settings.showEvents.contains(Event::Group::Heal);
+            return false;
         }
         default:
             return false;
@@ -297,7 +296,7 @@ struct StitchedMap {
     Map* map;
 };
 
-QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool includeBorder) {
+QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
     // Do a breadth-first search to gather a collection of
     // all reachable maps with their relative offsets.
     QSet<QString> visited;
@@ -346,7 +345,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
             maxY = bottom;
     }
 
-    if (includeBorder) {
+    if (m_settings.showBorder) {
         minX -= STITCH_MODE_BORDER_DISTANCE;
         maxX += STITCH_MODE_BORDER_DISTANCE;
         minY -= STITCH_MODE_BORDER_DISTANCE;
@@ -359,8 +358,16 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
     progress->setValue(0);
     progress->setMaximum(stitchedMaps.size());
     int numDrawn = 0;
+
     QPixmap stitchedPixmap((maxX - minX) * 16, (maxY - minY) * 16);
     stitchedPixmap.fill(Qt::black);
+
+    // Temporarily disable settings that have separate passes.
+    auto showEvents = m_settings.showEvents;
+    m_settings.showEvents.clear();
+    bool showGrid = m_settings.showGrid;
+    m_settings.showGrid = false;
+
     QPainter painter(&stitchedPixmap);
     for (StitchedMap map : stitchedMaps) {
         if (progress->wasCanceled()) {
@@ -371,7 +378,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
 
         int pixelX = (map.x - minX) * 16;
         int pixelY = (map.y - minY) * 16;
-        if (includeBorder) {
+        if (m_settings.showBorder) {
             pixelX -= STITCH_MODE_BORDER_DISTANCE * 16;
             pixelY -= STITCH_MODE_BORDER_DISTANCE * 16;
         }
@@ -382,7 +389,8 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
     // When including the borders, we simply draw all the maps again
     // without their borders, since the first pass results in maps
     // being occluded by other map borders.
-    if (includeBorder) {
+    if (m_settings.showBorder) {
+        m_settings.showBorder = false;
         progress->setLabelText("Drawing stitched maps without borders...");
         progress->setValue(0);
         progress->setMaximum(stitchedMaps.size());
@@ -396,10 +404,36 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
 
             int pixelX = (map.x - minX) * 16;
             int pixelY = (map.y - minY) * 16;
-            QPixmap pixmapWithoutBorders = getFormattedMapPixmap(map.map, true);
+            QPixmap pixmapWithoutBorders = getFormattedMapPixmap(map.map);
             painter.drawPixmap(pixelX, pixelY, pixmapWithoutBorders);
         }
+        m_settings.showBorder = true;
     }
+    painter.end();
+
+    // Events can be occluded by neighboring maps if they are positioned near or outside the map's edge.
+    // Now that all the maps have been rendered we can render the events (if enabled).
+    m_settings.showEvents = showEvents;
+    if (eventsEnabled()) {
+        progress->setLabelText("Drawing stitched map events...");
+        progress->setValue(0);
+        progress->setMaximum(stitchedMaps.size());
+        numDrawn = 0;
+        for (StitchedMap map : stitchedMaps) {
+            if (progress->wasCanceled()) {
+                return QPixmap();
+            }
+            progress->setValue(numDrawn);
+            numDrawn++;
+
+            int pixelX = (map.x - minX) * 16;
+            int pixelY = (map.y - minY) * 16;
+            paintEvents(&stitchedPixmap, map.map, QPoint(pixelX, pixelY));
+        }
+    }
+
+    m_settings.showGrid = showGrid;
+    paintGrid(&stitchedPixmap);
 
     return stitchedPixmap;
 }
@@ -417,7 +451,7 @@ void MapImageExporter::updatePreview() {
         progress.setWindowModality(Qt::WindowModal);
         progress.setModal(true);
         progress.setMinimumDuration(1000);
-        m_preview = getStitchedImage(&progress, m_settings.showBorder);
+        m_preview = getStitchedImage(&progress);
         progress.close();
     } else {
         // Timelapse mode doesn't currently have a real preview. It just displays the current map as in Normal mode.
@@ -438,7 +472,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap() {
     return m_map ? getFormattedMapPixmap(m_map) : getFormattedLayoutPixmap(m_layout);
 }
 
-QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout, bool ignoreBorder, bool ignoreGrid) {
+QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout) {
     if (!layout)
         return QPixmap();
 
@@ -454,9 +488,8 @@ QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout, bool ignoreBo
     }
 
     // draw map border
-    // note: this will break when allowing map to be selected from drop down maybe
     int borderHeight = 0, borderWidth = 0;
-    if (!ignoreBorder && m_settings.showBorder) {
+    if (m_settings.showBorder) {
         int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
         layout->renderBorder();
         int borderHorzDist = layout->getBorderDrawWidth();
@@ -475,96 +508,113 @@ QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout, bool ignoreBo
         pixmap = newPixmap;
     }
 
-    // The grid should be painted last, so if this layout pixmap is being painted
-    // as part of a map (which has more to paint after this) then don't paint the grid yet.
-    if (!ignoreGrid)
-        paintGrid(&pixmap, ignoreBorder);
+    paintGrid(&pixmap);
 
     return pixmap;
 }
 
-QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
+QPixmap MapImageExporter::getFormattedMapPixmap(Map *map) {
     if (!map)
         return QPixmap();
 
-    QPixmap pixmap = getFormattedLayoutPixmap(map->layout(), ignoreBorder, true);
+    // Temporarily disable the grid so that it doesn't get painted when we render the layout.
+    auto showGrid = m_settings.showGrid;
+    m_settings.showGrid = false;
+    QPixmap pixmap = getFormattedLayoutPixmap(map->layout());
+    m_settings.showGrid = showGrid;
 
-    if (!ignoreBorder && (m_settings.showUpConnections || m_settings.showDownConnections || m_settings.showLeftConnections || m_settings.showRightConnections)) {
-        // if showing connections, draw on outside of image
+    // Paint connections
+    if (m_settings.showBorder && connectionsEnabled()) {
         QPainter connectionPainter(&pixmap);
         
         int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
         for (const auto &connection : m_map->getConnections()) {
-            const QString direction = connection->direction();
-            if (direction == "up") {
-                if (!m_settings.showUpConnections) continue;
-            } else if (direction == "down") {
-                if (!m_settings.showDownConnections) continue;
-            } else if (direction == "left") {
-                if (!m_settings.showLeftConnections) continue;
-            } else if (direction == "right") {
-                if (!m_settings.showRightConnections) continue;
-            } else continue; // Ignore any other directions
-
+            if (!m_settings.showConnections.contains(connection->direction()))
+                continue;
             QPoint pos = connection->relativePos(true);
             connectionPainter.drawImage((pos.x() + borderDistance) * 16, (pos.y() + borderDistance) * 16, connection->render().toImage());
         }
         connectionPainter.end();
     }
 
-    // draw events
-    if (m_settings.showObjects || m_settings.showWarps || m_settings.showBGs || m_settings.showTriggers || m_settings.showHealLocations) {
-        QPainter eventPainter(&pixmap);
-        int pixelOffset = 0;
-        if (!ignoreBorder && m_settings.showBorder) {
-            pixelOffset = m_mode == ImageExporterMode::Normal ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
-        }
-        const QList<Event *> events = map->getEvents();
-        for (const auto &event : events) {
-            Event::Group group = event->getEventGroup();
-            if ((m_settings.showObjects && group == Event::Group::Object)
-             || (m_settings.showWarps && group == Event::Group::Warp)
-             || (m_settings.showBGs && group == Event::Group::Bg)
-             || (m_settings.showTriggers && group == Event::Group::Coord)
-             || (m_settings.showHealLocations && group == Event::Group::Heal)) {
-                m_project->loadEventPixmap(event);
-                eventPainter.setOpacity(event->getUsesDefaultPixmap() ? 0.7 : 1.0);
-                eventPainter.drawImage(QPoint(event->getPixelX() + pixelOffset, event->getPixelY() + pixelOffset), event->getPixmap().toImage());
-            }
-        }
-        eventPainter.end();
+    int eventPixelOffset = 0;
+    if (m_settings.showBorder) {
+        eventPixelOffset = (m_mode == ImageExporterMode::Normal) ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
     }
-    paintGrid(&pixmap, ignoreBorder);
+    paintEvents(&pixmap, map, QPoint(eventPixelOffset, eventPixelOffset));
+    paintGrid(&pixmap);
 
     return pixmap;
 }
 
-void MapImageExporter::paintGrid(QPixmap *pixmap, bool ignoreBorder) {
-    // draw grid directly onto the pixmap
-    // since the last grid lines are outside of the pixmap, add a pixel to the bottom and right
-    if (m_settings.showGrid) {
-        bool hasBorder = !ignoreBorder && m_settings.showBorder;
-        int addX = 1, addY = 1;
-        if (hasBorder) addY = 0;
-        if (hasBorder) addX = 0;
+void MapImageExporter::paintEvents(QPixmap *pixmap, const Map *map, const QPoint &pixelOffset) {
+    if (!eventsEnabled())
+        return;
 
-        QPixmap newPixmap= QPixmap(pixmap->width() + addX, pixmap->height() + addY);
-        QPainter gridPainter(&newPixmap);
-        gridPainter.drawImage(QPoint(0, 0), pixmap->toImage());
-        for (int x = 0; x < newPixmap.width(); x += 16) {
-            gridPainter.drawLine(x, 0, x, newPixmap.height());
+    QPainter painter(pixmap);
+    painter.translate(pixelOffset);
+    for (const auto &group : Event::groups()) {
+        if (!m_settings.showEvents.contains(group))
+            continue;
+        for (const auto &event : map->getEvents(group)) {
+            m_project->loadEventPixmap(event);
+            painter.setOpacity(event->getUsesDefaultPixmap() ? 0.7 : 1.0);
+            painter.drawImage(QPoint(event->getPixelX(), event->getPixelY()), event->getPixmap().toImage());
         }
-        for (int y = 0; y < newPixmap.height(); y += 16) {
-            gridPainter.drawLine(0, y, newPixmap.width(), y);
-        }
-        gridPainter.end();
-        *pixmap = newPixmap;
+    }
+    painter.end();
+}
+
+void MapImageExporter::paintGrid(QPixmap *pixmap) {
+    if (!m_settings.showGrid)
+        return;
+    
+    int addX = 0, addY = 0;
+    if (!m_settings.showBorder) {
+        // since the last grid lines are outside of the pixmap, add a pixel to the bottom and right
+        addX = 1, addY = 1;
+    }
+
+    QPixmap newPixmap = QPixmap(pixmap->width() + addX, pixmap->height() + addY);
+    QPainter gridPainter(&newPixmap);
+    gridPainter.drawImage(QPoint(0, 0), pixmap->toImage());
+    for (int x = 0; x < newPixmap.width(); x += 16) {
+        gridPainter.drawLine(x, 0, x, newPixmap.height());
+    }
+    for (int y = 0; y < newPixmap.height(); y += 16) {
+        gridPainter.drawLine(0, y, newPixmap.width(), y);
+    }
+    gridPainter.end();
+    *pixmap = newPixmap;
+}
+
+bool MapImageExporter::eventsEnabled() {
+    return !m_settings.showEvents.isEmpty();
+}
+
+void MapImageExporter::setEventGroupEnabled(Event::Group group, bool enable) {
+    if (enable) {
+        m_settings.showEvents.insert(group);
+    } else {
+        m_settings.showEvents.remove(group);
+    }
+}
+
+bool MapImageExporter::connectionsEnabled() {
+    return !m_settings.showConnections.isEmpty();
+}
+
+void MapImageExporter::setConnectionDirectionEnabled(const QString &dir, bool enable) {
+    if (enable) {
+        m_settings.showConnections.insert(dir);
+    } else {
+        m_settings.showConnections.remove(dir);
     }
 }
 
 void MapImageExporter::updateShowBorderState() {
     // If any of the Connections settings are enabled then this setting is locked (it's implicitly enabled)
-    bool on = (m_settings.showUpConnections || m_settings.showDownConnections || m_settings.showLeftConnections || m_settings.showRightConnections);
+    bool on = connectionsEnabled();
     const QSignalBlocker blocker(ui->checkBox_Border);
     ui->checkBox_Border->setChecked(on);
     ui->checkBox_Border->setDisabled(on);
@@ -587,27 +637,27 @@ void MapImageExporter::on_checkBox_Border_stateChanged(int state) {
 }
 
 void MapImageExporter::on_checkBox_Objects_stateChanged(int state) {
-    m_settings.showObjects = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Object, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_Warps_stateChanged(int state) {
-    m_settings.showWarps = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Warp, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_BGs_stateChanged(int state) {
-    m_settings.showBGs = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Bg, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_Triggers_stateChanged(int state) {
-    m_settings.showTriggers = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Coord, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_HealLocations_stateChanged(int state) {
-    m_settings.showHealLocations = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Heal, state == Qt::Checked);
     updatePreview();
 }
 
@@ -618,51 +668,51 @@ void MapImageExporter::on_checkBox_AllEvents_stateChanged(int state) {
     const QSignalBlocker b_Objects(ui->checkBox_Objects);
     ui->checkBox_Objects->setChecked(on);
     ui->checkBox_Objects->setDisabled(on);
-    m_settings.showObjects = on;
+    setEventGroupEnabled(Event::Group::Object, on);
 
     const QSignalBlocker b_Warps(ui->checkBox_Warps);
     ui->checkBox_Warps->setChecked(on);
     ui->checkBox_Warps->setDisabled(on);
-    m_settings.showWarps = on;
+    setEventGroupEnabled(Event::Group::Warp, on);
 
     const QSignalBlocker b_BGs(ui->checkBox_BGs);
     ui->checkBox_BGs->setChecked(on);
     ui->checkBox_BGs->setDisabled(on);
-    m_settings.showBGs = on;
+    setEventGroupEnabled(Event::Group::Bg, on);
 
     const QSignalBlocker b_Triggers(ui->checkBox_Triggers);
     ui->checkBox_Triggers->setChecked(on);
     ui->checkBox_Triggers->setDisabled(on);
-    m_settings.showTriggers = on;
+    setEventGroupEnabled(Event::Group::Coord, on);
 
     const QSignalBlocker b_HealLocations(ui->checkBox_HealLocations);
     ui->checkBox_HealLocations->setChecked(on);
     ui->checkBox_HealLocations->setDisabled(on);
-    m_settings.showHealLocations = on;
+    setEventGroupEnabled(Event::Group::Heal, on);
 
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionUp_stateChanged(int state) {
-    m_settings.showUpConnections = (state == Qt::Checked);
+    setConnectionDirectionEnabled("up", state == Qt::Checked);
     updateShowBorderState();
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionDown_stateChanged(int state) {
-    m_settings.showDownConnections = (state == Qt::Checked);
+    setConnectionDirectionEnabled("down", state == Qt::Checked);
     updateShowBorderState();
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionLeft_stateChanged(int state) {
-    m_settings.showLeftConnections = (state == Qt::Checked);
+    setConnectionDirectionEnabled("left", state == Qt::Checked);
     updateShowBorderState();
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionRight_stateChanged(int state) {
-    m_settings.showRightConnections = (state == Qt::Checked);
+    setConnectionDirectionEnabled("right", state == Qt::Checked);
     updateShowBorderState();
     updatePreview();
 }
@@ -674,22 +724,22 @@ void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
     const QSignalBlocker b_Up(ui->checkBox_ConnectionUp);
     ui->checkBox_ConnectionUp->setChecked(on);
     ui->checkBox_ConnectionUp->setDisabled(on);
-    m_settings.showUpConnections = on;
+    setConnectionDirectionEnabled("up", on);
 
     const QSignalBlocker b_Down(ui->checkBox_ConnectionDown);
     ui->checkBox_ConnectionDown->setChecked(on);
     ui->checkBox_ConnectionDown->setDisabled(on);
-    m_settings.showDownConnections = on;
+    setConnectionDirectionEnabled("down", on);
 
     const QSignalBlocker b_Left(ui->checkBox_ConnectionLeft);
     ui->checkBox_ConnectionLeft->setChecked(on);
     ui->checkBox_ConnectionLeft->setDisabled(on);
-    m_settings.showLeftConnections = on;
+    setConnectionDirectionEnabled("left", on);
 
     const QSignalBlocker b_Right(ui->checkBox_ConnectionRight);
     ui->checkBox_ConnectionRight->setChecked(on);
     ui->checkBox_ConnectionRight->setDisabled(on);
-    m_settings.showRightConnections = on;
+    setConnectionDirectionEnabled("right", on);
 
     updateShowBorderState();
     updatePreview();

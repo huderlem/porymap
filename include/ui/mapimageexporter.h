@@ -14,15 +14,8 @@ enum ImageExporterMode {
 };
 
 struct ImageExporterSettings {
-    bool showObjects = false;
-    bool showWarps = false;
-    bool showBGs = false;
-    bool showTriggers = false;
-    bool showHealLocations = false;
-    bool showUpConnections = false;
-    bool showDownConnections = false;
-    bool showLeftConnections = false;
-    bool showRightConnections = false;
+    QSet<Event::Group> showEvents;
+    QSet<QString> showConnections;
     bool showGrid = false;
     bool showBorder = false;
     bool showCollision = false;
@@ -62,13 +55,18 @@ private:
     QString getDescription(ImageExporterMode mode);
     void updatePreview();
     void scalePreview();
+    bool eventsEnabled();
+    void setEventGroupEnabled(Event::Group group, bool enable);
+    bool connectionsEnabled();
+    void setConnectionDirectionEnabled(const QString &dir, bool enable);
     void updateShowBorderState();
     void saveImage();
-    QPixmap getStitchedImage(QProgressDialog *progress, bool includeBorder);
+    QPixmap getStitchedImage(QProgressDialog *progress);
     QPixmap getFormattedMapPixmap();
-    QPixmap getFormattedMapPixmap(Map *map, bool ignoreBorder = false);
-    QPixmap getFormattedLayoutPixmap(Layout *layout, bool ignoreBorder = false, bool ignoreGrid = false);
-    void paintGrid(QPixmap *pixmap, bool ignoreBorder = false);
+    QPixmap getFormattedMapPixmap(Map *map);
+    QPixmap getFormattedLayoutPixmap(Layout *layout);
+    void paintEvents(QPixmap *pixmap, const Map *map, const QPoint &pixelOffset);
+    void paintGrid(QPixmap *pixmap);
     bool historyItemAppliesToFrame(const QUndoCommand *command);
     void updateMapSelection(const QString &text);
 
