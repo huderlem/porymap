@@ -8,8 +8,6 @@
 #include <QPainter>
 #include <QPoint>
 
-#define STITCH_MODE_BORDER_DISTANCE 2
-
 QString MapImageExporter::getTitle(ImageExporterMode mode) {
     switch (mode)
     {
@@ -167,8 +165,8 @@ void MapImageExporter::saveImage() {
                     int maxWidth = m_layout->getWidth() * 16;
                     int maxHeight = m_layout->getHeight() * 16;
                     if (m_settings.showBorder) {
-                        maxWidth += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
-                        maxHeight += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
+                        maxWidth += 2 * BORDER_DISTANCE * 16;
+                        maxHeight += 2 * BORDER_DISTANCE * 16;
                     }
                     // Rewind to the specified start of the map edit history.
                     int i = 0;
@@ -178,8 +176,8 @@ void MapImageExporter::saveImage() {
                         int width = m_layout->getWidth() * 16;
                         int height = m_layout->getHeight() * 16;
                         if (m_settings.showBorder) {
-                            width += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
-                            height += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
+                            width += 2 * BORDER_DISTANCE * 16;
+                            height += 2 * BORDER_DISTANCE * 16;
                         }
                         if (width > maxWidth) {
                             maxWidth = width;
@@ -346,10 +344,10 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
     }
 
     if (m_settings.showBorder) {
-        minX -= STITCH_MODE_BORDER_DISTANCE;
-        maxX += STITCH_MODE_BORDER_DISTANCE;
-        minY -= STITCH_MODE_BORDER_DISTANCE;
-        maxY += STITCH_MODE_BORDER_DISTANCE;
+        minX -= BORDER_DISTANCE;
+        maxX += BORDER_DISTANCE;
+        minY -= BORDER_DISTANCE;
+        maxY += BORDER_DISTANCE;
     }
 
     // Draw the maps on the full canvas, while taking
@@ -379,8 +377,8 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
         int pixelX = (map.x - minX) * 16;
         int pixelY = (map.y - minY) * 16;
         if (m_settings.showBorder) {
-            pixelX -= STITCH_MODE_BORDER_DISTANCE * 16;
-            pixelY -= STITCH_MODE_BORDER_DISTANCE * 16;
+            pixelX -= BORDER_DISTANCE * 16;
+            pixelY -= BORDER_DISTANCE * 16;
         }
         QPixmap pixmap = getFormattedMapPixmap(map.map);
         painter.drawPixmap(pixelX, pixelY, pixmap);
@@ -490,16 +488,15 @@ QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout) {
     // draw map border
     int borderHeight = 0, borderWidth = 0;
     if (m_settings.showBorder) {
-        int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
         layout->renderBorder();
         int borderHorzDist = layout->getBorderDrawWidth();
         int borderVertDist = layout->getBorderDrawHeight();
-        borderWidth = borderDistance * 16;
-        borderHeight = borderDistance * 16;
+        borderWidth = BORDER_DISTANCE * 16;
+        borderHeight = BORDER_DISTANCE * 16;
         QPixmap newPixmap = QPixmap(layout->pixmap.width() + borderWidth * 2, layout->pixmap.height() + borderHeight * 2);
         QPainter borderPainter(&newPixmap);
-        for (int y = borderDistance - borderVertDist; y < layout->getHeight() + borderVertDist * 2; y += layout->getBorderHeight()) {
-            for (int x = borderDistance - borderHorzDist; x < layout->getWidth() + borderHorzDist * 2; x += layout->getBorderWidth()) {
+        for (int y = BORDER_DISTANCE - borderVertDist; y < layout->getHeight() + borderVertDist * 2; y += layout->getBorderHeight()) {
+            for (int x = BORDER_DISTANCE - borderHorzDist; x < layout->getWidth() + borderHorzDist * 2; x += layout->getBorderWidth()) {
                 borderPainter.drawPixmap(x * 16, y * 16, layout->border_pixmap);
             }
         }
@@ -527,21 +524,18 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map) {
     if (m_settings.showBorder && connectionsEnabled()) {
         QPainter connectionPainter(&pixmap);
         
-        int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
         for (const auto &connection : m_map->getConnections()) {
             if (!m_settings.showConnections.contains(connection->direction()))
                 continue;
             QPoint pos = connection->relativePos(true);
-            connectionPainter.drawImage((pos.x() + borderDistance) * 16, (pos.y() + borderDistance) * 16, connection->render().toImage());
+            connectionPainter.drawImage((pos.x() + BORDER_DISTANCE) * 16, (pos.y() + BORDER_DISTANCE) * 16, connection->render().toImage());
         }
         connectionPainter.end();
     }
 
-    int eventPixelOffset = 0;
-    if (m_settings.showBorder) {
-        eventPixelOffset = (m_mode == ImageExporterMode::Normal) ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
-    }
+    int eventPixelOffset = m_settings.showBorder ? BORDER_DISTANCE * 16 : 0;
     paintEvents(&pixmap, map, QPoint(eventPixelOffset, eventPixelOffset));
+
     paintGrid(&pixmap);
 
     return pixmap;
