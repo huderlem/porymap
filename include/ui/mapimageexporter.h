@@ -29,13 +29,16 @@ class MapImageExporter : public QDialog
     Q_OBJECT
 
 public:
-    explicit MapImageExporter(QWidget *parent, Project *project, Layout *layout, ImageExporterMode mode = ImageExporterMode::Normal)
-                        : MapImageExporter(parent, project, nullptr, layout, mode) {};
     explicit MapImageExporter(QWidget *parent, Project *project, Map *map, ImageExporterMode mode = ImageExporterMode::Normal)
                         : MapImageExporter(parent, project, map, map->layout(), mode) {};
+    explicit MapImageExporter(QWidget *parent, Project *project, Layout *layout, ImageExporterMode mode = ImageExporterMode::Normal)
+                        : MapImageExporter(parent, project, nullptr, layout, mode) {};
     ~MapImageExporter();
 
     ImageExporterMode mode() const { return m_mode; }
+
+    void setMap(Map *map);
+    void setLayout(Layout *layout);
 
 private:
     explicit MapImageExporter(QWidget *parent, Project *project, Map *map, Layout *layout, ImageExporterMode mode);
@@ -51,6 +54,8 @@ private:
     ImageExporterSettings m_settings;
     ImageExporterMode m_mode = ImageExporterMode::Normal;
 
+    void setModeSpecificUi();
+    void updateMapSelection();
     QString getTitle(ImageExporterMode mode);
     QString getDescription(ImageExporterMode mode);
     void updatePreview();
@@ -70,7 +75,6 @@ private:
     void paintEvents(QPixmap *pixmap, const Map *map, const QPoint &pixelOffset);
     void paintGrid(QPixmap *pixmap);
     bool historyItemAppliesToFrame(const QUndoCommand *command);
-    void updateMapSelection(const QString &text);
 
 protected:
     virtual void showEvent(QShowEvent *) override;

@@ -44,14 +44,38 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
 {
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
+    setModeSpecificUi();
+
+    connect(ui->pushButton_Save,   &QPushButton::pressed, this, &MapImageExporter::saveImage);
+    connect(ui->pushButton_Cancel, &QPushButton::pressed, this, &MapImageExporter::close);
+    connect(ui->comboBox_MapSelection, &QComboBox::currentIndexChanged, this, &MapImageExporter::updateMapSelection);
+    connect(ui->comboBox_MapSelection->lineEdit(), &QLineEdit::editingFinished, this, &MapImageExporter::updateMapSelection);
+
+    ui->graphicsView_Preview->setFocus();
+}
+
+MapImageExporter::~MapImageExporter() {
+    delete m_scene;
+    delete ui;
+}
+
+void MapImageExporter::setModeSpecificUi() {
     setWindowTitle(getTitle(m_mode));
     ui->label_Description->setText(getDescription(m_mode));
     ui->groupBox_Connections->setVisible(m_map && m_mode != ImageExporterMode::Stitch);
     ui->groupBox_Timelapse->setVisible(m_mode == ImageExporterMode::Timelapse);
     ui->groupBox_Events->setVisible(m_map != nullptr);
 
-    // Initialize map selector.
-    if (m_mode != ImageExporterMode::Timelapse) {
+    // Initialize map selector
+    const QSignalBlocker b(ui->comboBox_MapSelection);
+    ui->comboBox_MapSelection->clear();
+    if (m_mode == ImageExporterMode::Timelapse) {
+        // At the moment edit history for events (and the DraggablePixmapItem class)
+        // depend on the editor and assume their map is the current map.
+        // Until this is resolved, the selected map and the editor's map must be the same.
+        ui->comboBox_MapSelection->setEnabled(false);
+        ui->label_MapSelection->setEnabled(false);
+    } else {
         if (m_map) {
             ui->comboBox_MapSelection->addItems(m_project->mapNames);
             ui->comboBox_MapSelection->setCurrentText(m_map->name());
@@ -61,23 +85,23 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
             ui->comboBox_MapSelection->setCurrentText(m_layout->id);
             ui->label_MapSelection->setText(QStringLiteral("Layout"));
         }
-    } else {
-        // At the moment edit history for events (and the DraggablePixmapItem class)
-        // depend on the editor and assume their map is the current map.
-        // Until this is resolved the selected map cannot be changed in Timelapse mode.
-        ui->comboBox_MapSelection->setVisible(false);
-        ui->label_MapSelection->setVisible(false);
     }
-    ui->graphicsView_Preview->setFocus();
-
-    connect(ui->pushButton_Save,   &QPushButton::pressed, this, &MapImageExporter::saveImage);
-    connect(ui->pushButton_Cancel, &QPushButton::pressed, this, &MapImageExporter::close);
-    connect(ui->comboBox_MapSelection, &QComboBox::currentTextChanged, this, &MapImageExporter::updateMapSelection);
 }
 
-MapImageExporter::~MapImageExporter() {
-    delete m_scene;
-    delete ui;
+void MapImageExporter::setMap(Map *map) {
+    if (!map) return;
+
+    const QSignalBlocker b(ui->comboBox_MapSelection);
+    ui->comboBox_MapSelection->setCurrentText(map->name());
+    updateMapSelection();
+}
+
+void MapImageExporter::setLayout(Layout *layout) {
+    if (!layout) return;
+
+    const QSignalBlocker b(ui->comboBox_MapSelection);
+    ui->comboBox_MapSelection->setCurrentText(layout->id);
+    updateMapSelection();
 }
 
 // Allow the window to open before displaying the preview.
@@ -92,23 +116,36 @@ void MapImageExporter::resizeEvent(QResizeEvent *event) {
     scalePreview();
 }
 
-void MapImageExporter::updateMapSelection(const QString &text) {
-    if (m_map) {
-        if (!m_project->mapNames.contains(text))
-            return;
-        Map *newMap = m_project->loadMap(text);
-        if (newMap == m_map)
-            return;
-        m_map = newMap;
-    } else {
-        if (!m_project->layoutIds.contains(text))
-            return;
-        Layout *newLayout = m_project->loadLayout(text);
-        if (newLayout == m_layout)
-            return;
-        m_layout = newLayout;
+void MapImageExporter::updateMapSelection() {
+    auto oldMap = m_map;
+    auto oldLayout = m_layout;
+
+    const QString text = ui->comboBox_MapSelection->currentText();
+    if (m_project->mapNames.contains(text)) {
+        auto newMap = m_project->loadMap(text);
+        if (newMap) {
+            m_map = newMap;
+            m_layout = newMap->layout();
+        }
+    } else if (m_project->layoutIds.contains(text) && m_mode != ImageExporterMode::Stitch) {
+        auto newLayout = m_project->loadLayout(text);
+        if (newLayout) {
+            m_map = nullptr;
+            m_layout = newLayout;
+        }
     }
-    updatePreview();
+
+    // Ensure text in the combo box remains valid
+    const QSignalBlocker b(ui->comboBox_MapSelection);
+    ui->comboBox_MapSelection->setCurrentText(m_map ? m_map->name() : m_layout->id);
+
+    if (m_map != oldMap && (!m_map || !oldMap)) {
+        // Switching to or from layout-only mode
+        setModeSpecificUi();
+    }
+    if (m_map != oldMap || m_layout != oldLayout){
+        updatePreview();
+    }
 }
 
 void MapImageExporter::saveImage() {

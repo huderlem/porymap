@@ -934,6 +934,9 @@ bool MainWindow::setMap(QString map_name) {
     Scripting::cb_MapOpened(map_name);
     prefab.updatePrefabUi(editor->layout);
     updateTilesetEditor();
+
+    emit mapOpened(editor->map);
+
     return true;
 }
 
@@ -987,6 +990,8 @@ bool MainWindow::setLayout(QString layoutId) {
     updateTilesetEditor();
 
     userConfig.recentMapOrLayout = layoutId;
+
+    emit layoutOpened(editor->layout);
 
     return true;
 }
@@ -2501,8 +2506,10 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
         // Open new image export window
         if (this->editor->map){
             this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->map, mode);
+            connect(this, &MainWindow::mapOpened, this->mapImageExporter, &MapImageExporter::setMap);
         } else if (this->editor->layout) {
             this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->layout, mode);
+            connect(this, &MainWindow::layoutOpened, this->mapImageExporter, &MapImageExporter::setLayout);
         }
     }
 
