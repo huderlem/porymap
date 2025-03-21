@@ -59,12 +59,14 @@ private:
     void setEventGroupEnabled(Event::Group group, bool enable);
     bool connectionsEnabled();
     void setConnectionDirectionEnabled(const QString &dir, bool enable);
-    void updateShowBorderState();
     void saveImage();
     QPixmap getStitchedImage(QProgressDialog *progress);
     QPixmap getFormattedMapPixmap();
     QPixmap getFormattedMapPixmap(Map *map);
-    QPixmap getFormattedLayoutPixmap(Layout *layout);
+    QPixmap getFormattedLayoutPixmap(Layout *layout, bool ignoreGrid = false);
+    void paintBorder(QPixmap *pixmap, Layout *layout);
+    void paintCollision(QPixmap *pixmap, Layout *layout);
+    void paintConnections(QPixmap *pixmap, const Map *map);
     void paintEvents(QPixmap *pixmap, const Map *map, const QPoint &pixelOffset);
     void paintGrid(QPixmap *pixmap);
     bool historyItemAppliesToFrame(const QUndoCommand *command);

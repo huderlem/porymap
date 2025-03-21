@@ -360,12 +360,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
     QPixmap stitchedPixmap((maxX - minX) * 16, (maxY - minY) * 16);
     stitchedPixmap.fill(Qt::black);
 
-    // Temporarily disable settings that have separate passes.
-    auto showEvents = m_settings.showEvents;
-    m_settings.showEvents.clear();
-    bool showGrid = m_settings.showGrid;
-    m_settings.showGrid = false;
-
+    // First pass, render the layouts, borders, and collision (if enabled)
     QPainter painter(&stitchedPixmap);
     for (StitchedMap map : stitchedMaps) {
         if (progress->wasCanceled()) {
@@ -380,8 +375,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
             pixelX -= BORDER_DISTANCE * 16;
             pixelY -= BORDER_DISTANCE * 16;
         }
-        QPixmap pixmap = getFormattedMapPixmap(map.map);
-        painter.drawPixmap(pixelX, pixelY, pixmap);
+        painter.drawPixmap(pixelX, pixelY, getFormattedLayoutPixmap(map.map->layout(), true));
     }
 
     // When including the borders, we simply draw all the maps again
@@ -402,8 +396,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
 
             int pixelX = (map.x - minX) * 16;
             int pixelY = (map.y - minY) * 16;
-            QPixmap pixmapWithoutBorders = getFormattedMapPixmap(map.map);
-            painter.drawPixmap(pixelX, pixelY, pixmapWithoutBorders);
+            painter.drawPixmap(pixelX, pixelY, getFormattedLayoutPixmap(map.map->layout(), true));
         }
         m_settings.showBorder = true;
     }
@@ -411,7 +404,6 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
 
     // Events can be occluded by neighboring maps if they are positioned near or outside the map's edge.
     // Now that all the maps have been rendered we can render the events (if enabled).
-    m_settings.showEvents = showEvents;
     if (eventsEnabled()) {
         progress->setLabelText("Drawing stitched map events...");
         progress->setValue(0);
@@ -430,7 +422,6 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
         }
     }
 
-    m_settings.showGrid = showGrid;
     paintGrid(&stitchedPixmap);
 
     return stitchedPixmap;
@@ -470,42 +461,16 @@ QPixmap MapImageExporter::getFormattedMapPixmap() {
     return m_map ? getFormattedMapPixmap(m_map) : getFormattedLayoutPixmap(m_layout);
 }
 
-QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout) {
+QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout, bool ignoreGrid) {
     if (!layout)
         return QPixmap();
 
     layout->render(true);
     QPixmap pixmap = layout->pixmap;
 
-    if (m_settings.showCollision) {
-        QPainter collisionPainter(&pixmap);
-        layout->renderCollision(true);
-        collisionPainter.setOpacity(static_cast<qreal>(porymapConfig.collisionOpacity) / 100);
-        collisionPainter.drawPixmap(0, 0, layout->collision_pixmap);
-        collisionPainter.end();
-    }
-
-    // draw map border
-    int borderHeight = 0, borderWidth = 0;
-    if (m_settings.showBorder) {
-        layout->renderBorder();
-        int borderHorzDist = layout->getBorderDrawWidth();
-        int borderVertDist = layout->getBorderDrawHeight();
-        borderWidth = BORDER_DISTANCE * 16;
-        borderHeight = BORDER_DISTANCE * 16;
-        QPixmap newPixmap = QPixmap(layout->pixmap.width() + borderWidth * 2, layout->pixmap.height() + borderHeight * 2);
-        QPainter borderPainter(&newPixmap);
-        for (int y = BORDER_DISTANCE - borderVertDist; y < layout->getHeight() + borderVertDist * 2; y += layout->getBorderHeight()) {
-            for (int x = BORDER_DISTANCE - borderHorzDist; x < layout->getWidth() + borderHorzDist * 2; x += layout->getBorderWidth()) {
-                borderPainter.drawPixmap(x * 16, y * 16, layout->border_pixmap);
-            }
-        }
-        borderPainter.drawImage(borderWidth, borderHeight, pixmap.toImage());
-        borderPainter.end();
-        pixmap = newPixmap;
-    }
-
-    paintGrid(&pixmap);
+    paintCollision(&pixmap, layout);
+    paintBorder(&pixmap, layout);
+    if (!ignoreGrid) paintGrid(&pixmap);
 
     return pixmap;
 }
@@ -514,31 +479,92 @@ QPixmap MapImageExporter::getFormattedMapPixmap(Map *map) {
     if (!map)
         return QPixmap();
 
-    // Temporarily disable the grid so that it doesn't get painted when we render the layout.
-    auto showGrid = m_settings.showGrid;
-    m_settings.showGrid = false;
-    QPixmap pixmap = getFormattedLayoutPixmap(map->layout());
-    m_settings.showGrid = showGrid;
+    QPixmap pixmap = getFormattedLayoutPixmap(map->layout(), true);
+    paintConnections(&pixmap, map);
 
-    // Paint connections
-    if (m_settings.showBorder && connectionsEnabled()) {
-        QPainter connectionPainter(&pixmap);
-        
-        for (const auto &connection : m_map->getConnections()) {
-            if (!m_settings.showConnections.contains(connection->direction()))
-                continue;
-            QPoint pos = connection->relativePos(true);
-            connectionPainter.drawImage((pos.x() + BORDER_DISTANCE) * 16, (pos.y() + BORDER_DISTANCE) * 16, connection->render().toImage());
-        }
-        connectionPainter.end();
-    }
-
-    int eventPixelOffset = m_settings.showBorder ? BORDER_DISTANCE * 16 : 0;
-    paintEvents(&pixmap, map, QPoint(eventPixelOffset, eventPixelOffset));
+    int eventPixelOffsetX = (m_settings.showBorder || m_settings.showConnections.contains("left")) ? BORDER_DISTANCE * 16 : 0;
+    int eventPixelOffsetY = (m_settings.showBorder || m_settings.showConnections.contains("up"))   ? BORDER_DISTANCE * 16 : 0;
+    paintEvents(&pixmap, map, QPoint(eventPixelOffsetX, eventPixelOffsetY));
 
     paintGrid(&pixmap);
 
     return pixmap;
+}
+
+void MapImageExporter::paintCollision(QPixmap *pixmap, Layout *layout) {
+    if (!m_settings.showCollision)
+        return;
+
+    layout->renderCollision(true);
+
+    QPainter painter(pixmap);
+    painter.setOpacity(static_cast<qreal>(porymapConfig.collisionOpacity) / 100);
+    painter.drawPixmap(0, 0, layout->collision_pixmap);
+    painter.end();
+}
+
+void MapImageExporter::paintBorder(QPixmap *pixmap, Layout *layout) {
+    if (!m_settings.showBorder)
+        return;
+
+    layout->renderBorder();
+
+    int borderHorzDist = layout->getBorderDrawWidth();
+    int borderVertDist = layout->getBorderDrawHeight();
+    int borderWidth = BORDER_DISTANCE * 16;
+    int borderHeight = BORDER_DISTANCE * 16;
+    QPixmap newPixmap = QPixmap(layout->pixmap.width() + borderWidth * 2, layout->pixmap.height() + borderHeight * 2);
+    QPainter painter(&newPixmap);
+    for (int y = BORDER_DISTANCE - borderVertDist; y < layout->getHeight() + borderVertDist * 2; y += layout->getBorderHeight()) {
+        for (int x = BORDER_DISTANCE - borderHorzDist; x < layout->getWidth() + borderHorzDist * 2; x += layout->getBorderWidth()) {
+            painter.drawPixmap(x * 16, y * 16, layout->border_pixmap);
+        }
+    }
+    painter.drawImage(borderWidth, borderHeight, pixmap->toImage());
+    painter.end();
+    *pixmap = newPixmap;
+}
+
+void MapImageExporter::paintConnections(QPixmap *pixmap, const Map *map) {
+    if (!connectionsEnabled())
+        return;
+
+    QMargins margins;
+    if (m_settings.showBorder) {
+        // Adjust for the border having resized the pixmap
+        margins.setLeft(BORDER_DISTANCE * 16);
+        margins.setTop(BORDER_DISTANCE * 16);
+    } else {
+        // We haven't rendered the map border, so we will need to resize the canvas to fit any map connections.
+        // We do this minimally so that the final image will not contain unnecessary space for unoccupied connections.
+        for (const auto &connection : map->getConnections()) {
+            const QString dir = connection->direction();
+            if (!m_settings.showConnections.contains(dir))
+                continue;
+            if (dir == "up") margins.setTop(BORDER_DISTANCE * 16);
+            else if (dir == "down") margins.setBottom(BORDER_DISTANCE * 16);
+            else if (dir == "left") margins.setLeft(BORDER_DISTANCE * 16);
+            else if (dir == "right") margins.setRight(BORDER_DISTANCE * 16);
+        }
+        if (!margins.isNull()) {
+            QPixmap resizedPixmap = QPixmap(map->layout()->pixmap.width() + margins.left() + margins.right(),
+                                            map->layout()->pixmap.height() + margins.top() + margins.bottom());
+            resizedPixmap.fill(Qt::black);
+            QPainter resizePainter(&resizedPixmap);
+            resizePainter.drawPixmap(margins.left(), margins.top(), *pixmap);
+            resizePainter.end();
+            *pixmap = resizedPixmap;
+        }
+    }
+
+    QPainter painter(pixmap);
+    for (const auto &connection : map->getConnections()) {
+        if (!m_settings.showConnections.contains(connection->direction()))
+            continue;
+        QPoint pos = connection->relativePos(true) * 16;
+        painter.drawImage(pos.x() + margins.left(), pos.y() + margins.top(), connection->render().toImage());
+    }
+    painter.end();
 }
 
 void MapImageExporter::paintEvents(QPixmap *pixmap, const Map *map, const QPoint &pixelOffset) {
@@ -604,15 +630,6 @@ void MapImageExporter::setConnectionDirectionEnabled(const QString &dir, bool en
     } else {
         m_settings.showConnections.remove(dir);
     }
-}
-
-void MapImageExporter::updateShowBorderState() {
-    // If any of the Connections settings are enabled then this setting is locked (it's implicitly enabled)
-    bool on = connectionsEnabled();
-    const QSignalBlocker blocker(ui->checkBox_Border);
-    ui->checkBox_Border->setChecked(on);
-    ui->checkBox_Border->setDisabled(on);
-    m_settings.showBorder = on;
 }
 
 void MapImageExporter::on_checkBox_Elevation_stateChanged(int state) {
@@ -689,25 +706,21 @@ void MapImageExporter::on_checkBox_AllEvents_stateChanged(int state) {
 
 void MapImageExporter::on_checkBox_ConnectionUp_stateChanged(int state) {
     setConnectionDirectionEnabled("up", state == Qt::Checked);
-    updateShowBorderState();
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionDown_stateChanged(int state) {
     setConnectionDirectionEnabled("down", state == Qt::Checked);
-    updateShowBorderState();
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionLeft_stateChanged(int state) {
     setConnectionDirectionEnabled("left", state == Qt::Checked);
-    updateShowBorderState();
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionRight_stateChanged(int state) {
     setConnectionDirectionEnabled("right", state == Qt::Checked);
-    updateShowBorderState();
     updatePreview();
 }
 
@@ -735,7 +748,6 @@ void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
     ui->checkBox_ConnectionRight->setDisabled(on);
     setConnectionDirectionEnabled("right", on);
 
-    updateShowBorderState();
     updatePreview();
 }
 
