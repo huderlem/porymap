@@ -1546,9 +1546,9 @@ void MainWindow::updateMapList() {
     this->mapLocationModel->setActiveItem(activeItemName);
     this->layoutTreeModel->setActiveItem(activeItemName);
 
-    this->groupListProxyModel->layoutChanged();
-    this->locationListProxyModel->layoutChanged();
-    this->layoutListProxyModel->layoutChanged();
+    emit this->groupListProxyModel->layoutChanged();
+    emit this->locationListProxyModel->layoutChanged();
+    emit this->layoutListProxyModel->layoutChanged();
 }
 
 void MainWindow::on_action_Save_Project_triggered() {

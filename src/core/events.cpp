@@ -206,7 +206,7 @@ bool ObjectEvent::loadFromJson(const QJsonObject &json, Project *) {
 }
 
 void ObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().value(0, "0"));
+    this->setGfx(project->gfxDefines.key(0, "0"));
     this->setMovement(project->movementTypes.value(0, "0"));
     this->setScript("NULL");
     this->setTrainerType(project->trainerTypes.value(0, "0"));
@@ -310,7 +310,7 @@ bool CloneObjectEvent::loadFromJson(const QJsonObject &json, Project *project) {
 }
 
 void CloneObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().value(0, "0"));
+    this->setGfx(project->gfxDefines.key(0, "0"));
     this->setTargetID(1);
     if (this->getMap()) this->setTargetMap(this->getMap()->name());
 }

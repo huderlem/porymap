@@ -879,7 +879,7 @@ void Editor::displayDivingConnection(MapConnection *connection) {
 }
 
 void Editor::renderDivingConnections() {
-    for (auto item : diving_map_items.values())
+    for (auto &item : diving_map_items)
         item->updatePixmap();
 }
 
@@ -1710,7 +1710,7 @@ void Editor::removeEventPixmapItem(Event *event) {
 }
 
 void Editor::clearMapConnections() {
-    for (auto item : connection_items) {
+    for (auto &item : connection_items) {
         if (item->scene())
             item->scene()->removeItem(item);
         delete item;
@@ -1722,7 +1722,7 @@ void Editor::clearMapConnections() {
     ui->comboBox_DiveMap->setCurrentText("");
     ui->comboBox_EmergeMap->setCurrentText("");
 
-    for (auto item : diving_map_items.values()) {
+    for (auto &item : diving_map_items) {
         if (item->scene())
             item->scene()->removeItem(item);
         delete item;
