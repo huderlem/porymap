@@ -3,6 +3,8 @@
 
 #include "project.h"
 
+class QGifImage;
+
 namespace Ui {
 class MapImageExporter;
 }
@@ -48,8 +50,11 @@ private:
     Map *m_map = nullptr;
     Layout *m_layout = nullptr;
     QGraphicsScene *m_scene = nullptr;
+    QGifImage *m_timelapseImage = nullptr;
+    QBuffer *m_timelapseBuffer = nullptr;
+    QMovie *m_timelapseMovie = nullptr;
+    QGraphicsPixmapItem *m_preview = nullptr;
 
-    QPixmap m_preview;
 
     ImageExporterSettings m_settings;
     ImageExporterMode m_mode = ImageExporterMode::Normal;
@@ -65,6 +70,7 @@ private:
     bool connectionsEnabled();
     void setConnectionDirectionEnabled(const QString &dir, bool enable);
     void saveImage();
+    QGifImage* createTimelapseImage();
     QPixmap getStitchedImage(QProgressDialog *progress);
     QPixmap getFormattedMapPixmap();
     QPixmap getFormattedMapPixmap(Map *map);
