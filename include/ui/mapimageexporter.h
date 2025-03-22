@@ -55,11 +55,11 @@ private:
     QMovie *m_timelapseMovie = nullptr;
     QGraphicsPixmapItem *m_preview = nullptr;
 
-
     ImageExporterSettings m_settings;
     ImageExporterMode m_mode = ImageExporterMode::Normal;
 
     void setModeSpecificUi();
+    void setSelectionText(const QString &text);
     void updateMapSelection();
     QString getTitle(ImageExporterMode mode);
     QString getDescription(ImageExporterMode mode);
@@ -74,12 +74,14 @@ private:
     QPixmap getStitchedImage(QProgressDialog *progress);
     QPixmap getFormattedMapPixmap();
     QPixmap getFormattedMapPixmap(Map *map);
-    QPixmap getFormattedLayoutPixmap(Layout *layout, bool ignoreGrid = false);
-    void paintBorder(QPixmap *pixmap, Layout *layout);
-    void paintCollision(QPixmap *pixmap, Layout *layout);
-    void paintConnections(QPixmap *pixmap, const Map *map);
-    void paintEvents(QPixmap *pixmap, const Map *map, const QPoint &pixelOffset);
-    void paintGrid(QPixmap *pixmap);
+    QPixmap getFormattedLayoutPixmap(Layout *layout);
+    void paintBorder(QPainter *painter, Layout *layout);
+    void paintCollision(QPainter *painter, Layout *layout);
+    void paintConnections(QPainter *painter, const Map *map);
+    void paintEvents(QPainter *painter, const Map *map);
+    void paintGrid(QPainter *painter, const Layout *layout = nullptr);
+    QPixmap getResizedPixmap(const QPixmap &pixmap, const QMargins &margins);
+    QMargins getMargins(const Map *map = nullptr);
     bool historyItemAppliesToFrame(const QUndoCommand *command);
 
 protected:

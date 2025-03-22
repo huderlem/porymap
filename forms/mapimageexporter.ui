@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>817</width>
-    <height>535</height>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,11 +37,11 @@
         </item>
         <item row="0" column="1">
          <widget class="NoScrollComboBox" name="comboBox_MapSelection">
-          <property name="sizeAdjustPolicy">
-           <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
-          </property>
           <property name="insertPolicy">
            <enum>QComboBox::InsertPolicy::NoInsert</enum>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
           </property>
          </widget>
         </item>
@@ -326,8 +326,14 @@
       </property>
       <item row="0" column="0">
        <widget class="QScrollArea" name="scrollArea_Preview">
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
+        </property>
         <property name="widgetResizable">
          <bool>true</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
         <widget class="QWidget" name="scrollAreaWidgetContents">
          <property name="geometry">
@@ -335,7 +341,7 @@
            <x>0</x>
            <y>0</y>
            <width>469</width>
-           <height>464</height>
+           <height>485</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout">
@@ -367,6 +373,9 @@
             </property>
             <property name="sizeAdjustPolicy">
              <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
+            </property>
+            <property name="renderHints">
+             <set>QPainter::RenderHint::LosslessImageRendering|QPainter::RenderHint::TextAntialiasing</set>
             </property>
             <property name="dragMode">
              <enum>QGraphicsView::DragMode::NoDrag</enum>
