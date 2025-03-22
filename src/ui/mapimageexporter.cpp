@@ -437,7 +437,6 @@ QGifImage* MapImageExporter::createTimelapseImage() {
                 historyStack->redo();
             }
             progress.setValue(progress.maximum() - i);
-            // TODO: Painting events is doing something funky to the quality of the timelapse image
             QPixmap pixmap = getFormattedMapPixmap();
             if (pixmap.width() < maxWidth || pixmap.height() < maxHeight) {
                 QPixmap resizedPixmap = QPixmap(maxWidth, maxHeight);
@@ -654,7 +653,10 @@ void MapImageExporter::paintEvents(QPixmap *pixmap, const Map *map, const QPoint
             continue;
         for (const auto &event : map->getEvents(group)) {
             m_project->loadEventPixmap(event);
-            painter.setOpacity(event->getUsesDefaultPixmap() ? 0.7 : 1.0);
+            if (m_mode != ImageExporterMode::Timelapse) {
+                // GIF format doesn't support partial transparency, so we can't do this in Timelapse mode.
+                painter.setOpacity(event->getUsesDefaultPixmap() ? 0.7 : 1.0);
+            }
             painter.drawImage(QPoint(event->getPixelX(), event->getPixelY()), event->getPixmap().toImage());
         }
     }
