@@ -2506,9 +2506,11 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
         // Open new image export window
         if (this->editor->map){
             this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->map, mode);
-            connect(this, &MainWindow::mapOpened, this->mapImageExporter, &MapImageExporter::setMap);
         } else if (this->editor->layout) {
             this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->layout, mode);
+        }
+        if (this->mapImageExporter) {
+            connect(this, &MainWindow::mapOpened, this->mapImageExporter, &MapImageExporter::setMap);
             connect(this, &MainWindow::layoutOpened, this->mapImageExporter, &MapImageExporter::setLayout);
         }
     }

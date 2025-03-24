@@ -24,6 +24,7 @@ struct ImageExporterSettings {
     bool previewActualSize = false;
     int timelapseSkipAmount = 1;
     int timelapseDelayMs = 200;
+    QColor fillColor = Qt::transparent; // Not exposed as a setting in the UI atm.
 };
 
 class MapImageExporter : public QDialog
@@ -50,13 +51,14 @@ private:
     Map *m_map = nullptr;
     Layout *m_layout = nullptr;
     QGraphicsScene *m_scene = nullptr;
-    QGifImage *m_timelapseImage = nullptr;
+    QGifImage *m_timelapseGifImage = nullptr;
     QBuffer *m_timelapseBuffer = nullptr;
     QMovie *m_timelapseMovie = nullptr;
     QGraphicsPixmapItem *m_preview = nullptr;
 
     ImageExporterSettings m_settings;
     ImageExporterMode m_mode = ImageExporterMode::Normal;
+    ImageExporterMode m_originalMode;
 
     void setModeSpecificUi();
     void setSelectionText(const QString &text);
@@ -70,19 +72,17 @@ private:
     bool connectionsEnabled();
     void setConnectionDirectionEnabled(const QString &dir, bool enable);
     void saveImage();
-    QGifImage* createTimelapseImage();
+    QGifImage* createTimelapseGifImage(QProgressDialog *progress);
     QPixmap getStitchedImage(QProgressDialog *progress);
     QPixmap getFormattedMapPixmap();
-    QPixmap getFormattedMapPixmap(Map *map);
-    QPixmap getFormattedLayoutPixmap(Layout *layout);
     void paintBorder(QPainter *painter, Layout *layout);
     void paintCollision(QPainter *painter, Layout *layout);
     void paintConnections(QPainter *painter, const Map *map);
     void paintEvents(QPainter *painter, const Map *map);
     void paintGrid(QPainter *painter, const Layout *layout = nullptr);
-    QPixmap getResizedPixmap(const QPixmap &pixmap, const QMargins &margins);
-    QMargins getMargins(const Map *map = nullptr);
-    bool historyItemAppliesToFrame(const QUndoCommand *command);
+    QMargins getMargins(const Map *map);
+    QPixmap getExpandedPixmap(const QPixmap &pixmap, const QSize &minSize, const QColor &fillColor);
+    bool currentHistoryAppliesToFrame(QUndoStack *historyStack);
 
 protected:
     virtual void showEvent(QShowEvent *) override;

@@ -374,9 +374,6 @@
             <property name="sizeAdjustPolicy">
              <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
             </property>
-            <property name="renderHints">
-             <set>QPainter::RenderHint::LosslessImageRendering|QPainter::RenderHint::TextAntialiasing</set>
-            </property>
             <property name="dragMode">
              <enum>QGraphicsView::DragMode::NoDrag</enum>
             </property>

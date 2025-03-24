@@ -98,8 +98,9 @@ public:
     int getBorderDrawWidth() const;
     int getBorderDrawHeight() const;
 
-    bool isWithinBounds(int x, int y);
-    bool isWithinBorderBounds(int x, int y);
+    bool isWithinBounds(int x, int y) const;
+    bool isWithinBounds(const QRect &rect) const;
+    bool isWithinBorderBounds(int x, int y) const;
 
     bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
