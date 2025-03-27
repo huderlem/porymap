@@ -10,11 +10,11 @@ static const QMap<Metatile::Attr, BitPacker> attributePackersFRLG = {
     {Metatile::Attr::TerrainType,   BitPacker(0x00003E00) },
     {Metatile::Attr::EncounterType, BitPacker(0x07000000) },
     {Metatile::Attr::LayerType,     BitPacker(0x60000000) },
-  //{Metatile::Attr::Unused,        BitPacker(0x98FFC000) },
+    {Metatile::Attr::Unused,        BitPacker(0x98FFC000) },
 };
 static const QMap<Metatile::Attr, BitPacker> attributePackersRSE = {
     {Metatile::Attr::Behavior,      BitPacker(0x00FF) },
-  //{Metatile::Attr::Unused,        BitPacker(0x0F00) },
+    {Metatile::Attr::Unused,        BitPacker(0x0F00) },
     {Metatile::Attr::LayerType,     BitPacker(0xF000) },
 };
 
@@ -128,34 +128,39 @@ void Metatile::setLayout(Project * project) {
     if (behaviorMask && !project->metatileBehaviorMapInverse.isEmpty()) {
         uint32_t maxBehavior = project->metatileBehaviorMapInverse.lastKey();
         if (packer.clamp(maxBehavior) != maxBehavior)
-            logWarn(QString("Metatile Behavior mask '%1' is insufficient to contain all available options.")
-                            .arg(Util::toHexString(behaviorMask)));
+            logWarn(QString("Metatile Behavior mask '%1' is insufficient to contain largest value '%2'.")
+                            .arg(Util::toHexString(behaviorMask))
+                            .arg(Util::toHexString(maxBehavior)));
     }
     attributePackers.insert(Metatile::Attr::Behavior, packer);
 
     // Validate terrain type mask
     packer.setMask(terrainTypeMask);
-    const uint32_t maxTerrainType = NUM_METATILE_TERRAIN_TYPES - 1;
-    if (terrainTypeMask && packer.clamp(maxTerrainType) != maxTerrainType) {
-        logWarn(QString("Metatile Terrain Type mask '%1' is insufficient to contain all %2 available options.")
+    if (terrainTypeMask && !project->terrainTypeToName.isEmpty()) {
+        uint32_t maxTerrainType = project->terrainTypeToName.lastKey();
+        if (packer.clamp(maxTerrainType) != maxTerrainType) {
+            logWarn(QString("Metatile Terrain Type mask '%1' is insufficient to contain largest value '%2'.")
                             .arg(Util::toHexString(terrainTypeMask))
-                            .arg(maxTerrainType + 1));
+                            .arg(Util::toHexString(maxTerrainType)));
+        }
     }
     attributePackers.insert(Metatile::Attr::TerrainType, packer);
 
     // Validate encounter type mask
     packer.setMask(encounterTypeMask);
-    const uint32_t maxEncounterType = NUM_METATILE_ENCOUNTER_TYPES - 1;
-    if (encounterTypeMask && packer.clamp(maxEncounterType) != maxEncounterType) {
-        logWarn(QString("Metatile Encounter Type mask '%1' is insufficient to contain all %2 available options.")
+    if (encounterTypeMask && !project->encounterTypeToName.isEmpty()) {
+        uint32_t maxEncounterType = project->encounterTypeToName.lastKey();
+        if (packer.clamp(maxEncounterType) != maxEncounterType) {
+            logWarn(QString("Metatile Encounter Type mask '%1' is insufficient to contain largest value '%2'.")
                             .arg(Util::toHexString(encounterTypeMask))
-                            .arg(maxEncounterType + 1));
+                            .arg(Util::toHexString(maxEncounterType)));
+        }
     }
     attributePackers.insert(Metatile::Attr::EncounterType, packer);
 
-    // Validate terrain type mask
+    // Validate layer type mask
     packer.setMask(layerTypeMask);
-    const uint32_t maxLayerType = NUM_METATILE_LAYER_TYPES - 1;
+    const uint32_t maxLayerType = Metatile::LayerType::Count - 1;
     if (layerTypeMask && packer.clamp(maxLayerType) != maxLayerType) {
         logWarn(QString("Metatile Layer Type mask '%1' is insufficient to contain all %2 available options.")
                             .arg(Util::toHexString(layerTypeMask))

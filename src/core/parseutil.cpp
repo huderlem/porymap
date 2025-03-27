@@ -37,6 +37,12 @@ void ParseUtil::set_root(const QString &dir) {
     this->root = dir;
 }
 
+QString ParseUtil::pathWithRoot(const QString &path) {
+    if (this->root.isEmpty()) return path;
+    if (path.startsWith(this->root)) return path;
+    return QString("%1/%2").arg(this->root).arg(path);
+}
+
 void ParseUtil::recordError(const QString &message) {
     this->errorMap[this->curDefine].append(message);
 }
@@ -85,6 +91,23 @@ QString ParseUtil::readTextFile(const QString &path, QString *error) {
     return text;
 }
 
+// Load the specified text file, either from the cache or by reading the file.
+// Note that this doesn't insert any parsed files into the file cache, and we don't
+// want it to (we read a lot of files only once, storing them all is a waste of memory).
+QString ParseUtil::loadTextFile(const QString &path, QString *error) {
+    auto it = this->fileCache.constFind(path);
+    if (it != this->fileCache.constEnd()) {
+        // Load text file from cache
+        return it.value();
+    }
+    return readTextFile(pathWithRoot(path), error);
+}
+
+bool ParseUtil::cacheFile(const QString &path, QString *error) {
+    this->fileCache.insert(path, readTextFile(pathWithRoot(path), error));
+    return !error || error->isEmpty();
+}
+
 int ParseUtil::textFileLineCount(const QString &path) {
     const QString text = readTextFile(path);
     return text.split('\n').count() + 1;
@@ -93,7 +116,7 @@ int ParseUtil::textFileLineCount(const QString &path) {
 QList<QStringList> ParseUtil::parseAsm(const QString &filename) {
     QList<QStringList> parsed;
 
-    this->text = readTextFile(this->root + '/' + filename);
+    this->text = loadTextFile(filename);
     const QStringList lines = removeLineComments(this->text, "@").split('\n');
     for (const auto &line : lines) {
         const QString trimmedLine = line.trimmed();
@@ -295,7 +318,7 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
         return path;
     }
 
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     QRegularExpression re(QString(
         "\\b%1\\b"
@@ -316,7 +339,7 @@ QMap<QString, QString> ParseUtil::readCIncbinMulti(const QString &filepath) {
     QMap<QString, QString> incbinMap;
 
     this->file = filepath;
-    this->text = readTextFile(this->root + "/" + filepath);
+    this->text = loadTextFile(filepath);
 
     static const QRegularExpression regex("(?<label>[A-Za-z0-9_]+)\\s*\\[?\\s*\\]?\\s*=\\s*INCBIN_[US][0-9][0-9]?\\(\\s*\\\"(?<path>[^\\\\\"]*)\\\"\\s*\\)");
 
@@ -338,7 +361,7 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
         return paths;
     }
 
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     bool found = false;
     QString arrayText;
@@ -388,8 +411,7 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
         return result;
     }
 
-    QString filepath = this->root + "/" + this->file;
-    this->text = readTextFile(filepath, error);
+    this->text = loadTextFile(filename, error);
     if (this->text.isNull())
         return result;
 
@@ -507,7 +529,7 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
     }
 
     this->file = filename;
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
     QRegularExpressionMatch match = re.match(this->text);
@@ -530,7 +552,7 @@ QMap<QString, QStringList> ParseUtil::readCArrayMulti(const QString &filename) {
     QMap<QString, QStringList> map;
 
     this->file = filename;
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     static const QRegularExpression regex(R"((?<label>\b[A-Za-z0-9_]+\b)\s*(\[[^\]]*\])?\s*=\s*\{(?<body>[^\}]*)\})");
 
@@ -556,7 +578,7 @@ QMap<QString, QStringList> ParseUtil::readCArrayMulti(const QString &filename) {
 }
 
 QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, const QString &label, QString *error) {
-    this->text = readTextFile(this->root + "/" + filename, error);
+    this->text = loadTextFile(filename, error);
     QMap<QString, QString> map;
 
     QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
@@ -589,7 +611,7 @@ bool ParseUtil::gameStringToBool(const QString &gameString, bool * ok) {
 }
 
 tsl::ordered_map<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> &memberMap) {
-    QString filePath = this->root + "/" + filename;
+    QString filePath = pathWithRoot(filename);
     auto cParser = fex::Parser();
     auto tokens = fex::Lexer().LexFile(filePath);
     auto topLevelObjects = cParser.ParseTopLevelObjects(tokens);
@@ -657,7 +679,7 @@ QStringList ParseUtil::getLabelValues(const QList<QStringList> &list, const QStr
 }
 
 bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath, QString *error) {
-    QFile file(filepath);
+    QFile file(pathWithRoot(filepath));
     if (!file.open(QIODevice::ReadOnly)) {
         if (error) *error = file.errorString();
         return false;
@@ -677,7 +699,7 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath, QS
 }
 
 bool ParseUtil::tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath, QString *error) {
-    QString jsonTxt = readTextFile(filepath, error);
+    QString jsonTxt = loadTextFile(filepath, error);
     if (error && !error->isEmpty()) {
         return false;
     }

@@ -9,6 +9,7 @@
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
 
+class NoScrollComboBox;
 class Layout;
 
 namespace Ui {
@@ -92,18 +93,9 @@ private slots:
     void on_actionShow_Tileset_Divider_triggered(bool checked);
 
     void on_actionUndo_triggered();
-
     void on_actionRedo_triggered();
 
-    void on_comboBox_metatileBehaviors_currentTextChanged(const QString &arg1);
-
     void on_lineEdit_metatileLabel_editingFinished();
-
-    void on_comboBox_layerType_activated(int arg1);
-
-    void on_comboBox_encounterType_activated(int arg1);
-
-    void on_comboBox_terrainType_activated(int arg1);
 
     void on_actionExport_Primary_Tiles_Image_triggered();
     void on_actionExport_Secondary_Tiles_Image_triggered();
@@ -122,7 +114,7 @@ private slots:
     void on_horizontalSlider_TilesZoom_valueChanged(int value);
 
 private:
-    void setAttributesUi();
+    void initAttributesUi();
     void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
@@ -148,6 +140,15 @@ private:
     bool replaceMetatile(uint16_t metatileId, const Metatile * src, QString label);
     void commitMetatileChange(Metatile * prevMetatile);
     void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
+    uint32_t attributeNameToValue(Metatile::Attr attribute, const QString &text, bool *ok);
+    void commitAttributeFromComboBox(Metatile::Attr attribute, NoScrollComboBox *combo);
+    void onRawAttributesEdited();
+    void refreshMetatileAttributes();
+    void commitMetatileBehavior();
+    void commitEncounterType();
+    void commitTerrainType();
+    void commitLayerType();
+    void setRawAttributesVisible(bool visible);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;

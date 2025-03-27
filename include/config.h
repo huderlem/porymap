@@ -72,6 +72,7 @@ public:
         this->showTilesetEditorMetatileGrid = false;
         this->showTilesetEditorLayerGrid = true;
         this->showTilesetEditorDivider = false;
+        this->showTilesetEditorRawAttributes = false;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
         this->newMapHeaderSectionExpanded = false;
@@ -132,6 +133,7 @@ public:
     bool showTilesetEditorMetatileGrid;
     bool showTilesetEditorLayerGrid;
     bool showTilesetEditorDivider;
+    bool showTilesetEditorRawAttributes;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     bool newMapHeaderSectionExpanded;
@@ -246,6 +248,8 @@ enum ProjectIdentifier {
     regex_sign_facing_directions,
     regex_trainer_types,
     regex_music,
+    regex_encounter_types,
+    regex_terrain_types,
     regex_gbapal,
     regex_bpp,
     pals_output_extension,

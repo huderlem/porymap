@@ -125,6 +125,8 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
     {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
     {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
+    {ProjectIdentifier::regex_encounter_types,         {"regex_encounter_types",         "\\bTILE_ENCOUNTER_"}},
+    {ProjectIdentifier::regex_terrain_types,           {"regex_terrain_types",           "\\bTILE_TERRAIN_"}},
     {ProjectIdentifier::regex_gbapal,                  {"regex_gbapal",                  "\\.gbapal(\\.[\\w]+)?$"}},
     {ProjectIdentifier::regex_bpp,                     {"regex_bpp",                     "\\.[\\d]+bpp(\\.[\\w]+)?$"}},
     // Other
@@ -386,6 +388,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showTilesetEditorLayerGrid = getConfigBool(key, value);
     } else if (key == "show_tileset_editor_divider") {
         this->showTilesetEditorDivider = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_raw_attributes") {
+        this->showTilesetEditorRawAttributes = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
@@ -495,6 +499,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_tileset_editor_metatile_grid", this->showTilesetEditorMetatileGrid ? "1" : "0");
     map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
     map.insert("show_tileset_editor_divider", this->showTilesetEditorDivider ? "1" : "0");
+    map.insert("show_tileset_editor_raw_attributes", this->showTilesetEditorRawAttributes ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("new_map_header_section_expanded", this->newMapHeaderSectionExpanded ? "1" : "0");

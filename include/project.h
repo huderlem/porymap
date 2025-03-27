@@ -60,6 +60,8 @@ public:
     QStringList globalScriptLabels;
     QStringList mapSectionIdNamesSaveOrder;
     QStringList mapSectionIdNames;
+    QMap<uint32_t, QString> encounterTypeToName;
+    QMap<uint32_t, QString> terrainTypeToName;
     QMap<QString, MapSectionEntry> regionMapEntries;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
     QMap<QString, uint16_t> unusedMetatileLabels;
@@ -295,6 +297,7 @@ private:
 
     void ignoreWatchedFileTemporarily(QString filepath);
     void recordFileChange(const QString &filepath);
+    void resetFileCache();
 
     QString findSpeciesIconPath(const QStringList &names) const;
 
