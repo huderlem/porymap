@@ -1464,12 +1464,13 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
 
     // Update tileset label arrays
     QStringList *labelList = tileset->is_secondary ? &this->secondaryTilesetLabels : &this->primaryTilesetLabels;
-    for (int i = 0; i < labelList->length(); i++) {
+    int i = 0;
+    for (; i < labelList->length(); i++) {
         if (labelList->at(i) > tileset->name) {
-            labelList->insert(i, tileset->name);
             break;
         }
     }
+    labelList->insert(i, tileset->name);
     this->tilesetLabelsOrdered.append(tileset->name);
 
     // TODO: Ideally we wouldn't save new Tilesets immediately
