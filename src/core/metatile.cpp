@@ -10,11 +10,11 @@ static const QMap<Metatile::Attr, BitPacker> attributePackersFRLG = {
     {Metatile::Attr::TerrainType,   BitPacker(0x00003E00) },
     {Metatile::Attr::EncounterType, BitPacker(0x07000000) },
     {Metatile::Attr::LayerType,     BitPacker(0x60000000) },
-  //{Metatile::Attr::Unused,        BitPacker(0x98FFC000) },
+    {Metatile::Attr::Unused,        BitPacker(0x98FFC000) },
 };
 static const QMap<Metatile::Attr, BitPacker> attributePackersRSE = {
     {Metatile::Attr::Behavior,      BitPacker(0x00FF) },
-  //{Metatile::Attr::Unused,        BitPacker(0x0F00) },
+    {Metatile::Attr::Unused,        BitPacker(0x0F00) },
     {Metatile::Attr::LayerType,     BitPacker(0xF000) },
 };
 

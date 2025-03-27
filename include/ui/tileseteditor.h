@@ -97,8 +97,6 @@ private slots:
 
     void on_lineEdit_metatileLabel_editingFinished();
 
-    void on_comboBox_layerType_activated(int arg1);
-
     void on_actionExport_Primary_Tiles_Image_triggered();
     void on_actionExport_Secondary_Tiles_Image_triggered();
     void on_actionExport_Primary_Metatiles_Image_triggered();
@@ -116,7 +114,7 @@ private slots:
     void on_horizontalSlider_TilesZoom_valueChanged(int value);
 
 private:
-    void setAttributesUi();
+    void initAttributesUi();
     void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
@@ -143,7 +141,14 @@ private:
     void commitMetatileChange(Metatile * prevMetatile);
     void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
     uint32_t attributeNameToValue(Metatile::Attr attribute, const QString &text, bool *ok);
-    void setAttributeFromComboBox(Metatile::Attr attribute, NoScrollComboBox *combo);
+    void commitAttributeFromComboBox(Metatile::Attr attribute, NoScrollComboBox *combo);
+    void onRawAttributesEdited();
+    void refreshMetatileAttributes();
+    void commitMetatileBehavior();
+    void commitEncounterType();
+    void commitTerrainType();
+    void commitLayerType();
+    void setRawAttributesVisible(bool visible);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
