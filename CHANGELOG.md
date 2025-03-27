@@ -18,10 +18,12 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add options for customizing the map grid under `View -> Grid Settings`.
 - Add an option to display Event sprites while editing the map.
 - Add an option to display a dividing line between tilesets in the Tileset Editor.
+- Add an input field to the Tileset Editor for editing the full metatile attributes value directly, including unused bits.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
 - Add a setting to specify the tile values to use for the unused metatile layer.
 - Add a setting to specify the maximum number of events in a group. A warning will be shown if too many events are added.
+- Add `onLayoutOpened` to the scripting API.
 
 ### Changed
 - `Change Dimensions` now has an interactive resizing rectangle.
@@ -45,6 +47,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
 - The prompt to reload the project when a file has changed will now only appear when Porymap is the active application.
 - `Script` dropdowns now autocomplete only with scripts from the current map, rather than every script in the project. The old behavior is available via a new setting.
+- The options for `Encounter Type` and `Terrain Type` in the Tileset Editor are not hardcoded anymore, they're now read from the project.
+- A project may now be opened even if it has no maps or map groups. A minimum of one map layout is required.
+- The file extensions that are expected for `.png` and `.pal` data files and the extensions outputted when creating a new tileset can now be customized.
+- Miscellaneous performance improvements, especially for opening projects.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
@@ -54,6 +60,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix the map and other project info still displaying if a new project fails to open.
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
 - Fix selections with multiple Events not always clearing when making a new selection.
+- Fix the new event button not updating correctly when selecting object events.
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
