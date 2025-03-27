@@ -51,9 +51,6 @@ public:
     void setLayout(Layout *layout);
     Layout* layout() const { return m_layout; }
 
-    void setLayoutId(const QString &layoutId) { m_layoutId = layoutId; }
-    QString layoutId() const { return m_layoutId; }
-
     int getWidth() const;
     int getHeight() const;
     int getBorderWidth() const;
@@ -109,7 +106,6 @@ public:
 private:
     QString m_name;
     QString m_constantName;
-    QString m_layoutId;
     QString m_sharedEventsMap = "";
     QString m_sharedScriptsMap = "";
 
@@ -144,6 +140,7 @@ signals:
     void openScriptRequested(QString label);
     void connectionAdded(MapConnection*);
     void connectionRemoved(MapConnection*);
+    void layoutChanged();
 };
 
 #endif // MAP_H

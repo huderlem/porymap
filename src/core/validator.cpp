@@ -35,7 +35,8 @@ void PrefixValidator::fixup(QString &input) const {
         input.prepend(m_prefix);
 }
 
-bool PrefixValidator::isValid(QString &input) const {
+bool PrefixValidator::isValid(const QString &input) const {
     int pos = 0;
-    return validate(input, pos) == QValidator::Acceptable;
+    QString s(input);
+    return validate(s, pos) == QValidator::Acceptable;
 }

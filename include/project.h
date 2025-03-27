@@ -37,9 +37,6 @@ public:
     QStringList healLocationSaveOrder;
     QMap<QString, QList<HealLocationEvent*>> healLocations;
     QMap<QString, QString> mapConstantsToMapNames;
-    QMap<QString, QString> mapNamesToMapConstants;
-    QMap<QString, QString> mapNameToLayoutId;
-    QMap<QString, QString> mapNameToMapSectionName;
     QString layoutsLabel;
     QStringList layoutIds;
     QStringList layoutIdsMaster;
@@ -81,7 +78,7 @@ public:
 
     void set_root(QString);
 
-    void clearMapCache();
+    void clearMaps();
     void clearTilesetCache();
     void clearMapLayouts();
     void clearEventGraphics();
@@ -90,9 +87,15 @@ public:
     bool sanityCheck();
     bool load();
 
-    QMap<QString, Map*> mapCache;
-    Map* loadMap(QString);
-    Map* getMap(QString);
+    Map* loadMap(const QString &mapName);
+
+    // Note: This does not guarantee the map is loaded.
+    Map* getMap(const QString &mapName) { return this->maps.value(mapName); }
+
+    bool isMapLoaded(const Map *map) const { return map && isMapLoaded(map->name()); }
+    bool isMapLoaded(const QString &mapName) const { return this->loadedMapNames.contains(mapName); }
+    bool isLayoutLoaded(const Layout *layout) const { return layout && isLayoutLoaded(layout->id); }
+    bool isLayoutLoaded(const QString &layoutId) const { return this->loadedLayoutIds.contains(layoutId); }
 
     QMap<QString, Tileset*> tilesetCache;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
@@ -111,7 +114,10 @@ public:
 
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
-    QString mapNameToMapGroup(const QString &mapName);
+    QString mapNameToMapGroup(const QString &mapName) const;
+    QString getMapConstant(const QString &mapName, const QString &defaultValue = QString()) const;
+    QString getMapLayoutId(const QString &mapName, const QString &defaultValue = QString()) const;
+    QString getMapLocation(const QString &mapName, const QString &defaultValue = QString()) const;
 
     struct NewMapSettings {
         QString name;
@@ -130,7 +136,7 @@ public:
     Layout *createNewLayout(const Layout::Settings &layoutSettings, const Layout* toDuplicate = nullptr);
     Tileset *createNewTileset(QString name, bool secondary, bool checkerboardFill);
     bool isIdentifierUnique(const QString &identifier) const;
-    bool isValidNewIdentifier(QString identifier) const;
+    bool isValidNewIdentifier(const QString &identifier) const;
     QString toUniqueIdentifier(const QString &identifier) const;
     QString getProjectTitle() const;
     QString getNewHealLocationName(const Map* map) const;
@@ -146,7 +152,7 @@ public:
     QString getDefaultSpeciesIconPath(const QString &species);
     QPixmap getSpeciesIcon(const QString &species);
 
-    void addNewMapsec(const QString &idName);
+    bool addNewMapsec(const QString &idName, const QString &displayName = QString());
     void removeMapsec(const QString &idName);
     QString getMapsecDisplayName(const QString &idName) const { return this->mapSectionDisplayNames.value(idName); }
     void setMapsecDisplayName(const QString &idName, const QString &displayName);
@@ -253,10 +259,20 @@ public:
     static QString getMapGroupPrefix();
 
 private:
-    QMap<QString, QString> mapSectionDisplayNames;
+    QHash<QString, QString> mapSectionDisplayNames;
     QMap<QString, qint64> modifiedFileTimestamps;
     QMap<QString, QString> facingDirections;
-    QMap<QString, QString> speciesToIconPath;
+    QHash<QString, QString> speciesToIconPath;
+    QHash<QString, Map*> maps;
+
+    // Maps/layouts represented in these sets have been fully loaded from the project.
+    // If a valid map name / layout id is not in these sets, a Map / Layout object exists
+    // for it in Project::maps / Project::mapLayouts, but it has been minimally populated
+    // (i.e. for a map layout it only has the data read from layouts.json, none of its assets
+    // have been loaded, and for a map it only has the data needed to identify it in the map
+    // list, none of the rest of its data in map.json).
+    QSet<QString> loadedMapNames;
+    QSet<QString> loadedLayoutIds;
 
     const QRegularExpression re_gbapalExtension;
     const QRegularExpression re_bppExtension;

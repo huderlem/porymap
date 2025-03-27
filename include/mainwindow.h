@@ -186,7 +186,6 @@ private slots:
     void copy();
     void paste();
 
-    void onLayoutChanged(Layout *layout);
     void onOpenConnectedMap(MapConnection*);
     void onTilesetsSaved(QString, QString);
     void onNewMapCreated(Map *newMap, const QString &groupName);
@@ -205,6 +204,7 @@ private slots:
     void on_actionNew_Tileset_triggered();
     void on_action_Save_triggered();
     void on_action_Exit_triggered();
+    void onLayoutSelectorEditingFinished();
     void on_comboBox_LayoutSelector_currentTextChanged(const QString &text);
     void on_actionShortcuts_triggered();
 
@@ -383,6 +383,8 @@ private:
 
     void refreshRecentProjectsMenu();
 
+    void rebuildMapList_Locations();
+    void rebuildMapList_Layouts();
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
     void onMapListTabChanged(int index);
@@ -421,6 +423,7 @@ private:
     double getMetatilesZoomScale();
     void redrawMetatileSelection();
     void scrollMetatileSelectorToSelection();
+    MapListToolBar* getMapListToolBar(int tab);
     MapListToolBar* getCurrentMapListToolBar();
     MapTree* getCurrentMapList();
     void setLocationComboBoxes(const QStringList &locations);

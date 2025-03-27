@@ -1205,6 +1205,9 @@ bool Editor::setLayout(QString layoutId) {
         return false;
     }
 
+    QString prevLayoutName;
+    if (this->layout) prevLayoutName = this->layout->name;
+
     Layout *loadedLayout = this->project->loadLayout(layoutId);
     if (!loadedLayout) {
         return false;
@@ -1218,7 +1221,7 @@ bool Editor::setLayout(QString layoutId) {
     editGroup.addStack(&this->layout->editHistory);
 
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
-    connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
+    connect(this->layout, &Layout::dimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
     ui->comboBox_PrimaryTileset->blockSignals(true);
     ui->comboBox_SecondaryTileset->blockSignals(true);
@@ -1231,6 +1234,9 @@ bool Editor::setLayout(QString layoutId) {
     int index = this->ui->comboBox_LayoutSelector->findText(layoutId);
     if (index < 0) index = 0;
     this->ui->comboBox_LayoutSelector->setCurrentIndex(index);
+
+    if (this->layout->name != prevLayoutName)
+        Scripting::cb_LayoutOpened(this->layout->name);
 
     return true;
 }

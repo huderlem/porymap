@@ -42,6 +42,8 @@ public:
 signals:
     void filterCleared(MapTree*);
     void addFolderClicked();
+    void editsAllowedChanged(bool allowed);
+    void emptyFoldersVisibleChanged(bool visible);
 
 private:
     Ui::MapListToolBar *ui;

@@ -298,6 +298,7 @@ void MainWindow::initExtraSignals() {
     connect(ui->action_NewMap, &QAction::triggered, this, &MainWindow::openNewMapDialog);
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
     connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
+    connect(ui->comboBox_LayoutSelector->lineEdit(), &QLineEdit::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -447,6 +448,27 @@ void MainWindow::initMapList() {
     // Only the groups list allows reorganizing folder contents, editing folder names, etc.
     ui->mapListToolBar_Locations->setEditsAllowedButtonVisible(false);
     ui->mapListToolBar_Layouts->setEditsAllowedButtonVisible(false);
+
+    // Initialize settings from config
+    ui->mapListToolBar_Groups->setEditsAllowed(porymapConfig.mapListEditGroupsEnabled);
+    for (auto i = porymapConfig.mapListHideEmptyEnabled.constBegin(); i != porymapConfig.mapListHideEmptyEnabled.constEnd(); i++) {
+        auto toolbar = getMapListToolBar(i.key());
+        if (toolbar) toolbar->setEmptyFoldersVisible(!i.value());
+    }
+
+    // Update config if map list settings change
+    connect(ui->mapListToolBar_Groups, &MapListToolBar::editsAllowedChanged, [](bool allowed) {
+        porymapConfig.mapListEditGroupsEnabled = allowed;
+    });
+    connect(ui->mapListToolBar_Groups, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
+        porymapConfig.mapListHideEmptyEnabled[MapListTab::Groups] = !visible;
+    });
+    connect(ui->mapListToolBar_Locations, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
+        porymapConfig.mapListHideEmptyEnabled[MapListTab::Locations] = !visible;
+    });
+    connect(ui->mapListToolBar_Layouts, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
+        porymapConfig.mapListHideEmptyEnabled[MapListTab::Layouts] = !visible;
+    });
 
     // When map list search filter is cleared we want the current map/layout in the editor to be visible in the list.
     connect(ui->mapListToolBar_Groups,    &MapListToolBar::filterCleared, this, &MainWindow::scrollMapListToCurrentMap);
@@ -926,7 +948,11 @@ bool MainWindow::setMap(QString map_name) {
 
     connect(editor->map, &Map::modified, this, &MainWindow::markMapEdited, Qt::UniqueConnection);
 
-    connect(editor->layout, &Layout::layoutChanged, this, &MainWindow::onLayoutChanged, Qt::UniqueConnection);
+    // If the map's MAPSEC / layout changes, update the map's position in the map list.
+    // These are doing more work than necessary, rather than rebuilding the entire list they should find and relocate the appropriate row.
+    connect(editor->map, &Map::layoutChanged, this, &MainWindow::rebuildMapList_Layouts, Qt::UniqueConnection);
+    connect(editor->map->header(), &MapHeader::locationChanged, this, &MainWindow::rebuildMapList_Locations, Qt::UniqueConnection);
+
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
     userConfig.recentMapOrLayout = map_name;
@@ -983,7 +1009,6 @@ bool MainWindow::setLayout(QString layoutId) {
 
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
-    Scripting::cb_MapOpened(layout->name);
     updateTilesetEditor();
 
     userConfig.recentMapOrLayout = layoutId;
@@ -1064,12 +1089,37 @@ void MainWindow::displayMapProperties() {
 }
 
 void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &text) {
-    if (editor && editor->project && editor->map) {
-        if (editor->project->mapLayouts.contains(text)) {
-            editor->map->setLayout(editor->project->loadLayout(text));
-            setMap(editor->map->name());
-            markMapEdited();
-        }
+    if (!this->editor || !this->editor->project || !this->editor->map)
+        return;
+
+    if (!this->editor->project->mapLayouts.contains(text)) {
+        // User may be in the middle of typing the name of a layout, don't bother trying to load it.
+        return;
+    }
+
+    Layout* layout = this->editor->project->loadLayout(text);
+    if (!layout) {
+        RecentErrorMessage::show(QString("Unable to set layout '%1'.").arg(text), this);
+
+        // New layout failed to load, restore previous layout
+        const QSignalBlocker b(ui->comboBox_LayoutSelector);
+        ui->comboBox_LayoutSelector->setCurrentText(this->editor->map->layout()->id);
+        return;
+    }
+    this->editor->map->setLayout(layout);
+    setMap(this->editor->map->name());
+    markMapEdited();
+}
+
+void MainWindow::onLayoutSelectorEditingFinished() {
+    if (!this->editor || !this->editor->project || !this->editor->layout)
+        return;
+
+    // If the user left the layout selector in an invalid state, restore it so that it displays the current layout.
+    const QString text = ui->comboBox_LayoutSelector->currentText();
+    if (!this->editor->project->mapLayouts.contains(text)) {
+        const QSignalBlocker b(ui->comboBox_LayoutSelector);
+        ui->comboBox_LayoutSelector->setCurrentText(this->editor->layout->id);
     }
 }
 
@@ -1120,7 +1170,8 @@ bool MainWindow::setProjectUI() {
     // map models
     this->mapGroupModel = new MapGroupModel(editor->project);
     this->groupListProxyModel = new FilterChildrenProxyModel();
-    groupListProxyModel->setSourceModel(this->mapGroupModel);
+    this->groupListProxyModel->setSourceModel(this->mapGroupModel);
+    this->groupListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Groups]);
     ui->mapList->setModel(groupListProxyModel);
 
     this->ui->mapList->setItemDelegateForColumn(0, new GroupNameDelegate(this->editor->project, this));
@@ -1128,13 +1179,16 @@ bool MainWindow::setProjectUI() {
 
     this->mapLocationModel = new MapLocationModel(editor->project);
     this->locationListProxyModel = new FilterChildrenProxyModel();
-    locationListProxyModel->setSourceModel(this->mapLocationModel);
+    this->locationListProxyModel->setSourceModel(this->mapLocationModel);
+    this->locationListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Locations]);
+
     ui->locationList->setModel(locationListProxyModel);
     ui->locationList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
+    this->layoutListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Layouts]);
     ui->layoutList->setModel(layoutListProxyModel);
     ui->layoutList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
@@ -1384,7 +1438,7 @@ void MainWindow::openNewMapDialog() {
 }
 
 void MainWindow::openDuplicateMapDialog(const QString &mapName) {
-    const Map *map = this->editor->project->getMap(mapName);
+    const Map *map = this->editor->project->loadMap(mapName);
     if (map) {
         auto dialog = new NewMapDialog(this->editor->project, map, this);
         dialog->open();
@@ -1526,6 +1580,19 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
     if (toolbar) toolbar->setFilterLocked(false);
 }
 
+void MainWindow::rebuildMapList_Locations() {
+    this->mapLocationModel->deleteLater();
+    this->mapLocationModel = new MapLocationModel(this->editor->project);
+    this->locationListProxyModel->setSourceModel(this->mapLocationModel);
+    resetMapListFilters();
+}
+void MainWindow::rebuildMapList_Layouts() {
+    this->layoutTreeModel->deleteLater();
+    this->layoutTreeModel = new LayoutTreeModel(this->editor->project);
+    this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
+    resetMapListFilters();
+}
+
 void MainWindow::updateMapList() {
     // Get the name of the open map/layout (or clear the relevant selection if there is none).
     QString activeItemName; 
@@ -1570,9 +1637,9 @@ void MainWindow::save(bool currentOnly) {
 
     if (!porymapConfig.shownInGameReloadMessage) {
         // Show a one-time warning that the user may need to reload their map to see their new changes.
-        static const QString message = QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
-                                                      "the changes may not appear until you leave the map and return.");
-        InfoMessage::show(message, this);
+        InfoMessage::show(QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
+                                         "the changes may not appear until you leave the map and return."),
+                          this);
         porymapConfig.shownInGameReloadMessage = true;
     }
 
@@ -2407,10 +2474,6 @@ void MainWindow::onOpenConnectedMap(MapConnection *connection) {
         editor->setSelectedConnection(connection->findMirror());
 }
 
-void MainWindow::onLayoutChanged(Layout *) {
-    updateMapList();
-}
-
 void MainWindow::onMapLoaded(Map *map) {
     connect(map, &Map::modified, [this, map] { this->markSpecificMapEdited(map); });
 }
@@ -2670,13 +2733,17 @@ void MainWindow::initTilesetEditor() {
     connect(this->tilesetEditor, &TilesetEditor::tilesetsSaved, this, &MainWindow::onTilesetsSaved);
 }
 
-MapListToolBar* MainWindow::getCurrentMapListToolBar() {
-    switch (ui->mapListContainer->currentIndex()) {
+MapListToolBar* MainWindow::getMapListToolBar(int tab) {
+    switch (tab) {
     case MapListTab::Groups:    return ui->mapListToolBar_Groups;
     case MapListTab::Locations: return ui->mapListToolBar_Locations;
     case MapListTab::Layouts:   return ui->mapListToolBar_Layouts;
     default: return nullptr;
     }
+}
+
+MapListToolBar* MainWindow::getCurrentMapListToolBar() {
+    return getMapListToolBar(ui->mapListContainer->currentIndex());
 }
 
 MapTree* MainWindow::getCurrentMapList() {
@@ -2809,13 +2876,10 @@ void MainWindow::reloadScriptEngine() {
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.projectDir);
     if (this->editor) {
-        QString curName;
+        if (this->editor->layout)
+            Scripting::cb_LayoutOpened(this->editor->layout->name);
         if (this->editor->map)
-            curName = this->editor->map->name();
-        else if (editor->layout)
-            curName = this->editor->layout->name;
-
-        Scripting::cb_MapOpened(curName);
+            Scripting::cb_MapOpened(this->editor->map->name());
     }
 }
 

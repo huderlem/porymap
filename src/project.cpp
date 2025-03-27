@@ -42,7 +42,7 @@ Project::Project(QObject *parent) :
 
 Project::~Project()
 {
-    clearMapCache();
+    clearMaps();
     clearTilesetCache();
     clearMapLayouts();
     clearEventGraphics();
@@ -127,9 +127,10 @@ QString Project::getProjectTitle() const {
     }
 }
 
-void Project::clearMapCache() {
-    qDeleteAll(this->mapCache);
-    this->mapCache.clear();
+void Project::clearMaps() {
+    qDeleteAll(this->maps);
+    this->maps.clear();
+    this->loadedMapNames.clear();
 }
 
 void Project::clearTilesetCache() {
@@ -137,32 +138,20 @@ void Project::clearTilesetCache() {
     this->tilesetCache.clear();
 }
 
-Map* Project::loadMap(QString mapName) {
-    if (mapName == getDynamicMapName())
+Map* Project::loadMap(const QString &mapName) {
+    Map* map = this->maps.value(mapName);
+    if (!map)
         return nullptr;
 
-    Map *map;
-    if (mapCache.contains(mapName)) {
-        map = mapCache.value(mapName);
-        // TODO: uncomment when undo/redo history is fully implemented for all actions.
-        if (true/*map->hasUnsavedChanges()*/) {
-            return map;
-        }
-    } else {
-        map = new Map;
-        map->setName(mapName);
-    }
+    if (isMapLoaded(map))
+        return map;
 
-    if (!(loadMapData(map) && loadMapLayout(map))){
-        delete map;
+    if (!(loadMapData(map) && loadMapLayout(map)))
         return nullptr;
-    }
 
-    // If the map's MAPSEC value in the header changes, update our global array to keep it in sync.
-    connect(map->header(), &MapHeader::locationChanged, [this, map] { this->mapNameToMapSectionName.insert(map->name(), map->header()->location()); });
-
-    mapCache.insert(mapName, map);
+    this->loadedMapNames.insert(mapName);
     emit mapLoaded(map);
+
     return map;
 }
 
@@ -235,11 +224,18 @@ bool Project::loadMapData(Map* map) {
 
     // We should already know the map constant ID from the initial project launch, but we'll ensure it's correct here anyway.
     map->setConstantName(ParseUtil::jsonToQString(mapObj["id"]));
-    this->mapNamesToMapConstants.insert(map->name(), map->constantName());
     this->mapConstantsToMapNames.insert(map->constantName(), map->name());
 
+    const QString layoutId = ParseUtil::jsonToQString(mapObj["layout"]);
+    Layout* layout = this->mapLayouts.value(layoutId);
+    if (!layout) {
+        // We've already verified layout IDs on project launch and ignored maps with invalid IDs, so this shouldn't happen.
+        logError(QString("Cannot load map with unknown layout ID '%1'").arg(layoutId));
+        return false;
+    }
+    map->setLayout(layout);
+
     map->header()->setSong(ParseUtil::jsonToQString(mapObj["music"]));
-    map->setLayoutId(ParseUtil::jsonToQString(mapObj["layout"]));
     map->header()->setLocation(ParseUtil::jsonToQString(mapObj["region_map_section"]));
     map->header()->setRequiresFlash(ParseUtil::jsonToBool(mapObj["requires_flash"]));
     map->header()->setWeather(ParseUtil::jsonToQString(mapObj["weather"]));
@@ -352,21 +348,15 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     }
     map->setLayout(layout);
 
-    const QString location = map->header()->location();
-    if (!this->mapSectionIdNames.contains(location) && isValidNewIdentifier(location)) {
-        // Unrecognized MAPSEC name, we can automatically add a new MAPSEC for it.
-        addNewMapsec(location);
-    }
+    // Try to record the MAPSEC name in case this is a new name.
+    addNewMapsec(map->header()->location());
 
     this->mapNames.insert(mapNamePos, map->name());
     this->groupNameToMapNames[settings.group].append(map->name());
     this->mapConstantsToMapNames.insert(map->constantName(), map->name());
-    this->mapNamesToMapConstants.insert(map->name(), map->constantName());
-    this->mapNameToLayoutId.insert(map->name(), map->layoutId());
-    this->mapNameToMapSectionName.insert(map->name(), map->header()->location());
 
     map->setIsPersistedToFile(false);
-    this->mapCache.insert(map->name(), map);
+    this->maps.insert(map->name(), map);
 
     emit mapCreated(map, settings.group);
 
@@ -405,14 +395,14 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
     }
 
     // No need for a full load, we already have all the blockdata.
-    layout->loaded = loadLayoutTilesets(layout);
-    if (!layout->loaded) {
+    if (!loadLayoutTilesets(layout)) {
         delete layout;
         return nullptr;
     }
 
     this->mapLayouts.insert(layout->id, layout);
     this->layoutIds.append(layout->id);
+    this->loadedLayoutIds.insert(layout->id);
 
     emit layoutCreated(layout);
 
@@ -420,14 +410,14 @@ Layout *Project::createNewLayout(const Layout::Settings &settings, const Layout 
 }
 
 bool Project::loadLayout(Layout *layout) {
-    if (!layout->loaded) {
+    if (!isLayoutLoaded(layout)) {
         // Force these to run even if one fails
         bool loadedTilesets = loadLayoutTilesets(layout);
         bool loadedBlockdata = loadBlockdata(layout);
         bool loadedBorder = loadLayoutBorder(layout);
 
         if (loadedTilesets && loadedBlockdata && loadedBorder) {
-            layout->loaded = true;
+            this->loadedLayoutIds.insert(layout->id);
             return true;
         } else {
             return false;
@@ -446,18 +436,7 @@ Layout *Project::loadLayout(QString layoutId) {
 }
 
 bool Project::loadMapLayout(Map* map) {
-    if (!map->isPersistedToFile()) {
-        return true;
-    }
-
-    Layout *layout = this->mapLayouts.value(map->layoutId());
-    if (!layout) {
-        logError(QString("Map '%1' has an unknown layout '%2'").arg(map->name()).arg(map->layoutId()));
-        return false;
-    }
-    map->setLayout(layout);
-
-    if (map->hasUnsavedChanges()) {
+    if (!map->isPersistedToFile() || map->hasUnsavedChanges()) {
         return true;
     } else {
         return loadLayout(map->layout());
@@ -471,6 +450,7 @@ void Project::clearMapLayouts() {
     this->mapLayoutsMaster.clear();
     this->layoutIds.clear();
     this->layoutIdsMaster.clear();
+    this->loadedLayoutIds.clear();
 }
 
 bool Project::readMapLayouts() {
@@ -487,11 +467,6 @@ bool Project::readMapLayouts() {
     }
 
     QJsonObject layoutsObj = layoutsDoc.object();
-    QJsonArray layouts = layoutsObj["layouts"].toArray();
-    if (layouts.size() == 0) {
-        logError(QString("'layouts' array is missing from %1.").arg(layoutsFilepath));
-        return false;
-    }
 
     this->layoutsLabel = ParseUtil::jsonToQString(layoutsObj["layouts_table_label"]);
     if (this->layoutsLabel.isEmpty()) {
@@ -501,6 +476,7 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
+    QJsonArray layouts = layoutsObj["layouts"].toArray();
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
@@ -581,6 +557,11 @@ bool Project::readMapLayouts() {
         this->mapLayoutsMaster.insert(layout->id, layout->copy());
         this->layoutIds.append(layout->id);
         this->layoutIdsMaster.append(layout->id);
+    }
+
+    if (this->mapLayouts.isEmpty()) {
+        logError(QString("Failed to read any map layouts from '%1'. At least one map layout is required.").arg(layoutsFilepath));
+        return false;
     }
 
     return true;
@@ -667,7 +648,7 @@ void Project::saveMapGroups() {
     for (const auto &groupName : this->groupNames) {
         OrderedJson::array groupArr;
         for (const auto &mapName : this->groupNameToMapNames.value(groupName)) {
-            if (this->mapCache.value(mapName) && !this->mapCache.value(mapName)->isPersistedToFile()) {
+            if (this->maps.value(mapName) && !this->maps.value(mapName)->isPersistedToFile()) {
                 // This is a new map that hasn't been saved yet, don't add it to the global map groups list yet.
                 continue;
             }
@@ -1128,7 +1109,7 @@ void Project::writeBlockdata(QString path, const Blockdata &blockdata) {
 }
 
 void Project::saveAll() {
-    for (auto map : this->mapCache) {
+    for (auto map : this->maps) {
         saveMap(map, true); // Avoid double-saving the layouts
     }
     for (auto layout : this->mapLayouts) {
@@ -1138,6 +1119,8 @@ void Project::saveAll() {
 }
 
 void Project::saveMap(Map *map, bool skipLayout) {
+    if (!map || !isMapLoaded(map)) return;
+
     // Create/Modify a few collateral files for brand new maps.
     const QString folderPath = projectConfig.getFilePath(ProjectFilePath::data_map_folders) + map->name();
     const QString fullPath = QString("%1/%2").arg(this->root).arg(folderPath);
@@ -1199,7 +1182,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
         OrderedJson::array connectionsArr;
         for (const auto &connection : connections) {
             OrderedJson::object connectionObj;
-            connectionObj["map"] = this->mapNamesToMapConstants.value(connection->targetMapName(), connection->targetMapName());
+            connectionObj["map"] = getMapConstant(connection->targetMapName(), connection->targetMapName());
             connectionObj["offset"] = connection->offset();
             connectionObj["direction"] = connection->direction();
             connectionsArr.append(connectionObj);
@@ -1269,11 +1252,14 @@ void Project::saveMap(Map *map, bool skipLayout) {
 
     if (!skipLayout) saveLayout(map->layout());
 
+    // Try to record the MAPSEC name in case this is a new name.
+    addNewMapsec(map->header()->location());
+
     map->setClean();
 }
 
 void Project::saveLayout(Layout *layout) {
-    if (!layout || !layout->loaded)
+    if (!layout || !isLayoutLoaded(layout))
         return;
 
     if (!layout->newFolderPath.isEmpty()) {
@@ -1549,15 +1535,6 @@ Blockdata Project::readBlockdata(QString path, bool *ok) {
     return blockdata;
 }
 
-Map* Project::getMap(QString map_name) {
-    if (mapCache.contains(map_name)) {
-        return mapCache.value(map_name);
-    } else {
-        Map *map = loadMap(map_name);
-        return map;
-    }
-}
-
 Tileset* Project::getTileset(QString label, bool forceLoad) {
     Tileset *existingTileset = nullptr;
     if (tilesetCache.contains(label)) {
@@ -1761,8 +1738,8 @@ bool Project::readWildMonData() {
 }
 
 bool Project::readMapGroups() {
+    clearMaps();
     this->mapConstantsToMapNames.clear();
-    this->mapNamesToMapConstants.clear();
     this->mapNames.clear();
     this->groupNames.clear();
     this->groupNameToMapNames.clear();
@@ -1856,24 +1833,21 @@ bool Project::readMapGroups() {
                 logWarn(QString("Map '%1' has unknown \"region_map_section\" value '%2'.").arg(mapName).arg(mapSectionName));
             }
 
-            // Success, save the constants to the project
+            // Success, create the Map object
+            auto map = new Map;
+            map->setName(mapName);
+            map->setConstantName(mapConstant);
+            map->setLayout(this->mapLayouts.value(layoutId));
+            map->header()->setLocation(mapSectionName);
+            this->maps.insert(mapName, map);
+
             this->mapNames.append(mapName);
             this->groupNameToMapNames[groupName].append(mapName);
             this->mapConstantsToMapNames.insert(mapConstant, mapName);
-            this->mapNamesToMapConstants.insert(mapName, mapConstant);
-            this->mapNameToLayoutId.insert(mapName, layoutId);
-            this->mapNameToMapSectionName.insert(mapName, mapSectionName);
         }
     }
 
-    if (this->groupNames.isEmpty()) {
-        logError(QString("Failed to find any map groups in %1").arg(filepath));
-        return false;
-    }
-    if (this->mapNames.isEmpty()) {
-        logError(QString("Failed to find any map names in %1").arg(filepath));
-        return false;
-    }
+    // Note: Not successfully reading any maps or map groups is ok. We only require at least 1 map layout.
 
     if (!failedMapNames.isEmpty()) {
         // At least 1 map was excluded due to an error.
@@ -1883,7 +1857,6 @@ bool Project::readMapGroups() {
 
     // Save special "Dynamic" constant
     this->mapConstantsToMapNames.insert(dynamicMapConstant, dynamicMapName);
-    this->mapNamesToMapConstants.insert(dynamicMapName, dynamicMapConstant);
     this->mapNames.append(dynamicMapName);
 
     return true;
@@ -1900,7 +1873,7 @@ void Project::addNewMapGroup(const QString &groupName) {
     emit mapGroupAdded(groupName);
 }
 
-QString Project::mapNameToMapGroup(const QString &mapName) {
+QString Project::mapNameToMapGroup(const QString &mapName) const {
     for (auto it = this->groupNameToMapNames.constBegin(); it != this->groupNameToMapNames.constEnd(); it++) {
         const QStringList mapNames = it.value();
         if (mapNames.contains(mapName)) {
@@ -1908,6 +1881,23 @@ QString Project::mapNameToMapGroup(const QString &mapName) {
         }
     }
     return QString();
+}
+
+QString Project::getMapConstant(const QString &mapName, const QString &defaultValue) const {
+    if (mapName == getDynamicMapName()) return getDynamicMapDefineName();
+
+    Map* map = this->maps.value(mapName);
+    return map ? map->constantName() : defaultValue;
+}
+
+QString Project::getMapLayoutId(const QString &mapName, const QString &defaultValue) const {
+    Map* map = this->maps.value(mapName);
+    return (map && map->layout()) ? map->layout()->id : defaultValue;
+}
+
+QString Project::getMapLocation(const QString &mapName, const QString &defaultValue) const {
+    Map* map = this->maps.value(mapName);
+    return map ? map->header()->location() : defaultValue;
 }
 
 // When we ask the user to provide a new identifier for something (like a map name or MAPSEC id)
@@ -1938,9 +1928,8 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
     if (this->encounterGroupLabels.contains(identifier))
         return false;
     // Check event IDs
-    for (const auto &map : this->mapCache) {
-        auto events = map->getEvents();
-        for (const auto &event : events) {
+    for (const auto &mapName : this->loadedMapNames) {
+        for (const auto &event : this->maps.value(mapName)->getEvents()) {
             QString idName = event->getIdName();
             if (!idName.isEmpty() && idName == identifier)
                 return false;
@@ -1950,8 +1939,8 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
 }
 
 // For some arbitrary string, return true if it's both a valid identifier name and not one that's already in-use.
-bool Project::isValidNewIdentifier(QString identifier) const {
-    IdentifierValidator validator;
+bool Project::isValidNewIdentifier(const QString &identifier) const {
+    static const IdentifierValidator validator;
     return validator.isValid(identifier) && isIdentifierUnique(identifier);
 }
 
@@ -1968,7 +1957,7 @@ QString Project::toUniqueIdentifier(const QString &identifier) const {
 
 void Project::initNewMapSettings() {
     this->newMapSettings.name = QString();
-    this->newMapSettings.group = this->groupNames.at(0);
+    this->newMapSettings.group = this->groupNames.value(0);
     this->newMapSettings.canFlyTo = false;
 
     this->newMapSettings.layout.folderName = this->newMapSettings.name;
@@ -2357,9 +2346,19 @@ QString Project::getMapGroupPrefix() {
     return QStringLiteral("gMapGroup_");
 }
 
-// This function assumes a valid and unique name
-void Project::addNewMapsec(const QString &idName) {
-    if (this->mapSectionIdNamesSaveOrder.last() == getEmptyMapsecName()) {
+bool Project::addNewMapsec(const QString &idName, const QString &displayName) {
+    if (this->mapSectionIdNames.contains(idName)) {
+        // Already added
+        return false;
+    }
+
+    IdentifierValidator validator(projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix));
+    if (!validator.isValid(idName)) {
+        logWarn(QString("Cannot add new MAPSEC with invalid name '%1'").arg(idName));
+        return false;
+    }
+
+    if (!this->mapSectionIdNamesSaveOrder.isEmpty() && this->mapSectionIdNamesSaveOrder.last() == getEmptyMapsecName()) {
         // If the default map section name (MAPSEC_NONE) is last in the list we'll keep it last in the list.
         this->mapSectionIdNamesSaveOrder.insert(this->mapSectionIdNames.length() - 1, idName);
     } else {
@@ -2373,6 +2372,8 @@ void Project::addNewMapsec(const QString &idName) {
 
     emit mapSectionAdded(idName);
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
+    if (!displayName.isEmpty()) setMapsecDisplayName(idName, displayName);
+    return true;
 }
 
 void Project::removeMapsec(const QString &idName) {
@@ -3203,16 +3204,14 @@ bool Project::hasUnsavedChanges() {
         return true;
 
     // Check layouts for unsaved changes
-    for (auto i = this->mapLayouts.constBegin(); i != this->mapLayouts.constEnd(); i++) {
-        auto layout = i.value();
-        if (layout && layout->hasUnsavedChanges())
+    for (const auto &layout : this->mapLayouts) {
+        if (layout->hasUnsavedChanges())
             return true;
     }
 
-    // Check loaded maps for unsaved changes
-    for (auto i = this->mapCache.constBegin(); i != this->mapCache.constEnd(); i++) {
-        auto map = i.value();
-        if (map && map->hasUnsavedChanges())
+    // Check maps for unsaved changes
+    for (const auto &map : this->maps) {
+        if (map->hasUnsavedChanges())
             return true;
     }
     return false;

@@ -12,6 +12,7 @@ const QMap<CallbackType, QString> callbackFunctions = {
     {OnBlockHoverChanged, "onBlockHoverChanged"},
     {OnBlockHoverCleared, "onBlockHoverCleared"},
     {OnMapOpened, "onMapOpened"},
+    {OnLayoutOpened, "onLayoutOpened"},
     {OnMapResized, "onMapResized"},
     {OnBorderResized, "onBorderResized"},
     {OnMapShifted, "onMapShifted"},
@@ -256,6 +257,15 @@ void Scripting::cb_MapOpened(QString mapName) {
         mapName,
     };
     instance->invokeCallback(OnMapOpened, args);
+}
+
+void Scripting::cb_LayoutOpened(QString layoutName) {
+    if (!instance) return;
+
+    QJSValueList args {
+        layoutName,
+    };
+    instance->invokeCallback(OnLayoutOpened, args);
 }
 
 void Scripting::cb_MapResized(int oldWidth, int oldHeight, int newWidth, int newHeight) {

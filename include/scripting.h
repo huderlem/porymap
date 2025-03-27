@@ -9,6 +9,8 @@
 #include <QStringList>
 #include <QJSEngine>
 
+// !! New callback functions or changes to existing callback function names/arguments
+//    should be synced to resources/text/script_template.txt and docsrc/manual/scripting-capabilities.rst
 enum CallbackType {
     OnProjectOpened,
     OnProjectClosed,
@@ -17,6 +19,7 @@ enum CallbackType {
     OnBlockHoverChanged,
     OnBlockHoverCleared,
     OnMapOpened,
+    OnLayoutOpened,
     OnMapResized,
     OnBorderResized,
     OnMapShifted,
@@ -43,6 +46,7 @@ public:
     static void cb_BlockHoverChanged(int x, int y);
     static void cb_BlockHoverCleared();
     static void cb_MapOpened(QString mapName);
+    static void cb_LayoutOpened(QString layoutName);
     static void cb_MapResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
     static void cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
     static void cb_MapShifted(int xDelta, int yDelta);

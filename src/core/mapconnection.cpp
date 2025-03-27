@@ -53,7 +53,7 @@ void MapConnection::markMapEdited() {
 }
 
 Map* MapConnection::getMap(const QString& mapName) const {
-    return project ? project->getMap(mapName) : nullptr;
+    return project ? project->loadMap(mapName) : nullptr;
 }
 
 Map* MapConnection::targetMap() const {
