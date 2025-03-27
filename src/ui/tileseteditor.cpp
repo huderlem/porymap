@@ -129,10 +129,10 @@ void TilesetEditor::initAttributesUi() {
     connect(ui->comboBox_encounterType->lineEdit(), &QLineEdit::editingFinished, this, &TilesetEditor::commitEncounterType);
     connect(ui->comboBox_terrainType->lineEdit(), &QLineEdit::editingFinished, this, &TilesetEditor::commitTerrainType);
     connect(ui->comboBox_layerType->lineEdit(), &QLineEdit::editingFinished, this, &TilesetEditor::commitLayerType);
-    connect(ui->comboBox_metatileBehaviors, &QComboBox::activated, this, &TilesetEditor::commitMetatileBehavior);
-    connect(ui->comboBox_encounterType, &QComboBox::activated, this, &TilesetEditor::commitEncounterType);
-    connect(ui->comboBox_terrainType, &QComboBox::activated, this, &TilesetEditor::commitTerrainType);
-    connect(ui->comboBox_layerType, &QComboBox::activated, this, &TilesetEditor::commitLayerType);
+    connect(ui->comboBox_metatileBehaviors, QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitMetatileBehavior);
+    connect(ui->comboBox_encounterType,  QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitEncounterType);
+    connect(ui->comboBox_terrainType, QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitTerrainType);
+    connect(ui->comboBox_layerType, QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitLayerType);
 
     // Behavior
     if (projectConfig.metatileBehaviorMask) {
