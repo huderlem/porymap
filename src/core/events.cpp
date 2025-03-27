@@ -206,7 +206,7 @@ bool ObjectEvent::loadFromJson(const QJsonObject &json, Project *) {
 }
 
 void ObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().value(0, "0"));
+    this->setGfx(project->gfxDefines.key(0, "0"));
     this->setMovement(project->movementTypes.value(0, "0"));
     this->setScript("NULL");
     this->setTrainerType(project->trainerTypes.value(0, "0"));
@@ -285,7 +285,7 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     cloneJson["y"] = this->getY();
     cloneJson["target_local_id"] = this->getTargetID();
     const QString mapName = this->getTargetMap();
-    cloneJson["target_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
+    cloneJson["target_map"] = project->getMapConstant(mapName, mapName);
     this->addCustomAttributesTo(&cloneJson);
 
     return cloneJson;
@@ -310,7 +310,7 @@ bool CloneObjectEvent::loadFromJson(const QJsonObject &json, Project *project) {
 }
 
 void CloneObjectEvent::setDefaultValues(Project *project) {
-    this->setGfx(project->gfxDefines.keys().value(0, "0"));
+    this->setGfx(project->gfxDefines.key(0, "0"));
     this->setTargetID(1);
     if (this->getMap()) this->setTargetMap(this->getMap()->name());
 }
@@ -333,7 +333,7 @@ QSet<QString> CloneObjectEvent::getExpectedFields() {
 void CloneObjectEvent::loadPixmap(Project *project) {
     // Try to get the targeted object to clone
     int eventIndex = this->targetID - 1;
-    Map *clonedMap = project->getMap(this->targetMap);
+    Map *clonedMap = project->loadMap(this->targetMap);
     Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, eventIndex) : nullptr;
 
     if (clonedEvent && clonedEvent->getEventType() == Event::Type::Object) {
@@ -380,7 +380,7 @@ OrderedJson::object WarpEvent::buildEventJson(Project *project) {
     warpJson["y"] = this->getY();
     warpJson["elevation"] = this->getElevation();
     const QString mapName = this->getDestinationMap();
-    warpJson["dest_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
+    warpJson["dest_map"] = project->getMapConstant(mapName, mapName);
     warpJson["dest_warp_id"] = this->getDestinationWarpID();
 
     this->addCustomAttributesTo(&warpJson);
@@ -839,7 +839,7 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *project) {
     healLocationJson["y"] = this->getY();
     if (projectConfig.healLocationRespawnDataEnabled) {
         const QString mapName = this->getRespawnMapName();
-        healLocationJson["respawn_map"] = project->mapNamesToMapConstants.value(mapName, mapName);
+        healLocationJson["respawn_map"] = project->getMapConstant(mapName, mapName);
         healLocationJson["respawn_npc"] = this->getRespawnNPC();
     }
 

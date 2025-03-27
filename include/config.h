@@ -52,6 +52,8 @@ public:
         this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
         this->mapListTab = 0;
+        this->mapListEditGroupsEnabled = false;
+        this->mapListHideEmptyEnabled.clear();
         this->prettyCursors = true;
         this->mirrorConnectingMaps = true;
         this->showDiveEmergeMaps = false;
@@ -110,6 +112,8 @@ public:
     bool reopenOnLaunch;
     bool projectManuallyClosed;
     int mapListTab;
+    bool mapListEditGroupsEnabled;
+    QMap<int, bool> mapListHideEmptyEnabled;
     bool prettyCursors;
     bool mirrorConnectingMaps;
     bool showDiveEmergeMaps;

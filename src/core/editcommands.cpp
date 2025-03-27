@@ -220,7 +220,7 @@ void ResizeLayout::redo() {
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
     layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
 
-    layout->needsRedrawing();
+    emit layout->needsRedrawing();
 }
 
 void ResizeLayout::undo() {
@@ -237,7 +237,7 @@ void ResizeLayout::undo() {
     layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
     layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
 
-    layout->needsRedrawing();
+    emit layout->needsRedrawing();
 
     QUndoCommand::undo();
 }

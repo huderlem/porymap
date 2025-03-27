@@ -134,8 +134,8 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 void TilesetEditor::setAttributesUi() {
     // Behavior
     if (projectConfig.metatileBehaviorMask) {
-        for (int num : project->metatileBehaviorMapInverse.keys()) {
-            this->ui->comboBox_metatileBehaviors->addItem(project->metatileBehaviorMapInverse[num], num);
+        for (auto i = project->metatileBehaviorMapInverse.constBegin(); i != project->metatileBehaviorMapInverse.constEnd(); i++) {
+            this->ui->comboBox_metatileBehaviors->addItem(i.value(), i.key());
         }
         this->ui->comboBox_metatileBehaviors->setMinimumContentsLength(0);
     } else {
@@ -1125,7 +1125,7 @@ void TilesetEditor::countTileUsage() {
     QSet<Tileset*> primaryTilesets;
     QSet<Tileset*> secondaryTilesets;
 
-    for (auto layout : this->project->mapLayouts.values()) {
+    for (auto &layout : this->project->mapLayouts) {
         this->project->loadLayoutTilesets(layout);
         if (layout->tileset_primary_label == this->primaryTileset->name
          || layout->tileset_secondary_label == this->secondaryTileset->name) {

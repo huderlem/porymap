@@ -198,6 +198,15 @@ void Editor::clearWildMonTables() {
     emit wildMonTableClosed();
 }
 
+int Editor::getSortedItemIndex(QComboBox *combo, QString item) {
+    int i = 0;
+    for (; i < combo->count(); i++) {
+        if (item < combo->itemText(i))
+            break;
+    }
+    return i;
+}
+
 void Editor::displayWildMonTables() {
     clearWildMonTables();
 
@@ -207,17 +216,17 @@ void Editor::displayWildMonTables() {
     }
 
     QComboBox *labelCombo = ui->comboBox_EncounterGroupLabel;
+    QStringList labelComboStrings;
     for (auto groupPair : project->wildMonData[map->constantName()])
-        labelCombo->addItem(groupPair.first);
+        labelComboStrings.append(groupPair.first);
 
+    labelComboStrings.sort();
+    labelCombo->addItems(labelComboStrings);
     labelCombo->setCurrentText(labelCombo->itemText(0));
 
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     int labelIndex = 0;
-    for (auto labelPair : project->wildMonData[map->constantName()]) {
-
-        QString label = labelPair.first;
-
+    for (QString label : labelComboStrings) {
         WildPokemonHeader header = project->wildMonData[map->constantName()][label];
 
         MonTabWidget *tabWidget = new MonTabWidget(this);
@@ -272,7 +281,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
         }
     });
     // Give a default value to the label.
-    lineEdit->setText(QString("g%1%2").arg(map->name()).arg(stack->count()));
+    lineEdit->setText(this->project->toUniqueIdentifier("g" + map->name()));
 
     // Fields [x] copy from existing
     QLabel *fieldsLabel = new QLabel("Fields:");
@@ -323,11 +332,12 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             header.wildMons[fieldName].encounterRate = 0;
         }
 
-        MonTabWidget *tabWidget = new MonTabWidget(this);
-        stack->insertWidget(stack->count(), tabWidget);
+        QString tempItemLabel = lineEdit->text();
+        int newItemIndex = getSortedItemIndex(labelCombo, tempItemLabel);
+        
+        labelCombo->insertItem(newItemIndex, tempItemLabel);
 
-        labelCombo->addItem(lineEdit->text());
-        labelCombo->setCurrentIndex(labelCombo->count() - 1);
+        MonTabWidget *tabWidget = new MonTabWidget(this);
 
         int tabIndex = 0;
         for (EncounterField &monField : project->wildMonFields) {
@@ -353,6 +363,10 @@ void Editor::addNewWildMonGroup(QWidget *window) {
             }
             tabIndex++;
         }
+
+        stack->insertWidget(newItemIndex, tabWidget);
+        labelCombo->setCurrentIndex(newItemIndex);
+
         saveEncounterTabData();
         emit wildMonTableEdited();
     }
@@ -865,7 +879,7 @@ void Editor::displayDivingConnection(MapConnection *connection) {
 }
 
 void Editor::renderDivingConnections() {
-    for (auto item : diving_map_items.values())
+    for (auto &item : diving_map_items)
         item->updatePixmap();
 }
 
@@ -1191,6 +1205,9 @@ bool Editor::setLayout(QString layoutId) {
         return false;
     }
 
+    QString prevLayoutName;
+    if (this->layout) prevLayoutName = this->layout->name;
+
     Layout *loadedLayout = this->project->loadLayout(layoutId);
     if (!loadedLayout) {
         return false;
@@ -1204,7 +1221,7 @@ bool Editor::setLayout(QString layoutId) {
     editGroup.addStack(&this->layout->editHistory);
 
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
-    connect(this->layout, &Layout::layoutDimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
+    connect(this->layout, &Layout::dimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
     ui->comboBox_PrimaryTileset->blockSignals(true);
     ui->comboBox_SecondaryTileset->blockSignals(true);
@@ -1217,6 +1234,9 @@ bool Editor::setLayout(QString layoutId) {
     int index = this->ui->comboBox_LayoutSelector->findText(layoutId);
     if (index < 0) index = 0;
     this->ui->comboBox_LayoutSelector->setCurrentIndex(index);
+
+    if (this->layout->name != prevLayoutName)
+        Scripting::cb_LayoutOpened(this->layout->name);
 
     return true;
 }
@@ -1696,7 +1716,7 @@ void Editor::removeEventPixmapItem(Event *event) {
 }
 
 void Editor::clearMapConnections() {
-    for (auto item : connection_items) {
+    for (auto &item : connection_items) {
         if (item->scene())
             item->scene()->removeItem(item);
         delete item;
@@ -1708,7 +1728,7 @@ void Editor::clearMapConnections() {
     ui->comboBox_DiveMap->setCurrentText("");
     ui->comboBox_EmergeMap->setCurrentText("");
 
-    for (auto item : diving_map_items.values()) {
+    for (auto &item : diving_map_items) {
         if (item->scene())
             item->scene()->removeItem(item);
         delete item;

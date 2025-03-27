@@ -306,6 +306,16 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->prettyCursors = getConfigBool(key, value);
     } else if (key == "map_list_tab") {
         this->mapListTab = getConfigInteger(key, value, 0, 2, 0);
+    } else if (key == "map_list_edit_groups_enabled") {
+        this->mapListEditGroupsEnabled = getConfigBool(key, value);
+    } else if (key.startsWith("map_list_hide_empty_enabled/")) {
+        bool ok;
+        int tab = key.mid(QStringLiteral("map_list_hide_empty_enabled/").length()).toInt(&ok, 0);
+        if (!ok) {
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+            return;
+        }
+        this->mapListHideEmptyEnabled.insert(tab, getConfigBool(key, value));
     } else if (key == "main_window_geometry") {
         this->mainWindowGeometry = bytesFromString(value);
     } else if (key == "main_window_state") {
@@ -447,6 +457,10 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
     map.insert("map_list_tab", QString::number(this->mapListTab));
+    map.insert("map_list_edit_groups_enabled", this->mapListEditGroupsEnabled ? "1" : "0");
+    for (auto i = this->mapListHideEmptyEnabled.constBegin(); i != this->mapListHideEmptyEnabled.constEnd(); i++) {
+        map.insert(QStringLiteral("map_list_hide_empty_enabled/") + QString::number(i.key()), i.value() ? "1" : "0");
+    }
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
@@ -771,14 +785,14 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         userConfig.parseCustomScripts(value);
 #endif
     } else if (key.startsWith("path/")) {
-        auto k = reverseDefaultPaths(key.mid(5));
+        auto k = reverseDefaultPaths(key.mid(QStringLiteral("path/").length()));
         if (k != static_cast<ProjectFilePath>(-1)) {
             this->setFilePath(k, value);
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
     } else if (key.startsWith("ident/")) {
-        auto identifierId = reverseDefaultIdentifier(key.mid(6));
+        auto identifierId = reverseDefaultIdentifier(key.mid(QStringLiteral("ident/").length()));
         if (identifierId != static_cast<ProjectIdentifier>(-1)) {
             this->setIdentifier(identifierId, value);
         } else {
@@ -805,7 +819,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "event_icon_path_heal") {
         this->eventIconPaths[Event::Group::Heal] = value;
     } else if (key.startsWith("pokemon_icon_path/")) {
-        this->pokemonIconPaths.insert(key.mid(18).toUpper(), value);
+        this->pokemonIconPaths.insert(key.mid(QStringLiteral("pokemon_icon_path/").length()).toUpper(), value);
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {

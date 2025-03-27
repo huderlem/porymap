@@ -69,11 +69,7 @@ void NewLocationDialog::accept() {
     if (!validateIdName())
         return;
 
-    const QString idName = ui->lineEdit_IdName->text();
-    const QString displayName = ui->lineEdit_DisplayName->text();
-
-    this->project->addNewMapsec(idName);
-    this->project->setMapsecDisplayName(idName, displayName);
+    this->project->addNewMapsec(ui->lineEdit_IdName->text(), ui->lineEdit_DisplayName->text());
 
     QDialog::accept();
 }

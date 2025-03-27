@@ -22,7 +22,6 @@ public:
 
     static QString layoutConstantFromName(const QString &name);
 
-    bool loaded = false;
     bool hasUnsavedDataChanges = false;
 
     QString id;
@@ -141,9 +140,7 @@ private:
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
 
 signals:
-    void layoutChanged(Layout *layout);
-    //void modified();
-    void layoutDimensionsChanged(const QSize &size);
+    void dimensionsChanged(const QSize &size);
     void needsRedrawing();
 };
 

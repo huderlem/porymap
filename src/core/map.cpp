@@ -23,7 +23,6 @@ Map::Map(QObject *parent) : QObject(parent)
 Map::Map(const Map &other, QObject *parent) : Map(parent) {
     m_name = other.m_name;
     m_constantName = other.m_constantName;
-    m_layoutId = other.m_layoutId;
     m_sharedEventsMap = other.m_sharedEventsMap;
     m_sharedScriptsMap = other.m_sharedScriptsMap;
     m_customAttributes = other.m_customAttributes;
@@ -50,10 +49,10 @@ Map::~Map() {
 
 // Note: Map does not take ownership of layout
 void Map::setLayout(Layout *layout) {
+    if (layout == m_layout)
+        return;
     m_layout = layout;
-    if (layout) {
-        m_layoutId = layout->id;
-    }
+    emit layoutChanged();
 }
 
 // We don't enforce this for existing maps, but for creating new maps we need to formulaically generate a new MAP_NAME ID.
