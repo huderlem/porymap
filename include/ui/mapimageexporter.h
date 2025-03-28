@@ -21,10 +21,12 @@ struct ImageExporterSettings {
     bool showGrid = false;
     bool showBorder = false;
     bool showCollision = false;
-    bool previewActualSize = false;
+    bool disablePreviewScaling = false;
+    bool disablePreviewUpdates = false;
     int timelapseSkipAmount = 1;
     int timelapseDelayMs = 200;
-    QColor fillColor = Qt::transparent; // Not exposed as a setting in the UI atm.
+    // Not exposed as a setting in the UI atm (our color input widget has no alpha channel).
+    QColor fillColor = Qt::transparent;
 };
 
 class MapImageExporter : public QDialog
@@ -63,9 +65,10 @@ private:
     void setModeSpecificUi();
     void setSelectionText(const QString &text);
     void updateMapSelection();
+    void resetSettings();
     QString getTitle(ImageExporterMode mode);
     QString getDescription(ImageExporterMode mode);
-    void updatePreview();
+    void updatePreview(bool forceUpdate = false);
     void scalePreview();
     bool eventsEnabled();
     void setEventGroupEnabled(Event::Group group, bool enable);
@@ -81,7 +84,7 @@ private:
     void paintEvents(QPainter *painter, const Map *map);
     void paintGrid(QPainter *painter, const Layout *layout = nullptr);
     QMargins getMargins(const Map *map);
-    QPixmap getExpandedPixmap(const QPixmap &pixmap, const QSize &minSize, const QColor &fillColor);
+    QPixmap getExpandedPixmap(const QPixmap &pixmap, const QSize &targetSize, const QColor &fillColor);
     bool currentHistoryAppliesToFrame(QUndoStack *historyStack);
 
 protected:
@@ -102,15 +105,16 @@ private slots:
     void on_checkBox_ConnectionRight_stateChanged(int state);
     void on_checkBox_AllConnections_stateChanged(int state);
 
-    void on_checkBox_Elevation_stateChanged(int state);
+    void on_checkBox_Collision_stateChanged(int state);
     void on_checkBox_Grid_stateChanged(int state);
     void on_checkBox_Border_stateChanged(int state);
 
     void on_pushButton_Reset_pressed();
-    void on_spinBox_TimelapseDelay_valueChanged(int delayMs);
-    void on_spinBox_FrameSkip_valueChanged(int skip);
+    void on_spinBox_TimelapseDelay_editingFinished();
+    void on_spinBox_FrameSkip_editingFinished();
 
-    void on_checkBox_ActualSize_stateChanged(int state);
+    void on_checkBox_DisablePreviewScaling_stateChanged(int state);
+    void on_checkBox_DisablePreviewUpdates_stateChanged(int state);
 };
 
 #endif // MAPIMAGEEXPORTER_H

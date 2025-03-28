@@ -96,22 +96,26 @@ void MapImageExporter::setModeSpecificUi() {
     }
 
     if (m_mode == ImageExporterMode::Timelapse) {
-        // At the moment edit history for events (and the DraggablePixmapItem class)
-        // depend on the editor and assume their map is the current map.
-        // Until this is resolved, the selected map and the editor's map must remain the same.
+        // TODO: At the moment edit history for events (and the DraggablePixmapItem class)
+        // explicitly depend on the editor and assume their map is currently open.
+        // Other edit commands rely on this more subtly, like triggering API callbacks or
+        // spending time rendering their layout (which can make creating timelapses very slow).
+        // Until this is resolved, the selected map/layout must remain the same as in the editor.
+        // We enforce this here by disabling the selector, and in MainWindow by programmatically
+        // changing the exporter's map/layout selection if the user opens a new one in the editor.
         ui->comboBox_MapSelection->setEnabled(false);
         ui->label_MapSelection->setEnabled(false);
-
-        // Timelapse gif has artifacts with transparency, make sure it's disabled.
-        m_settings.fillColor.setAlpha(255);
     }
+
+    // Update for any mode-specific default settings
+    resetSettings();
 }
 
 // Allow the window to open before displaying the preview.
 void MapImageExporter::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     if (!event->spontaneous())
-        QTimer::singleShot(0, this, &MapImageExporter::updatePreview);
+        QTimer::singleShot(0, this, [this](){ updatePreview(); });
 }
 
 void MapImageExporter::resizeEvent(QResizeEvent *event) {
@@ -166,12 +170,12 @@ void MapImageExporter::updateMapSelection() {
 }
 
 void MapImageExporter::saveImage() {
-    // If the preview is empty it's because progress was canceled.
-    // Try again to create it, and if it's canceled again we'll stop the export.
-    if (m_preview->pixmap().isNull()) {
-        updatePreview();
+    // If the preview is empty (because progress was canceled) or if updates were disabled
+    // then we should ensure the image in the preview is up-to-date before exporting.
+    if (m_preview->pixmap().isNull() || m_settings.disablePreviewUpdates) {
+        updatePreview(true);
         if (m_preview->pixmap().isNull())
-            return;
+            return; // Canceled
     }
     if (m_mode == ImageExporterMode::Timelapse && !m_timelapseGifImage) {
         // Shouldn't happen. We have a preview for the timelapse, but no timelapse image.
@@ -237,8 +241,15 @@ bool MapImageExporter::currentHistoryAppliesToFrame(QUndoStack *historyStack) {
         case CommandId::ID_MapConnectionChangeDirection:
         case CommandId::ID_MapConnectionChangeMap:
         case CommandId::ID_MapConnectionAdd:
-        case CommandId::ID_MapConnectionRemove:
-            return connectionsEnabled();
+        case CommandId::ID_MapConnectionRemove: {
+            if (!connectionsEnabled())
+                return false;
+            if (command->id() & IDMask_ConnectionDirection_Up)    return m_settings.showConnections.contains("up");
+            if (command->id() & IDMask_ConnectionDirection_Down)  return m_settings.showConnections.contains("down");
+            if (command->id() & IDMask_ConnectionDirection_Left)  return m_settings.showConnections.contains("left");
+            if (command->id() & IDMask_ConnectionDirection_Right) return m_settings.showConnections.contains("right");
+            return false;
+        }
         case CommandId::ID_EventMove:
         case CommandId::ID_EventShift:
         case CommandId::ID_EventCreate:
@@ -257,15 +268,18 @@ bool MapImageExporter::currentHistoryAppliesToFrame(QUndoStack *historyStack) {
     }
 }
 
-QPixmap MapImageExporter::getExpandedPixmap(const QPixmap &pixmap, const QSize &minSize, const QColor &fillColor) {
-    if (pixmap.width() >= minSize.width() && pixmap.height() >= minSize.height())
+QPixmap MapImageExporter::getExpandedPixmap(const QPixmap &pixmap, const QSize &targetSize, const QColor &fillColor) {
+    if (pixmap.width() >= targetSize.width() && pixmap.height() >= targetSize.height())
         return pixmap;
 
-    QPixmap resizedPixmap = QPixmap(minSize);
+    QPixmap resizedPixmap = QPixmap(targetSize);
     QPainter painter(&resizedPixmap);
     resizedPixmap.fill(fillColor);
-    painter.drawPixmap(0, 0, pixmap.width(), pixmap.height(), pixmap);
-    painter.end();
+
+    // Center the old pixmap in the new resized one.
+    int x = (targetSize.width() - pixmap.width()) / 2;
+    int y = (targetSize.height() - pixmap.height()) / 2;
+    painter.drawPixmap(x, y, pixmap.width(), pixmap.height(), pixmap);
     return resizedPixmap;
 }
 
@@ -278,13 +292,11 @@ struct TimelapseStep {
 QGifImage* MapImageExporter::createTimelapseGifImage(QProgressDialog *progress) {
     // TODO: Timelapse will play in order of layout changes then map changes (events, connections). Potentially update in the future?
     QList<TimelapseStep> steps;
-    if (m_layout) {
-        steps.append({
-            .historyStack = &m_layout->editHistory,
-            .initialStackIndex = m_layout->editHistory.index(),
-            .name = "layout",
-        });
-    }
+    steps.append({
+        .historyStack = &m_layout->editHistory,
+        .initialStackIndex = m_layout->editHistory.index(),
+        .name = "layout",
+    });
     if (m_map) {
         steps.append({
             .historyStack = m_map->editHistory(),
@@ -301,8 +313,8 @@ QGifImage* MapImageExporter::createTimelapseGifImage(QProgressDialog *progress) 
         progress->setMaximum(step.initialStackIndex);
         progress->setValue(progress->minimum());
         do {
-            if (currentHistoryAppliesToFrame(step.historyStack)) {
-                // This command is relevant, record the size of the map at this point.
+            if (currentHistoryAppliesToFrame(step.historyStack) || step.historyStack->index() == step.initialStackIndex) {
+                // Either this is relevant edit history, or it's the final frame (which is always rendered). Record the size of the map at this point.
                 QMargins margins = getMargins(m_map);
                 canvasSize = canvasSize.expandedTo(QSize(m_layout->getWidth() * 16 + margins.left() + margins.right(),
                                                          m_layout->getHeight() * 16 + margins.top() + margins.bottom()));
@@ -489,7 +501,10 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
     return stitchedPixmap;
 }
 
-void MapImageExporter::updatePreview() {
+void MapImageExporter::updatePreview(bool forceUpdate) {
+    if (m_settings.disablePreviewUpdates && !forceUpdate)
+        return;
+
     QProgressDialog progress("", "Cancel", 0, 1, this);
     progress.setAutoClose(true);
     progress.setWindowModality(Qt::WindowModal);
@@ -535,7 +550,7 @@ void MapImageExporter::updatePreview() {
 }
 
 void MapImageExporter::scalePreview() {
-    if (!m_preview || m_settings.previewActualSize)
+    if (!m_preview || m_settings.disablePreviewScaling)
         return;
     ui->graphicsView_Preview->fitInView(m_preview, Qt::KeepAspectRatioByExpanding);
 }
@@ -689,7 +704,7 @@ void MapImageExporter::setEventGroupEnabled(Event::Group group, bool enable) {
 }
 
 bool MapImageExporter::connectionsEnabled() {
-    return !m_settings.showConnections.isEmpty();
+    return !m_settings.showConnections.isEmpty() && m_mode != ImageExporterMode::Stitch;
 }
 
 void MapImageExporter::setConnectionDirectionEnabled(const QString &dir, bool enable) {
@@ -700,7 +715,7 @@ void MapImageExporter::setConnectionDirectionEnabled(const QString &dir, bool en
     }
 }
 
-void MapImageExporter::on_checkBox_Elevation_stateChanged(int state) {
+void MapImageExporter::on_checkBox_Collision_stateChanged(int state) {
     m_settings.showCollision = (state == Qt::Checked);
     updatePreview();
 }
@@ -819,21 +834,37 @@ void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ActualSize_stateChanged(int state) {
-    m_settings.previewActualSize = (state == Qt::Checked);
-    if (m_settings.previewActualSize) {
+void MapImageExporter::on_checkBox_DisablePreviewScaling_stateChanged(int state) {
+    m_settings.disablePreviewScaling = (state == Qt::Checked);
+    if (m_settings.disablePreviewScaling) {
         ui->graphicsView_Preview->resetTransform();
     } else {
         scalePreview();
     }
 }
 
+void MapImageExporter::on_checkBox_DisablePreviewUpdates_stateChanged(int state) {
+    m_settings.disablePreviewUpdates = (state == Qt::Checked);
+    if (m_settings.disablePreviewUpdates) {
+        if (m_timelapseMovie) {
+            m_timelapseMovie->stop();
+        }
+    } else {
+        updatePreview();
+    }
+}
+
 void MapImageExporter::on_pushButton_Reset_pressed() {
-    m_settings = {};
+    resetSettings();
+    updatePreview();
+}
+
+void MapImageExporter::resetSettings() {
+     m_settings = {};
 
     for (auto widget : this->findChildren<QCheckBox *>()) {
         const QSignalBlocker b(widget); // Prevent calls to updatePreview
-        widget->setChecked(false);
+        widget->setChecked(false); // This assumes the default state of all checkboxes settings is false.
     }
 
     const QSignalBlocker b_TimelapseDelay(ui->spinBox_TimelapseDelay);
@@ -842,15 +873,27 @@ void MapImageExporter::on_pushButton_Reset_pressed() {
     const QSignalBlocker b_FrameSkip(ui->spinBox_FrameSkip);
     ui->spinBox_FrameSkip->setValue(m_settings.timelapseSkipAmount);
 
-    updatePreview();
+    if (m_mode == ImageExporterMode::Timelapse) {
+        // Timelapse gif has artifacts with transparency, make sure it's disabled.
+        m_settings.fillColor.setAlpha(255);
+    }
 }
 
-void MapImageExporter::on_spinBox_TimelapseDelay_valueChanged(int delayMs) {
+// These spin boxes can be changed rapidly, so we wait for editing to finish before updating the preview.
+void MapImageExporter::on_spinBox_TimelapseDelay_editingFinished() {
+    int delayMs = ui->spinBox_TimelapseDelay->value();
+    if (delayMs == m_settings.timelapseDelayMs)
+        return;
+
     m_settings.timelapseDelayMs = delayMs;
     updatePreview();
 }
 
-void MapImageExporter::on_spinBox_FrameSkip_valueChanged(int skip) {
-    m_settings.timelapseSkipAmount = skip;
+void MapImageExporter::on_spinBox_FrameSkip_editingFinished() {
+    int skipAmount = ui->spinBox_FrameSkip->value();
+    if (skipAmount == m_settings.timelapseSkipAmount)
+        return;
+
+    m_settings.timelapseSkipAmount = skipAmount;
     updatePreview();
 }
