@@ -57,7 +57,7 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
 
     // Update the map selector when the text changes.
     // We don't use QComboBox::currentTextChanged to avoid unnecessary re-rendering.
-    connect(ui->comboBox_MapSelection, &QComboBox::currentIndexChanged, this, &MapImageExporter::updateMapSelection);
+    connect(ui->comboBox_MapSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MapImageExporter::updateMapSelection);
     connect(ui->comboBox_MapSelection->lineEdit(), &QLineEdit::editingFinished, this, &MapImageExporter::updateMapSelection);
 
     ui->graphicsView_Preview->setFocus();

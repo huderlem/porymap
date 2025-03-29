@@ -615,6 +615,10 @@ private:
 };
 
 
+inline uint qHash(const Event::Group &key, uint seed = 0) {
+    return qHash(static_cast<int>(key), seed);
+}
+
 
 ///
 /// Keeps track of scripts
