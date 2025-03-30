@@ -738,7 +738,7 @@ void Project::saveWildMonData() {
     OrderedJson::array wildEncounterGroups;
 
     OrderedJson::object monHeadersObject;
-    monHeadersObject["label"] = projectConfig.getIdentifier(ProjectIdentifier::symbol_wild_encounters);
+    monHeadersObject["label"] = this->wildMonTableName;
     monHeadersObject["for_maps"] = true;
 
     OrderedJson::array fieldsInfoArray;
@@ -1597,6 +1597,7 @@ bool Project::readWildMonData() {
     this->extraEncounterGroups.clear();
     this->wildMonFields.clear();
     this->wildMonData.clear();
+    this->wildMonTableName.clear();
     this->encounterGroupLabels.clear();
     this->pokemonMinLevel = 0;
     this->pokemonMaxLevel = 100;
@@ -1656,6 +1657,16 @@ bool Project::readWildMonData() {
         if (!mainArrayObject["for_maps"].bool_value()) {
             this->extraEncounterGroups.push_back(mainArrayObject);
             continue;
+        }
+
+        // If multiple "for_maps" data sets are found they will be collapsed into a single set.
+        QString label = mainArrayObject["label"].string_value();
+        if (this->wildMonTableName.isEmpty()) {
+            this->wildMonTableName = label;
+        } else {
+            logWarn(QString("Wild encounters table '%1' will be combined with '%2'. Only one table with \"for_maps\" set to 'true' is expected.")
+                                .arg(label)
+                                .arg(this->wildMonTableName));
         }
 
         // Parse the "fields" data. This is like the header for the wild encounters data.

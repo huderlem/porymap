@@ -200,7 +200,6 @@ enum ProjectIdentifier {
     symbol_facing_directions,
     symbol_obj_event_gfx_pointers,
     symbol_pokemon_icon_table,
-    symbol_wild_encounters,
     symbol_attribute_table,
     symbol_tilesets_prefix,
     symbol_dynamic_map_name,

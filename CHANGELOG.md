@@ -48,6 +48,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The prompt to reload the project when a file has changed will now only appear when Porymap is the active application.
 - `Script` dropdowns now autocomplete only with scripts from the current map, rather than every script in the project. The old behavior is available via a new setting.
 - The options for `Encounter Type` and `Terrain Type` in the Tileset Editor are not hardcoded anymore, they're now read from the project.
+- The `symbol_wild_encounters` setting was replaced; this value is now read from the project.
 - A project may now be opened even if it has no maps or map groups. A minimum of one map layout is required.
 - The file extensions that are expected for `.png` and `.pal` data files and the extensions outputted when creating a new tileset can now be customized.
 - Miscellaneous performance improvements, especially for opening projects.

@@ -146,6 +146,7 @@ public:
     bool readWildMonData();
     tsl::ordered_map<QString, tsl::ordered_map<QString, WildPokemonHeader>> wildMonData;
 
+    QString wildMonTableName;
     QVector<EncounterField> wildMonFields;
     QVector<QString> encounterGroupLabels;
     QVector<poryjson::Json::object> extraEncounterGroups;

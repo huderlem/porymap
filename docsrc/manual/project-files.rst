@@ -83,7 +83,6 @@ In addition to these files, there are some specific symbol and macro names that 
    ``symbol_facing_directions``, ``gInitialMovementTypeFacingDirections``, to set sprite frame for Object Events based on movement type
    ``symbol_obj_event_gfx_pointers``, ``gObjectEventGraphicsInfoPointers``, to map Object Event graphics IDs to graphics data
    ``symbol_pokemon_icon_table``, ``gMonIconTable``, to map species constants to icon images
-   ``symbol_wild_encounters``, ``gWildMonHeaders``, output as the ``label`` property for the top-level wild ecounters JSON object
    ``symbol_attribute_table``, ``sMetatileAttrMasks``, optionally read to get settings on ``Tilesets`` tab
    ``symbol_tilesets_prefix``, ``gTileset_``, for new tileset names and to extract base tileset names
    ``symbol_dynamic_map_name``, ``Dynamic``, reserved map name to display for ``define_map_dynamic``
