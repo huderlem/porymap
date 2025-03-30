@@ -42,6 +42,8 @@ public:
     Tileset *tileset_primary = nullptr;
     Tileset *tileset_secondary = nullptr;
 
+    QJsonObject customData;
+
     Blockdata blockdata;
 
     QImage image;

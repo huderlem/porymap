@@ -308,10 +308,12 @@ bool Project::loadMapData(Map* map) {
     if (!connectionsArr.isEmpty()) {
         for (int i = 0; i < connectionsArr.size(); i++) {
             QJsonObject connectionObj = connectionsArr[i].toObject();
-            const QString direction = ParseUtil::jsonToQString(connectionObj["direction"]);
-            const int offset = ParseUtil::jsonToInt(connectionObj["offset"]);
-            const QString mapConstant = ParseUtil::jsonToQString(connectionObj["map"]);
-            map->loadConnection(new MapConnection(this->mapConstantsToMapNames.value(mapConstant, mapConstant), direction, offset));
+            const QString direction = ParseUtil::jsonToQString(connectionObj.take("direction"));
+            const int offset = ParseUtil::jsonToInt(connectionObj.take("offset"));
+            const QString mapConstant = ParseUtil::jsonToQString(connectionObj.take("map"));
+            auto connection = new MapConnection(this->mapConstantsToMapNames.value(mapConstant, mapConstant), direction, offset);
+            connection->setCustomData(connectionObj);
+            map->loadConnection(connection);
         }
     }
 
@@ -503,7 +505,7 @@ bool Project::readMapLayouts() {
         if (layoutObj.isEmpty())
             continue;
         Layout *layout = new Layout();
-        layout->id = ParseUtil::jsonToQString(layoutObj["id"]);
+        layout->id = ParseUtil::jsonToQString(layoutObj.take("id"));
         if (layout->id.isEmpty()) {
             logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             delete layout;
@@ -514,20 +516,20 @@ bool Project::readMapLayouts() {
             delete layout;
             continue;
         }
-        layout->name = ParseUtil::jsonToQString(layoutObj["name"]);
+        layout->name = ParseUtil::jsonToQString(layoutObj.take("name"));
         if (layout->name.isEmpty()) {
             logError(QString("Missing 'name' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        int lwidth = ParseUtil::jsonToInt(layoutObj["width"]);
+        int lwidth = ParseUtil::jsonToInt(layoutObj.take("width"));
         if (lwidth <= 0) {
             logError(QString("Invalid 'width' value '%1' for %2 in %3. Must be greater than 0.").arg(lwidth).arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
         layout->width = lwidth;
-        int lheight = ParseUtil::jsonToInt(layoutObj["height"]);
+        int lheight = ParseUtil::jsonToInt(layoutObj.take("height"));
         if (lheight <= 0) {
             logError(QString("Invalid 'height' value '%1' for %2 in %3. Must be greater than 0.").arg(lheight).arg(layout->id).arg(layoutsFilepath));
             delete layout;
@@ -535,12 +537,12 @@ bool Project::readMapLayouts() {
         }
         layout->height = lheight;
         if (projectConfig.useCustomBorderSize) {
-            int bwidth = ParseUtil::jsonToInt(layoutObj["border_width"]);
+            int bwidth = ParseUtil::jsonToInt(layoutObj.take("border_width"));
             if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
                 bwidth = DEFAULT_BORDER_WIDTH;
             }
             layout->border_width = bwidth;
-            int bheight = ParseUtil::jsonToInt(layoutObj["border_height"]);
+            int bheight = ParseUtil::jsonToInt(layoutObj.take("border_height"));
             if (bheight <= 0) {
                 bheight = DEFAULT_BORDER_HEIGHT;
             }
@@ -549,30 +551,31 @@ bool Project::readMapLayouts() {
             layout->border_width = DEFAULT_BORDER_WIDTH;
             layout->border_height = DEFAULT_BORDER_HEIGHT;
         }
-        layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj["primary_tileset"]);
+        layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj.take("primary_tileset"));
         if (layout->tileset_primary_label.isEmpty()) {
             logError(QString("Missing 'primary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj["secondary_tileset"]);
+        layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj.take("secondary_tileset"));
         if (layout->tileset_secondary_label.isEmpty()) {
             logError(QString("Missing 'secondary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        layout->border_path = ParseUtil::jsonToQString(layoutObj["border_filepath"]);
+        layout->border_path = ParseUtil::jsonToQString(layoutObj.take("border_filepath"));
         if (layout->border_path.isEmpty()) {
             logError(QString("Missing 'border_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        layout->blockdata_path = ParseUtil::jsonToQString(layoutObj["blockdata_filepath"]);
+        layout->blockdata_path = ParseUtil::jsonToQString(layoutObj.take("blockdata_filepath"));
         if (layout->blockdata_path.isEmpty()) {
             logError(QString("Missing 'blockdata_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
+        layout->customData = layoutObj;
 
         this->mapLayouts.insert(layout->id, layout);
         this->mapLayoutsMaster.insert(layout->id, layout->copy());
@@ -615,6 +618,9 @@ void Project::saveMapLayouts() {
         layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
         layoutObj["border_filepath"] = layout->border_path;
         layoutObj["blockdata_filepath"] = layout->blockdata_path;
+        for (auto it = layout->customData.constBegin(); it != layout->customData.constEnd(); it++) {
+            layoutObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
+        }
         layoutsArr.push_back(layoutObj);
     }
 
@@ -709,6 +715,11 @@ void Project::saveRegionMapSections() {
             mapSectionObj["y"] = entry.y;
             mapSectionObj["width"] = entry.width;
             mapSectionObj["height"] = entry.height;
+        }
+
+        QJsonObject customData = this->mapSectionCustomData.value(idName);
+        for (auto it = customData.constBegin(); it != customData.constEnd(); it++) {
+            mapSectionObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
         }
 
         mapSectionArray.append(mapSectionObj);
@@ -1203,6 +1214,10 @@ void Project::saveMap(Map *map, bool skipLayout) {
             connectionObj["map"] = getMapConstant(connection->targetMapName(), connection->targetMapName());
             connectionObj["offset"] = connection->offset();
             connectionObj["direction"] = connection->direction();
+            auto customData = connection->customData();
+            for (auto it = customData.constBegin(); it != customData.constEnd(); it++) {
+                connectionObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
+            }
             connectionsArr.append(connectionObj);
         }
         mapObj["connections"] = connectionsArr;
@@ -2320,6 +2335,7 @@ bool Project::readRegionMapSections() {
     this->mapSectionIdNames.clear();
     this->mapSectionIdNamesSaveOrder.clear();
     this->mapSectionDisplayNames.clear();
+    this->mapSectionCustomData.clear();
     this->regionMapEntries.clear();
     const QString defaultName = getEmptyMapsecName();
     const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
@@ -2351,7 +2367,7 @@ bool Project::readRegionMapSections() {
                 continue;
             }
         }
-        const QString idName = ParseUtil::jsonToQString(mapSectionObj[idField]);
+        const QString idName = ParseUtil::jsonToQString(mapSectionObj.take(idField));
         if (!idName.startsWith(requiredPrefix)) {
             logWarn(QString("Ignoring data for map section '%1' in '%2'. IDs must start with the prefix '%3'").arg(idName).arg(filepath).arg(requiredPrefix));
             continue;
@@ -2361,7 +2377,7 @@ bool Project::readRegionMapSections() {
         this->mapSectionIdNamesSaveOrder.append(idName);
 
         if (mapSectionObj.contains("name"))
-            this->mapSectionDisplayNames.insert(idName, ParseUtil::jsonToQString(mapSectionObj["name"]));
+            this->mapSectionDisplayNames.insert(idName, ParseUtil::jsonToQString(mapSectionObj.take("name")));
 
         // Map sections may have additional data indicating their position on the region map.
         // If they have this data, we can add them to the region map entry list.
@@ -2373,16 +2389,20 @@ bool Project::readRegionMapSections() {
                 break;
             }
         }
-        if (!hasRegionMapData)
-            continue;
+        if (hasRegionMapData) {
+            MapSectionEntry entry;
+            entry.x = ParseUtil::jsonToInt(mapSectionObj.take("x"));
+            entry.y = ParseUtil::jsonToInt(mapSectionObj.take("y"));
+            entry.width = ParseUtil::jsonToInt(mapSectionObj.take("width"));
+            entry.height = ParseUtil::jsonToInt(mapSectionObj.take("height"));
+            entry.valid = true;
+            this->regionMapEntries[idName] = entry;
+        }
 
-        MapSectionEntry entry;
-        entry.x = ParseUtil::jsonToInt(mapSectionObj["x"]);
-        entry.y = ParseUtil::jsonToInt(mapSectionObj["y"]);
-        entry.width = ParseUtil::jsonToInt(mapSectionObj["width"]);
-        entry.height = ParseUtil::jsonToInt(mapSectionObj["height"]);
-        entry.valid = true;
-        this->regionMapEntries[idName] = entry;
+        // Preserve any remaining fields for when we save.
+        if (!mapSectionObj.isEmpty()) {
+            this->mapSectionCustomData[idName] = mapSectionObj;
+        }
     }
 
     // Make sure the default name is present in the list.

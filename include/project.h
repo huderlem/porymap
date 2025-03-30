@@ -263,6 +263,7 @@ public:
 
 private:
     QHash<QString, QString> mapSectionDisplayNames;
+    QHash<QString, QJsonObject> mapSectionCustomData;
     QMap<QString, qint64> modifiedFileTimestamps;
     QMap<QString, QString> facingDirections;
     QHash<QString, QString> speciesToIconPath;
