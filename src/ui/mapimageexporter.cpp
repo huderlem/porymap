@@ -244,11 +244,12 @@ bool MapImageExporter::currentHistoryAppliesToFrame(QUndoStack *historyStack) {
         case CommandId::ID_MapConnectionRemove: {
             if (!connectionsEnabled())
                 return false;
-            if (command->id() & IDMask_ConnectionDirection_Up)    return m_settings.showConnections.contains("up");
-            if (command->id() & IDMask_ConnectionDirection_Down)  return m_settings.showConnections.contains("down");
-            if (command->id() & IDMask_ConnectionDirection_Left)  return m_settings.showConnections.contains("left");
-            if (command->id() & IDMask_ConnectionDirection_Right) return m_settings.showConnections.contains("right");
-            return false;
+            uint32_t flags = 0;
+            if (m_settings.showConnections.contains("up"))    flags |= IDMask_ConnectionDirection_Up;
+            if (m_settings.showConnections.contains("down"))  flags |= IDMask_ConnectionDirection_Down;
+            if (m_settings.showConnections.contains("left"))  flags |= IDMask_ConnectionDirection_Left;
+            if (m_settings.showConnections.contains("right")) flags |= IDMask_ConnectionDirection_Right;
+            return (command->id() & flags) != 0;
         }
         case CommandId::ID_EventMove:
         case CommandId::ID_EventShift:
@@ -256,12 +257,15 @@ bool MapImageExporter::currentHistoryAppliesToFrame(QUndoStack *historyStack) {
         case CommandId::ID_EventPaste:
         case CommandId::ID_EventDelete:
         case CommandId::ID_EventDuplicate: {
-            if (command->id() & IDMask_EventType_Object)  return m_settings.showEvents.contains(Event::Group::Object);
-            if (command->id() & IDMask_EventType_Warp)    return m_settings.showEvents.contains(Event::Group::Warp);
-            if (command->id() & IDMask_EventType_BG)      return m_settings.showEvents.contains(Event::Group::Bg);
-            if (command->id() & IDMask_EventType_Trigger) return m_settings.showEvents.contains(Event::Group::Coord);
-            if (command->id() & IDMask_EventType_Heal)    return m_settings.showEvents.contains(Event::Group::Heal);
-            return false;
+            if (!eventsEnabled())
+                return false;
+            uint32_t flags = 0;
+            if (m_settings.showEvents.contains(Event::Group::Object)) flags |= IDMask_EventType_Object;
+            if (m_settings.showEvents.contains(Event::Group::Warp))   flags |= IDMask_EventType_Warp;
+            if (m_settings.showEvents.contains(Event::Group::Bg))     flags |= IDMask_EventType_BG;
+            if (m_settings.showEvents.contains(Event::Group::Coord))  flags |= IDMask_EventType_Trigger;
+            if (m_settings.showEvents.contains(Event::Group::Heal))   flags |= IDMask_EventType_Heal;
+            return (command->id() & flags) != 0;
         }
         default:
             return false;
