@@ -475,6 +475,7 @@ void Project::clearMapLayouts() {
     this->layoutIds.clear();
     this->layoutIdsMaster.clear();
     this->loadedLayoutIds.clear();
+    this->customLayoutsData = QJsonObject();
 }
 
 bool Project::readMapLayouts() {
@@ -491,7 +492,7 @@ bool Project::readMapLayouts() {
 
     QJsonObject layoutsObj = layoutsDoc.object();
 
-    this->layoutsLabel = ParseUtil::jsonToQString(layoutsObj["layouts_table_label"]);
+    this->layoutsLabel = ParseUtil::jsonToQString(layoutsObj.take("layouts_table_label"));
     if (this->layoutsLabel.isEmpty()) {
         this->layoutsLabel = "gMapLayouts";
         logWarn(QString("'layouts_table_label' value is missing from %1. Defaulting to %2")
@@ -499,7 +500,7 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
-    QJsonArray layouts = layoutsObj["layouts"].toArray();
+    QJsonArray layouts = layoutsObj.take("layouts").toArray();
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
@@ -588,6 +589,8 @@ bool Project::readMapLayouts() {
         return false;
     }
 
+    this->customLayoutsData = layoutsObj;
+
     return true;
 }
 
@@ -623,10 +626,14 @@ void Project::saveMapLayouts() {
         }
         layoutsArr.push_back(layoutObj);
     }
+    layoutsObj["layouts"] = layoutsArr;
+
+    for (auto it = this->customLayoutsData.constBegin(); it != this->customLayoutsData.constEnd(); it++) {
+        layoutsObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
+    }
 
     ignoreWatchedFileTemporarily(layoutsFilepath);
 
-    layoutsObj["layouts"] = layoutsArr;
     OrderedJson layoutJson(layoutsObj);
     OrderedJsonDoc jsonDoc(&layoutJson);
     jsonDoc.dump(&layoutsFile);
@@ -683,6 +690,9 @@ void Project::saveMapGroups() {
         }
         mapGroupsObj[groupName] = groupArr;
     }
+    for (auto it = this->customMapGroupsData.constBegin(); it != this->customMapGroupsData.constEnd(); it++) {
+        mapGroupsObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
+    }
 
     ignoreWatchedFileTemporarily(mapGroupsFilepath);
 
@@ -727,6 +737,9 @@ void Project::saveRegionMapSections() {
 
     OrderedJson::object object;
     object["map_sections"] = mapSectionArray;
+    for (auto it = this->customMapSectionsData.constBegin(); it != this->customMapSectionsData.constEnd(); it++) {
+        object[it.key()] = OrderedJson::fromQJsonValue(it.value());
+    }
 
     ignoreWatchedFileTemporarily(filepath);
     OrderedJson json(object);
@@ -881,6 +894,9 @@ void Project::saveHealLocations() {
 
     OrderedJson::object object;
     object["heal_locations"] = eventJsonArr;
+    for (auto it = this->customHealLocationsData.constBegin(); it != this->customHealLocationsData.constEnd(); it++) {
+        object[it.key()] = OrderedJson::fromQJsonValue(it.value());
+    }
 
     ignoreWatchedFileTemporarily(filepath);
     OrderedJson json(object);
@@ -1787,6 +1803,7 @@ bool Project::readMapGroups() {
     this->mapNames.clear();
     this->groupNames.clear();
     this->groupNameToMapNames.clear();
+    this->customMapGroupsData = QJsonObject();
 
     this->initTopLevelMapFields();
 
@@ -1809,7 +1826,12 @@ bool Project::readMapGroups() {
     QStringList failedMapNames;
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
         const QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
-        const QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
+        if (this->groupNames.contains(groupName)) {
+            logWarn(QString("Ignoring repeated map group name '%1'.").arg(groupName));
+            continue;
+        }
+
+        const QJsonArray mapNamesJson = mapGroupsObj.take(groupName).toArray();
         this->groupNames.append(groupName);
         
         // Process the names in this map group
@@ -1902,6 +1924,12 @@ bool Project::readMapGroups() {
     // Save special "Dynamic" constant
     this->mapConstantsToMapNames.insert(dynamicMapConstant, dynamicMapName);
     this->mapNames.append(dynamicMapName);
+
+    // Save custom JSON data.
+    // Chuck the "connections_include_order" field, this is only for matching.
+    // TODO: Setting not to do this, on the off chance someone wants this field.
+    mapGroupsObj.remove("connections_include_order");
+    this->customMapGroupsData = mapGroupsObj;
 
     return true;
 }
@@ -2335,10 +2363,15 @@ bool Project::readRegionMapSections() {
     this->mapSectionIdNames.clear();
     this->mapSectionIdNamesSaveOrder.clear();
     this->mapSectionDisplayNames.clear();
-    this->mapSectionCustomData.clear();
     this->regionMapEntries.clear();
     const QString defaultName = getEmptyMapsecName();
     const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
+
+    // The first of these is the custom data for each individual map section object,
+    // the second is the custom top-level data in the map sections file.
+    // TODO: Clarify this by relocating the various map section data maps to a single class?
+    this->mapSectionCustomData.clear();
+    this->customMapSectionsData = QJsonObject();
 
     QJsonDocument doc;
     const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_region_map_entries);
@@ -2349,7 +2382,8 @@ bool Project::readRegionMapSections() {
     }
     fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filepath));
 
-    QJsonArray mapSections = doc.object()["map_sections"].toArray();
+    QJsonObject mapSectionsGlobalObj = doc.object();
+    QJsonArray mapSections = mapSectionsGlobalObj.take("map_sections").toArray();
     for (int i = 0; i < mapSections.size(); i++) {
         QJsonObject mapSectionObj = mapSections.at(i).toObject();
 
@@ -2399,11 +2433,16 @@ bool Project::readRegionMapSections() {
             this->regionMapEntries[idName] = entry;
         }
 
+        // Chuck the "name_clone" field, this is only for matching.
+        // TODO: Setting not to do this, on the off chance someone wants this field.
+        mapSectionObj.remove("name_clone");
+
         // Preserve any remaining fields for when we save.
         if (!mapSectionObj.isEmpty()) {
             this->mapSectionCustomData[idName] = mapSectionObj;
         }
     }
+    this->customMapSectionsData = mapSectionsGlobalObj;
 
     // Make sure the default name is present in the list.
     if (!this->mapSectionIdNames.contains(defaultName)) {
@@ -2477,6 +2516,7 @@ void Project::clearHealLocations() {
     }
     this->healLocations.clear();
     this->healLocationSaveOrder.clear();
+    this->customHealLocationsData = QJsonObject();
 }
 
 bool Project::readHealLocations() {
@@ -2491,7 +2531,8 @@ bool Project::readHealLocations() {
     }
     fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filepath));
 
-    QJsonArray healLocations = doc.object()["heal_locations"].toArray();
+    QJsonObject healLocationsObj = doc.object();
+    QJsonArray healLocations = healLocationsObj.take("heal_locations").toArray();
     for (int i = 0; i < healLocations.size(); i++) {
         QJsonObject healLocationObj = healLocations.at(i).toObject();
         static const QString mapField = QStringLiteral("map");
@@ -2505,6 +2546,7 @@ bool Project::readHealLocations() {
         this->healLocations[ParseUtil::jsonToQString(healLocationObj["map"])].append(event);
         this->healLocationSaveOrder.append(event->getIdName());
     }
+    this->customHealLocationsData = healLocationsObj;
     return true;
 }
 

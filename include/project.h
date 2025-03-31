@@ -269,6 +269,12 @@ private:
     QHash<QString, QString> speciesToIconPath;
     QHash<QString, Map*> maps;
 
+    // Fields for preserving top-level JSON data that Porymap isn't expecting.
+    QJsonObject customLayoutsData;
+    QJsonObject customMapSectionsData;
+    QJsonObject customMapGroupsData;
+    QJsonObject customHealLocationsData;
+
     // Maps/layouts represented in these sets have been fully loaded from the project.
     // If a valid map name / layout id is not in these sets, a Map / Layout object exists
     // for it in Project::maps / Project::mapLayouts, but it has been minimally populated
