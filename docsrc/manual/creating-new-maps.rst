@@ -31,7 +31,7 @@ Name
 	The name of the new map. This cannot be changed in porymap.
 
 Group
-	Which map group the new map will beling to. This cannot be changed in porymap.
+	Which map group the new map will belong to. This cannot be changed in porymap.
 
 Map Width
 	The width (in metatiles) of the map. This can be changed in porymap.
