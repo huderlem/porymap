@@ -1673,10 +1673,9 @@ void Editor::clearMapEvents() {
         if (events_group->scene()) {
             events_group->scene()->removeItem(events_group);
         }
-        for (QGraphicsItem *child : events_group->childItems()) {
-            events_group->removeFromGroup(child);
-            delete child;
-        }
+        // events_group does not own its children, the childrens' parent
+        // is set to the group's parent (and our group has no parent).
+        qDeleteAll(events_group->childItems());
         delete events_group;
         events_group = nullptr;
     }
