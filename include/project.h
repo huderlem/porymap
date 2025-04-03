@@ -62,7 +62,6 @@ public:
     QStringList mapSectionIdNames;
     QMap<uint32_t, QString> encounterTypeToName;
     QMap<uint32_t, QString> terrainTypeToName;
-    QMap<QString, MapSectionEntry> regionMapEntries;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
     QMap<QString, uint16_t> unusedMetatileLabels;
     QMap<QString, uint32_t> metatileBehaviorMap;
@@ -157,7 +156,7 @@ public:
 
     bool addNewMapsec(const QString &idName, const QString &displayName = QString());
     void removeMapsec(const QString &idName);
-    QString getMapsecDisplayName(const QString &idName) const { return this->mapSectionDisplayNames.value(idName); }
+    QString getMapsecDisplayName(const QString &idName) const { return this->locationData.value(idName).displayName; }
     void setMapsecDisplayName(const QString &idName, const QString &displayName);
 
     bool hasUnsavedChanges();
@@ -240,6 +239,9 @@ public:
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
 
+    void setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries);
+    QHash<QString, MapSectionEntry> getRegionMapEntries() const;
+
     static QString getEmptyMapDefineName();
     static QString getDynamicMapDefineName();
     static QString getDynamicMapName();
@@ -262,8 +264,6 @@ public:
     static QString getMapGroupPrefix();
 
 private:
-    QHash<QString, QString> mapSectionDisplayNames;
-    QHash<QString, QJsonObject> mapSectionCustomData;
     QMap<QString, qint64> modifiedFileTimestamps;
     QMap<QString, QString> facingDirections;
     QHash<QString, QString> speciesToIconPath;
@@ -297,6 +297,15 @@ private:
         bool inanimate = false;
     };
     QMap<QString, EventGraphics*> eventGraphicsMap;
+
+    // The extra data that can be associated with each MAPSEC name.
+    struct LocationData
+    {
+        MapSectionEntry map;
+        QString displayName;
+        QJsonObject custom;
+    };
+    QHash<QString, LocationData> locationData;
 
     void updateLayout(Layout *);
 

@@ -712,23 +712,23 @@ void Project::saveRegionMapSections() {
 
     OrderedJson::array mapSectionArray;
     for (const auto &idName : this->mapSectionIdNamesSaveOrder) {
+        const LocationData location = this->locationData.value(idName);
+
         OrderedJson::object mapSectionObj;
         mapSectionObj["id"] = idName;
 
-        if (this->mapSectionDisplayNames.contains(idName)) {
-            mapSectionObj["name"] = this->mapSectionDisplayNames.value(idName);
+        if (!location.displayName.isEmpty()) {
+            mapSectionObj["name"] = location.displayName;
         }
 
-        if (this->regionMapEntries.contains(idName)) {
-            MapSectionEntry entry = this->regionMapEntries.value(idName);
-            mapSectionObj["x"] = entry.x;
-            mapSectionObj["y"] = entry.y;
-            mapSectionObj["width"] = entry.width;
-            mapSectionObj["height"] = entry.height;
+        if (location.map.valid) {
+            mapSectionObj["x"] = location.map.x;
+            mapSectionObj["y"] = location.map.y;
+            mapSectionObj["width"] = location.map.width;
+            mapSectionObj["height"] = location.map.height;
         }
 
-        QJsonObject customData = this->mapSectionCustomData.value(idName);
-        for (auto it = customData.constBegin(); it != customData.constEnd(); it++) {
+        for (auto it = location.custom.constBegin(); it != location.custom.constEnd(); it++) {
             mapSectionObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
         }
 
@@ -2360,18 +2360,13 @@ bool Project::readFieldmapMasks() {
 }
 
 bool Project::readRegionMapSections() {
+    this->locationData.clear();
     this->mapSectionIdNames.clear();
     this->mapSectionIdNamesSaveOrder.clear();
-    this->mapSectionDisplayNames.clear();
-    this->regionMapEntries.clear();
+    this->customMapSectionsData = QJsonObject();
+
     const QString defaultName = getEmptyMapsecName();
     const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
-
-    // The first of these is the custom data for each individual map section object,
-    // the second is the custom top-level data in the map sections file.
-    // TODO: Clarify this by relocating the various map section data maps to a single class?
-    this->mapSectionCustomData.clear();
-    this->customMapSectionsData = QJsonObject();
 
     QJsonDocument doc;
     const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_region_map_entries);
@@ -2410,8 +2405,10 @@ bool Project::readRegionMapSections() {
         this->mapSectionIdNames.append(idName);
         this->mapSectionIdNamesSaveOrder.append(idName);
 
-        if (mapSectionObj.contains("name"))
-            this->mapSectionDisplayNames.insert(idName, ParseUtil::jsonToQString(mapSectionObj.take("name")));
+        LocationData location;
+        if (mapSectionObj.contains("name")) {
+            location.displayName = ParseUtil::jsonToQString(mapSectionObj.take("name"));
+        }
 
         // Map sections may have additional data indicating their position on the region map.
         // If they have this data, we can add them to the region map entry list.
@@ -2424,13 +2421,11 @@ bool Project::readRegionMapSections() {
             }
         }
         if (hasRegionMapData) {
-            MapSectionEntry entry;
-            entry.x = ParseUtil::jsonToInt(mapSectionObj.take("x"));
-            entry.y = ParseUtil::jsonToInt(mapSectionObj.take("y"));
-            entry.width = ParseUtil::jsonToInt(mapSectionObj.take("width"));
-            entry.height = ParseUtil::jsonToInt(mapSectionObj.take("height"));
-            entry.valid = true;
-            this->regionMapEntries[idName] = entry;
+            location.map.x = ParseUtil::jsonToInt(mapSectionObj.take("x"));
+            location.map.y = ParseUtil::jsonToInt(mapSectionObj.take("y"));
+            location.map.width = ParseUtil::jsonToInt(mapSectionObj.take("width"));
+            location.map.height = ParseUtil::jsonToInt(mapSectionObj.take("height"));
+            location.map.valid = true;
         }
 
         // Chuck the "name_clone" field, this is only for matching.
@@ -2438,9 +2433,9 @@ bool Project::readRegionMapSections() {
         mapSectionObj.remove("name_clone");
 
         // Preserve any remaining fields for when we save.
-        if (!mapSectionObj.isEmpty()) {
-            this->mapSectionCustomData[idName] = mapSectionObj;
-        }
+        location.custom = mapSectionObj;
+
+        this->locationData.insert(idName, location);
     }
     this->customMapSectionsData = mapSectionsGlobalObj;
 
@@ -2451,6 +2446,20 @@ bool Project::readRegionMapSections() {
     Util::numericalModeSort(this->mapSectionIdNames);
 
     return true;
+}
+
+void Project::setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries) {
+    for (auto it = entries.constBegin(); it != entries.constEnd(); it++) {
+        this->locationData[it.key()].map = it.value();
+    }
+}
+
+QHash<QString, MapSectionEntry> Project::getRegionMapEntries() const {
+    QHash<QString, MapSectionEntry> entries;
+    for (auto it = this->locationData.constBegin(); it != this->locationData.constEnd(); it++) {
+        entries[it.key()] = it.value().map;
+    }
+    return entries;
 }
 
 QString Project::getEmptyMapsecName() {
@@ -2503,9 +2512,9 @@ void Project::removeMapsec(const QString &idName) {
 }
 
 void Project::setMapsecDisplayName(const QString &idName, const QString &displayName) {
-    if (this->mapSectionDisplayNames.value(idName) == displayName)
+    if (getMapsecDisplayName(idName) == displayName)
         return;
-    this->mapSectionDisplayNames[idName] = displayName;
+    this->locationData[idName].displayName = displayName;
     this->hasUnsavedDataChanges = true;
     emit mapSectionDisplayNameChanged(idName, displayName);
 }

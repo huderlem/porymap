@@ -260,7 +260,7 @@ void ResizeTilemap::undo() {
 
 ///
 
-ClearEntries::ClearEntries(RegionMap *map, QMap<QString, MapSectionEntry> entries, QUndoCommand *parent)
+ClearEntries::ClearEntries(RegionMap *map, QHash<QString, MapSectionEntry> entries, QUndoCommand *parent)
     : QUndoCommand(parent) {
     setText("Clear Entries");
 

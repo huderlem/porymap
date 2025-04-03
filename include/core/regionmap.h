@@ -56,8 +56,8 @@ public:
     bool loadLayout(poryjson::Json);
     bool loadEntries();
 
-    void setEntries(QMap<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
-    void setEntries(const QMap<QString, MapSectionEntry> &entries) { *(this->region_map_entries) = entries; }
+    void setEntries(QHash<QString, MapSectionEntry> *entries) { this->region_map_entries = entries; }
+    void setEntries(const QHash<QString, MapSectionEntry> &entries) { *(this->region_map_entries) = entries; }
     void clearEntries() { this->region_map_entries->clear(); }
     MapSectionEntry getEntry(QString section);
     void setEntry(QString section, MapSectionEntry entry);
@@ -151,7 +151,7 @@ signals:
     void mapNeedsDisplaying();
 
 private:
-    QMap<QString, MapSectionEntry> *region_map_entries = nullptr;
+    QHash<QString, MapSectionEntry> *region_map_entries = nullptr;
 
     QString alias = "";
 

@@ -95,7 +95,7 @@ private:
     void saveConfig();
     bool loadRegionMapEntries();
     bool saveRegionMapEntries();
-    QMap<QString, MapSectionEntry> region_map_entries;
+    QHash<QString, MapSectionEntry> region_map_entries;
 
     bool buildConfigDialog();
     poryjson::Json configRegionMapDialog();
