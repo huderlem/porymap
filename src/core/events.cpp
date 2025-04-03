@@ -73,15 +73,21 @@ void Event::modify() {
     this->map->modify();
 }
 
+const QMap<Event::Group, QString> groupToStringMap = {
+    {Event::Group::Object, "Object"},
+    {Event::Group::Warp, "Warp"},
+    {Event::Group::Coord, "Trigger"},
+    {Event::Group::Bg, "BG"},
+    {Event::Group::Heal, "Heal Location"},
+};
+
 QString Event::groupToString(Event::Group group) {
-    static const QMap<Event::Group, QString> groupToStringMap = {
-        {Event::Group::Object, "Object"},
-        {Event::Group::Warp, "Warp"},
-        {Event::Group::Coord, "Trigger"},
-        {Event::Group::Bg, "BG"},
-        {Event::Group::Heal, "Heal Location"},
-    };
     return groupToStringMap.value(group);
+}
+
+QList<Event::Group> Event::groups() {
+    static QList<Event::Group> groupList = groupToStringMap.keys();
+    return groupList;
 }
 
 // These are the expected key names used in the map.json files.

@@ -47,6 +47,13 @@ enum CommandId {
 #define IDMask_EventType_Trigger (1 << 11)
 #define IDMask_EventType_Heal    (1 << 12)
 
+#define IDMask_ConnectionDirection_Up     (1 << 8)
+#define IDMask_ConnectionDirection_Down   (1 << 9)
+#define IDMask_ConnectionDirection_Left   (1 << 10)
+#define IDMask_ConnectionDirection_Right  (1 << 11)
+#define IDMask_ConnectionDirection_Dive   (1 << 12)
+#define IDMask_ConnectionDirection_Emerge (1 << 13)
+
 /// Implements a command to commit metatile paint actions
 /// onto the map using the pencil tool.
 class PaintMetatile : public QUndoCommand {
@@ -400,7 +407,7 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *command) override;
-    int id() const override { return CommandId::ID_MapConnectionMove; }
+    int id() const override;
 
 private:
     MapConnection *connection;
@@ -421,7 +428,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionChangeDirection; }
+    int id() const override;
 
 private:
     QPointer<MapConnection> connection;
@@ -443,7 +450,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionChangeMap; }
+    int id() const override;
 
 private:
     QPointer<MapConnection> connection;
@@ -465,7 +472,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionAdd; }
+    int id() const override;
 
 private:
     Map *map = nullptr;
@@ -485,7 +492,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionRemove; }
+    int id() const override;
 
 private:
     Map *map = nullptr;

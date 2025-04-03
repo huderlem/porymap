@@ -175,8 +175,6 @@ public:
 
     void eventsView_onMousePress(QMouseEvent *event);
 
-    int getBorderDrawDistance(int dimension);
-
     bool selectingEvent = false;
 
     void deleteSelectedEvents();

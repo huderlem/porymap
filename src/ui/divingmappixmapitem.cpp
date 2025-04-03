@@ -25,7 +25,7 @@ QPixmap DivingMapPixmapItem::getBasePixmap(MapConnection* connection) {
         return QPixmap(); // Save some rendering time if it won't be displayed
     if (connection->targetMapName() == connection->parentMapName())
         return QPixmap(); // If the map is connected to itself then rendering is pointless.
-    return connection->getPixmap();
+    return connection->render();
 }
 
 void DivingMapPixmapItem::updatePixmap() {

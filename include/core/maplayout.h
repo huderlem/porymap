@@ -94,9 +94,12 @@ public:
     int getHeight() const { return height; }
     int getBorderWidth() const { return border_width; }
     int getBorderHeight() const { return border_height; }
+    int getBorderDrawWidth() const;
+    int getBorderDrawHeight() const;
 
-    bool isWithinBounds(int x, int y);
-    bool isWithinBorderBounds(int x, int y);
+    bool isWithinBounds(int x, int y) const;
+    bool isWithinBounds(const QRect &rect) const;
+    bool isWithinBorderBounds(int x, int y) const;
 
     bool getBlock(int x, int y, Block *out);
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
@@ -138,6 +141,8 @@ public:
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
+
+    static int getBorderDrawDistance(int dimension, qreal minimum);
 
 signals:
     void dimensionsChanged(const QSize &size);

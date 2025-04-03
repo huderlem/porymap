@@ -357,6 +357,15 @@ QVector<QRgb> QGifImage::globalColorTable() const
 }
 
 /*!
+    Return canvas size.
+ */
+QSize QGifImage::getCanvasSize() const
+{
+    Q_D(const QGifImage);
+    return d->getCanvasSize();
+}
+
+/*!
     Return background color of the gif canvas. It only makes sense when
     global color table is not empty.
  */

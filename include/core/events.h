@@ -170,6 +170,7 @@ public:
     static QString typeToJsonKey(Event::Type type);
     static Event::Type typeFromJsonKey(QString type);
     static QList<Event::Type> types();
+    static QList<Event::Group> groups();
 
 // protected attributes
 protected:
@@ -615,6 +616,10 @@ private:
     QString respawnNPC;
 };
 
+
+inline uint qHash(const Event::Group &key, uint seed = 0) {
+    return qHash(static_cast<int>(key), seed);
+}
 
 
 ///
