@@ -425,7 +425,11 @@ QSet<QString> WarpEvent::getExpectedFields() {
 }
 
 void WarpEvent::setWarningEnabled(bool enabled) {
-    WarpFrame * frame = static_cast<WarpFrame*>(this->getEventFrame());
+    this->warningEnabled = enabled;
+
+    // Don't call getEventFrame here, because it may create the event frame.
+    // If the frame hasn't been created yet then we have nothing else to do.
+    auto frame = static_cast<WarpFrame*>(this->eventFrame.data());
     if (frame && frame->warning)
         frame->warning->setVisible(enabled);
 }

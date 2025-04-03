@@ -336,10 +336,12 @@ public:
     QString getDestinationWarpID() const { return this->destinationWarpID; }
 
     void setWarningEnabled(bool enabled);
+    bool getWarningEnabled() const { return this->warningEnabled; }
 
 private:
     QString destinationMap;
     QString destinationWarpID;
+    bool warningEnabled = false;
 };
 
 
