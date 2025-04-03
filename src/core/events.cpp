@@ -654,7 +654,7 @@ Event *HiddenItemEvent::duplicate() const {
     copy->setItem(this->getItem());
     copy->setFlag(this->getFlag());
     copy->setQuantity(this->getQuantity());
-    copy->setQuantity(this->getQuantity());
+    copy->setUnderfoot(this->getUnderfoot());
 
     copy->setCustomAttributes(this->getCustomAttributes());
 
