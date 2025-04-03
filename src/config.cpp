@@ -809,6 +809,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
     } else if (key == "set_transparent_pixels_black") {
         this->setTransparentPixelsBlack = getConfigBool(key, value);
+    } else if (key == "preserve_matching_only_data") {
+        this->preserveMatchingOnlyData = getConfigBool(key, value);
     } else if (key == "event_icon_path_object") {
         this->eventIconPaths[Event::Group::Object] = value;
     } else if (key == "event_icon_path_warp") {
@@ -899,6 +901,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
     map.insert("set_transparent_pixels_black", QString::number(this->setTransparentPixelsBlack));
+    map.insert("preserve_matching_only_data", QString::number(this->preserveMatchingOnlyData));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
     map.insert("metatile_behavior_mask", Util::toHexString(this->metatileBehaviorMask));
     map.insert("metatile_terrain_type_mask", Util::toHexString(this->metatileTerrainTypeMask));

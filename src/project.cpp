@@ -1925,10 +1925,12 @@ bool Project::readMapGroups() {
     this->mapConstantsToMapNames.insert(dynamicMapConstant, dynamicMapName);
     this->mapNames.append(dynamicMapName);
 
-    // Save custom JSON data.
     // Chuck the "connections_include_order" field, this is only for matching.
-    // TODO: Setting not to do this, on the off chance someone wants this field.
-    mapGroupsObj.remove("connections_include_order");
+    if (!projectConfig.preserveMatchingOnlyData) {
+        mapGroupsObj.remove("connections_include_order");
+    }
+
+    // Preserve any remaining fields for when we save.
     this->customMapGroupsData = mapGroupsObj;
 
     return true;
@@ -2429,8 +2431,9 @@ bool Project::readRegionMapSections() {
         }
 
         // Chuck the "name_clone" field, this is only for matching.
-        // TODO: Setting not to do this, on the off chance someone wants this field.
-        mapSectionObj.remove("name_clone");
+        if (!projectConfig.preserveMatchingOnlyData) {
+            mapSectionObj.remove("name_clone");
+        }
 
         // Preserve any remaining fields for when we save.
         location.custom = mapSectionObj;
