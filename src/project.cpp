@@ -218,8 +218,8 @@ bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
     return true;
 }
 
-bool Project::loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType) {
-    QString typeString = ParseUtil::jsonToQString(json["type"]);
+bool Project::loadMapEvent(Map *map, QJsonObject json, Event::Type defaultType) {
+    QString typeString = ParseUtil::jsonToQString(json.take("type"));
     Event::Type type = typeString.isEmpty() ? defaultType : Event::typeFromJsonKey(typeString);
     Event* event = Event::create(type);
     if (!event) {
@@ -245,10 +245,10 @@ bool Project::loadMapData(Map* map) {
     QJsonObject mapObj = mapDoc.object();
 
     // We should already know the map constant ID from the initial project launch, but we'll ensure it's correct here anyway.
-    map->setConstantName(ParseUtil::jsonToQString(mapObj["id"]));
+    map->setConstantName(ParseUtil::jsonToQString(mapObj.take("id")));
     this->mapConstantsToMapNames.insert(map->constantName(), map->name());
 
-    const QString layoutId = ParseUtil::jsonToQString(mapObj["layout"]);
+    const QString layoutId = ParseUtil::jsonToQString(mapObj.take("layout"));
     Layout* layout = this->mapLayouts.value(layoutId);
     if (!layout) {
         // We've already verified layout IDs on project launch and ignored maps with invalid IDs, so this shouldn't happen.
@@ -257,24 +257,24 @@ bool Project::loadMapData(Map* map) {
     }
     map->setLayout(layout);
 
-    map->header()->setSong(ParseUtil::jsonToQString(mapObj["music"]));
-    map->header()->setLocation(ParseUtil::jsonToQString(mapObj["region_map_section"]));
-    map->header()->setRequiresFlash(ParseUtil::jsonToBool(mapObj["requires_flash"]));
-    map->header()->setWeather(ParseUtil::jsonToQString(mapObj["weather"]));
-    map->header()->setType(ParseUtil::jsonToQString(mapObj["map_type"]));
-    map->header()->setShowsLocationName(ParseUtil::jsonToBool(mapObj["show_map_name"]));
-    map->header()->setBattleScene(ParseUtil::jsonToQString(mapObj["battle_scene"]));
+    map->header()->setSong(ParseUtil::jsonToQString(mapObj.take("music")));
+    map->header()->setLocation(ParseUtil::jsonToQString(mapObj.take("region_map_section")));
+    map->header()->setRequiresFlash(ParseUtil::jsonToBool(mapObj.take("requires_flash")));
+    map->header()->setWeather(ParseUtil::jsonToQString(mapObj.take("weather")));
+    map->header()->setType(ParseUtil::jsonToQString(mapObj.take("map_type")));
+    map->header()->setShowsLocationName(ParseUtil::jsonToBool(mapObj.take("show_map_name")));
+    map->header()->setBattleScene(ParseUtil::jsonToQString(mapObj.take("battle_scene")));
 
     if (projectConfig.mapAllowFlagsEnabled) {
-        map->header()->setAllowsBiking(ParseUtil::jsonToBool(mapObj["allow_cycling"]));
-        map->header()->setAllowsEscaping(ParseUtil::jsonToBool(mapObj["allow_escaping"]));
-        map->header()->setAllowsRunning(ParseUtil::jsonToBool(mapObj["allow_running"]));
+        map->header()->setAllowsBiking(ParseUtil::jsonToBool(mapObj.take("allow_cycling")));
+        map->header()->setAllowsEscaping(ParseUtil::jsonToBool(mapObj.take("allow_escaping")));
+        map->header()->setAllowsRunning(ParseUtil::jsonToBool(mapObj.take("allow_running")));
     }
     if (projectConfig.floorNumberEnabled) {
-        map->header()->setFloorNumber(ParseUtil::jsonToInt(mapObj["floor_number"]));
+        map->header()->setFloorNumber(ParseUtil::jsonToInt(mapObj.take("floor_number")));
     }
-    map->setSharedEventsMap(ParseUtil::jsonToQString(mapObj["shared_events_map"]));
-    map->setSharedScriptsMap(ParseUtil::jsonToQString(mapObj["shared_scripts_map"]));
+    map->setSharedEventsMap(ParseUtil::jsonToQString(mapObj.take("shared_events_map")));
+    map->setSharedScriptsMap(ParseUtil::jsonToQString(mapObj.take("shared_scripts_map")));
 
     // Events
     map->resetEvents();
@@ -289,7 +289,7 @@ bool Project::loadMapData(Map* map) {
     for (auto i = defaultEventTypes.constBegin(); i != defaultEventTypes.constEnd(); i++) {
         QString eventGroupKey = i.key();
         Event::Type defaultType = i.value();
-        const QJsonArray eventsJsonArr = mapObj[eventGroupKey].toArray();
+        const QJsonArray eventsJsonArr = mapObj.take(eventGroupKey).toArray();
         for (int i = 0; i < eventsJsonArr.size(); i++) {
             if (!loadMapEvent(map, eventsJsonArr.at(i).toObject(), defaultType)) {
                 logError(QString("Failed to load event for %1, in %2 at index %3.").arg(map->name()).arg(eventGroupKey).arg(i));
@@ -304,7 +304,7 @@ bool Project::loadMapData(Map* map) {
     }
 
     map->deleteConnections();
-    QJsonArray connectionsArr = mapObj["connections"].toArray();
+    QJsonArray connectionsArr = mapObj.take("connections").toArray();
     if (!connectionsArr.isEmpty()) {
         for (int i = 0; i < connectionsArr.size(); i++) {
             QJsonObject connectionObj = connectionsArr[i].toObject();
@@ -316,14 +316,7 @@ bool Project::loadMapData(Map* map) {
             map->loadConnection(connection);
         }
     }
-
-    QMap<QString, QJsonValue> customAttributes;
-    for (auto i = mapObj.constBegin(); i != mapObj.constEnd(); i++) {
-        if (!this->topLevelMapFields.contains(i.key())) {
-            customAttributes.insert(i.key(), i.value());
-        }
-    }
-    map->setCustomAttributes(customAttributes);
+    map->setCustomAttributes(mapObj);
 
     return true;
 }
@@ -621,16 +614,11 @@ void Project::saveMapLayouts() {
         layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
         layoutObj["border_filepath"] = layout->border_path;
         layoutObj["blockdata_filepath"] = layout->blockdata_path;
-        for (auto it = layout->customData.constBegin(); it != layout->customData.constEnd(); it++) {
-            layoutObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
-        }
+        OrderedJson::append(&layoutObj, layout->customData);
         layoutsArr.push_back(layoutObj);
     }
     layoutsObj["layouts"] = layoutsArr;
-
-    for (auto it = this->customLayoutsData.constBegin(); it != this->customLayoutsData.constEnd(); it++) {
-        layoutsObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
-    }
+    OrderedJson::append(&layoutsObj, this->customLayoutsData);
 
     ignoreWatchedFileTemporarily(layoutsFilepath);
 
@@ -690,9 +678,7 @@ void Project::saveMapGroups() {
         }
         mapGroupsObj[groupName] = groupArr;
     }
-    for (auto it = this->customMapGroupsData.constBegin(); it != this->customMapGroupsData.constEnd(); it++) {
-        mapGroupsObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
-    }
+    OrderedJson::append(&mapGroupsObj, this->customMapGroupsData);
 
     ignoreWatchedFileTemporarily(mapGroupsFilepath);
 
@@ -727,19 +713,14 @@ void Project::saveRegionMapSections() {
             mapSectionObj["width"] = location.map.width;
             mapSectionObj["height"] = location.map.height;
         }
-
-        for (auto it = location.custom.constBegin(); it != location.custom.constEnd(); it++) {
-            mapSectionObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
-        }
+        OrderedJson::append(&mapSectionObj, location.custom);
 
         mapSectionArray.append(mapSectionObj);
     }
 
     OrderedJson::object object;
     object["map_sections"] = mapSectionArray;
-    for (auto it = this->customMapSectionsData.constBegin(); it != this->customMapSectionsData.constEnd(); it++) {
-        object[it.key()] = OrderedJson::fromQJsonValue(it.value());
-    }
+    OrderedJson::append(&object, this->customMapSectionsData);
 
     ignoreWatchedFileTemporarily(filepath);
     OrderedJson json(object);
@@ -894,9 +875,7 @@ void Project::saveHealLocations() {
 
     OrderedJson::object object;
     object["heal_locations"] = eventJsonArr;
-    for (auto it = this->customHealLocationsData.constBegin(); it != this->customHealLocationsData.constEnd(); it++) {
-        object[it.key()] = OrderedJson::fromQJsonValue(it.value());
-    }
+    OrderedJson::append(&object, this->customHealLocationsData);
 
     ignoreWatchedFileTemporarily(filepath);
     OrderedJson json(object);
@@ -1230,10 +1209,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
             connectionObj["map"] = getMapConstant(connection->targetMapName(), connection->targetMapName());
             connectionObj["offset"] = connection->offset();
             connectionObj["direction"] = connection->direction();
-            auto customData = connection->customData();
-            for (auto it = customData.constBegin(); it != customData.constEnd(); it++) {
-                connectionObj[it.key()] = OrderedJson::fromQJsonValue(it.value());
-            }
+            OrderedJson::append(&connectionObj, connection->customData());
             connectionsArr.append(connectionObj);
         }
         mapObj["connections"] = connectionsArr;
@@ -1289,10 +1265,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
     this->healLocations[map->constantName()] = hlEvents;
 
     // Custom header fields.
-    const auto customAttributes = map->customAttributes();
-    for (auto i = customAttributes.constBegin(); i != customAttributes.constEnd(); i++) {
-        mapObj[i.key()] = OrderedJson::fromQJsonValue(i.value());
-    }
+    OrderedJson::append(&mapObj, map->customAttributes());
 
     OrderedJson mapJson(mapObj);
     OrderedJsonDoc jsonDoc(&mapJson);
@@ -2555,7 +2528,7 @@ bool Project::readHealLocations() {
 
         auto event = new HealLocationEvent();
         event->loadFromJson(healLocationObj, this);
-        this->healLocations[ParseUtil::jsonToQString(healLocationObj["map"])].append(event);
+        this->healLocations[event->getHostMapName()].append(event);
         this->healLocationSaveOrder.append(event->getIdName());
     }
     this->customHealLocationsData = healLocationsObj;

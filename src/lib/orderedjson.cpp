@@ -311,32 +311,37 @@ const Json & JsonArray::operator[] (int i) const {
     else return m_value[i];
 }
 
-const Json Json::fromQJsonValue(QJsonValue value) {
+Json Json::fromQJsonValue(const QJsonValue &value) {
     switch (value.type())
     {
     case QJsonValue::String: return value.toString();
     case QJsonValue::Double: return value.toInt();
     case QJsonValue::Bool:   return value.toBool();
-    case QJsonValue::Array:
-    {
-        QJsonArray qArr = value.toArray();
-        Json::array arr;
-        for (const auto &i: qArr)
-            arr.push_back(Json::fromQJsonValue(i));
-        return arr;
+    case QJsonValue::Array: {
+        Json::array array;
+        Json::append(&array, value.toArray());
+        return array;
     }
-    case QJsonValue::Object:
-    {
-        QJsonObject qObj = value.toObject();
-        Json::object obj;
-        for (auto it = qObj.constBegin(); it != qObj.constEnd(); it++)
-            obj[it.key()] = Json::fromQJsonValue(it.value());
-        return obj;
+    case QJsonValue::Object: {
+        Json::object object;
+        Json::append(&object, value.toObject());
+        return object;
     }
     default: return static_null();
     }
 }
 
+void Json::append(Json::array *array, const QJsonArray &qArray) {
+    for (const auto &i: qArray) {
+        array->push_back(fromQJsonValue(i));
+    }
+}
+
+void Json::append(Json::object *object, const QJsonObject &qObject) {
+    for (auto it = qObject.constBegin(); it != qObject.constEnd(); it++) {
+        (*object)[it.key()] = fromQJsonValue(it.value());
+    }
+}
 
 /* * * * * * * * * * * * * * * * * * * *
  * Comparison

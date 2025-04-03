@@ -51,24 +51,6 @@ void Event::setDefaultValues(Project *) {
     this->setElevation(projectConfig.defaultElevation);
 }
 
-void Event::readCustomAttributes(const QJsonObject &json) {
-    this->customAttributes.clear();
-    const QSet<QString> expectedFields = this->getExpectedFields();
-    for (auto i = json.constBegin(); i != json.constEnd(); i++) {
-        if (!expectedFields.contains(i.key())) {
-            this->customAttributes[i.key()] = i.value();
-        }
-    }
-}
-
-void Event::addCustomAttributesTo(OrderedJson::object *obj) const {
-    for (auto i = this->customAttributes.constBegin(); i != this->customAttributes.constEnd(); i++) {
-        if (!obj->contains(i.key())) {
-            (*obj)[i.key()] = OrderedJson::fromQJsonValue(i.value());
-        }
-    }
-}
-
 void Event::modify() {
     this->map->modify();
 }
@@ -181,27 +163,26 @@ OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     objectJson["trainer_sight_or_berry_tree_id"] = this->getSightRadiusBerryTreeID();
     objectJson["script"] = this->getScript();
     objectJson["flag"] = this->getFlag();
-    this->addCustomAttributesTo(&objectJson);
 
+    OrderedJson::append(&objectJson, this->getCustomAttributes());
     return objectJson;
 }
 
-bool ObjectEvent::loadFromJson(const QJsonObject &json, Project *) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setIdName(ParseUtil::jsonToQString(json["local_id"]));
-    this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
-    this->setMovement(ParseUtil::jsonToQString(json["movement_type"]));
-    this->setRadiusX(ParseUtil::jsonToInt(json["movement_range_x"]));
-    this->setRadiusY(ParseUtil::jsonToInt(json["movement_range_y"]));
-    this->setTrainerType(ParseUtil::jsonToQString(json["trainer_type"]));
-    this->setSightRadiusBerryTreeID(ParseUtil::jsonToQString(json["trainer_sight_or_berry_tree_id"]));
-    this->setScript(ParseUtil::jsonToQString(json["script"]));
-    this->setFlag(ParseUtil::jsonToQString(json["flag"]));
+bool ObjectEvent::loadFromJson(QJsonObject json, Project *) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setElevation(readInt(&json, "elevation"));
+    this->setIdName(readString(&json, "local_id"));
+    this->setGfx(readString(&json, "graphics_id"));
+    this->setMovement(readString(&json, "movement_type"));
+    this->setRadiusX(readInt(&json, "movement_range_x"));
+    this->setRadiusY(readInt(&json, "movement_range_y"));
+    this->setTrainerType(readString(&json, "trainer_type"));
+    this->setSightRadiusBerryTreeID(readString(&json, "trainer_sight_or_berry_tree_id"));
+    this->setScript(readString(&json, "script"));
+    this->setFlag(readString(&json, "flag"));
     
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -216,26 +197,24 @@ void ObjectEvent::setDefaultValues(Project *project) {
     this->setSightRadiusBerryTreeID("0");
 }
 
-const QSet<QString> expectedObjectFields = {
-    "local_id",
-    "graphics_id",
-    "elevation",
-    "movement_type",
-    "movement_range_x",
-    "movement_range_y",
-    "trainer_type",
-    "trainer_sight_or_berry_tree_id",
-    "script",
-    "flag",
-};
-
 QSet<QString> ObjectEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedObjectFields;
+    QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "local_id",
+        "graphics_id",
+        "elevation",
+        "movement_type",
+        "movement_range_x",
+        "movement_range_y",
+        "trainer_type",
+        "trainer_sight_or_berry_tree_id",
+        "script",
+        "flag",
+    };
     if (projectConfig.eventCloneObjectEnabled) {
         expectedFields.insert("type");
     }
-    expectedFields << "x" << "y";
     return expectedFields;
 }
 
@@ -286,26 +265,25 @@ OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     cloneJson["target_local_id"] = this->getTargetID();
     const QString mapName = this->getTargetMap();
     cloneJson["target_map"] = project->getMapConstant(mapName, mapName);
-    this->addCustomAttributesTo(&cloneJson);
 
+    OrderedJson::append(&cloneJson, this->getCustomAttributes());
     return cloneJson;
 }
 
-bool CloneObjectEvent::loadFromJson(const QJsonObject &json, Project *project) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setIdName(ParseUtil::jsonToQString(json["local_id"]));
-    this->setGfx(ParseUtil::jsonToQString(json["graphics_id"]));
-    this->setTargetID(ParseUtil::jsonToInt(json["target_local_id"]));
+bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setIdName(readString(&json, "local_id"));
+    this->setGfx(readString(&json, "graphics_id"));
+    this->setTargetID(readInt(&json, "target_local_id"));
 
     // Log a warning if "target_map" isn't a known map ID, but don't overwrite user data.
-    const QString mapConstant = ParseUtil::jsonToQString(json["target_map"]);
+    const QString mapConstant = readString(&json, "target_map");
     if (!project->mapConstantsToMapNames.contains(mapConstant))
         logWarn(QString("Unknown Target Map constant '%1'.").arg(mapConstant));
     this->setTargetMap(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
 
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -315,18 +293,16 @@ void CloneObjectEvent::setDefaultValues(Project *project) {
     if (this->getMap()) this->setTargetMap(this->getMap()->name());
 }
 
-const QSet<QString> expectedCloneObjectFields = {
-    "type",
-    "local_id",
-    "graphics_id",
-    "target_local_id",
-    "target_map",
-};
-
 QSet<QString> CloneObjectEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedCloneObjectFields;
-    expectedFields << "x" << "y";
+    static const QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "type",
+        "local_id",
+        "graphics_id",
+        "target_local_id",
+        "target_map",
+    };
     return expectedFields;
 }
 
@@ -383,25 +359,23 @@ OrderedJson::object WarpEvent::buildEventJson(Project *project) {
     warpJson["dest_map"] = project->getMapConstant(mapName, mapName);
     warpJson["dest_warp_id"] = this->getDestinationWarpID();
 
-    this->addCustomAttributesTo(&warpJson);
-
+    OrderedJson::append(&warpJson, this->getCustomAttributes());
     return warpJson;
 }
 
-bool WarpEvent::loadFromJson(const QJsonObject &json, Project *project) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setDestinationWarpID(ParseUtil::jsonToQString(json["dest_warp_id"]));
+bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setElevation(readInt(&json, "elevation"));
+    this->setDestinationWarpID(readString(&json, "dest_warp_id"));
 
     // Log a warning if "dest_map" isn't a known map ID, but don't overwrite user data.
-    const QString mapConstant = ParseUtil::jsonToQString(json["dest_map"]);
+    const QString mapConstant = readString(&json, "dest_map");
     if (!project->mapConstantsToMapNames.contains(mapConstant))
         logWarn(QString("Unknown Destination Map constant '%1'.").arg(mapConstant));
     this->setDestinationMap(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
 
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -411,16 +385,14 @@ void WarpEvent::setDefaultValues(Project *) {
     this->setElevation(0);
 }
 
-const QSet<QString> expectedWarpFields = {
-    "elevation",
-    "dest_map",
-    "dest_warp_id",
-};
-
 QSet<QString> WarpEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedWarpFields;
-    expectedFields << "x" << "y";
+    static const QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "elevation",
+        "dest_map",
+        "dest_warp_id",
+    };
     return expectedFields;
 }
 
@@ -466,21 +438,19 @@ OrderedJson::object TriggerEvent::buildEventJson(Project *) {
     triggerJson["var_value"] = this->getScriptVarValue();
     triggerJson["script"] = this->getScriptLabel();
 
-    this->addCustomAttributesTo(&triggerJson);
-
+    OrderedJson::append(&triggerJson, this->getCustomAttributes());
     return triggerJson;
 }
 
-bool TriggerEvent::loadFromJson(const QJsonObject &json, Project *) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setScriptVar(ParseUtil::jsonToQString(json["var"]));
-    this->setScriptVarValue(ParseUtil::jsonToQString(json["var_value"]));
-    this->setScriptLabel(ParseUtil::jsonToQString(json["script"]));
+bool TriggerEvent::loadFromJson(QJsonObject json, Project *) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setElevation(readInt(&json, "elevation"));
+    this->setScriptVar(readString(&json, "var"));
+    this->setScriptVarValue(readString(&json, "var_value"));
+    this->setScriptLabel(readString(&json, "script"));
 
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -491,18 +461,16 @@ void TriggerEvent::setDefaultValues(Project *project) {
     this->setElevation(0);
 }
 
-const QSet<QString> expectedTriggerFields = {
-    "type",
-    "elevation",
-    "var",
-    "var_value",
-    "script",
-};
-
 QSet<QString> TriggerEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedTriggerFields;
-    expectedFields << "x" << "y";
+    static const QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "type",
+        "elevation",
+        "var",
+        "var_value",
+        "script",
+    };
     return expectedFields;
 }
 
@@ -538,19 +506,17 @@ OrderedJson::object WeatherTriggerEvent::buildEventJson(Project *) {
     weatherJson["elevation"] = this->getElevation();
     weatherJson["weather"] = this->getWeather();
 
-    this->addCustomAttributesTo(&weatherJson);
-
+    OrderedJson::append(&weatherJson, this->getCustomAttributes());
     return weatherJson;
 }
 
-bool WeatherTriggerEvent::loadFromJson(const QJsonObject &json, Project *) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setWeather(ParseUtil::jsonToQString(json["weather"]));
+bool WeatherTriggerEvent::loadFromJson(QJsonObject json, Project *) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setElevation(readInt(&json, "elevation"));
+    this->setWeather(readString(&json, "weather"));
 
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -559,16 +525,14 @@ void WeatherTriggerEvent::setDefaultValues(Project *project) {
     this->setElevation(0);
 }
 
-const QSet<QString> expectedWeatherTriggerFields = {
-    "type",
-    "elevation",
-    "weather",
-};
-
 QSet<QString> WeatherTriggerEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedWeatherTriggerFields;
-    expectedFields << "x" << "y";
+    static const QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "type",
+        "elevation",
+        "weather",
+    };
     return expectedFields;
 }
 
@@ -606,20 +570,18 @@ OrderedJson::object SignEvent::buildEventJson(Project *) {
     signJson["player_facing_dir"] = this->getFacingDirection();
     signJson["script"] = this->getScriptLabel();
 
-    this->addCustomAttributesTo(&signJson);
-
+    OrderedJson::append(&signJson, this->getCustomAttributes());
     return signJson;
 }
 
-bool SignEvent::loadFromJson(const QJsonObject &json, Project *) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setFacingDirection(ParseUtil::jsonToQString(json["player_facing_dir"]));
-    this->setScriptLabel(ParseUtil::jsonToQString(json["script"]));
+bool SignEvent::loadFromJson(QJsonObject json, Project *) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setElevation(readInt(&json, "elevation"));
+    this->setFacingDirection(readString(&json, "player_facing_dir"));
+    this->setScriptLabel(readString(&json, "script"));
 
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -629,17 +591,15 @@ void SignEvent::setDefaultValues(Project *project) {
     this->setElevation(0);
 }
 
-const QSet<QString> expectedSignFields = {
-    "type",
-    "elevation",
-    "player_facing_dir",
-    "script",
-};
-
 QSet<QString> SignEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedSignFields;
-    expectedFields << "x" << "y";
+    static const QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "type",
+        "elevation",
+        "player_facing_dir",
+        "script",
+    };
     return expectedFields;
 }
 
@@ -685,26 +645,24 @@ OrderedJson::object HiddenItemEvent::buildEventJson(Project *) {
         hiddenItemJson["underfoot"] = this->getUnderfoot();
     }
 
-    this->addCustomAttributesTo(&hiddenItemJson);
-
+    OrderedJson::append(&hiddenItemJson, this->getCustomAttributes());
     return hiddenItemJson;
 }
 
-bool HiddenItemEvent::loadFromJson(const QJsonObject &json, Project *) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setItem(ParseUtil::jsonToQString(json["item"]));
-    this->setFlag(ParseUtil::jsonToQString(json["flag"]));
+bool HiddenItemEvent::loadFromJson(QJsonObject json, Project *) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setElevation(readInt(&json, "elevation"));
+    this->setItem(readString(&json, "item"));
+    this->setFlag(readString(&json, "flag"));
     if (projectConfig.hiddenItemQuantityEnabled) {
-        this->setQuantity(ParseUtil::jsonToInt(json["quantity"]));
+        this->setQuantity(readInt(&json, "quantity"));
     }
     if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
-        this->setUnderfoot(ParseUtil::jsonToBool(json["underfoot"]));
+        this->setUnderfoot(readBool(&json, "underfoot"));
     }
 
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -719,23 +677,21 @@ void HiddenItemEvent::setDefaultValues(Project *project) {
     }
 }
 
-const QSet<QString> expectedHiddenItemFields = {
-    "type",
-    "elevation",
-    "item",
-    "flag",
-};
-
 QSet<QString> HiddenItemEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedHiddenItemFields;
+    QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "type",
+        "elevation",
+        "item",
+        "flag",
+    };
     if (projectConfig.hiddenItemQuantityEnabled) {
         expectedFields << "quantity";
     }
     if (projectConfig.hiddenItemRequiresItemfinderEnabled) {
         expectedFields << "underfoot";
     }
-    expectedFields << "x" << "y";
     return expectedFields;
 }
 
@@ -771,19 +727,17 @@ OrderedJson::object SecretBaseEvent::buildEventJson(Project *) {
     secretBaseJson["elevation"] = this->getElevation();
     secretBaseJson["secret_base_id"] = this->getBaseID();
 
-    this->addCustomAttributesTo(&secretBaseJson);
-
+    OrderedJson::append(&secretBaseJson, this->getCustomAttributes());
     return secretBaseJson;
 }
 
-bool SecretBaseEvent::loadFromJson(const QJsonObject &json, Project *) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setElevation(ParseUtil::jsonToInt(json["elevation"]));
-    this->setBaseID(ParseUtil::jsonToQString(json["secret_base_id"]));
+bool SecretBaseEvent::loadFromJson(QJsonObject json, Project *) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setElevation(readInt(&json, "elevation"));
+    this->setBaseID(readString(&json, "secret_base_id"));
 
-    this->readCustomAttributes(json);
-
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -792,16 +746,14 @@ void SecretBaseEvent::setDefaultValues(Project *project) {
     this->setElevation(0);
 }
 
-const QSet<QString> expectedSecretBaseFields = {
-    "type",
-    "elevation",
-    "secret_base_id",
-};
-
 QSet<QString> SecretBaseEvent::getExpectedFields() {
-    QSet<QString> expectedFields = QSet<QString>();
-    expectedFields = expectedSecretBaseFields;
-    expectedFields << "x" << "y";
+    static const QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "type",
+        "elevation",
+        "secret_base_id",
+    };
     return expectedFields;
 }
 
@@ -829,12 +781,15 @@ EventFrame *HealLocationEvent::createEventFrame() {
     return this->eventFrame;
 }
 
+QString HealLocationEvent::getHostMapName() const {
+    return this->getMap() ? this->getMap()->constantName() : this->hostMapName;
+}
+
 OrderedJson::object HealLocationEvent::buildEventJson(Project *project) {
     OrderedJson::object healLocationJson;
 
     healLocationJson["id"] = this->getIdName();
-    // This field doesn't need to be stored in the Event itself, so it's output only.
-    healLocationJson["map"] = this->getMap() ? this->getMap()->constantName() : QString();
+    healLocationJson["map"] = this->getHostMapName();
     healLocationJson["x"] = this->getX();
     healLocationJson["y"] = this->getY();
     if (projectConfig.healLocationRespawnDataEnabled) {
@@ -843,26 +798,26 @@ OrderedJson::object HealLocationEvent::buildEventJson(Project *project) {
         healLocationJson["respawn_npc"] = this->getRespawnNPC();
     }
 
-    this->addCustomAttributesTo(&healLocationJson);
-
+    OrderedJson::append(&healLocationJson, this->getCustomAttributes());
     return healLocationJson;
 }
 
-bool HealLocationEvent::loadFromJson(const QJsonObject &json, Project *project) {
-    this->setX(ParseUtil::jsonToInt(json["x"]));
-    this->setY(ParseUtil::jsonToInt(json["y"]));
-    this->setIdName(ParseUtil::jsonToQString(json["id"]));
+bool HealLocationEvent::loadFromJson(QJsonObject json, Project *project) {
+    this->setX(readInt(&json, "x"));
+    this->setY(readInt(&json, "y"));
+    this->setIdName(readString(&json, "id"));
+    this->setHostMapName(readString(&json, "map"));
 
     if (projectConfig.healLocationRespawnDataEnabled) {
         // Log a warning if "respawn_map" isn't a known map ID, but don't overwrite user data.
-        const QString mapConstant = ParseUtil::jsonToQString(json["respawn_map"]);
+        const QString mapConstant = readString(&json, "respawn_map");
         if (!project->mapConstantsToMapNames.contains(mapConstant))
             logWarn(QString("Unknown Respawn Map constant '%1'.").arg(mapConstant));
         this->setRespawnMapName(project->mapConstantsToMapNames.value(mapConstant, mapConstant));
-        this->setRespawnNPC(ParseUtil::jsonToQString(json["respawn_npc"]));
+        this->setRespawnNPC(readString(&json, "respawn_npc"));
     }
 
-    this->readCustomAttributes(json);
+    this->setCustomAttributes(json);
     return true;
 }
 
@@ -875,16 +830,19 @@ void HealLocationEvent::setDefaultValues(Project *project) {
 }
 
 const QSet<QString> expectedHealLocationFields = {
-    "id",
-    "map"
+
 };
 
 QSet<QString> HealLocationEvent::getExpectedFields() {
-    QSet<QString> expectedFields = expectedHealLocationFields;
+    QSet<QString> expectedFields = {
+        "x",
+        "y",
+        "id",
+        "map",
+    };
     if (projectConfig.healLocationRespawnDataEnabled) {
         expectedFields.insert("respawn_map");
         expectedFields.insert("respawn_npc");
     }
-    expectedFields << "x" << "y";
     return expectedFields;
 }
