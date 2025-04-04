@@ -1192,7 +1192,7 @@ bool MainWindow::setProjectUI() {
     ui->layoutList->setModel(layoutListProxyModel);
     ui->layoutList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
-    ui->mapCustomAttributesFrame->table()->setRestrictedKeys(project->topLevelMapFields);
+    ui->mapCustomAttributesFrame->table()->setRestrictedKeys(project->getTopLevelMapFields());
 
     return true;
 }

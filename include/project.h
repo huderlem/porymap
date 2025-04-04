@@ -71,7 +71,6 @@ public:
     QSet<QString> modifiedFiles;
     bool usingAsmTilesets;
     QSet<QString> disabledSettingsNames;
-    QSet<QString> topLevelMapFields;
     int pokemonMinLevel;
     int pokemonMaxLevel;
     int maxEncounterRate;
@@ -161,7 +160,6 @@ public:
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
 
-    void initTopLevelMapFields();
     bool readMapJson(const QString &mapName, QJsonDocument * out);
     bool loadMapEvent(Map *map, QJsonObject json, Event::Type defaultType = Event::Type::None);
     bool loadMapData(Map*);
@@ -240,6 +238,8 @@ public:
 
     void setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries);
     QHash<QString, MapSectionEntry> getRegionMapEntries() const;
+
+    QSet<QString> getTopLevelMapFields() const;
 
     static QString getEmptyMapDefineName();
     static QString getDynamicMapDefineName();

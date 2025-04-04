@@ -177,8 +177,8 @@ Map* Project::loadMap(const QString &mapName) {
     return map;
 }
 
-void Project::initTopLevelMapFields() {
-    static const QSet<QString> defaultTopLevelMapFields = {
+QSet<QString> Project::getTopLevelMapFields() const {
+    QSet<QString> fields = {
         "id",
         "name",
         "layout",
@@ -197,15 +197,15 @@ void Project::initTopLevelMapFields() {
         "shared_events_map",
         "shared_scripts_map",
     };
-    this->topLevelMapFields = defaultTopLevelMapFields;
     if (projectConfig.mapAllowFlagsEnabled) {
-        this->topLevelMapFields.insert("allow_cycling");
-        this->topLevelMapFields.insert("allow_escaping");
-        this->topLevelMapFields.insert("allow_running");
+        fields.insert("allow_cycling");
+        fields.insert("allow_escaping");
+        fields.insert("allow_running");
     }
     if (projectConfig.floorNumberEnabled) {
-        this->topLevelMapFields.insert("floor_number");
+        fields.insert("floor_number");
     }
+    return fields;
 }
 
 bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
@@ -1793,8 +1793,6 @@ bool Project::readMapGroups() {
     this->groupNames.clear();
     this->groupNameToMapNames.clear();
     this->customMapGroupsData = QJsonObject();
-
-    this->initTopLevelMapFields();
 
     const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_map_groups);
     fileWatcher.addPath(root + "/" + filepath);
