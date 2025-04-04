@@ -1804,7 +1804,7 @@ bool Project::readMapGroups() {
     }
 
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
-    QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
+    QJsonArray mapGroupOrder = mapGroupsObj.take("group_order").toArray();
 
     const QString dynamicMapName = getDynamicMapName();
     const QString dynamicMapConstant = getDynamicMapDefineName();
