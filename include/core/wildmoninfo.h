@@ -3,7 +3,7 @@
 #define GUARD_WILDMONINFO_H
 
 #include <QtWidgets>
-#include "orderedmap.h"
+#include "orderedjson.h"
 
 class WildPokemon {
 public:
@@ -13,22 +13,26 @@ public:
     int minLevel;
     int maxLevel;
     QString species;
+    OrderedJson::object customData;
 };
 
 struct WildMonInfo {
     bool active = false;
     int encounterRate = 0;
     QVector<WildPokemon> wildPokemon;
+    OrderedJson::object customData;
 };
 
 struct WildPokemonHeader {
-    tsl::ordered_map<QString, WildMonInfo> wildMons;
+    OrderedMap<QString, WildMonInfo> wildMons;
+    OrderedJson::object customData;
 };
 
 struct EncounterField {
     QString name; // Ex: "fishing_mons"
     QVector<int> encounterRates;
-    tsl::ordered_map<QString, QVector<int>> groups; // Ex: "good_rod", {2, 3, 4}
+    OrderedMap<QString, QVector<int>> groups; // Ex: "good_rod", {2, 3, 4}
+    OrderedJson::object customData;
 };
 
 typedef QVector<EncounterField> EncounterFields;

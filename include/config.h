@@ -323,6 +323,7 @@ public:
         this->tilesetsHaveCallback = true;
         this->tilesetsHaveIsCompressed = true;
         this->setTransparentPixelsBlack = true;
+        this->preserveMatchingOnlyData = false;
         this->filePaths.clear();
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
@@ -389,6 +390,7 @@ public:
     bool tilesetsHaveCallback;
     bool tilesetsHaveIsCompressed;
     bool setTransparentPixelsBlack;
+    bool preserveMatchingOnlyData;
     int metatileAttributesSize;
     uint32_t metatileBehaviorMask;
     uint32_t metatileTerrainTypeMask;

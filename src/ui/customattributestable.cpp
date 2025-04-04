@@ -39,8 +39,8 @@ CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
     });
 }
 
-QMap<QString, QJsonValue> CustomAttributesTable::getAttributes() const {
-    QMap<QString, QJsonValue> fields;
+QJsonObject CustomAttributesTable::getAttributes() const {
+    QJsonObject fields;
     for (int row = 0; row < this->rowCount(); row++) {
         auto keyValuePair = this->getAttribute(row);
         if (!keyValuePair.first.isEmpty())
@@ -145,10 +145,10 @@ void CustomAttributesTable::addNewAttribute(const QString &key, const QJsonValue
 }
 
 // For programmatically populating the table
-void CustomAttributesTable::setAttributes(const QMap<QString, QJsonValue> &attributes) {
+void CustomAttributesTable::setAttributes(const QJsonObject &attributes) {
     m_keys.clear();
     this->setRowCount(0); // Clear old values
-    for (auto it = attributes.cbegin(); it != attributes.cend(); it++)
+    for (auto it = attributes.constBegin(); it != attributes.constEnd(); it++)
         this->addAttribute(it.key(), it.value());
     this->resizeVertically();
 }
