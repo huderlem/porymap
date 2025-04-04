@@ -331,18 +331,6 @@ Json Json::fromQJsonValue(const QJsonValue &value) {
     }
 }
 
-void Json::append(Json::array *array, const QJsonArray &qArray) {
-    for (const auto &i: qArray) {
-        array->push_back(fromQJsonValue(i));
-    }
-}
-
-void Json::append(Json::object *object, const QJsonObject &qObject) {
-    for (auto it = qObject.constBegin(); it != qObject.constEnd(); it++) {
-        (*object)[it.key()] = fromQJsonValue(it.value());
-    }
-}
-
 /* * * * * * * * * * * * * * * * * * * *
  * Comparison
  */

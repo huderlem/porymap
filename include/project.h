@@ -143,12 +143,11 @@ public:
     QString getNewHealLocationName(const Map* map) const;
 
     bool readWildMonData();
-    tsl::ordered_map<QString, tsl::ordered_map<QString, WildPokemonHeader>> wildMonData;
+    OrderedMap<QString, OrderedMap<QString, WildPokemonHeader>> wildMonData;
 
     QString wildMonTableName;
     QVector<EncounterField> wildMonFields;
     QVector<QString> encounterGroupLabels;
-    QVector<poryjson::Json::object> extraEncounterGroups;
 
     bool readSpeciesIconPaths();
     QString getDefaultSpeciesIconPath(const QString &species);
@@ -274,6 +273,9 @@ private:
     QJsonObject customMapSectionsData;
     QJsonObject customMapGroupsData;
     QJsonObject customHealLocationsData;
+    OrderedJson::object customWildMonData;
+    OrderedJson::object customWildMonGroupData;
+    OrderedJson::array extraEncounterGroups;
 
     // Maps/layouts represented in these sets have been fully loaded from the project.
     // If a valid map name / layout id is not in these sets, a Map / Layout object exists

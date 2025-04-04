@@ -54,7 +54,7 @@ private:
     Project *project;
 
     RegionMap *region_map = nullptr;
-    tsl::ordered_map<QString, RegionMap *> region_maps;
+    OrderedMap<QString, RegionMap *> region_maps;
 
     QString configFilepath;
 
