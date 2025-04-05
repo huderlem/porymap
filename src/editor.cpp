@@ -1987,31 +1987,36 @@ qreal Editor::getEventOpacity(const Event *event) const {
 }
 
 void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
-    if (item && item->event && !item->event->getPixmap().isNull()) {
-        item->setOpacity(getEventOpacity(item->event));
-        project->loadEventPixmap(item->event, true);
-        item->setPixmap(item->event->getPixmap());
-        item->setShapeMode(porymapConfig.eventSelectionShapeMode);
+    if (!item || !item->event)
+        return;
 
-        if (this->editMode == EditMode::Events) {
-            if (this->selectedEvents.contains(item->event)) {
-                // Draw the selection rectangle
-                QImage image = item->pixmap().toImage();
-                QPainter painter(&image);
-                painter.setPen(QColor(255, 0, 255));
-                painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
-                painter.end();
-                item->setPixmap(QPixmap::fromImage(image));
-            }
-            item->setAcceptedMouseButtons(Qt::AllButtons);
-        } else {
-            // Can't interact with event pixmaps outside of event editing mode.
-            // We could do setEnabled(false), but rather than ignoring the mouse events this
-            // would reject them, which would prevent painting on the map behind the events.
-            item->setAcceptedMouseButtons(Qt::NoButton);
+    project->loadEventPixmap(item->event, true);
+
+    QPixmap pixmap = item->event->getPixmap();
+    if (pixmap.isNull())
+        return;
+
+    qreal zValue = item->event->getY();
+    if (this->editMode == EditMode::Events) {
+        if (this->selectedEvents.contains(item->event)) {
+            // Draw the selection rectangle
+            QPainter painter(&pixmap);
+            painter.setPen(Qt::magenta);
+            painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
+            zValue++;
         }
-        item->updatePosition();
+        item->setAcceptedMouseButtons(Qt::AllButtons);
+    } else {
+        // Can't interact with event pixmaps outside of event editing mode.
+        // We could do setEnabled(false), but rather than ignoring the mouse events this
+        // would reject them, which would prevent painting on the map behind the events.
+        item->setAcceptedMouseButtons(Qt::NoButton);
     }
+    item->setPixmap(pixmap);
+    item->setZValue(zValue);
+    item->setOpacity(getEventOpacity(item->event));
+    item->setShapeMode(porymapConfig.eventSelectionShapeMode);
+    item->updatePosition();
 }
 
 // Warp events display a warning if they're not positioned on a metatile with a warp behavior.

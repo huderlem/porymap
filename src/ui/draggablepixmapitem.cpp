@@ -12,11 +12,6 @@ void DraggablePixmapItem::updatePosition() {
     int y = this->event->getPixelY();
     setX(x);
     setY(y);
-    if (this->editor->selectedEvents.contains(this->event)) {
-        setZValue(event->getY() + 1);
-    } else {
-        setZValue(event->getY());
-    }
     editor->updateWarpEventWarning(event);
 }
 
@@ -26,8 +21,6 @@ void DraggablePixmapItem::emitPositionChanged() {
 }
 
 void DraggablePixmapItem::updatePixmap() {
-    editor->project->loadEventPixmap(event, true);
-    this->updatePosition();
     editor->redrawEventPixmapItem(this);
     emit spriteChanged(event->getPixmap());
 }
