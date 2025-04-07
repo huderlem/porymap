@@ -146,12 +146,13 @@ EventFrame *ObjectEvent::createEventFrame() {
 OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     OrderedJson::object objectJson;
 
-    if (projectConfig.eventCloneObjectEnabled) {
-        objectJson["type"] = Event::typeToJsonKey(Event::Type::Object);
-    }
     QString idName = this->getIdName();
     if (!idName.isEmpty())
         objectJson["local_id"] = idName;
+
+    if (projectConfig.eventCloneObjectEnabled) {
+        objectJson["type"] = Event::typeToJsonKey(Event::Type::Object);
+    }
     objectJson["graphics_id"] = this->getGfx();
     objectJson["x"] = this->getX();
     objectJson["y"] = this->getY();
@@ -255,10 +256,11 @@ EventFrame *CloneObjectEvent::createEventFrame() {
 OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     OrderedJson::object cloneJson;
 
-    cloneJson["type"] = Event::typeToJsonKey(Event::Type::CloneObject);
     QString idName = this->getIdName();
     if (!idName.isEmpty())
         cloneJson["local_id"] = idName;
+
+    cloneJson["type"] = Event::typeToJsonKey(Event::Type::CloneObject);
     cloneJson["graphics_id"] = this->getGfx();
     cloneJson["x"] = this->getX();
     cloneJson["y"] = this->getY();
