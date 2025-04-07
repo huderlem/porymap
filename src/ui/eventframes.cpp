@@ -74,6 +74,7 @@ void EventFrame::setup() {
     this->label_id = new QLabel("event_type");
     l_vbox_1->addWidget(this->label_id);
     l_vbox_1->addLayout(l_layout_xyz);
+    this->label_id->setText(Event::typeToString(this->event->getEventType()));
 
     // icon / pixmap label
     this->label_icon = new QLabel(this);
@@ -203,8 +204,6 @@ void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * proj
 
 void ObjectFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Object");
 
     // sprite combo
     QFormLayout *l_form_sprite = new QFormLayout();
@@ -406,8 +405,6 @@ void ObjectFrame::populate(Project *project) {
 void CloneObjectFrame::setup() {
     EventFrame::setup();
 
-    this->label_id->setText("Clone Object");
-
     this->spinner_z->setEnabled(false);
 
     // sprite combo (edits disabled)
@@ -424,11 +421,12 @@ void CloneObjectFrame::setup() {
     l_form_dest_map->addRow("Target Map", this->combo_target_map);
     this->layout_contents->addLayout(l_form_dest_map);
 
-    // clone local id spinbox
+    // clone local id combo
     QFormLayout *l_form_dest_id = new QFormLayout();
-    this->spinner_target_id = new NoScrollSpinBox(this);
-    this->spinner_target_id->setToolTip("event_object ID of the object being cloned.");
-    l_form_dest_id->addRow("Target Local ID", this->spinner_target_id);
+    this->combo_target_id = new NoScrollComboBox(this);
+    // TODO: Once object events have a real local ID input field, this tool tip should be updated to reflect the name of that field
+    this->combo_target_id->setToolTip("event_object ID of the object being cloned.");
+    l_form_dest_id->addRow("Target Local ID", this->combo_target_id);
     this->layout_contents->addLayout(l_form_dest_id);
 
     // custom attributes
@@ -450,19 +448,17 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
         this->clone->getPixmapItem()->updatePixmap();
         this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
+        // TODO: If this field changes to the name of a valid map then the available items in the ID combo box should be refreshed.
     });
 
     // target id
-    // TODO: Replace spinner with combo box populated with local IDs from target map.
-    this->spinner_target_id->disconnect();
-    /*
-    connect(this->spinner_target_id, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
-        this->clone->setTargetID(value);
+    this->combo_target_id->disconnect();
+    connect(this->combo_target_id, &QComboBox::currentTextChanged, [this](const QString &text) {
+        this->clone->setTargetID(text);
         this->clone->getPixmapItem()->updatePixmap();
         this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
     });
-    */
 }
 
 void CloneObjectFrame::initialize() {
@@ -475,9 +471,7 @@ void CloneObjectFrame::initialize() {
     this->combo_sprite->setCurrentText(this->clone->getGfx());
 
     // target id
-    this->spinner_target_id->setMinimum(1);
-    this->spinner_target_id->setMaximum(126);
-    //this->spinner_target_id->setValue(this->clone->getTargetID());
+    this->combo_target_id->setCurrentText(this->clone->getTargetID());
 
     // target map
     this->combo_target_map->setTextItem(this->clone->getTargetMap());
@@ -490,12 +484,11 @@ void CloneObjectFrame::populate(Project *project) {
     EventFrame::populate(project);
 
     this->combo_target_map->addItems(project->mapNames);
+    // TODO: Populate combo_target_id with local IDs from target map.
 }
 
 void WarpFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Warp");
 
     // desination map combo
     QFormLayout *l_form_dest_map = new QFormLayout();
@@ -537,6 +530,7 @@ void WarpFrame::connectSignals(MainWindow *window) {
     connect(this->combo_dest_map, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->warp->setDestinationMap(text);
         this->warp->modify();
+        // TODO: If this field changes to the name of a valid map then the available items in the ID combo box should be refreshed.
     });
 
     // dest id
@@ -571,14 +565,13 @@ void WarpFrame::populate(Project *project) {
     EventFrame::populate(project);
 
     this->combo_dest_map->addItems(project->mapNames);
+    // TODO: Populate combo_dest_warp with local IDs from target map.
 }
 
 
 
 void TriggerFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Trigger");
 
     // script combo
     QFormLayout *l_form_script = new QFormLayout();
@@ -666,8 +659,6 @@ void TriggerFrame::populate(Project *project) {
 void WeatherTriggerFrame::setup() {
     EventFrame::setup();
 
-    this->label_id->setText("Weather Trigger");
-
     // weather combo
     QFormLayout *l_form_weather = new QFormLayout();
     this->combo_weather = new NoScrollComboBox(this);
@@ -716,8 +707,6 @@ void WeatherTriggerFrame::populate(Project *project) {
 
 void SignFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Sign");
 
     // facing dir combo
     QFormLayout *l_form_facing_dir = new QFormLayout();
@@ -787,8 +776,6 @@ void SignFrame::populate(Project *project) {
 
 void HiddenItemFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Hidden Item");
 
     // item combo
     QFormLayout *l_form_item = new QFormLayout();
@@ -902,8 +889,6 @@ void HiddenItemFrame::populate(Project *project) {
 void SecretBaseFrame::setup() {
     EventFrame::setup();
 
-    this->label_id->setText("Secret Base");
-
     this->spinner_z->setEnabled(false);
 
     // item combo
@@ -955,8 +940,6 @@ void SecretBaseFrame::populate(Project *project) {
 void HealLocationFrame::setup() {
     EventFrame::setup();
 
-    this->label_id->setText("Heal Location");
-
     this->hideable_label_z->setVisible(false);
     this->spinner_z->setVisible(false);
 
@@ -982,6 +965,7 @@ void HealLocationFrame::setup() {
     QFormLayout *l_form_respawn_npc = new QFormLayout(hideable_respawn_npc);
     l_form_respawn_npc->setContentsMargins(0, 0, 0, 0);
     this->combo_respawn_npc = new NoScrollComboBox(hideable_respawn_npc);
+    // TODO: Once object events have a real local ID input field, this tool tip should be updated to reflect the name of that field
     this->combo_respawn_npc->setToolTip("event_object ID of the NPC the player interacts with\n" 
                                           "upon respawning after whiteout.");
     l_form_respawn_npc->addRow("Respawn NPC", this->combo_respawn_npc);
@@ -1006,6 +990,7 @@ void HealLocationFrame::connectSignals(MainWindow *window) {
     connect(this->combo_respawn_map, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->healLocation->setRespawnMapName(text);
         this->healLocation->modify();
+        // TODO: If this field changes to the name of a valid map then the available items in the ID combo box should be refreshed.
     });
 
     this->combo_respawn_npc->disconnect();
@@ -1038,5 +1023,4 @@ void HealLocationFrame::populate(Project *project) {
 
     this->combo_respawn_map->addItems(project->mapNames);
     // TODO: We should dynamically populate combo_respawn_npc with the local IDs of the respawn_map
-    //       Same for warp IDs.
 }

@@ -1081,8 +1081,13 @@ void MainWindow::openEventMap(Event *sourceEvent) {
         // Secret Bases open to their secret base entrance
         const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
         SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(sourceEvent);
+
+        // Extract the map name from the secret base ID.
         QString baseId = base->getBaseID();
         targetMapName = this->editor->project->mapConstantsToMapNames.value(mapPrefix + baseId.left(baseId.lastIndexOf("_")));
+
+        // Just select the first warp. Normally the only warp event on every secret base map is the entrance/exit, so this is usually correct.
+        // The warp IDs for secret bases are specified in the project's C code, not in the map data, so we don't have an easy way to read the actual IDs.
         targetEventIdName = "0";
         targetEventGroup = Event::Group::Warp;
     } else if (eventType == Event::Type::HealLocation && projectConfig.healLocationRespawnDataEnabled) {

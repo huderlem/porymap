@@ -195,6 +195,9 @@ Event* Map::getEvent(Event::Group group, int index) const {
 }
 
 Event* Map::getEvent(Event::Group group, const QString &idName) const {
+    if (idName.isEmpty())
+        return nullptr;
+
     bool idIsNumber;
     int id = idName.toInt(&idIsNumber, 0);
     if (idIsNumber)

@@ -99,7 +99,7 @@ QString Event::typeToString(Event::Type type) {
         {Event::Type::CloneObject, "Clone Object"},
         {Event::Type::Warp, "Warp"},
         {Event::Type::Trigger, "Trigger"},
-        {Event::Type::WeatherTrigger, "Weather"},
+        {Event::Type::WeatherTrigger, "Weather Trigger"},
         {Event::Type::Sign, "Sign"},
         {Event::Type::HiddenItem, "Hidden Item"},
         {Event::Type::SecretBase, "Secret Base"},

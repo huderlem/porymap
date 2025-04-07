@@ -109,7 +109,7 @@ public:
 
 public:
     NoScrollComboBox *combo_sprite;
-    NoScrollSpinBox *spinner_target_id;
+    NoScrollComboBox *combo_target_id;
     NoScrollComboBox *combo_target_map;
 
 private:
