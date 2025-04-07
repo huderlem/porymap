@@ -1699,6 +1699,7 @@ void Editor::displayMapEvents() {
 DraggablePixmapItem *Editor::addEventPixmapItem(Event *event) {
     this->project->loadEventPixmap(event);
     auto item = new DraggablePixmapItem(event, this);
+    connect(item, &DraggablePixmapItem::doubleClicked, this, &Editor::openEventMap);
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;

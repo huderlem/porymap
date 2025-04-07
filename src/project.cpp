@@ -162,8 +162,10 @@ void Project::clearTilesetCache() {
 
 Map* Project::loadMap(const QString &mapName) {
     Map* map = this->maps.value(mapName);
-    if (!map)
+    if (!map) {
+        logError(QString("Unknown map name '%1'.").arg(mapName));
         return nullptr;
+    }
 
     if (isMapLoaded(map))
         return map;
@@ -445,7 +447,12 @@ bool Project::loadLayout(Layout *layout) {
 
 Layout *Project::loadLayout(QString layoutId) {
     Layout *layout = this->mapLayouts.value(layoutId);
-    if (!layout || !loadLayout(layout)) {
+    if (!layout) {
+        logError(QString("Unknown layout ID '%1'.").arg(layoutId));
+        return nullptr;
+    }
+
+    if (!loadLayout(layout)) {
         logError(QString("Failed to load layout '%1'").arg(layoutId));
         return nullptr;
     }

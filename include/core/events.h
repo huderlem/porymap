@@ -300,12 +300,12 @@ public:
     void setTargetMap(QString newTargetMap) { this->targetMap = newTargetMap; }
     QString getTargetMap() const { return this->targetMap; }
 
-    void setTargetID(int newTargetID) { this->targetID = newTargetID; }
-    int getTargetID() const { return this->targetID; }
+    void setTargetID(QString newTargetID) { this->targetID = newTargetID; }
+    QString getTargetID() const { return this->targetID; }
 
 private:
     QString targetMap;
-    int targetID = 0;
+    QString targetID;
 };
 
 

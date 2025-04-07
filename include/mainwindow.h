@@ -177,7 +177,7 @@ private slots:
     void on_action_Save_Project_triggered();
     void save(bool currentOnly = false);
 
-    void openWarpMap(QString map_name, int event_id, Event::Group event_group);
+    void openEventMap(Event *event);
 
     void duplicate();
     void setClipboardData(poryjson::Json::object);

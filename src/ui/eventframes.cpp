@@ -453,13 +453,16 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
     });
 
     // target id
+    // TODO: Replace spinner with combo box populated with local IDs from target map.
     this->spinner_target_id->disconnect();
+    /*
     connect(this->spinner_target_id, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         this->clone->setTargetID(value);
         this->clone->getPixmapItem()->updatePixmap();
         this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
     });
+    */
 }
 
 void CloneObjectFrame::initialize() {
@@ -474,7 +477,7 @@ void CloneObjectFrame::initialize() {
     // target id
     this->spinner_target_id->setMinimum(1);
     this->spinner_target_id->setMaximum(126);
-    this->spinner_target_id->setValue(this->clone->getTargetID());
+    //this->spinner_target_id->setValue(this->clone->getTargetID());
 
     // target map
     this->combo_target_map->setTextItem(this->clone->getTargetMap());

@@ -251,11 +251,11 @@ private slots:
 
 signals:
     void eventsChanged();
+    void openEventMap(Event*);
     void openConnectedMap(MapConnection*);
     void wildMonTableOpened(EncounterTableModel*);
     void wildMonTableClosed();
     void wildMonTableEdited();
-    void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void tilesetUpdated(QString);

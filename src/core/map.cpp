@@ -194,6 +194,21 @@ Event* Map::getEvent(Event::Group group, int index) const {
     return m_events[group].value(index, nullptr);
 }
 
+Event* Map::getEvent(Event::Group group, const QString &idName) const {
+    bool idIsNumber;
+    int id = idName.toInt(&idIsNumber, 0);
+    if (idIsNumber)
+        return getEvent(group, id - Event::getIndexOffset(group));
+
+    auto events = getEvents(group);
+    for (const auto &event : events) {
+        if (event->getIdName() == idName) {
+            return event;
+        }
+    }
+    return nullptr;
+}
+
 int Map::getNumEvents(Event::Group group) const {
     if (group == Event::Group::None) {
         // Total number of events

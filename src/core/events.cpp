@@ -275,7 +275,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setY(readInt(&json, "y"));
     this->setIdName(readString(&json, "local_id"));
     this->setGfx(readString(&json, "graphics_id"));
-    this->setTargetID(readInt(&json, "target_local_id"));
+    this->setTargetID(readString(&json, "target_local_id"));
 
     // Log a warning if "target_map" isn't a known map ID, but don't overwrite user data.
     const QString mapConstant = readString(&json, "target_map");
@@ -289,7 +289,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
 
 void CloneObjectEvent::setDefaultValues(Project *project) {
     this->setGfx(project->gfxDefines.key(0, "0"));
-    this->setTargetID(1);
+    this->setTargetID(QString::number(Event::getIndexOffset(Event::Group::Object)));
     if (this->getMap()) this->setTargetMap(this->getMap()->name());
 }
 
@@ -308,9 +308,8 @@ QSet<QString> CloneObjectEvent::getExpectedFields() {
 
 void CloneObjectEvent::loadPixmap(Project *project) {
     // Try to get the targeted object to clone
-    int eventIndex = this->targetID - 1;
     Map *clonedMap = project->loadMap(this->targetMap);
-    Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, eventIndex) : nullptr;
+    Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, this->targetID) : nullptr;
 
     if (clonedEvent && clonedEvent->getEventType() == Event::Type::Object) {
         // Get graphics data from cloned object

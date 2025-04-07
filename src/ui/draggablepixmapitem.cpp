@@ -103,31 +103,3 @@ void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
             this->editor->selectMapEvent(this->event);
     }
 }
-
-// Events with properties that specify a map will open that map when double-clicked.
-void DraggablePixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
-    Event::Type eventType = this->event->getEventType();
-    if (eventType == Event::Type::Warp) {
-        WarpEvent *warp = dynamic_cast<WarpEvent *>(this->event);
-        QString destMap = warp->getDestinationMap();
-        int warpId = ParseUtil::gameStringToInt(warp->getDestinationWarpID());
-        emit editor->warpEventDoubleClicked(destMap, warpId, Event::Group::Warp);
-    }
-    else if (eventType == Event::Type::CloneObject) {
-        CloneObjectEvent *clone = dynamic_cast<CloneObjectEvent *>(this->event);
-        emit editor->warpEventDoubleClicked(clone->getTargetMap(), clone->getTargetID(), Event::Group::Object);
-    }
-    else if (eventType == Event::Type::SecretBase) {
-        const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
-        SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(this->event);
-        QString baseId = base->getBaseID();
-        QString destMap = editor->project->mapConstantsToMapNames.value(mapPrefix + baseId.left(baseId.lastIndexOf("_")));
-        emit editor->warpEventDoubleClicked(destMap, 0, Event::Group::Warp);
-    }
-    else if (eventType == Event::Type::HealLocation && projectConfig.healLocationRespawnDataEnabled) {
-        HealLocationEvent *heal = dynamic_cast<HealLocationEvent *>(this->event);
-        const QString localIdName = heal->getRespawnNPC();
-        int localId = 0; // TODO: Get value from localIdName
-        emit editor->warpEventDoubleClicked(heal->getRespawnMapName(), localId, Event::Group::Object);
-    }
-}

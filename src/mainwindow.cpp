@@ -338,7 +338,7 @@ void MainWindow::initEditor() {
     this->editor = new Editor(ui);
     connect(this->editor, &Editor::eventsChanged, this, &MainWindow::updateEvents);
     connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
-    connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
+    connect(this->editor, &Editor::openEventMap, this, &MainWindow::openEventMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonTableEdited, this,  &MainWindow::markMapEdited);
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
@@ -1055,19 +1055,56 @@ void MainWindow::refreshCollisionSelector() {
     on_horizontalSlider_CollisionZoom_valueChanged(ui->horizontalSlider_CollisionZoom->value());
 }
 
-void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
-    // Open the destination map.
-    if (!userSetMap(map_name))
+// Some events (like warps) have data that refers to an event on a different map.
+// This function opens that map, and selects the event it's referring to.
+void MainWindow::openEventMap(Event *sourceEvent) {
+    if (!sourceEvent || !this->editor->map) return;
+
+    QString targetMapName;
+    QString targetEventIdName;
+    Event::Group targetEventGroup;
+
+    Event::Type eventType = sourceEvent->getEventType();
+    if (eventType == Event::Type::Warp) {
+        // Warp events open to their destination warp event.
+        WarpEvent *warp = dynamic_cast<WarpEvent *>(sourceEvent);
+        targetMapName = warp->getDestinationMap();
+        targetEventIdName = warp->getDestinationWarpID();
+        targetEventGroup = Event::Group::Warp;
+    } else if (eventType == Event::Type::CloneObject) {
+        // Clone object events open to their target object event.
+        CloneObjectEvent *clone = dynamic_cast<CloneObjectEvent *>(sourceEvent);
+        targetMapName = clone->getTargetMap();
+        targetEventIdName = clone->getTargetID();
+        targetEventGroup = Event::Group::Object;
+    } else if (eventType == Event::Type::SecretBase) {
+        // Secret Bases open to their secret base entrance
+        const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
+        SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(sourceEvent);
+        QString baseId = base->getBaseID();
+        targetMapName = this->editor->project->mapConstantsToMapNames.value(mapPrefix + baseId.left(baseId.lastIndexOf("_")));
+        targetEventIdName = "0";
+        targetEventGroup = Event::Group::Warp;
+    } else if (eventType == Event::Type::HealLocation && projectConfig.healLocationRespawnDataEnabled) {
+        // Heal location events open to their respawn NPC
+        HealLocationEvent *heal = dynamic_cast<HealLocationEvent *>(sourceEvent);
+        targetMapName = heal->getRespawnMapName();
+        targetEventIdName = heal->getRespawnNPC();
+        targetEventGroup = Event::Group::Object;
+    } else {
+        // Other event types have no target map to open.
+        return;
+    }
+    if (!userSetMap(targetMapName))
         return;
 
-    // Select the target event.
-    int index = event_id - Event::getIndexOffset(event_group);
-    Event* event = this->editor->map->getEvent(event_group, index);
-    if (event) {
-        this->editor->selectMapEvent(event);
+    // Map opened successfully, now try to select the targeted event on that map.
+    Event* targetEvent = this->editor->map->getEvent(targetEventGroup, targetEventIdName);
+    if (targetEvent) {
+        this->editor->selectMapEvent(targetEvent);
     } else {
         // Can still warp to this map, but can't select the specified event
-        logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::groupToString(event_group)).arg(event_id).arg(map_name));
+        logWarn(QString("%1 '%2' doesn't exist on map '%3'").arg(Event::groupToString(targetEventGroup)).arg(targetEventIdName).arg(targetMapName));
     }
 }
 

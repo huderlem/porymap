@@ -42,13 +42,14 @@ signals:
     void positionChanged(Event *event);
     void xChanged(int);
     void yChanged(int);
-    void spriteChanged(QPixmap pixmap);
+    void spriteChanged(const QPixmap &pixmap);
+    void doubleClicked(Event *event);
 
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
-    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override { emit doubleClicked(this->event); }
 };
 
 #endif // DRAGGABLEPIXMAPITEM_H
