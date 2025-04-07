@@ -5,7 +5,7 @@
 #include <math.h>
 
 ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection)
-    : QGraphicsPixmapItem(connection->getPixmap()),
+    : QGraphicsPixmapItem(connection->render()),
       connection(connection)
 {
     this->setEditable(true);
@@ -28,7 +28,7 @@ void ConnectionPixmapItem::refresh() {
 // Render additional visual effects on top of the base map image.
 void ConnectionPixmapItem::render(bool ignoreCache) {
     if (ignoreCache)
-        this->basePixmap = this->connection->getPixmap();
+        this->basePixmap = this->connection->render();
 
     QPixmap pixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
     this->setZValue(-1);
@@ -63,10 +63,10 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
         int newOffset = this->connection->offset();
 
         // Restrict movement to the metatile grid and perpendicular to the connection direction.
-        if (MapConnection::isVertical(this->connection->direction())) {
+        if (this->connection->isVertical()) {
             x = (round(newPos.x() / this->mWidth) * this->mWidth) - this->originX;
             newOffset = x / this->mWidth;
-        } else if (MapConnection::isHorizontal(this->connection->direction())) {
+        } else if (this->connection->isHorizontal()) {
             y = (round(newPos.y() / this->mHeight) * this->mHeight) - this->originY;
             newOffset = y / this->mHeight;
         }
@@ -87,9 +87,9 @@ void ConnectionPixmapItem::updatePos() {
     qreal x = this->originX;
     qreal y = this->originY;
 
-    if (MapConnection::isVertical(this->connection->direction())) {
+    if (this->connection->isVertical()) {
         x += this->connection->offset() * this->mWidth;
-    } else if (MapConnection::isHorizontal(this->connection->direction())) {
+    } else if (this->connection->isHorizontal()) {
         y += this->connection->offset() * this->mHeight;
     }
 
@@ -98,22 +98,13 @@ void ConnectionPixmapItem::updatePos() {
 }
 
 void ConnectionPixmapItem::updateOrigin() {
-    const Map *parentMap = connection->parentMap();
-    const Map *targetMap = connection->targetMap();
-    const QString direction = connection->direction();
-    int x = 0, y = 0;
-
-    if (direction == "right") {
-        if (parentMap) x = parentMap->getWidth();
-    } else if (direction == "down") {
-        if (parentMap) y = parentMap->getHeight();
-    } else if (direction == "left") {
-        if (targetMap) x = -targetMap->getConnectionRect(direction).width();
-    } else if (direction == "up") {
-        if (targetMap) y = -targetMap->getConnectionRect(direction).height();
+    if (this->connection->isVertical()) {
+        this->originX = 0;
+        this->originY = this->connection->relativePos(true).y() * this->mHeight;
+    } else if (this->connection->isHorizontal()) {
+        this->originX = this->connection->relativePos(true).x() * this->mWidth;
+        this->originY = 0;
     }
-    this->originX = x * this->mWidth;
-    this->originY = y * this->mHeight;
     updatePos();
 }
 

@@ -5,7 +5,7 @@
 
 #include <QDebug>
 
-int getEventTypeMask(QList<Event *> events) {
+int getEventTypeMask(const QList<Event *> &events) {
     int eventTypeMask = 0;
     for (auto event : events) {
         Event::Group groupType = event->getEventGroup();
@@ -22,6 +22,26 @@ int getEventTypeMask(QList<Event *> events) {
         }
     }
     return eventTypeMask;
+}
+
+int getConnectionDirectionMask(const QList<QString> &directions) {
+    int mask = 0;
+    for (auto direction : directions) {
+        if (direction == "up") {
+            mask |= IDMask_ConnectionDirection_Up;
+        } else if (direction == "down") {
+            mask |= IDMask_ConnectionDirection_Down;
+        } else if (direction == "left") {
+            mask |= IDMask_ConnectionDirection_Left;
+        } else if (direction == "right") {
+            mask |= IDMask_ConnectionDirection_Right;
+        } else if (direction == "dive") {
+            mask |= IDMask_ConnectionDirection_Dive;
+        } else if (direction == "emerge") {
+            mask |= IDMask_ConnectionDirection_Emerge;
+        }
+    }
+    return mask;
 }
 
 void renderBlocks(Layout *layout, bool ignoreCache = false) {
@@ -587,6 +607,10 @@ bool MapConnectionMove::mergeWith(const QUndoCommand *command) {
     return true;
 }
 
+int MapConnectionMove::id() const {
+    return CommandId::ID_MapConnectionMove | getConnectionDirectionMask({this->connection->direction()});
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -629,6 +653,10 @@ void MapConnectionChangeDirection::undo() {
     QUndoCommand::undo();
 }
 
+int MapConnectionChangeDirection::id() const {
+    return CommandId::ID_MapConnectionChangeDirection | getConnectionDirectionMask({this->oldDirection, this->newDirection});
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -662,6 +690,10 @@ void MapConnectionChangeMap::undo() {
         this->connection->setOffset(this->oldOffset, this->mirrored);
     }
     QUndoCommand::undo();
+}
+
+int MapConnectionChangeMap::id() const {
+    return CommandId::ID_MapConnectionChangeMap | getConnectionDirectionMask({this->connection->direction()});
 }
 
 /******************************************************************************
@@ -708,6 +740,10 @@ void MapConnectionAdd::undo() {
     QUndoCommand::undo();
 }
 
+int MapConnectionAdd::id() const {
+    return CommandId::ID_MapConnectionAdd | getConnectionDirectionMask({this->connection->direction()});
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -744,4 +780,8 @@ void MapConnectionRemove::undo() {
         this->mirrorMap->addConnection(this->mirror);
 
     QUndoCommand::undo();
+}
+
+int MapConnectionRemove::id() const {
+    return CommandId::ID_MapConnectionRemove | getConnectionDirectionMask({this->connection->direction()});
 }

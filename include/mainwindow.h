@@ -301,6 +301,10 @@ public:
     Ui::MainWindow *ui;
     QPointer<Editor> editor = nullptr;
 
+signals:
+    void mapOpened(Map*);
+    void layoutOpened(Layout*);
+
 private:
     QLabel *label_MapRulerStatus = nullptr;
     QPointer<TilesetEditor> tilesetEditor = nullptr;

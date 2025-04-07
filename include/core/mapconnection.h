@@ -26,13 +26,19 @@ public:
     QString direction() const { return m_direction; }
     void setDirection(const QString &direction, bool mirror = true);
 
+    bool isCardinal() const { return isCardinal(m_direction); }
+    bool isHorizontal() const { return isHorizontal(m_direction); }
+    bool isVertical() const { return isVertical(m_direction); }
+    bool isDiving() const { return isDiving(m_direction); }
+
     int offset() const { return m_offset; }
     void setOffset(int offset, bool mirror = true);
 
     MapConnection* findMirror();
     MapConnection* createMirror();
 
-    QPixmap getPixmap();
+    QPixmap render() const;
+    QPoint relativePos(bool clipped = false) const;
 
     static QPointer<Project> project;
     static const QMap<QString, QString> oppositeDirections;
