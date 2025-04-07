@@ -20,7 +20,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) 
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
     project(project),
-    baseDir(projectConfig.projectDir + QDir::separator())
+    baseDir(projectConfig.projectDir + "/")
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -388,11 +388,13 @@ QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath)
     QString path;
     if (defaultFilepath.endsWith("/")){
         // Default filepath is a folder, choose a new folder
-        path = FileDialog::getExistingDirectory(this, "Choose Project File Folder", startDir) + QDir::separator();
+        path = FileDialog::getExistingDirectory(this, "Choose Project File Folder", startDir) + "/";
     } else{
         // Default filepath is not a folder, choose a new file
         path = FileDialog::getOpenFileName(this, "Choose Project File", startDir);
     }
+    if (path.isEmpty())
+        return path;
 
     if (!path.startsWith(this->baseDir)){
         // Most of Porymap's file-parsing code for project files will assume that filepaths

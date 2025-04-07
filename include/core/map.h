@@ -87,7 +87,7 @@ public:
     bool hasEvent(Event *) const;
 
     void deleteConnections();
-    QList<MapConnection*> getConnections() const;
+    QList<MapConnection*> getConnections() const { return m_connections; }
     void removeConnection(MapConnection *);
     void addConnection(MapConnection *);
     void loadConnection(MapConnection *);

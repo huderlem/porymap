@@ -52,6 +52,8 @@ public:
     int loopCount() const;
     void setLoopCount(int loop);
 
+    QSize getCanvasSize() const;
+
     int frameCount() const;
     QImage frame(int index) const;
 

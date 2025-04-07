@@ -37,7 +37,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The max encounter rate is now read from the project, rather than assuming the default value from RSE.
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
 - The triple-layer metatiles setting can now be set automatically using a project constant.
-- `Export Map Stitch Image` now shows a preview of the full image, not just the current map.
+- `Export Map Stitch Image` and `Export Map Timelapse Image` now show a preview of the full image/gif, not just the current map.
 - `Custom Attributes` tables now display numbers using spin boxes. The `type` column was removed, because `value`'s type is now obvious.
 - Unrecognized map names in Event or Connections data will no longer be overwritten.
 - It's now possible to click on an event's sprite even if a different event's rectangle is overlapping it. The old selection behavior is available via a new setting.
@@ -62,6 +62,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
 - Fix selections with multiple Events not always clearing when making a new selection.
 - Fix the new event button not updating correctly when selecting object events.
+- Fix duplicated `Hidden Item` events not copying the `Requires Itemfinder` field.
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
@@ -81,6 +82,12 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix a freeze on startup if project values are defined with mismatched parentheses.
 - Fix stitched map images sometimes rendering garbage
 - Fix the `Reset` button on `Export Map Timelapse Image` not resetting the Timelapse settings.
+- Fix events in exported map stitch images being occluded by neighboring maps.
+- Fix the map connections in exported map images coming from the map currently open in the editor, rather than the map shown in the export window.
+- Fix crash when exporting a map stitch image if a map fails to load.
+- Fix possible crash when exporting a timelapse that has events edit history.
+- Fix exported timelapses excluding pasted events and certain map size changes.
+- Fix exporting a timelapse sometimes altering the state of the current map's edit history.
 - Stop sliders in the Palette Editor from creating a bunch of edit history when used.
 - Fix scrolling on some containers locking up when the mouse stops over a spin box or combo box.
 - Fix some file dialogs returning to an incorrect window when closed.
@@ -88,6 +95,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix bug where layout json and blockdata could be saved separately leading to inconsistent data.
 - Fix crash when saving tilesets with fewer palettes than the maximum.
 - Fix projects not opening on Windows if the project filepath contains certain characters.
+- Fix custom project filepaths not converting Windows file separators.
 - Fix exported tile images containing garbage pixels after the end of the tiles.
 - Fix fully transparent pixels rendering with the incorrect color.
 - Fix the values for some config fields shuffling their order every save.

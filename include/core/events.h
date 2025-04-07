@@ -170,6 +170,7 @@ public:
     static QString typeToJsonKey(Event::Type type);
     static Event::Type typeFromJsonKey(QString type);
     static QList<Event::Type> types();
+    static QList<Event::Group> groups();
 
 // protected attributes
 protected:
@@ -340,10 +341,12 @@ public:
     QString getDestinationWarpID() const { return this->destinationWarpID; }
 
     void setWarningEnabled(bool enabled);
+    bool getWarningEnabled() const { return this->warningEnabled; }
 
 private:
     QString destinationMap;
     QString destinationWarpID;
+    bool warningEnabled = false;
 };
 
 
@@ -621,6 +624,10 @@ private:
     QString hostMapName; // Only needed if the host map fails to load.
 };
 
+
+inline uint qHash(const Event::Group &key, uint seed = 0) {
+    return qHash(static_cast<int>(key), seed);
+}
 
 
 ///

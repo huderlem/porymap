@@ -11,7 +11,7 @@
 CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CustomScriptsEditor),
-    baseDir(userConfig.projectDir + QDir::separator())
+    baseDir(userConfig.projectDir + "/")
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);

@@ -8,75 +8,114 @@
 #include <QPainter>
 #include <QPoint>
 
-#define STITCH_MODE_BORDER_DISTANCE 2
-
-QString getTitle(ImageExporterMode mode) {
+QString MapImageExporter::getTitle(ImageExporterMode mode) {
     switch (mode)
     {
         case ImageExporterMode::Normal:
-            return "Export Map Image";
+            return QString("Export %1 Image").arg(m_map ? "Map" : "Layout");
         case ImageExporterMode::Stitch:
-            return "Export Map Stitch Image";
+            return QStringLiteral("Export Map Stitch Image");
         case ImageExporterMode::Timelapse:
-            return "Export Map Timelapse Image";
+            return QString("Export %1 Timelapse Image").arg(m_map ? "Map" : "Layout");
     }
     return "";
 }
 
-QString getDescription(ImageExporterMode mode) {
+QString MapImageExporter::getDescription(ImageExporterMode mode) {
     switch (mode)
     {
         case ImageExporterMode::Normal:
-            return "Exports an image of the selected map.";
+            return QString("Exports an image of the selected %1.").arg(m_map ? "Map" : "Layout");
         case ImageExporterMode::Stitch:
             return "Exports a combined image of all the maps connected to the selected map.";
         case ImageExporterMode::Timelapse:
-            return "Exports a GIF of the edit history for the selected map.";
+            return QString("Exports a GIF of the edit history for the selected %1.").arg(m_map ? "Map" : "Layout");
     }
     return "";
 }
 
-MapImageExporter::MapImageExporter(QWidget *parent, Editor *editor, ImageExporterMode mode) :
+MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, Layout *layout, ImageExporterMode mode) :
     QDialog(parent),
-    ui(new Ui::MapImageExporter)
+    ui(new Ui::MapImageExporter),
+    m_project(project),
+    m_map(map),
+    m_layout(layout),
+    m_mode(mode),
+    m_originalMode(mode)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
-    m_map = editor->map;
-    m_layout = editor->layout;
-    m_editor = editor;
-    m_mode = mode;
-    setWindowTitle(getTitle(m_mode));
-    ui->label_Description->setText(getDescription(m_mode));
-    ui->groupBox_Connections->setVisible(m_mode != ImageExporterMode::Stitch);
-    ui->groupBox_Timelapse->setVisible(m_mode == ImageExporterMode::Timelapse);
 
-    if (m_map) {
-        ui->comboBox_MapSelection->addItems(editor->project->mapNames);
-        ui->comboBox_MapSelection->setCurrentText(m_map->name());
-        ui->comboBox_MapSelection->setEnabled(false);// TODO: allow selecting map from drop-down
-    } else {
-        // Some settings only apply to maps. When exporting an image in layout-only mode we hide them.
-        ui->comboBox_MapSelection->setVisible(false);
-        ui->label_MapSelection->setVisible(false);
-        ui->groupBox_Events->setVisible(false);
-        ui->groupBox_Connections->setVisible(false);
-    }
+    m_scene = new QGraphicsScene(this);
+    m_preview = m_scene->addPixmap(QPixmap());
+    ui->graphicsView_Preview->setScene(m_scene);
+
+    setModeSpecificUi();
 
     connect(ui->pushButton_Save,   &QPushButton::pressed, this, &MapImageExporter::saveImage);
     connect(ui->pushButton_Cancel, &QPushButton::pressed, this, &MapImageExporter::close);
+
+    // Update the map selector when the text changes.
+    // We don't use QComboBox::currentTextChanged to avoid unnecessary re-rendering.
+    connect(ui->comboBox_MapSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MapImageExporter::updateMapSelection);
+    connect(ui->comboBox_MapSelection->lineEdit(), &QLineEdit::editingFinished, this, &MapImageExporter::updateMapSelection);
+
+    ui->graphicsView_Preview->setFocus();
 }
 
 MapImageExporter::~MapImageExporter() {
-    delete m_scene;
+    delete m_timelapseGifImage;
     delete ui;
+}
+
+void MapImageExporter::setModeSpecificUi() {
+    m_mode = m_originalMode;
+    if (!m_map && m_mode == ImageExporterMode::Stitch) {
+        // Stitch mode is not valid with only a layout open.
+        // This could happen if a user opens the stitch exporter with a map, then opens a layout.
+        m_mode = ImageExporterMode::Normal;
+    }
+
+    setWindowTitle(getTitle(m_mode));
+    ui->label_Description->setText(getDescription(m_mode));
+    ui->groupBox_Connections->setVisible(m_map && m_mode != ImageExporterMode::Stitch);
+    ui->groupBox_Timelapse->setVisible(m_mode == ImageExporterMode::Timelapse);
+    ui->groupBox_Events->setVisible(m_map != nullptr);
+
+    // Initialize map selector
+    const QSignalBlocker b(ui->comboBox_MapSelection);
+    ui->comboBox_MapSelection->clear();
+    if (m_map) {
+        ui->comboBox_MapSelection->addItems(m_project->mapNames);
+        ui->comboBox_MapSelection->setCurrentText(m_map->name());
+        ui->label_MapSelection->setText(m_mode == ImageExporterMode::Stitch ? QStringLiteral("Starting Map") : QStringLiteral("Map"));
+    } else if (m_layout) {
+        ui->comboBox_MapSelection->addItems(m_project->layoutIds);
+        ui->comboBox_MapSelection->setCurrentText(m_layout->id);
+        ui->label_MapSelection->setText(QStringLiteral("Layout"));
+    }
+
+    if (m_mode == ImageExporterMode::Timelapse) {
+        // TODO: At the moment edit history for events (and the DraggablePixmapItem class)
+        // explicitly depend on the editor and assume their map is currently open.
+        // Other edit commands rely on this more subtly, like triggering API callbacks or
+        // spending time rendering their layout (which can make creating timelapses very slow).
+        // Until this is resolved, the selected map/layout must remain the same as in the editor.
+        // We enforce this here by disabling the selector, and in MainWindow by programmatically
+        // changing the exporter's map/layout selection if the user opens a new one in the editor.
+        ui->comboBox_MapSelection->setEnabled(false);
+        ui->label_MapSelection->setEnabled(false);
+    }
+
+    // Update for any mode-specific default settings
+    resetSettings();
 }
 
 // Allow the window to open before displaying the preview.
 void MapImageExporter::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
     if (!event->spontaneous())
-        QTimer::singleShot(0, this, &MapImageExporter::updatePreview);
+        QTimer::singleShot(0, this, [this](){ updatePreview(); });
 }
 
 void MapImageExporter::resizeEvent(QResizeEvent *event) {
@@ -84,14 +123,65 @@ void MapImageExporter::resizeEvent(QResizeEvent *event) {
     scalePreview();
 }
 
-void MapImageExporter::saveImage() {
-    // Make sure preview is up-to-date before we save.
-    if (m_preview.isNull())
-        updatePreview();
-    if (m_preview.isNull())
-        return;
+void MapImageExporter::setMap(Map *map) {
+    if (map) setSelectionText(map->name());
+}
 
-    const QString title = getTitle(m_mode);
+void MapImageExporter::setLayout(Layout *layout) {
+    if (layout) setSelectionText(layout->id);
+}
+
+void MapImageExporter::setSelectionText(const QString &text) {
+    const QSignalBlocker b(ui->comboBox_MapSelection);
+    ui->comboBox_MapSelection->setCurrentText(text);
+    updateMapSelection();
+}
+
+void MapImageExporter::updateMapSelection() {
+    auto oldMap = m_map;
+    auto oldLayout = m_layout;
+
+    const QString text = ui->comboBox_MapSelection->currentText();
+    if (m_project->mapNames.contains(text)) {
+        auto newMap = m_project->loadMap(text);
+        if (newMap) {
+            m_map = newMap;
+            m_layout = newMap->layout();
+        }
+    } else if (m_project->layoutIds.contains(text)) {
+        auto newLayout = m_project->loadLayout(text);
+        if (newLayout) {
+            m_map = nullptr;
+            m_layout = newLayout;
+        }
+    }
+
+    // Ensure text in the combo box remains valid
+    const QSignalBlocker b(ui->comboBox_MapSelection);
+    ui->comboBox_MapSelection->setCurrentText(m_map ? m_map->name() : m_layout->id);
+
+    if (m_map != oldMap && (!m_map || !oldMap)) {
+        // Switching to or from layout-only mode
+        setModeSpecificUi();
+    }
+    if (m_map != oldMap || m_layout != oldLayout){
+        updatePreview();
+    }
+}
+
+void MapImageExporter::saveImage() {
+    // If the preview is empty (because progress was canceled) or if updates were disabled
+    // then we should ensure the image in the preview is up-to-date before exporting.
+    if (m_preview->pixmap().isNull() || m_settings.disablePreviewUpdates) {
+        updatePreview(true);
+        if (m_preview->pixmap().isNull())
+            return; // Canceled
+    }
+    if (m_mode == ImageExporterMode::Timelapse && !m_timelapseGifImage) {
+        // Shouldn't happen. We have a preview for the timelapse, but no timelapse image.
+        return;
+    }
+
     const QString itemName = m_map ? m_map->name() : m_layout->name;
     QString defaultFilename;
     switch (m_mode)
@@ -112,117 +202,25 @@ void MapImageExporter::saveImage() {
             .arg(defaultFilename)
             .arg(m_mode == ImageExporterMode::Timelapse ? "gif" : "png");
     QString filter = m_mode == ImageExporterMode::Timelapse ? "Image Files (*.gif)" : "Image Files (*.png *.jpg *.bmp)";
-    QString filepath = FileDialog::getSaveFileName(this, title, defaultFilepath, filter);
+    QString filepath = FileDialog::getSaveFileName(this, windowTitle(), defaultFilepath, filter);
     if (!filepath.isEmpty()) {
         switch (m_mode) {
             case ImageExporterMode::Normal:
             case ImageExporterMode::Stitch:
                 // Normal and Stitch modes already have the image ready to go in the preview.
-                m_preview.save(filepath);
+                m_preview->pixmap().save(filepath);
                 break;
             case ImageExporterMode::Timelapse:
-                // Timelapse will play in order of layout changes then map changes (events)
-                // TODO: potentially update in the future?
-                QGifImage timelapseImg;
-                timelapseImg.setDefaultDelay(m_settings.timelapseDelayMs);
-                timelapseImg.setDefaultTransparentColor(QColor(0, 0, 0));
-
-                // lambda to avoid redundancy
-                auto generateTimelapseFromHistory = [this, &timelapseImg](QString progressText, QUndoStack *historyStack){
-                    QProgressDialog progress(progressText, "Cancel", 0, 1, this);
-                    progress.setAutoClose(true);
-                    progress.setWindowModality(Qt::WindowModal);
-                    progress.setModal(true);
-                    progress.setMaximum(1);
-                    progress.setValue(0);
-
-                    int maxWidth = m_layout->getWidth() * 16;
-                    int maxHeight = m_layout->getHeight() * 16;
-                    if (m_settings.showBorder) {
-                        maxWidth += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
-                        maxHeight += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
-                    }
-                    // Rewind to the specified start of the map edit history.
-                    int i = 0;
-                    while (historyStack->canUndo()) {
-                        progress.setValue(i);
-                        historyStack->undo();
-                        int width = m_layout->getWidth() * 16;
-                        int height = m_layout->getHeight() * 16;
-                        if (m_settings.showBorder) {
-                            width += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
-                            height += 2 * STITCH_MODE_BORDER_DISTANCE * 16;
-                        }
-                        if (width > maxWidth) {
-                            maxWidth = width;
-                        }
-                        if (height > maxHeight) {
-                            maxHeight = height;
-                        }
-                        i++;
-                    }
-
-                    // Draw each frame, skpping the specified number of map edits in
-                    // the undo history.
-                    progress.setMaximum(i);
-                    while (i > 0) {
-                        if (progress.wasCanceled()) {
-                            progress.close();
-                            while (i > 0 && historyStack->canRedo()) {
-                                i--;
-                                historyStack->redo();
-                            }
-                            return;
-                        }
-                        while (historyStack->canRedo() &&
-                               !historyItemAppliesToFrame(historyStack->command(historyStack->index()))) {
-                            i--;
-                            historyStack->redo();
-                        }
-                        progress.setValue(progress.maximum() - i);
-                        QPixmap pixmap = getFormattedMapPixmap();
-                        if (pixmap.width() < maxWidth || pixmap.height() < maxHeight) {
-                            QPixmap pixmap2 = QPixmap(maxWidth, maxHeight);
-                            QPainter painter(&pixmap2);
-                            pixmap2.fill(QColor(0, 0, 0));
-                            painter.drawPixmap(0, 0, pixmap.width(), pixmap.height(), pixmap);
-                            painter.end();
-                            pixmap = pixmap2;
-                        }
-                        timelapseImg.addFrame(pixmap.toImage());
-                        for (int j = 0; j < m_settings.timelapseSkipAmount; j++) {
-                            if (i > 0) {
-                                i--;
-                                historyStack->redo();
-                                while (historyStack->canRedo() &&
-                                       !historyItemAppliesToFrame(historyStack->command(historyStack->index()))) {
-                                    i--;
-                                    historyStack->redo();
-                                }
-                            }
-                        }
-                    }
-                    // The latest map state is the last animated frame.
-                    QPixmap pixmap = getFormattedMapPixmap();
-                    timelapseImg.addFrame(pixmap.toImage());
-                    progress.close();
-                };
-
-                if (m_layout)
-                    generateTimelapseFromHistory("Building layout timelapse...", &m_layout->editHistory);
-
-                if (m_map)
-                    generateTimelapseFromHistory("Building map timelapse...", m_map->editHistory());
-
-                timelapseImg.save(filepath);
+                m_timelapseGifImage->save(filepath);
                 break;
         }
         close();
     }
 }
 
-bool MapImageExporter::historyItemAppliesToFrame(const QUndoCommand *command) {
-    if (command->isObsolete())
+bool MapImageExporter::currentHistoryAppliesToFrame(QUndoStack *historyStack) {
+    const QUndoCommand *command = historyStack->command(historyStack->index());
+    if (!command || command->isObsolete())
         return false;
 
     switch (command->id() & 0xFF) {
@@ -243,24 +241,152 @@ bool MapImageExporter::historyItemAppliesToFrame(const QUndoCommand *command) {
         case CommandId::ID_MapConnectionChangeDirection:
         case CommandId::ID_MapConnectionChangeMap:
         case CommandId::ID_MapConnectionAdd:
-        case CommandId::ID_MapConnectionRemove:
-            return m_settings.showUpConnections || m_settings.showDownConnections || m_settings.showLeftConnections || m_settings.showRightConnections;
+        case CommandId::ID_MapConnectionRemove: {
+            if (!connectionsEnabled())
+                return false;
+            uint32_t flags = 0;
+            if (m_settings.showConnections.contains("up"))    flags |= IDMask_ConnectionDirection_Up;
+            if (m_settings.showConnections.contains("down"))  flags |= IDMask_ConnectionDirection_Down;
+            if (m_settings.showConnections.contains("left"))  flags |= IDMask_ConnectionDirection_Left;
+            if (m_settings.showConnections.contains("right")) flags |= IDMask_ConnectionDirection_Right;
+            return (command->id() & flags) != 0;
+        }
         case CommandId::ID_EventMove:
         case CommandId::ID_EventShift:
         case CommandId::ID_EventCreate:
+        case CommandId::ID_EventPaste:
         case CommandId::ID_EventDelete:
         case CommandId::ID_EventDuplicate: {
-            bool eventTypeIsApplicable =
-                       (m_settings.showObjects       && (command->id() & IDMask_EventType_Object)  != 0)
-                    || (m_settings.showWarps         && (command->id() & IDMask_EventType_Warp)    != 0)
-                    || (m_settings.showBGs           && (command->id() & IDMask_EventType_BG)      != 0)
-                    || (m_settings.showTriggers      && (command->id() & IDMask_EventType_Trigger) != 0)
-                    || (m_settings.showHealLocations && (command->id() & IDMask_EventType_Heal)    != 0);
-            return eventTypeIsApplicable;
+            if (!eventsEnabled())
+                return false;
+            uint32_t flags = 0;
+            if (m_settings.showEvents.contains(Event::Group::Object)) flags |= IDMask_EventType_Object;
+            if (m_settings.showEvents.contains(Event::Group::Warp))   flags |= IDMask_EventType_Warp;
+            if (m_settings.showEvents.contains(Event::Group::Bg))     flags |= IDMask_EventType_BG;
+            if (m_settings.showEvents.contains(Event::Group::Coord))  flags |= IDMask_EventType_Trigger;
+            if (m_settings.showEvents.contains(Event::Group::Heal))   flags |= IDMask_EventType_Heal;
+            return (command->id() & flags) != 0;
         }
         default:
             return false;
     }
+}
+
+QPixmap MapImageExporter::getExpandedPixmap(const QPixmap &pixmap, const QSize &targetSize, const QColor &fillColor) {
+    if (pixmap.width() >= targetSize.width() && pixmap.height() >= targetSize.height())
+        return pixmap;
+
+    QPixmap resizedPixmap = QPixmap(targetSize);
+    QPainter painter(&resizedPixmap);
+    resizedPixmap.fill(fillColor);
+
+    // Center the old pixmap in the new resized one.
+    int x = (targetSize.width() - pixmap.width()) / 2;
+    int y = (targetSize.height() - pixmap.height()) / 2;
+    painter.drawPixmap(x, y, pixmap.width(), pixmap.height(), pixmap);
+    return resizedPixmap;
+}
+
+struct TimelapseStep {
+    QUndoStack* historyStack;
+    int initialStackIndex;
+    QString name;
+};
+
+QGifImage* MapImageExporter::createTimelapseGifImage(QProgressDialog *progress) {
+    // TODO: Timelapse will play in order of layout changes then map changes (events, connections). Potentially update in the future?
+    QList<TimelapseStep> steps;
+    steps.append({
+        .historyStack = &m_layout->editHistory,
+        .initialStackIndex = m_layout->editHistory.index(),
+        .name = "layout",
+    });
+    if (m_map) {
+        steps.append({
+            .historyStack = m_map->editHistory(),
+            .initialStackIndex = m_map->editHistory()->index(),
+            .name = "map",
+        });
+    }
+
+    // Rewind the edit histories and get the maximum map size for the gif's canvas.
+    QSize canvasSize = QSize(0,0);
+    for (const auto &step : steps) {
+        progress->setLabelText(QString("Rewinding %1 edit history...").arg(step.name));
+        progress->setMinimum(0);
+        progress->setMaximum(step.initialStackIndex);
+        progress->setValue(progress->minimum());
+        do {
+            if (currentHistoryAppliesToFrame(step.historyStack) || step.historyStack->index() == step.initialStackIndex) {
+                // Either this is relevant edit history, or it's the final frame (which is always rendered). Record the size of the map at this point.
+                QMargins margins = getMargins(m_map);
+                canvasSize = canvasSize.expandedTo(QSize(m_layout->getWidth() * 16 + margins.left() + margins.right(),
+                                                         m_layout->getHeight() * 16 + margins.top() + margins.bottom()));
+            }
+            if (step.historyStack->canUndo()){
+                step.historyStack->undo();
+            } else break;
+            progress->setValue(step.initialStackIndex - step.historyStack->index());
+        } while (!progress->wasCanceled());
+    }
+
+    auto timelapseImg = new QGifImage(canvasSize);
+    timelapseImg->setDefaultDelay(m_settings.timelapseDelayMs);
+    timelapseImg->setDefaultTransparentColor(m_settings.fillColor);
+
+    // Create the timelapse image frames
+    for (const auto &step : steps) {
+        if (step.historyStack->index() >= step.initialStackIndex)
+            continue;
+
+        // Progress is represented by the number of commands we need to redo to finish the timelapse,
+        // which can be different than the number of image frames we need to create.
+        progress->setLabelText(QString("Building %1 timelapse...").arg(step.name));
+        progress->setMinimum(step.historyStack->index());
+        progress->setMaximum(step.initialStackIndex - step.historyStack->index());
+        progress->setValue(progress->minimum());
+
+        int framesToSkip = m_settings.timelapseSkipAmount - 1;
+        while (step.historyStack->canRedo() && step.historyStack->index() < step.initialStackIndex && !progress->wasCanceled()) {
+            if (currentHistoryAppliesToFrame(step.historyStack) && --framesToSkip <= 0) {
+                // Render frame, increasing its size if necessary to match the canvas.
+                QPixmap pixmap = getExpandedPixmap(getFormattedMapPixmap(), canvasSize, m_settings.fillColor);
+                timelapseImg->addFrame(pixmap.toImage());
+                framesToSkip = m_settings.timelapseSkipAmount - 1;
+            }
+            step.historyStack->redo();
+            progress->setValue(step.historyStack->index() - progress->minimum());
+        }
+    }
+
+    // Ensure all edit histories are restored to their original states.
+    // We already make sure above that we don't overshoot the initial state,
+    // so this should only need to happen if progress was canceled.
+    // Restoring the edit history is required, so we will disable canceling from here on.
+    if (progress->wasCanceled()) {
+        delete timelapseImg;
+        timelapseImg = nullptr;
+    }
+    progress->setCancelButton(nullptr);
+    for (const auto &step : steps) {
+        if (step.historyStack->index() >= step.initialStackIndex)
+            continue;
+        progress->setLabelText(QString("Restoring %1 edit history...").arg(step.name));
+        progress->setMinimum(0);
+        progress->setMaximum(step.initialStackIndex);
+        progress->setValue(step.historyStack->index());
+        while (step.historyStack->canRedo() && step.historyStack->index() < step.initialStackIndex) {
+            step.historyStack->redo();
+            progress->setValue(step.historyStack->index());
+        }
+    }
+
+    // Final frame should always be the current state of the map.
+    if (timelapseImg) {
+        QPixmap finalFrame = getExpandedPixmap(getFormattedMapPixmap(), canvasSize, m_settings.fillColor);
+        timelapseImg->addFrame(finalFrame.toImage());
+    }
+    return timelapseImg;
 }
 
 struct StitchedMap {
@@ -269,13 +395,13 @@ struct StitchedMap {
     Map* map;
 };
 
-QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool includeBorder) {
+QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
     // Do a breadth-first search to gather a collection of
     // all reachable maps with their relative offsets.
     QSet<QString> visited;
     QList<StitchedMap> stitchedMaps;
     QList<StitchedMap> unvisited;
-    unvisited.append(StitchedMap{0, 0, m_editor->map});
+    unvisited.append(StitchedMap{0, 0, m_map});
 
     progress->setLabelText("Gathering stitched maps...");
     while (!unvisited.isEmpty()) {
@@ -291,276 +417,309 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress, bool inclu
         visited.insert(cur.map->name());
         stitchedMaps.append(cur);
 
-        for (MapConnection *connection : cur.map->getConnections()) {
-            const QString direction = connection->direction();
-            int x = cur.x;
-            int y = cur.y;
-            int offset = connection->offset();
-            Map *connectionMap = connection->targetMap();
-            if (!connectionMap)
-                continue;
-            if (direction == "up") {
-                x += offset;
-                y -= connectionMap->getHeight();
-            } else if (direction == "down") {
-                x += offset;
-                y += cur.map->getHeight();
-            } else if (direction == "left") {
-                x -= connectionMap->getWidth();
-                y += offset;
-            } else if (direction == "right") {
-                x += cur.map->getWidth();
-                y += offset;
-            } else {
-                // Ignore Dive/Emerge connections and unrecognized directions
-                continue;
-            }
-            unvisited.append(StitchedMap{x, y, connectionMap});
+        for (const auto &connection : cur.map->getConnections()) {
+            if (!connection->isCardinal()) continue;
+            Map *connectedMap = connection->targetMap();
+            if (!connectedMap) continue;
+            QPoint pos = connection->relativePos();
+            unvisited.append(StitchedMap{cur.x + (pos.x() * 16), cur.y + (pos.y() * 16), connectedMap});
         }
     }
+    if (stitchedMaps.isEmpty())
+        return QPixmap();
 
-    // Determine the overall dimensions of the stitched maps.
-    int maxX = INT_MIN;
-    int minX = INT_MAX;
-    int maxY = INT_MIN;
-    int minY = INT_MAX;
-    for (StitchedMap map : stitchedMaps) {
-        int left = map.x;
-        int right = map.x + map.map->getWidth();
-        int top = map.y;
-        int bottom = map.y + map.map->getHeight();
-        if (left < minX)
-            minX = left;
-        if (right > maxX)
-            maxX = right;
-        if (top < minY)
-            minY = top;
-        if (bottom > maxY)
-            maxY = bottom;
-    }
-
-    if (includeBorder) {
-        minX -= STITCH_MODE_BORDER_DISTANCE;
-        maxX += STITCH_MODE_BORDER_DISTANCE;
-        minY -= STITCH_MODE_BORDER_DISTANCE;
-        maxY += STITCH_MODE_BORDER_DISTANCE;
-    }
-
-    // Draw the maps on the full canvas, while taking
-    // their respective offsets into account.
-    progress->setLabelText("Drawing stitched maps...");
-    progress->setValue(0);
     progress->setMaximum(stitchedMaps.size());
     int numDrawn = 0;
-    QPixmap stitchedPixmap((maxX - minX) * 16, (maxY - minY) * 16);
-    stitchedPixmap.fill(Qt::black);
-    QPainter painter(&stitchedPixmap);
-    for (StitchedMap map : stitchedMaps) {
-        if (progress->wasCanceled()) {
-            return QPixmap();
-        }
-        progress->setValue(numDrawn);
-        numDrawn++;
 
-        int pixelX = (map.x - minX) * 16;
-        int pixelY = (map.y - minY) * 16;
-        if (includeBorder) {
-            pixelX -= STITCH_MODE_BORDER_DISTANCE * 16;
-            pixelY -= STITCH_MODE_BORDER_DISTANCE * 16;
-        }
-        QPixmap pixmap = getFormattedMapPixmap(map.map);
-        painter.drawPixmap(pixelX, pixelY, pixmap);
+    // Determine the overall dimensions of the stitched maps.
+    QRect dimensions = QRect(0, 0, m_map->getWidth(), m_map->getHeight()) + getMargins(m_map);
+    for (const StitchedMap &map : stitchedMaps) {
+        dimensions |= (QRect(map.x, map.y, map.map->getWidth() * 16, map.map->getHeight() * 16) + getMargins(map.map));
     }
 
-    // When including the borders, we simply draw all the maps again
-    // without their borders, since the first pass results in maps
-    // being occluded by other map borders.
-    if (includeBorder) {
-        progress->setLabelText("Drawing stitched maps without borders...");
+    QPixmap stitchedPixmap(dimensions.width(), dimensions.height());
+    stitchedPixmap.fill(m_settings.fillColor);
+
+    QPainter painter(&stitchedPixmap);
+    painter.translate(-dimensions.left(), -dimensions.top());
+
+    // Borders can occlude neighboring maps, so we draw all the borders before drawing any maps.
+    // Note: Borders can also overlap the borders of neighboring maps. It's not technically wrong to do this,
+    //       but it might suggest to users that something is visible in-game that actually isn't.
+    //       (e.g. in FRLG, Route 18's water border can overlap Fuchsia's tree border. It suggests you could
+    //        see a jarring transition in-game from one of these maps, but because of the collision map the
+    //        player isn't actually able to get close enough to this transition to see it).
+    //       Perhaps some future export setting could limit the border rendering to the visibility range from walkable areas.
+    if (m_settings.showBorder) {
+        progress->setLabelText("Drawing borders...");
         progress->setValue(0);
-        progress->setMaximum(stitchedMaps.size());
         numDrawn = 0;
-        for (StitchedMap map : stitchedMaps) {
+        for (const StitchedMap &map : stitchedMaps) {
             if (progress->wasCanceled()) {
                 return QPixmap();
             }
-            progress->setValue(numDrawn);
-            numDrawn++;
+            painter.translate(map.x, map.y);
+            paintBorder(&painter, map.map->layout());
+            painter.translate(-map.x, -map.y);
 
-            int pixelX = (map.x - minX) * 16;
-            int pixelY = (map.y - minY) * 16;
-            QPixmap pixmapWithoutBorders = getFormattedMapPixmap(map.map, true);
-            painter.drawPixmap(pixelX, pixelY, pixmapWithoutBorders);
+            progress->setValue(numDrawn++);
+        }
+    }
+
+    // Draw the layout and collision images.
+    progress->setLabelText("Drawing maps...");
+    progress->setValue(0);
+    numDrawn = 0;
+    for (const StitchedMap &map : stitchedMaps) {
+        if (progress->wasCanceled()) {
+            return QPixmap();
+        }
+        painter.translate(map.x, map.y);
+        painter.drawPixmap(0, 0, map.map->layout()->render(true));
+        paintCollision(&painter, map.map->layout());
+        painter.translate(-map.x, -map.y);
+
+        progress->setValue(numDrawn++);
+    }
+
+    // Events can be occluded by neighboring maps if they are positioned
+    // near or outside the map's edge, so we draw them after all the maps.
+    // Nothing should be on top of the grid, so it's drawn last.
+    if (m_settings.showGrid || eventsEnabled()) {
+        progress->setLabelText("Drawing map decorations...");
+        progress->setValue(0);
+        numDrawn = 0;
+        for (const StitchedMap &map : stitchedMaps) {
+            if (progress->wasCanceled()) {
+                return QPixmap();
+            }
+            painter.translate(map.x, map.y);
+            paintEvents(&painter, map.map);
+            paintGrid(&painter, map.map->layout());
+            painter.translate(-map.x, -map.y);
+
+            progress->setValue(numDrawn++);
         }
     }
 
     return stitchedPixmap;
 }
 
-void MapImageExporter::updatePreview() {
-    if (m_scene) {
-        delete m_scene;
-        m_scene = nullptr;
-    }
-    m_scene = new QGraphicsScene;
+void MapImageExporter::updatePreview(bool forceUpdate) {
+    if (m_settings.disablePreviewUpdates && !forceUpdate)
+        return;
 
-    if (m_mode == ImageExporterMode::Stitch) { 
-        QProgressDialog progress("Building map stitch...", "Cancel", 0, 1, this);
-        progress.setAutoClose(true);
-        progress.setWindowModality(Qt::WindowModal);
-        progress.setModal(true);
-        progress.setMinimumDuration(1000);
-        m_preview = getStitchedImage(&progress, m_settings.showBorder);
-        progress.close();
-    } else {
-        // Timelapse mode doesn't currently have a real preview. It just displays the current map as in Normal mode.
-        m_preview = getFormattedMapPixmap();
+    QProgressDialog progress("", "Cancel", 0, 1, this);
+    progress.setAutoClose(true);
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setModal(true);
+    progress.setMinimumDuration(1000);
+
+    QPixmap previewPixmap;
+    if (m_mode == ImageExporterMode::Normal) {
+        previewPixmap = getFormattedMapPixmap();
+    } else if (m_mode == ImageExporterMode::Stitch) {
+        previewPixmap = getStitchedImage(&progress);
+    } else if (m_mode == ImageExporterMode::Timelapse) {
+        if (m_timelapseMovie)
+            m_timelapseMovie->stop();
+
+        m_timelapseGifImage = createTimelapseGifImage(&progress);
+        if (!m_timelapseGifImage) {
+            previewPixmap = QPixmap();
+        } else {
+            // We want to convert the QGifImage data into a QMovie for the preview display.
+            // Both support input/output with a QIODevice, so we use a QBuffer to translate the data.
+            delete m_timelapseBuffer;
+            m_timelapseBuffer = new QBuffer(this);
+            m_timelapseBuffer->open(QBuffer::ReadWrite);
+            m_timelapseGifImage->save(m_timelapseBuffer);
+            m_timelapseBuffer->close();
+
+            delete m_timelapseMovie;
+            m_timelapseMovie = new QMovie(m_timelapseBuffer, "gif", this);
+            m_timelapseMovie->setCacheMode(QMovie::CacheAll);
+            connect(m_timelapseMovie, &QMovie::frameChanged, [this](int) {
+                m_preview->setPixmap(m_timelapseMovie->currentPixmap());
+            });
+            m_timelapseMovie->start();
+            previewPixmap = m_timelapseMovie->currentPixmap();
+        }
     }
-    m_scene->addPixmap(m_preview);
-    ui->graphicsView_Preview->setScene(m_scene);
+    progress.close();
+
+    m_preview->setPixmap(previewPixmap);
+    m_scene->setSceneRect(m_scene->itemsBoundingRect());
     scalePreview();
 }
 
 void MapImageExporter::scalePreview() {
-    if (m_scene && !m_settings.previewActualSize){
-       ui->graphicsView_Preview->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatioByExpanding);
-    }
+    if (!m_preview || m_settings.disablePreviewScaling)
+        return;
+    ui->graphicsView_Preview->fitInView(m_preview, Qt::KeepAspectRatioByExpanding);
 }
 
 QPixmap MapImageExporter::getFormattedMapPixmap() {
-    return m_map ? getFormattedMapPixmap(m_map) : getFormattedLayoutPixmap(m_layout);
-}
-
-QPixmap MapImageExporter::getFormattedLayoutPixmap(Layout *layout, bool ignoreBorder, bool ignoreGrid) {
-    if (!layout)
+    if (!m_layout)
         return QPixmap();
 
-    layout->render(true);
-    QPixmap pixmap = layout->pixmap;
+    m_layout->render(true);
 
-    if (m_settings.showCollision) {
-        QPainter collisionPainter(&pixmap);
-        layout->renderCollision(true);
-        collisionPainter.setOpacity(m_editor->collisionOpacity);
-        collisionPainter.drawPixmap(0, 0, layout->collision_pixmap);
-        collisionPainter.end();
+    // Create pixmap large enough to contain the map and the marginal elements (the border, grid, etc.)
+    QMargins margins = getMargins(m_map);
+    QPixmap pixmap = QPixmap(m_layout->pixmap.width() + margins.left() + margins.right(),
+                             m_layout->pixmap.height() + margins.top() + margins.bottom());
+    pixmap.fill(m_settings.fillColor);
+
+    QPainter painter(&pixmap);
+    painter.translate(margins.left(), margins.top());
+
+    paintBorder(&painter, m_layout);
+    painter.drawPixmap(0, 0, m_layout->pixmap);
+    paintCollision(&painter, m_layout);
+    if (m_map) {
+        paintConnections(&painter, m_map);
+        paintEvents(&painter, m_map);
     }
-
-    // draw map border
-    // note: this will break when allowing map to be selected from drop down maybe
-    int borderHeight = 0, borderWidth = 0;
-    if (!ignoreBorder && m_settings.showBorder) {
-        int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
-        layout->renderBorder();
-        int borderHorzDist = m_editor->getBorderDrawDistance(layout->getBorderWidth());
-        int borderVertDist = m_editor->getBorderDrawDistance(layout->getBorderHeight());
-        borderWidth = borderDistance * 16;
-        borderHeight = borderDistance * 16;
-        QPixmap newPixmap = QPixmap(layout->pixmap.width() + borderWidth * 2, layout->pixmap.height() + borderHeight * 2);
-        QPainter borderPainter(&newPixmap);
-        for (int y = borderDistance - borderVertDist; y < layout->getHeight() + borderVertDist * 2; y += layout->getBorderHeight()) {
-            for (int x = borderDistance - borderHorzDist; x < layout->getWidth() + borderHorzDist * 2; x += layout->getBorderWidth()) {
-                borderPainter.drawPixmap(x * 16, y * 16, layout->border_pixmap);
-            }
-        }
-        borderPainter.drawImage(borderWidth, borderHeight, pixmap.toImage());
-        borderPainter.end();
-        pixmap = newPixmap;
-    }
-
-    // The grid should be painted last, so if this layout pixmap is being painted
-    // as part of a map (which has more to paint after this) then don't paint the grid yet.
-    if (!ignoreGrid)
-        paintGrid(&pixmap, ignoreBorder);
+    paintGrid(&painter, m_layout);
 
     return pixmap;
 }
 
-QPixmap MapImageExporter::getFormattedMapPixmap(Map *map, bool ignoreBorder) {
-    if (!map)
-        return QPixmap();
+QMargins MapImageExporter::getMargins(const Map *map) {
+    QMargins margins;
+    if (m_settings.showBorder) {
+        // The border may technically extend beyond BORDER_DISTANCE, but when the border is painted
+        // we will be limiting it to the visible sight range.
+        margins = QMargins(BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE) * 16;
+    } else if (map && connectionsEnabled()) {
+        for (const auto &connection : map->getConnections()) {
+            const QString dir = connection->direction();
+            if (!m_settings.showConnections.contains(dir))
+                continue;
+            auto targetMap = connection->targetMap();
+            if (!targetMap) continue;
 
-    QPixmap pixmap = getFormattedLayoutPixmap(map->layout(), ignoreBorder, true);
-
-    if (!ignoreBorder && (m_settings.showUpConnections || m_settings.showDownConnections || m_settings.showLeftConnections || m_settings.showRightConnections)) {
-        // if showing connections, draw on outside of image
-        QPainter connectionPainter(&pixmap);
-        
-        int borderDistance = m_mode ? STITCH_MODE_BORDER_DISTANCE : BORDER_DISTANCE;
-        int borderWidth = borderDistance * 16;
-        int borderHeight = borderDistance * 16;
-        // TODO: Reading the connections from the editor and not 'map' is incorrect.
-        for (auto connectionItem : m_editor->connection_items) {
-            const QString direction = connectionItem->connection->direction();
-            if ((m_settings.showUpConnections && direction == "up")
-             || (m_settings.showDownConnections && direction == "down")
-             || (m_settings.showLeftConnections && direction == "left")
-             || (m_settings.showRightConnections && direction == "right"))
-                connectionPainter.drawImage(connectionItem->x() + borderWidth, connectionItem->y() + borderHeight,
-                                            connectionItem->connection->getPixmap().toImage());
+            QRect rect = targetMap->getConnectionRect(dir);
+            if (dir == "up") margins.setTop(rect.height() * 16);
+            else if (dir == "down") margins.setBottom(rect.height() * 16);
+            else if (dir == "left") margins.setLeft(rect.width() * 16);
+            else if (dir == "right") margins.setRight(rect.width() * 16);
         }
-        connectionPainter.end();
     }
-
-    // draw events
-    if (m_settings.showObjects || m_settings.showWarps || m_settings.showBGs || m_settings.showTriggers || m_settings.showHealLocations) {
-        QPainter eventPainter(&pixmap);
-        int pixelOffset = 0;
-        if (!ignoreBorder && m_settings.showBorder) {
-            pixelOffset = m_mode == ImageExporterMode::Normal ? BORDER_DISTANCE * 16 : STITCH_MODE_BORDER_DISTANCE * 16;
-        }
-        const QList<Event *> events = map->getEvents();
-        for (const auto &event : events) {
-            Event::Group group = event->getEventGroup();
-            if ((m_settings.showObjects && group == Event::Group::Object)
-             || (m_settings.showWarps && group == Event::Group::Warp)
-             || (m_settings.showBGs && group == Event::Group::Bg)
-             || (m_settings.showTriggers && group == Event::Group::Coord)
-             || (m_settings.showHealLocations && group == Event::Group::Heal)) {
-                m_editor->project->loadEventPixmap(event);
-                eventPainter.drawImage(QPoint(event->getPixelX() + pixelOffset, event->getPixelY() + pixelOffset), event->getPixmap().toImage());
-            }
-        }
-        eventPainter.end();
-    }
-    paintGrid(&pixmap, ignoreBorder);
-
-    return pixmap;
-}
-
-void MapImageExporter::paintGrid(QPixmap *pixmap, bool ignoreBorder) {
-    // draw grid directly onto the pixmap
-    // since the last grid lines are outside of the pixmap, add a pixel to the bottom and right
     if (m_settings.showGrid) {
-        bool hasBorder = !ignoreBorder && m_settings.showBorder;
-        int addX = 1, addY = 1;
-        if (hasBorder) addY = 0;
-        if (hasBorder) addX = 0;
+        // Account for outer grid line
+        if (margins.right() == 0) margins.setRight(1);
+        if (margins.bottom() == 0) margins.setBottom(1);
+    }
+    return margins;
+}
 
-        QPixmap newPixmap= QPixmap(pixmap->width() + addX, pixmap->height() + addY);
-        QPainter gridPainter(&newPixmap);
-        gridPainter.drawImage(QPoint(0, 0), pixmap->toImage());
-        for (int x = 0; x < newPixmap.width(); x += 16) {
-            gridPainter.drawLine(x, 0, x, newPixmap.height());
-        }
-        for (int y = 0; y < newPixmap.height(); y += 16) {
-            gridPainter.drawLine(0, y, newPixmap.width(), y);
-        }
-        gridPainter.end();
-        *pixmap = newPixmap;
+void MapImageExporter::paintCollision(QPainter *painter, Layout *layout) {
+    if (!m_settings.showCollision)
+        return;
+
+    auto savedOpacity = painter->opacity();
+    painter->setOpacity(static_cast<qreal>(porymapConfig.collisionOpacity) / 100);
+    painter->drawPixmap(0, 0, layout->renderCollision(true));
+    painter->setOpacity(savedOpacity);
+}
+
+void MapImageExporter::paintBorder(QPainter *painter, Layout *layout) {
+    if (!m_settings.showBorder)
+        return;
+
+    layout->renderBorder(true);
+
+    // Clip parts of the border that would be beyond player visibility.
+    QRect visibleArea(0, 0, layout->getWidth() * 16, layout->getHeight() * 16);
+    visibleArea += (QMargins(BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE) * 16);
+    painter->save();
+    painter->setClipRect(visibleArea);
+
+    int borderHorzDist = layout->getBorderDrawWidth();
+    int borderVertDist = layout->getBorderDrawHeight();
+    for (int y = -borderVertDist; y < layout->getHeight() + borderVertDist; y += layout->getBorderHeight())
+    for (int x = -borderHorzDist; x < layout->getWidth() + borderHorzDist; x += layout->getBorderWidth()) {
+         // Skip border painting if it would be fully covered by the rest of the map
+        if (layout->isWithinBounds(QRect(x, y, layout->getBorderWidth(), layout->getBorderHeight())))
+            continue;
+        painter->drawPixmap(x * 16, y * 16, layout->border_pixmap);
+    }
+
+    painter->restore();
+}
+
+void MapImageExporter::paintConnections(QPainter *painter, const Map *map) {
+    if (!connectionsEnabled())
+        return;
+
+    for (const auto &connection : map->getConnections()) {
+        if (!m_settings.showConnections.contains(connection->direction()))
+            continue;
+        painter->drawImage(connection->relativePos(true) * 16, connection->render().toImage());
     }
 }
 
-void MapImageExporter::updateShowBorderState() {
-    // If any of the Connections settings are enabled then this setting is locked (it's implicitly enabled)
-    bool on = (m_settings.showUpConnections || m_settings.showDownConnections || m_settings.showLeftConnections || m_settings.showRightConnections);
-    const QSignalBlocker blocker(ui->checkBox_Border);
-    ui->checkBox_Border->setChecked(on);
-    ui->checkBox_Border->setDisabled(on);
-    m_settings.showBorder = on;
+void MapImageExporter::paintEvents(QPainter *painter, const Map *map) {
+    if (!eventsEnabled())
+        return;
+
+    auto savedOpacity = painter->opacity();
+    for (const auto &group : Event::groups()) {
+        if (!m_settings.showEvents.contains(group))
+            continue;
+        for (const auto &event : map->getEvents(group)) {
+            m_project->loadEventPixmap(event);
+            if (m_mode != ImageExporterMode::Timelapse) {
+                // GIF format doesn't support partial transparency, so we can't do this in Timelapse mode.
+                painter->setOpacity(event->getUsesDefaultPixmap() ? 0.7 : 1.0);
+            }
+            painter->drawImage(QPoint(event->getPixelX(), event->getPixelY()), event->getPixmap().toImage());
+        }
+    }
+    painter->setOpacity(savedOpacity);
 }
 
-void MapImageExporter::on_checkBox_Elevation_stateChanged(int state) {
+void MapImageExporter::paintGrid(QPainter *painter, const Layout *layout) {
+    if (!m_settings.showGrid)
+        return;
+
+    int w = layout->getWidth() * 16;
+    int h = layout->getHeight() * 16;
+    for (int x = 0; x <= w; x += 16) {
+        painter->drawLine(x, 0, x, h);
+    }
+    for (int y = 0; y <= h; y += 16) {
+        painter->drawLine(0, y, w, y);
+    }
+}
+
+bool MapImageExporter::eventsEnabled() {
+    return !m_settings.showEvents.isEmpty();
+}
+
+void MapImageExporter::setEventGroupEnabled(Event::Group group, bool enable) {
+    if (enable) {
+        m_settings.showEvents.insert(group);
+    } else {
+        m_settings.showEvents.remove(group);
+    }
+}
+
+bool MapImageExporter::connectionsEnabled() {
+    return !m_settings.showConnections.isEmpty() && m_mode != ImageExporterMode::Stitch;
+}
+
+void MapImageExporter::setConnectionDirectionEnabled(const QString &dir, bool enable) {
+    if (enable) {
+        m_settings.showConnections.insert(dir);
+    } else {
+        m_settings.showConnections.remove(dir);
+    }
+}
+
+void MapImageExporter::on_checkBox_Collision_stateChanged(int state) {
     m_settings.showCollision = (state == Qt::Checked);
     updatePreview();
 }
@@ -576,27 +735,27 @@ void MapImageExporter::on_checkBox_Border_stateChanged(int state) {
 }
 
 void MapImageExporter::on_checkBox_Objects_stateChanged(int state) {
-    m_settings.showObjects = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Object, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_Warps_stateChanged(int state) {
-    m_settings.showWarps = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Warp, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_BGs_stateChanged(int state) {
-    m_settings.showBGs = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Bg, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_Triggers_stateChanged(int state) {
-    m_settings.showTriggers = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Coord, state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_HealLocations_stateChanged(int state) {
-    m_settings.showHealLocations = (state == Qt::Checked);
+    setEventGroupEnabled(Event::Group::Heal, state == Qt::Checked);
     updatePreview();
 }
 
@@ -607,52 +766,48 @@ void MapImageExporter::on_checkBox_AllEvents_stateChanged(int state) {
     const QSignalBlocker b_Objects(ui->checkBox_Objects);
     ui->checkBox_Objects->setChecked(on);
     ui->checkBox_Objects->setDisabled(on);
-    m_settings.showObjects = on;
+    setEventGroupEnabled(Event::Group::Object, on);
 
     const QSignalBlocker b_Warps(ui->checkBox_Warps);
     ui->checkBox_Warps->setChecked(on);
     ui->checkBox_Warps->setDisabled(on);
-    m_settings.showWarps = on;
+    setEventGroupEnabled(Event::Group::Warp, on);
 
     const QSignalBlocker b_BGs(ui->checkBox_BGs);
     ui->checkBox_BGs->setChecked(on);
     ui->checkBox_BGs->setDisabled(on);
-    m_settings.showBGs = on;
+    setEventGroupEnabled(Event::Group::Bg, on);
 
     const QSignalBlocker b_Triggers(ui->checkBox_Triggers);
     ui->checkBox_Triggers->setChecked(on);
     ui->checkBox_Triggers->setDisabled(on);
-    m_settings.showTriggers = on;
+    setEventGroupEnabled(Event::Group::Coord, on);
 
     const QSignalBlocker b_HealLocations(ui->checkBox_HealLocations);
     ui->checkBox_HealLocations->setChecked(on);
     ui->checkBox_HealLocations->setDisabled(on);
-    m_settings.showHealLocations = on;
+    setEventGroupEnabled(Event::Group::Heal, on);
 
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionUp_stateChanged(int state) {
-    m_settings.showUpConnections = (state == Qt::Checked);
-    updateShowBorderState();
+    setConnectionDirectionEnabled("up", state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionDown_stateChanged(int state) {
-    m_settings.showDownConnections = (state == Qt::Checked);
-    updateShowBorderState();
+    setConnectionDirectionEnabled("down", state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionLeft_stateChanged(int state) {
-    m_settings.showLeftConnections = (state == Qt::Checked);
-    updateShowBorderState();
+    setConnectionDirectionEnabled("left", state == Qt::Checked);
     updatePreview();
 }
 
 void MapImageExporter::on_checkBox_ConnectionRight_stateChanged(int state) {
-    m_settings.showRightConnections = (state == Qt::Checked);
-    updateShowBorderState();
+    setConnectionDirectionEnabled("right", state == Qt::Checked);
     updatePreview();
 }
 
@@ -663,51 +818,86 @@ void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
     const QSignalBlocker b_Up(ui->checkBox_ConnectionUp);
     ui->checkBox_ConnectionUp->setChecked(on);
     ui->checkBox_ConnectionUp->setDisabled(on);
-    m_settings.showUpConnections = on;
+    setConnectionDirectionEnabled("up", on);
 
     const QSignalBlocker b_Down(ui->checkBox_ConnectionDown);
     ui->checkBox_ConnectionDown->setChecked(on);
     ui->checkBox_ConnectionDown->setDisabled(on);
-    m_settings.showDownConnections = on;
+    setConnectionDirectionEnabled("down", on);
 
     const QSignalBlocker b_Left(ui->checkBox_ConnectionLeft);
     ui->checkBox_ConnectionLeft->setChecked(on);
     ui->checkBox_ConnectionLeft->setDisabled(on);
-    m_settings.showLeftConnections = on;
+    setConnectionDirectionEnabled("left", on);
 
     const QSignalBlocker b_Right(ui->checkBox_ConnectionRight);
     ui->checkBox_ConnectionRight->setChecked(on);
     ui->checkBox_ConnectionRight->setDisabled(on);
-    m_settings.showRightConnections = on;
+    setConnectionDirectionEnabled("right", on);
 
-    updateShowBorderState();
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ActualSize_stateChanged(int state) {
-    m_settings.previewActualSize = (state == Qt::Checked);
-    if (m_settings.previewActualSize) {
+void MapImageExporter::on_checkBox_DisablePreviewScaling_stateChanged(int state) {
+    m_settings.disablePreviewScaling = (state == Qt::Checked);
+    if (m_settings.disablePreviewScaling) {
         ui->graphicsView_Preview->resetTransform();
     } else {
         scalePreview();
     }
 }
 
-void MapImageExporter::on_pushButton_Reset_pressed() {
-    m_settings = {};
-    for (auto widget : this->findChildren<QCheckBox *>()) {
-        const QSignalBlocker b(widget); // Prevent calls to updatePreview
-        widget->setChecked(false);
+void MapImageExporter::on_checkBox_DisablePreviewUpdates_stateChanged(int state) {
+    m_settings.disablePreviewUpdates = (state == Qt::Checked);
+    if (m_settings.disablePreviewUpdates) {
+        if (m_timelapseMovie) {
+            m_timelapseMovie->stop();
+        }
+    } else {
+        updatePreview();
     }
-    ui->spinBox_TimelapseDelay->setValue(m_settings.timelapseDelayMs);
-    ui->spinBox_FrameSkip->setValue(m_settings.timelapseSkipAmount);
+}
+
+void MapImageExporter::on_pushButton_Reset_pressed() {
+    resetSettings();
     updatePreview();
 }
 
-void MapImageExporter::on_spinBox_TimelapseDelay_valueChanged(int delayMs) {
-    m_settings.timelapseDelayMs = delayMs;
+void MapImageExporter::resetSettings() {
+     m_settings = {};
+
+    for (auto widget : this->findChildren<QCheckBox *>()) {
+        const QSignalBlocker b(widget); // Prevent calls to updatePreview
+        widget->setChecked(false); // This assumes the default state of all checkboxes settings is false.
+    }
+
+    const QSignalBlocker b_TimelapseDelay(ui->spinBox_TimelapseDelay);
+    ui->spinBox_TimelapseDelay->setValue(m_settings.timelapseDelayMs);
+
+    const QSignalBlocker b_FrameSkip(ui->spinBox_FrameSkip);
+    ui->spinBox_FrameSkip->setValue(m_settings.timelapseSkipAmount);
+
+    if (m_mode == ImageExporterMode::Timelapse) {
+        // Timelapse gif has artifacts with transparency, make sure it's disabled.
+        m_settings.fillColor.setAlpha(255);
+    }
 }
 
-void MapImageExporter::on_spinBox_FrameSkip_valueChanged(int skip) {
-    m_settings.timelapseSkipAmount = skip;
+// These spin boxes can be changed rapidly, so we wait for editing to finish before updating the preview.
+void MapImageExporter::on_spinBox_TimelapseDelay_editingFinished() {
+    int delayMs = ui->spinBox_TimelapseDelay->value();
+    if (delayMs == m_settings.timelapseDelayMs)
+        return;
+
+    m_settings.timelapseDelayMs = delayMs;
+    updatePreview();
+}
+
+void MapImageExporter::on_spinBox_FrameSkip_editingFinished() {
+    int skipAmount = ui->spinBox_FrameSkip->value();
+    if (skipAmount == m_settings.timelapseSkipAmount)
+        return;
+
+    m_settings.timelapseSkipAmount = skipAmount;
+    updatePreview();
 }

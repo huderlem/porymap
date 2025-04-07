@@ -512,7 +512,7 @@ void WarpFrame::setup() {
     this->warning = new QPushButton(warningText, this);
     this->warning->setFlat(true);
     this->warning->setStyleSheet("color: red; text-align: left");
-    this->warning->setVisible(false);
+    this->warning->setVisible(this->warp->getWarningEnabled());
     l_vbox_warning->addWidget(this->warning);
     this->layout_contents->addLayout(l_vbox_warning);
 

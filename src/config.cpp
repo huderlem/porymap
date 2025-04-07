@@ -987,7 +987,7 @@ void ProjectConfig::setFilePath(const QString &pathId, const QString &path) {
 }
 
 QString ProjectConfig::getCustomFilePath(ProjectFilePath pathId) {
-    return this->filePaths.value(pathId);
+    return QDir::cleanPath(this->filePaths.value(pathId));
 }
 
 QString ProjectConfig::getCustomFilePath(const QString &pathId) {
@@ -995,14 +995,17 @@ QString ProjectConfig::getCustomFilePath(const QString &pathId) {
 }
 
 QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
-    const QString customPath = this->getCustomFilePath(pathId);
+    QString customPath = this->getCustomFilePath(pathId);
     if (!customPath.isEmpty()) {
         // A custom filepath has been specified. If the file/folder exists, use that.
-        const QString absCustomPath = this->projectDir + QDir::separator() + customPath;
-        if (QFileInfo::exists(absCustomPath)) {
+        const QString baseDir = this->projectDir + "/";
+        if (customPath.startsWith(baseDir)) {
+            customPath.remove(0, baseDir.length());
+        }
+        if (QFileInfo::exists(QDir::cleanPath(baseDir + customPath))) {
             return customPath;
         } else {
-            logError(QString("Custom project filepath '%1' not found. Using default.").arg(absCustomPath));
+            logError(QString("Custom project filepath '%1' not found. Using default.").arg(customPath));
         }
     }
     return defaultPaths.contains(pathId) ? defaultPaths[pathId].second : QString();

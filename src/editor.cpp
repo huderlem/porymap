@@ -761,7 +761,7 @@ void Editor::displayConnection(MapConnection *connection) {
     if (!connection)
         return;
 
-    if (MapConnection::isDiving(connection->direction())) {
+    if (connection->isDiving()) {
         displayDivingConnection(connection);
         return;
     }
@@ -826,7 +826,7 @@ void Editor::removeConnectionPixmap(MapConnection *connection) {
     if (!connection)
         return;
 
-    if (MapConnection::isDiving(connection->direction())) {
+    if (connection->isDiving()) {
         removeDivingMapPixmap(connection);
         return;
     }
@@ -1673,10 +1673,9 @@ void Editor::clearMapEvents() {
         if (events_group->scene()) {
             events_group->scene()->removeItem(events_group);
         }
-        for (QGraphicsItem *child : events_group->childItems()) {
-            events_group->removeFromGroup(child);
-            delete child;
-        }
+        // events_group does not own its children, the childrens' parent
+        // is set to the group's parent (and our group has no parent).
+        qDeleteAll(events_group->childItems());
         delete events_group;
         events_group = nullptr;
     }
@@ -1797,8 +1796,8 @@ void Editor::displayMapBorder() {
 
     int borderWidth = this->layout->getBorderWidth();
     int borderHeight = this->layout->getBorderHeight();
-    int borderHorzDist = getBorderDrawDistance(borderWidth);
-    int borderVertDist = getBorderDrawDistance(borderHeight);
+    int borderHorzDist = this->layout->getBorderDrawWidth();
+    int borderVertDist = this->layout->getBorderDrawHeight();
     QPixmap pixmap = this->layout->renderBorder();
     for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += borderHeight)
     for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += borderWidth) {
@@ -1821,17 +1820,6 @@ void Editor::updateMapBorder() {
 void Editor::updateMapConnections() {
     for (auto item : connection_items)
         item->render(true);
-}
-
-int Editor::getBorderDrawDistance(int dimension) {
-    // Draw sufficient border blocks to fill the player's view (BORDER_DISTANCE)
-    if (dimension >= BORDER_DISTANCE) {
-        return dimension;
-    } else if (dimension) {
-        return dimension * (BORDER_DISTANCE / dimension + (BORDER_DISTANCE % dimension ? 1 : 0));
-    } else {
-        return BORDER_DISTANCE;
-    }
 }
 
 void Editor::toggleGrid(bool checked) {

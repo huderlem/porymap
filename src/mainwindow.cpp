@@ -960,6 +960,9 @@ bool MainWindow::setMap(QString map_name) {
     Scripting::cb_MapOpened(map_name);
     prefab.updatePrefabUi(editor->layout);
     updateTilesetEditor();
+
+    emit mapOpened(editor->map);
+
     return true;
 }
 
@@ -1012,6 +1015,8 @@ bool MainWindow::setLayout(QString layoutId) {
     updateTilesetEditor();
 
     userConfig.recentMapOrLayout = layoutId;
+
+    emit layoutOpened(editor->layout);
 
     return true;
 }
@@ -2597,12 +2602,23 @@ void MainWindow::on_actionImport_Map_from_Advance_Map_1_92_triggered() {
 void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
     if (!editor->project) return;
 
-    // If the user is requesting this window again we assume it's for a new
-    // window (the map/mode may have changed), so delete the old window.
-    if (this->mapImageExporter)
+    // If the user is requesting this window again with a different mode
+    // then we'll recreate the window with the new mode.
+    if (this->mapImageExporter && this->mapImageExporter->mode() != mode)
         delete this->mapImageExporter;
 
-    this->mapImageExporter = new MapImageExporter(this, this->editor, mode);
+    if (!this->mapImageExporter) {
+        // Open new image export window
+        if (this->editor->map){
+            this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->map, mode);
+        } else if (this->editor->layout) {
+            this->mapImageExporter = new MapImageExporter(this, this->editor->project, this->editor->layout, mode);
+        }
+        if (this->mapImageExporter) {
+            connect(this, &MainWindow::mapOpened, this->mapImageExporter, &MapImageExporter::setMap);
+            connect(this, &MainWindow::layoutOpened, this->mapImageExporter, &MapImageExporter::setLayout);
+        }
+    }
 
     openSubWindow(this->mapImageExporter);
 }
