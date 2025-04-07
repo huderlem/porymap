@@ -393,6 +393,8 @@ QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath)
         // Default filepath is not a folder, choose a new file
         path = FileDialog::getOpenFileName(this, "Choose Project File", startDir);
     }
+    if (path.isEmpty())
+        return path;
 
     if (!path.startsWith(this->baseDir)){
         // Most of Porymap's file-parsing code for project files will assume that filepaths
