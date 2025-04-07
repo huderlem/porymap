@@ -23,7 +23,6 @@ void DraggablePixmapItem::updatePosition() {
 void DraggablePixmapItem::emitPositionChanged() {
     emit xChanged(event->getX());
     emit yChanged(event->getY());
-    emit elevationChanged(event->getElevation());
 }
 
 void DraggablePixmapItem::updatePixmap() {

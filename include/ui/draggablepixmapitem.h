@@ -42,29 +42,13 @@ signals:
     void positionChanged(Event *event);
     void xChanged(int);
     void yChanged(int);
-    void elevationChanged(int);
     void spriteChanged(QPixmap pixmap);
-    void onPropertyChanged(QString key, QString value);
-
-public slots:
-    void set_x(int x) {
-        event->setX(x);
-        updatePosition();
-    }
-    void set_y(int y) {
-        event->setY(y);
-        updatePosition();
-    }
-    void set_elevation(int z) {
-        event->setElevation(z);
-        updatePosition();
-    }
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override;
 };
 
 #endif // DRAGGABLEPIXMAPITEM_H
