@@ -122,6 +122,8 @@ public:
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
 
+    void onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition);
+    void onEventReleased(Event *event, const QPoint &position);
     void updateWarpEventWarning(Event *event);
     void updateWarpEventWarnings();
 
@@ -172,10 +174,7 @@ public:
     static QList<QList<const QImage*>> collisionIcons;
 
     int eventShiftActionId = 0;
-
-    void eventsView_onMousePress(QMouseEvent *event);
-
-    bool selectingEvent = false;
+    int eventMoveActionId = 0;
 
     void deleteSelectedEvents();
     void shouldReselectEvents();

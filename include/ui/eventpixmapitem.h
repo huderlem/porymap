@@ -39,10 +39,12 @@ private:
     bool releaseSelectionQueued = false;
 
 signals:
-    void positionChanged(Event *event);
     void xChanged(int);
     void yChanged(int);
     void spriteChanged(const QPixmap &pixmap);
+    void selected(Event *event, bool toggle);
+    void dragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition);
+    void released(Event *event, const QPoint &position);
     void doubleClicked(Event *event);
 
 protected:

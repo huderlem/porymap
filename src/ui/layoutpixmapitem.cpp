@@ -714,19 +714,20 @@ void LayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
 }
 
 void LayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    this->paint_tile_initial_x = this->straight_path_initial_x = pos.x();
-    this->paint_tile_initial_y = this->straight_path_initial_y = pos.y();
+    this->metatilePos = Metatile::coordFromPixmapCoord(event->pos());
+    this->paint_tile_initial_x = this->straight_path_initial_x = this->metatilePos.x();
+    this->paint_tile_initial_y = this->straight_path_initial_y = this->metatilePos.y();
     emit startPaint(event, this);
     emit mouseEvent(event, this);
 }
 
 void LayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    if (pos != this->metatilePos) {
-        this->metatilePos = pos;
-        emit this->hoveredMapMetatileChanged(pos);
-    }
+    if (pos == this->metatilePos)
+        return;
+
+    this->metatilePos = pos;
+    emit hoveredMapMetatileChanged(pos);
     emit mouseEvent(event, this);
 }
 

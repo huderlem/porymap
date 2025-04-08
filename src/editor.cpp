@@ -1289,7 +1289,6 @@ void Editor::setStraightPathCursorMode(QGraphicsSceneMouseEvent *event) {
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
-    // TODO: add event tab event painting tool buttons stuff here
     if (!item->getEditsEnabled()) {
         return;
     }
@@ -1363,8 +1362,11 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 if (event && event->getPixmapItem())
                     event->getPixmapItem()->moveTo(pos);
             }
-        } else if (eventEditAction == EditAction::Select) {
-            // do nothing here, at least for now
+        } else if (eventEditAction == EditAction::Select && event->type() == QEvent::GraphicsSceneMousePress) {
+            if (!(event->modifiers() & Qt::ControlModifier) && this->selectedEvents.length() > 1) {
+                // User is clearing group selection by clicking on the background
+                selectMapEvent(this->selectedEvents.first());
+            }
         } else if (eventEditAction == EditAction::Shift) {
             static QPoint selection_origin;
 
@@ -1696,6 +1698,9 @@ EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
     this->project->loadEventPixmap(event);
     auto item = new EventPixmapItem(event, this);
     connect(item, &EventPixmapItem::doubleClicked, this, &Editor::openEventMap);
+    connect(item, &EventPixmapItem::dragged, this, &Editor::onEventDragged);
+    connect(item, &EventPixmapItem::released, this, &Editor::onEventReleased);
+    connect(item, &EventPixmapItem::selected, this, &Editor::selectMapEvent);
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;
@@ -2004,6 +2009,28 @@ void Editor::redrawEventPixmapItem(EventPixmapItem *item) {
     item->updatePosition();
 }
 
+void Editor::onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition) {
+    if (!this->map || !this->map_item)
+        return;
+
+    this->map_item->hoveredMapMetatileChanged(newPosition);
+
+    // Drag all the other selected events (if any) with it
+    QList<Event*> draggedEvents;
+    if (this->selectedEvents.contains(event)) {
+        draggedEvents = this->selectedEvents;
+    } else {
+        draggedEvents.append(event);
+    }
+
+    QPoint moveDistance = newPosition - oldPosition;
+    this->map->commit(new EventMove(draggedEvents, moveDistance.x(), moveDistance.y(), this->eventMoveActionId));
+}
+
+void Editor::onEventReleased(Event *, const QPoint &) {
+    this->eventMoveActionId++;
+}
+
 // Warp events display a warning if they're not positioned on a metatile with a warp behavior.
 void Editor::updateWarpEventWarning(Event *event) {
     if (porymapConfig.warpBehaviorWarningDisabled)
@@ -2284,32 +2311,6 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
 #endif
     process.setWorkingDirectory(workingDirectory);
     return process.startDetached(pid);
-}
-
-// It doesn't seem to be possible to prevent the mousePress event
-// from triggering both event's EventPixmapItem and the background mousePress.
-// Since the EventPixmapItem's event fires first, we can set a temp
-// variable "selectingEvent" so that we can detect whether or not the user
-// is clicking on the background instead of an event.
-void Editor::eventsView_onMousePress(QMouseEvent *event) {
-    // make sure we are in event editing mode
-    if (map_item && this->editMode != EditMode::Events) {
-        return;
-    }
-    if (this->eventEditAction == EditAction::Paint && event->buttons() & Qt::RightButton) {
-        this->eventEditAction = EditAction::Select;
-        this->settings->mapCursor = QCursor();
-        this->cursorMapTileRect->setSingleTileMode();
-        this->ui->toolButton_Paint->setChecked(false);
-        this->ui->toolButton_Select->setChecked(true);
-    }
-
-    bool multiSelect = event->modifiers() & Qt::ControlModifier;
-    if (!selectingEvent && !multiSelect && this->selectedEvents.length() > 1) {
-        // User is clearing group selection by clicking on the background
-        this->selectMapEvent(this->selectedEvents.first());
-    }
-    selectingEvent = false;
 }
 
 void Editor::setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation) {

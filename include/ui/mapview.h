@@ -5,13 +5,17 @@
 #include "graphicsview.h"
 #include "overlay.h"
 
-class MapView : public GraphicsView
+class Editor;
+
+class MapView : public QGraphicsView
 {
     Q_OBJECT
 
 public:
-    MapView() : GraphicsView() {}
-    MapView(QWidget *parent) : GraphicsView(parent) {}
+    MapView() : QGraphicsView() {}
+    MapView(QWidget *parent) : QGraphicsView(parent) {}
+
+    Editor *editor;
 
     Overlay * getOverlay(int layer);
     void clearOverlayMap();
@@ -73,6 +77,7 @@ public:
 protected:
     virtual void drawForeground(QPainter *painter, const QRectF &rect) override;
     virtual void keyPressEvent(QKeyEvent*) override;
+    virtual void moveEvent(QMoveEvent *event) override;
 private:
     QMap<int, Overlay*> overlayMap;
 
