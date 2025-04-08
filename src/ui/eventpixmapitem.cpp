@@ -1,4 +1,4 @@
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "editor.h"
 #include "editcommands.h"
 #include "mapruler.h"
@@ -7,7 +7,7 @@
 static unsigned currentActionId = 0;
 
 
-void DraggablePixmapItem::updatePosition() {
+void EventPixmapItem::updatePosition() {
     int x = this->event->getPixelX();
     int y = this->event->getPixelY();
     setX(x);
@@ -15,17 +15,17 @@ void DraggablePixmapItem::updatePosition() {
     editor->updateWarpEventWarning(event);
 }
 
-void DraggablePixmapItem::emitPositionChanged() {
+void EventPixmapItem::emitPositionChanged() {
     emit xChanged(event->getX());
     emit yChanged(event->getY());
 }
 
-void DraggablePixmapItem::updatePixmap() {
+void EventPixmapItem::updatePixmap() {
     editor->redrawEventPixmapItem(this);
     emit spriteChanged(event->getPixmap());
 }
 
-void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
+void EventPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     if (this->active)
         return;
     this->active = true;
@@ -49,21 +49,21 @@ void DraggablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouse) {
     this->editor->selectingEvent = true;
 }
 
-void DraggablePixmapItem::move(int dx, int dy) {
+void EventPixmapItem::move(int dx, int dy) {
     event->setX(event->getX() + dx);
     event->setY(event->getY() + dy);
     updatePosition();
     emitPositionChanged();
 }
 
-void DraggablePixmapItem::moveTo(const QPoint &pos) {
+void EventPixmapItem::moveTo(const QPoint &pos) {
     event->setX(pos.x());
     event->setY(pos.y());
     updatePosition();
     emitPositionChanged();
 }
 
-void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
+void EventPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     if (!this->active)
         return;
 
@@ -85,7 +85,7 @@ void DraggablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse) {
     this->releaseSelectionQueued = false;
 }
 
-void DraggablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
+void EventPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse) {
     if (!this->active)
         return;
     this->active = false;

@@ -10,7 +10,7 @@
 #include "customattributesframe.h"
 #include "scripting.h"
 #include "adjustingstackedwidget.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "editcommands.h"
 #include "flowlayout.h"
 #include "shortcut.h"

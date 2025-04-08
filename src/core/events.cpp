@@ -34,7 +34,7 @@ void Event::destroyEventFrame() {
     this->eventFrame = nullptr;
 }
 
-void Event::setPixmapItem(DraggablePixmapItem *item) {
+void Event::setPixmapItem(EventPixmapItem *item) {
     this->pixmapItem = item;
     if (this->eventFrame) {
         this->eventFrame->invalidateConnections();

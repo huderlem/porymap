@@ -1,7 +1,7 @@
 #include "eventframes.h"
 #include "customattributesframe.h"
 #include "editcommands.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 
 #include <limits>
 using std::numeric_limits;
@@ -114,7 +114,7 @@ void EventFrame::connectSignals(MainWindow *) {
         }
     });
 
-    connect(this->event->getPixmapItem(), &DraggablePixmapItem::xChanged, this->spinner_x, &NoScrollSpinBox::setValue);
+    connect(this->event->getPixmapItem(), &EventPixmapItem::xChanged, this->spinner_x, &NoScrollSpinBox::setValue);
     
     this->spinner_y->disconnect();
     connect(this->spinner_y, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
@@ -123,7 +123,7 @@ void EventFrame::connectSignals(MainWindow *) {
             this->event->getMap()->commit(new EventMove(QList<Event *>() << this->event, 0, delta, this->spinner_y->getActionId()));
         }
     });
-    connect(this->event->getPixmapItem(), &DraggablePixmapItem::yChanged, this->spinner_y, &NoScrollSpinBox::setValue);
+    connect(this->event->getPixmapItem(), &EventPixmapItem::yChanged, this->spinner_y, &NoScrollSpinBox::setValue);
     
     this->spinner_z->disconnect();
     connect(this->spinner_z, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
@@ -297,7 +297,7 @@ void ObjectFrame::connectSignals(MainWindow *window) {
         this->object->getPixmapItem()->updatePixmap();
         this->object->modify();
     });
-    connect(this->object->getPixmapItem(), &DraggablePixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
+    connect(this->object->getPixmapItem(), &EventPixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
 
     // movement
     this->combo_movement->disconnect();
@@ -439,7 +439,7 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
     EventFrame::connectSignals(window);
 
     // update icon displayed in frame with target
-    connect(this->clone->getPixmapItem(), &DraggablePixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
+    connect(this->clone->getPixmapItem(), &EventPixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
 
     // target map
     this->combo_target_map->disconnect();

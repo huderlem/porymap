@@ -19,7 +19,7 @@ class EventFrame;
 class ObjectFrame;
 class CloneObjectFrame;
 class WarpFrame;
-class DraggablePixmapItem;
+class EventPixmapItem;
 
 class Event;
 class ObjectEvent;
@@ -154,8 +154,8 @@ public:
     void setPixmap(QPixmap newPixmap) { this->pixmap = newPixmap; }
     QPixmap getPixmap() const { return this->pixmap; }
 
-    void setPixmapItem(DraggablePixmapItem *item);
-    DraggablePixmapItem *getPixmapItem() const { return this->pixmapItem; }
+    void setPixmapItem(EventPixmapItem *item);
+    EventPixmapItem *getPixmapItem() const { return this->pixmapItem; }
 
     void setUsesDefaultPixmap(bool newUsesDefaultPixmap) { this->usesDefaultPixmap = newUsesDefaultPixmap; }
     bool getUsesDefaultPixmap() const { return this->usesDefaultPixmap; }
@@ -194,7 +194,7 @@ protected:
     QJsonObject customAttributes;
 
     QPixmap pixmap;
-    DraggablePixmapItem *pixmapItem = nullptr;
+    EventPixmapItem *pixmapItem = nullptr;
 
     QPointer<EventFrame> eventFrame;
 

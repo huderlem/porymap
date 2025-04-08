@@ -30,7 +30,7 @@
 #include "mapruler.h"
 #include "encountertablemodel.h"
 
-class DraggablePixmapItem;
+class EventPixmapItem;
 class MetatilesPixmapItem;
 
 class Editor : public QObject
@@ -107,7 +107,7 @@ public:
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapAttributes();
 
-    DraggablePixmapItem *addEventPixmapItem(Event *event);
+    EventPixmapItem *addEventPixmapItem(Event *event);
     void removeEventPixmapItem(Event *event);
     bool canAddEvents(const QList<Event*> &events);
     void selectMapEvent(Event *event, bool toggle = false);
@@ -116,7 +116,7 @@ public:
     void duplicateSelectedEvents();
     void redrawAllEvents();
     void redrawEvents(const QList<Event*> &events);
-    void redrawEventPixmapItem(DraggablePixmapItem *item);
+    void redrawEventPixmapItem(EventPixmapItem *item);
     qreal getEventOpacity(const Event *event) const;
 
     void updateCursorRectPos(int x, int y);

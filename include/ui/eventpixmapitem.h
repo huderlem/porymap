@@ -1,5 +1,5 @@
-#ifndef DRAGGABLEPIXMAPITEM_H
-#define DRAGGABLEPIXMAPITEM_H
+#ifndef EVENTPIXMAPITEM_H
+#define EVENTPIXMAPITEM_H
 
 #include <QString>
 #include <QGraphicsItemGroup>
@@ -12,12 +12,12 @@
 
 class Editor;
 
-class DraggablePixmapItem : public QObject, public QGraphicsPixmapItem {
+class EventPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    DraggablePixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {}
+    EventPixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {}
     
-    DraggablePixmapItem(Event *event, Editor *editor) : QGraphicsPixmapItem(event->getPixmap()) {
+    EventPixmapItem(Event *event, Editor *editor) : QGraphicsPixmapItem(event->getPixmap()) {
         this->event = event;
         event->setPixmapItem(this);
         this->editor = editor;
@@ -52,4 +52,4 @@ protected:
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override { emit doubleClicked(this->event); }
 };
 
-#endif // DRAGGABLEPIXMAPITEM_H
+#endif // EVENTPIXMAPITEM_H

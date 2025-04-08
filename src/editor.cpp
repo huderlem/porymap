@@ -1,5 +1,5 @@
 #include "editor.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "imageproviders.h"
 #include "log.h"
 #include "connectionslistitem.h"
@@ -1692,10 +1692,10 @@ void Editor::displayMapEvents() {
     events_group->setHandlesChildEvents(false);
 }
 
-DraggablePixmapItem *Editor::addEventPixmapItem(Event *event) {
+EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
     this->project->loadEventPixmap(event);
-    auto item = new DraggablePixmapItem(event, this);
-    connect(item, &DraggablePixmapItem::doubleClicked, this, &Editor::openEventMap);
+    auto item = new EventPixmapItem(event, this);
+    connect(item, &EventPixmapItem::doubleClicked, this, &Editor::openEventMap);
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;
@@ -1971,7 +1971,7 @@ qreal Editor::getEventOpacity(const Event *event) const {
     return event->getUsesDefaultPixmap() ? 0.7 : 1.0;
 }
 
-void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
+void Editor::redrawEventPixmapItem(EventPixmapItem *item) {
     if (!item || !item->event)
         return;
 
@@ -2287,8 +2287,8 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
 }
 
 // It doesn't seem to be possible to prevent the mousePress event
-// from triggering both event's DraggablePixmapItem and the background mousePress.
-// Since the DraggablePixmapItem's event fires first, we can set a temp
+// from triggering both event's EventPixmapItem and the background mousePress.
+// Since the EventPixmapItem's event fires first, we can set a temp
 // variable "selectingEvent" so that we can detect whether or not the user
 // is clicking on the background instead of an event.
 void Editor::eventsView_onMousePress(QMouseEvent *event) {
