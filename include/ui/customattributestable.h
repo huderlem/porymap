@@ -13,8 +13,8 @@ public:
     explicit CustomAttributesTable(QWidget *parent = nullptr);
     ~CustomAttributesTable() {};
 
-    QMap<QString, QJsonValue> getAttributes() const;
-    void setAttributes(const QMap<QString, QJsonValue> &attributes);
+    QJsonObject getAttributes() const;
+    void setAttributes(const QJsonObject &attributes);
 
     void addNewAttribute(const QString &key, const QJsonValue &value);
     bool deleteSelectedAttributes();

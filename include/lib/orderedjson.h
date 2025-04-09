@@ -99,7 +99,7 @@ public:
 
     // Array and object typedefs
     typedef QVector<Json> array;
-    typedef tsl::ordered_map<QString, Json> object;
+    typedef OrderedMap<QString, Json> object;
 
     // Constructors for the various types of JSON value.
     Json() noexcept;                // NUL
@@ -132,7 +132,22 @@ public:
             int>::type = 0>
     Json(const V & v) : Json(array(v.begin(), v.end())) {}
 
-    static const Json fromQJsonValue(QJsonValue value);
+    static Json fromQJsonValue(const QJsonValue &value);
+
+    static void append(Json::array *array, const QJsonArray &addendum) {
+        for (const auto &i : addendum) array->push_back(fromQJsonValue(i));
+    }
+    static void append(Json::array *array, const Json::array &addendum) {
+        for (const auto &i : addendum) array->push_back(i);
+    }
+    static void append(Json::object *object, const QJsonObject &addendum) {
+        for (auto it = addendum.constBegin(); it != addendum.constEnd(); it++)
+            (*object)[it.key()] = fromQJsonValue(it.value());
+    }
+    static void append(Json::object *object, const Json::object &addendum) {
+        for (auto it = addendum.cbegin(); it != addendum.cend(); it++)
+            (*object)[it.key()] = it.value();
+    }
 
     // This prevents Json(some_pointer) from accidentally producing a bool. Use
     // Json(bool(some_pointer)) if that behavior is desired.

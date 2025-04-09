@@ -610,12 +610,12 @@ bool ParseUtil::gameStringToBool(const QString &gameString, bool * ok) {
     return gameStringToInt(gameString, ok) != 0;
 }
 
-tsl::ordered_map<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> &memberMap) {
+OrderedMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> &memberMap) {
     QString filePath = pathWithRoot(filename);
     auto cParser = fex::Parser();
     auto tokens = fex::Lexer().LexFile(filePath);
     auto topLevelObjects = cParser.ParseTopLevelObjects(tokens);
-    tsl::ordered_map<QString, QHash<QString, QString>> structs;
+    OrderedMap<QString, QHash<QString, QString>> structs;
     for (auto it = topLevelObjects.begin(); it != topLevelObjects.end(); it++) {
         QString structLabel = QString::fromStdString(it->first);
         if (structLabel.isEmpty()) continue;

@@ -596,7 +596,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         if (newNameDialog.exec() == QDialog::Accepted) {
             QString newFieldName = newNameEdit->text();
             QVector<int> newFieldRates(1, 100);
-            tempFields.append({newFieldName, newFieldRates, {}});
+            tempFields.append({newFieldName, newFieldRates, {}, {}});
             fieldChoices->addItem(newFieldName);
             fieldChoices->setCurrentIndex(fieldChoices->count() - 1);
         }
@@ -675,7 +675,7 @@ void Editor::saveEncounterTabData() {
 
     if (!stack->count()) return;
 
-    tsl::ordered_map<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName()];
+    OrderedMap<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName()];
 
     for (int groupIndex = 0; groupIndex < stack->count(); groupIndex++) {
         MonTabWidget *tabWidget = static_cast<MonTabWidget *>(stack->widget(groupIndex));
