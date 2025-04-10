@@ -276,7 +276,12 @@ void MapView::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int
                                         this->editor->layout->tileset_primary,
                                         this->editor->layout->tileset_secondary,
                                         paletteId)
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
+                                        .flipped(Util::getOrientation(xflip, yflip));
+#else
                                         .mirrored(xflip, yflip);
+#endif
+
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->getOverlay(layer)->addImage(x, y, image))

@@ -19,8 +19,8 @@ UpdatePromoter::UpdatePromoter(QWidget *parent, NetworkAccessManager *manager)
     // Set up "Do not alert me" check box
     this->updatePreferences();
     ui->checkBox_StopAlerts->setVisible(false);
-    connect(ui->checkBox_StopAlerts, &QCheckBox::stateChanged, [this](int state) {
-        porymapConfig.checkForUpdates = (state != Qt::Checked);
+    connect(ui->checkBox_StopAlerts, &QCheckBox::toggled, [this](bool stopAlerts) {
+        porymapConfig.checkForUpdates = !stopAlerts;
         emit this->changedPreferences();
     });
 

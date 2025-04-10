@@ -123,21 +123,10 @@ bool Shortcut::autoRepeat() const {
     return sc_vec.first()->autoRepeat();
 }
 
-int Shortcut::id() const {
-    return sc_vec.first()->id();
-}
-
-QList<int> Shortcut::ids() const {
-    QList<int> id_list;
-    for (auto *sc : sc_vec)
-        id_list.append(sc->id());
-    return id_list;
-}
-
 bool Shortcut::event(QEvent *e) {
     if (isEnabled() && e->type() == QEvent::Shortcut) {
         auto se = static_cast<QShortcutEvent *>(e);
-        if (ids().contains(se->shortcutId()) && keys().contains(se->key())) {
+        if (keys().contains(se->key())) {
             if (QWhatsThis::inWhatsThisMode()) {
                 QWhatsThis::showText(QCursor::pos(), whatsThis());
             } else {

@@ -91,30 +91,27 @@ protected:
     virtual void showEvent(QShowEvent *) override;
     virtual void resizeEvent(QResizeEvent *) override;
 
-private slots:
-    void on_checkBox_Objects_stateChanged(int state);
-    void on_checkBox_Warps_stateChanged(int state);
-    void on_checkBox_BGs_stateChanged(int state);
-    void on_checkBox_Triggers_stateChanged(int state);
-    void on_checkBox_HealLocations_stateChanged(int state);
-    void on_checkBox_AllEvents_stateChanged(int state);
-
-    void on_checkBox_ConnectionUp_stateChanged(int state);
-    void on_checkBox_ConnectionDown_stateChanged(int state);
-    void on_checkBox_ConnectionLeft_stateChanged(int state);
-    void on_checkBox_ConnectionRight_stateChanged(int state);
-    void on_checkBox_AllConnections_stateChanged(int state);
-
-    void on_checkBox_Collision_stateChanged(int state);
-    void on_checkBox_Grid_stateChanged(int state);
-    void on_checkBox_Border_stateChanged(int state);
+private:
+    void setShowGrid(bool checked);
+    void setShowBorder(bool checked);
+    void setShowObjects(bool checked);
+    void setShowWarps(bool checked);
+    void setShowBgs(bool checked);
+    void setShowTriggers(bool checked);
+    void setShowHealLocations(bool checked);
+    void setShowAllEvents(bool checked);
+    void setShowConnectionUp(bool checked);
+    void setShowConnectionDown(bool checked);
+    void setShowConnectionLeft(bool checked);
+    void setShowConnectionRight(bool checked);
+    void setShowAllConnections(bool checked);
+    void setShowCollision(bool checked);
+    void setDisablePreviewScaling(bool checked);
+    void setDisablePreviewUpdates(bool checked);
 
     void on_pushButton_Reset_pressed();
     void on_spinBox_TimelapseDelay_editingFinished();
     void on_spinBox_FrameSkip_editingFinished();
-
-    void on_checkBox_DisablePreviewScaling_stateChanged(int state);
-    void on_checkBox_DisablePreviewUpdates_stateChanged(int state);
 };
 
 #endif // MAPIMAGEEXPORTER_H
