@@ -853,12 +853,8 @@ void HiddenItemFrame::connectSignals(MainWindow *window) {
 
     // underfoot
     this->check_itemfinder->disconnect();
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-    connect(this->check_itemfinder, &QCheckBox::checkStateChanged, [=](Qt::CheckState state) {
-#else
-    connect(this->check_itemfinder, &QCheckBox::stateChanged, [=](int state) {
-#endif
-        this->hiddenItem->setUnderfoot(state == Qt::Checked);
+    connect(this->check_itemfinder, &QCheckBox::toggled, [=](bool checked) {
+        this->hiddenItem->setUnderfoot(checked);
         this->hiddenItem->modify();
     });
 }

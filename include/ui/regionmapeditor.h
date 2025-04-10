@@ -121,8 +121,8 @@ private:
     void restoreWindowState();
     void closeEvent(QCloseEvent* event);
 
-    void setTileHFlip(CheckState);
-    void setTileVFlip(CheckState);
+    void setTileHFlip(bool enabled);
+    void setTileVFlip(bool enabled);
 
 private slots:
     void on_action_RegionMap_Save_triggered();

@@ -299,16 +299,9 @@ void MainWindow::initExtraSignals() {
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
     connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
     connect(ui->comboBox_LayoutSelector->lineEdit(), &QLineEdit::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
-
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-    connect(ui->checkBox_smartPaths,        &QCheckBox::checkStateChanged, this, &MainWindow::setSmartPathsEnabled);
-    connect(ui->checkBox_ToggleBorder,      &QCheckBox::checkStateChanged, this, &MainWindow::setBorderVisibility);
-    connect(ui->checkBox_MirrorConnections, &QCheckBox::checkStateChanged, this, &MainWindow::setMirrorConnectionsEnabled);
-#else
-    connect(ui->checkBox_smartPaths,        &QCheckBox::stateChanged, this, &MainWindow::setSmartPathsEnabled);
-    connect(ui->checkBox_ToggleBorder,      &QCheckBox::stateChanged, this, &MainWindow::setBorderVisibility);
-    connect(ui->checkBox_MirrorConnections, &QCheckBox::stateChanged, this, &MainWindow::setMirrorConnectionsEnabled);
-#endif
+    connect(ui->checkBox_smartPaths, &QCheckBox::toggled, this, &MainWindow::setSmartPathsEnabled);
+    connect(ui->checkBox_ToggleBorder, &QCheckBox::toggled, this, &MainWindow::setBorderVisibility);
+    connect(ui->checkBox_MirrorConnections, &QCheckBox::toggled, this, &MainWindow::setMirrorConnectionsEnabled);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -2721,21 +2714,20 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
     }
 }
 
-void MainWindow::setSmartPathsEnabled(CheckState state)
+void MainWindow::setSmartPathsEnabled(bool enabled)
 {
-    bool enabled = (state == Qt::Checked);
     this->editor->settings->smartPathsEnabled = enabled;
     this->editor->cursorMapTileRect->setSmartPathMode(enabled);
 }
 
-void MainWindow::setBorderVisibility(CheckState state)
+void MainWindow::setBorderVisibility(bool visible)
 {
-    editor->toggleBorderVisibility(state == Qt::Checked);
+    editor->toggleBorderVisibility(visible);
 }
 
-void MainWindow::setMirrorConnectionsEnabled(CheckState state)
+void MainWindow::setMirrorConnectionsEnabled(bool enabled)
 {
-    porymapConfig.mirrorConnectingMaps = (state == Qt::Checked);
+    porymapConfig.mirrorConnectingMaps = enabled;
 }
 
 void MainWindow::on_actionTileset_Editor_triggered()

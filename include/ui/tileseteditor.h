@@ -145,8 +145,8 @@ private:
     void commitTerrainType();
     void commitLayerType();
     void setRawAttributesVisible(bool visible);
-    void setXFlip(CheckState state);
-    void setYFlip(CheckState state);
+    void setXFlip(bool enabled);
+    void setYFlip(bool enabled);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;

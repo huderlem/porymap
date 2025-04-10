@@ -26,14 +26,8 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     setAttribute(Qt::WA_DeleteOnClose);
     setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
     ui->setupUi(this);
-
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-    connect(ui->checkBox_xFlip, &QCheckBox::checkStateChanged, this, &TilesetEditor::setXFlip);
-    connect(ui->checkBox_yFlip, &QCheckBox::checkStateChanged, this, &TilesetEditor::setYFlip);
-#else
-    connect(ui->checkBox_xFlip, &QCheckBox::stateChanged, this, &TilesetEditor::setXFlip);
-    connect(ui->checkBox_yFlip, &QCheckBox::stateChanged, this, &TilesetEditor::setYFlip);
-#endif
+    connect(ui->checkBox_xFlip, &QCheckBox::toggled, this, &TilesetEditor::setXFlip);
+    connect(ui->checkBox_yFlip, &QCheckBox::toggled, this, &TilesetEditor::setYFlip);
 
     this->tileXFlip = ui->checkBox_xFlip->isChecked();
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
@@ -553,17 +547,17 @@ void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
-void TilesetEditor::setXFlip(CheckState state)
+void TilesetEditor::setXFlip(bool enabled)
 {
-    this->tileXFlip = (state == Qt::Checked);
+    this->tileXFlip = enabled;
     this->tileSelector->setTileFlips(this->tileXFlip, this->tileYFlip);
     this->drawSelectedTiles();
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
-void TilesetEditor::setYFlip(CheckState state)
+void TilesetEditor::setYFlip(bool enabled)
 {
-    this->tileYFlip = (state == Qt::Checked);
+    this->tileYFlip = enabled;
     this->tileSelector->setTileFlips(this->tileXFlip, this->tileYFlip);
     this->drawSelectedTiles();
     this->metatileLayersItem->clearLastModifiedCoords();

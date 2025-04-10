@@ -92,22 +92,22 @@ protected:
     virtual void resizeEvent(QResizeEvent *) override;
 
 private:
-    void setShowGrid(CheckState state);
-    void setShowBorder(CheckState state);
-    void setShowObjects(CheckState state);
-    void setShowWarps(CheckState state);
-    void setShowBgs(CheckState state);
-    void setShowTriggers(CheckState state);
-    void setShowHealLocations(CheckState state);
-    void setShowAllEvents(CheckState state);
-    void setShowConnectionUp(CheckState state);
-    void setShowConnectionDown(CheckState state);
-    void setShowConnectionLeft(CheckState state);
-    void setShowConnectionRight(CheckState state);
-    void setShowAllConnections(CheckState state);
-    void setShowCollision(CheckState state);
-    void setDisablePreviewScaling(CheckState state);
-    void setDisablePreviewUpdates(CheckState state);
+    void setShowGrid(bool checked);
+    void setShowBorder(bool checked);
+    void setShowObjects(bool checked);
+    void setShowWarps(bool checked);
+    void setShowBgs(bool checked);
+    void setShowTriggers(bool checked);
+    void setShowHealLocations(bool checked);
+    void setShowAllEvents(bool checked);
+    void setShowConnectionUp(bool checked);
+    void setShowConnectionDown(bool checked);
+    void setShowConnectionLeft(bool checked);
+    void setShowConnectionRight(bool checked);
+    void setShowAllConnections(bool checked);
+    void setShowCollision(bool checked);
+    void setDisablePreviewScaling(bool checked);
+    void setDisablePreviewUpdates(bool checked);
 
     void on_pushButton_Reset_pressed();
     void on_spinBox_TimelapseDelay_editingFinished();

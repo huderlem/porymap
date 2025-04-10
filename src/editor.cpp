@@ -296,12 +296,8 @@ void Editor::addNewWildMonGroup(QWidget *window) {
         form.addRow(new QLabel(monField.name), fieldCheckbox);
     }
     // Reading from ui here so not saving to disk before user.
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-    connect(copyCheckbox, &QCheckBox::checkStateChanged, [=](Qt::CheckState state){
-#else
-    connect(copyCheckbox, &QCheckBox::stateChanged, [=](int state){
-#endif
-        if (state == Qt::Checked) {
+    connect(copyCheckbox, &QCheckBox::toggled, [=](bool checked){
+        if (checked) {
             int fieldIndex = 0;
             MonTabWidget *monWidget = static_cast<MonTabWidget *>(stack->widget(stack->currentIndex()));
             for (EncounterField monField : project->wildMonFields) {
@@ -309,7 +305,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
                 fieldCheckboxes[fieldIndex]->setEnabled(false);
                 fieldIndex++;
             }
-        } else if (state == Qt::Unchecked) {
+        } else {
             int fieldIndex = 0;
             for (EncounterField monField : project->wildMonFields) {
                 fieldCheckboxes[fieldIndex]->setEnabled(true);

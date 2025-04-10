@@ -27,13 +27,8 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
     this->ui->setupUi(this);
     this->project = project;
     connect(this->project, &Project::mapSectionIdNamesChanged, this, &RegionMapEditor::setLocations);
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
-    connect(ui->checkBox_tileHFlip, &QCheckBox::checkStateChanged, this, &RegionMapEditor::setTileHFlip);
-    connect(ui->checkBox_tileVFlip, &QCheckBox::checkStateChanged, this, &RegionMapEditor::setTileVFlip);
-#else
-    connect(ui->checkBox_tileHFlip, &QCheckBox::stateChanged, this, &RegionMapEditor::setTileHFlip);
-    connect(ui->checkBox_tileVFlip, &QCheckBox::stateChanged, this, &RegionMapEditor::setTileVFlip);
-#endif
+    connect(ui->checkBox_tileHFlip, &QCheckBox::toggled, this, &RegionMapEditor::setTileHFlip);
+    connect(ui->checkBox_tileVFlip, &QCheckBox::toggled, this, &RegionMapEditor::setTileVFlip);
 
 
     this->configFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
@@ -1043,14 +1038,14 @@ void RegionMapEditor::on_spinBox_tilePalette_valueChanged(int value) {
         this->mapsquare_selector_item->selectPalette(value);
 }
 
-void RegionMapEditor::setTileHFlip(CheckState state) {
+void RegionMapEditor::setTileHFlip(bool enabled) {
     if (this->mapsquare_selector_item)
-        this->mapsquare_selector_item->selectHFlip(state == Qt::Checked);
+        this->mapsquare_selector_item->selectHFlip(enabled);
 }
 
-void RegionMapEditor::setTileVFlip(CheckState state) {
+void RegionMapEditor::setTileVFlip(bool enabled) {
     if (this->mapsquare_selector_item)
-        this->mapsquare_selector_item->selectVFlip(state == Qt::Checked);
+        this->mapsquare_selector_item->selectVFlip(enabled);
 }
 
 void RegionMapEditor::on_action_RegionMap_Resize_triggered() {

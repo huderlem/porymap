@@ -435,9 +435,9 @@ private:
     void checkForUpdates(bool requestedByUser);
     void setDivingMapsVisible(bool visible);
 
-    void setSmartPathsEnabled(CheckState state);
-    void setBorderVisibility(CheckState state);
-    void setMirrorConnectionsEnabled(CheckState state);
+    void setSmartPathsEnabled(bool enabled);
+    void setBorderVisibility(bool visible);
+    void setMirrorConnectionsEnabled(bool enabled);
 };
 
 // These are namespaced in a struct to avoid colliding with e.g. class Map.
