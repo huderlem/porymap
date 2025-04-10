@@ -60,6 +60,42 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
     connect(ui->comboBox_MapSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MapImageExporter::updateMapSelection);
     connect(ui->comboBox_MapSelection->lineEdit(), &QLineEdit::editingFinished, this, &MapImageExporter::updateMapSelection);
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
+    connect(ui->checkBox_Objects,               &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowObjects);
+    connect(ui->checkBox_Warps,                 &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowWarps);
+    connect(ui->checkBox_BGs,                   &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowBgs);
+    connect(ui->checkBox_Triggers,              &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowTriggers);
+    connect(ui->checkBox_HealLocations,         &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowHealLocations);
+    connect(ui->checkBox_AllEvents,             &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowAllEvents);
+    connect(ui->checkBox_ConnectionUp,          &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowConnectionUp);
+    connect(ui->checkBox_ConnectionDown,        &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowConnectionDown);
+    connect(ui->checkBox_ConnectionLeft,        &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowConnectionLeft);
+    connect(ui->checkBox_ConnectionRight,       &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowConnectionRight);
+    connect(ui->checkBox_AllConnections,        &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowAllConnections);
+    connect(ui->checkBox_Collision,             &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowCollision);
+    connect(ui->checkBox_Grid,                  &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowGrid);
+    connect(ui->checkBox_Border,                &QCheckBox::checkStateChanged, this, &MapImageExporter::setShowBorder);
+    connect(ui->checkBox_DisablePreviewScaling, &QCheckBox::checkStateChanged, this, &MapImageExporter::setDisablePreviewScaling);
+    connect(ui->checkBox_DisablePreviewUpdates, &QCheckBox::checkStateChanged, this, &MapImageExporter::setDisablePreviewUpdates);
+#else
+    connect(ui->checkBox_Objects,               &QCheckBox::stateChanged, this, &MapImageExporter::setShowObjects);
+    connect(ui->checkBox_Warps,                 &QCheckBox::stateChanged, this, &MapImageExporter::setShowWarps);
+    connect(ui->checkBox_BGs,                   &QCheckBox::stateChanged, this, &MapImageExporter::setShowBgs);
+    connect(ui->checkBox_Triggers,              &QCheckBox::stateChanged, this, &MapImageExporter::setShowTriggers);
+    connect(ui->checkBox_HealLocations,         &QCheckBox::stateChanged, this, &MapImageExporter::setShowHealLocations);
+    connect(ui->checkBox_AllEvents,             &QCheckBox::stateChanged, this, &MapImageExporter::setShowAllEvents);
+    connect(ui->checkBox_ConnectionUp,          &QCheckBox::stateChanged, this, &MapImageExporter::setShowConnectionUp);
+    connect(ui->checkBox_ConnectionDown,        &QCheckBox::stateChanged, this, &MapImageExporter::setShowConnectionDown);
+    connect(ui->checkBox_ConnectionLeft,        &QCheckBox::stateChanged, this, &MapImageExporter::setShowConnectionLeft);
+    connect(ui->checkBox_ConnectionRight,       &QCheckBox::stateChanged, this, &MapImageExporter::setShowConnectionRight);
+    connect(ui->checkBox_AllConnections,        &QCheckBox::stateChanged, this, &MapImageExporter::setShowAllConnections);
+    connect(ui->checkBox_Collision,             &QCheckBox::stateChanged, this, &MapImageExporter::setShowCollision);
+    connect(ui->checkBox_Grid,                  &QCheckBox::stateChanged, this, &MapImageExporter::setShowGrid);
+    connect(ui->checkBox_Border,                &QCheckBox::stateChanged, this, &MapImageExporter::setShowBorder);
+    connect(ui->checkBox_DisablePreviewScaling, &QCheckBox::stateChanged, this, &MapImageExporter::setDisablePreviewScaling);
+    connect(ui->checkBox_DisablePreviewUpdates, &QCheckBox::stateChanged, this, &MapImageExporter::setDisablePreviewUpdates);
+#endif
+
     ui->graphicsView_Preview->setFocus();
 }
 
@@ -719,48 +755,48 @@ void MapImageExporter::setConnectionDirectionEnabled(const QString &dir, bool en
     }
 }
 
-void MapImageExporter::on_checkBox_Collision_stateChanged(int state) {
+void MapImageExporter::setShowCollision(CheckState state) {
     m_settings.showCollision = (state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Grid_stateChanged(int state) {
+void MapImageExporter::setShowGrid(CheckState state) {
     m_settings.showGrid = (state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Border_stateChanged(int state) {
+void MapImageExporter::setShowBorder(CheckState state) {
     m_settings.showBorder = (state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Objects_stateChanged(int state) {
+void MapImageExporter::setShowObjects(CheckState state) {
     setEventGroupEnabled(Event::Group::Object, state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Warps_stateChanged(int state) {
+void MapImageExporter::setShowWarps(CheckState state) {
     setEventGroupEnabled(Event::Group::Warp, state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_BGs_stateChanged(int state) {
+void MapImageExporter::setShowBgs(CheckState state) {
     setEventGroupEnabled(Event::Group::Bg, state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Triggers_stateChanged(int state) {
+void MapImageExporter::setShowTriggers(CheckState state) {
     setEventGroupEnabled(Event::Group::Coord, state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_HealLocations_stateChanged(int state) {
+void MapImageExporter::setShowHealLocations(CheckState state) {
     setEventGroupEnabled(Event::Group::Heal, state == Qt::Checked);
     updatePreview();
 }
 
 // Shortcut setting for enabling all events
-void MapImageExporter::on_checkBox_AllEvents_stateChanged(int state) {
+void MapImageExporter::setShowAllEvents(CheckState state) {
     bool on = (state == Qt::Checked);
 
     const QSignalBlocker b_Objects(ui->checkBox_Objects);
@@ -791,28 +827,28 @@ void MapImageExporter::on_checkBox_AllEvents_stateChanged(int state) {
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionUp_stateChanged(int state) {
+void MapImageExporter::setShowConnectionUp(CheckState state) {
     setConnectionDirectionEnabled("up", state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionDown_stateChanged(int state) {
+void MapImageExporter::setShowConnectionDown(CheckState state) {
     setConnectionDirectionEnabled("down", state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionLeft_stateChanged(int state) {
+void MapImageExporter::setShowConnectionLeft(CheckState state) {
     setConnectionDirectionEnabled("left", state == Qt::Checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionRight_stateChanged(int state) {
+void MapImageExporter::setShowConnectionRight(CheckState state) {
     setConnectionDirectionEnabled("right", state == Qt::Checked);
     updatePreview();
 }
 
 // Shortcut setting for enabling all connection directions
-void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
+void MapImageExporter::setShowAllConnections(CheckState state) {
     bool on = (state == Qt::Checked);
 
     const QSignalBlocker b_Up(ui->checkBox_ConnectionUp);
@@ -838,7 +874,7 @@ void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_DisablePreviewScaling_stateChanged(int state) {
+void MapImageExporter::setDisablePreviewScaling(CheckState state) {
     m_settings.disablePreviewScaling = (state == Qt::Checked);
     if (m_settings.disablePreviewScaling) {
         ui->graphicsView_Preview->resetTransform();
@@ -847,7 +883,7 @@ void MapImageExporter::on_checkBox_DisablePreviewScaling_stateChanged(int state)
     }
 }
 
-void MapImageExporter::on_checkBox_DisablePreviewUpdates_stateChanged(int state) {
+void MapImageExporter::setDisablePreviewUpdates(CheckState state) {
     m_settings.disablePreviewUpdates = (state == Qt::Checked);
     if (m_settings.disablePreviewUpdates) {
         if (m_timelapseMovie) {

@@ -45,7 +45,11 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
     connect(ui->comboBox_AttributesSize, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updateAttributeLimits);
     connect(ui->comboBox_IconSpecies, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updatePokemonIconPath);
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
+    connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::checkStateChanged, [this](Qt::CheckState state) {
+#else
     connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::stateChanged, [this](int state) {
+#endif
         bool customSize = (state == Qt::Checked);
         // When switching between the spin boxes or line edit for border metatiles we set
         // the newly-shown UI using the values from the hidden UI.
@@ -82,8 +86,12 @@ void ProjectSettingsEditor::connectSignals() {
             connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
     }
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
+        connect(checkBox, &QCheckBox::checkStateChanged, this, &ProjectSettingsEditor::markEdited);
+#else
         connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
-     for (auto radioButton : ui->centralwidget->findChildren<QRadioButton *>())
+#endif
+    for (auto radioButton : ui->centralwidget->findChildren<QRadioButton *>())
         connect(radioButton, &QRadioButton::toggled, this, &ProjectSettingsEditor::markEdited);
     for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
         connect(lineEdit, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);

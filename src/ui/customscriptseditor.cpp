@@ -105,7 +105,11 @@ void CustomScriptsEditor::displayScript(const QString &filepath, bool enabled) {
     connect(widget->ui->b_Choose, &QAbstractButton::clicked, [this, item](bool) { this->replaceScript(item); });
     connect(widget->ui->b_Edit,   &QAbstractButton::clicked, [this, item](bool) { this->openScript(item); });
     connect(widget->ui->b_Delete, &QAbstractButton::clicked, [this, item](bool) { this->removeScript(item); });
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
+    connect(widget->ui->checkBox_Enable, &QCheckBox::checkStateChanged, this, &CustomScriptsEditor::markEdited);
+#else
     connect(widget->ui->checkBox_Enable, &QCheckBox::stateChanged, this, &CustomScriptsEditor::markEdited);
+#endif
     connect(widget->ui->lineEdit_filepath, &QLineEdit::textEdited, this, &CustomScriptsEditor::markEdited);
 
     // Per the Qt manual, for performance reasons QListWidget::setItemWidget shouldn't be used with non-static items.

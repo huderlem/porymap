@@ -73,11 +73,11 @@ private:
     void onWeatherChanged(const QString &weather);
     void onTypeChanged(const QString &type);
     void onBattleSceneChanged(const QString &battleScene);
-    void onRequiresFlashChanged(int selected);
-    void onShowLocationNameChanged(int selected);
-    void onAllowRunningChanged(int selected);
-    void onAllowBikingChanged(int selected);
-    void onAllowEscapingChanged(int selected);
+    void onRequiresFlashChanged(CheckState selected);
+    void onShowLocationNameChanged(CheckState selected);
+    void onAllowRunningChanged(CheckState selected);
+    void onAllowBikingChanged(CheckState selected);
+    void onAllowEscapingChanged(CheckState selected);
     void onFloorNumberChanged(int offset);
 };
 

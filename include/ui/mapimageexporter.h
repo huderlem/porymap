@@ -91,30 +91,27 @@ protected:
     virtual void showEvent(QShowEvent *) override;
     virtual void resizeEvent(QResizeEvent *) override;
 
-private slots:
-    void on_checkBox_Objects_stateChanged(int state);
-    void on_checkBox_Warps_stateChanged(int state);
-    void on_checkBox_BGs_stateChanged(int state);
-    void on_checkBox_Triggers_stateChanged(int state);
-    void on_checkBox_HealLocations_stateChanged(int state);
-    void on_checkBox_AllEvents_stateChanged(int state);
-
-    void on_checkBox_ConnectionUp_stateChanged(int state);
-    void on_checkBox_ConnectionDown_stateChanged(int state);
-    void on_checkBox_ConnectionLeft_stateChanged(int state);
-    void on_checkBox_ConnectionRight_stateChanged(int state);
-    void on_checkBox_AllConnections_stateChanged(int state);
-
-    void on_checkBox_Collision_stateChanged(int state);
-    void on_checkBox_Grid_stateChanged(int state);
-    void on_checkBox_Border_stateChanged(int state);
+private:
+    void setShowGrid(CheckState state);
+    void setShowBorder(CheckState state);
+    void setShowObjects(CheckState state);
+    void setShowWarps(CheckState state);
+    void setShowBgs(CheckState state);
+    void setShowTriggers(CheckState state);
+    void setShowHealLocations(CheckState state);
+    void setShowAllEvents(CheckState state);
+    void setShowConnectionUp(CheckState state);
+    void setShowConnectionDown(CheckState state);
+    void setShowConnectionLeft(CheckState state);
+    void setShowConnectionRight(CheckState state);
+    void setShowAllConnections(CheckState state);
+    void setShowCollision(CheckState state);
+    void setDisablePreviewScaling(CheckState state);
+    void setDisablePreviewUpdates(CheckState state);
 
     void on_pushButton_Reset_pressed();
     void on_spinBox_TimelapseDelay_editingFinished();
     void on_spinBox_FrameSkip_editingFinished();
-
-    void on_checkBox_DisablePreviewScaling_stateChanged(int state);
-    void on_checkBox_DisablePreviewUpdates_stateChanged(int state);
 };
 
 #endif // MAPIMAGEEXPORTER_H
