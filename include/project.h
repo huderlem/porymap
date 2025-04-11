@@ -87,6 +87,7 @@ public:
     void clearHealLocations();
 
     bool sanityCheck();
+    int getSupportedMajorVersion(QString *errorOut = nullptr);
     bool load();
 
     Map* loadMap(const QString &mapName);
