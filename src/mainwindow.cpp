@@ -668,7 +668,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
-    if (!checkProjectSanity()) {
+    if (isInvalidProject(this->editor->project)) {
         delete this->editor->project;
         return false;
     }
@@ -708,22 +708,52 @@ bool MainWindow::loadProjectData() {
     return success;
 }
 
-bool MainWindow::checkProjectSanity() {
-    if (editor->project->sanityCheck())
-        return true;
+bool MainWindow::isInvalidProject(Project *project) {
+    if (!project->sanityCheck()) {
+        logWarn(QString("The directory '%1' failed the project sanity check.").arg(project->root));
 
-    logWarn(QString("The directory '%1' failed the project sanity check.").arg(editor->project->root));
+        ErrorMessage msgBox(QStringLiteral("The selected directory appears to be invalid."), this);
+        msgBox.setInformativeText(QString("The directory '%1' is missing key files.\n\n"
+                                          "Make sure you selected the correct project directory "
+                                          "(the one used to make your .gba file, e.g. 'pokeemerald').").arg(project->root));
+        auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
+        msgBox.exec();
 
-    ErrorMessage msgBox(QStringLiteral("The selected directory appears to be invalid."), this);
-    msgBox.setInformativeText(QString("The directory '%1' is missing key files.\n\n"
-                                      "Make sure you selected the correct project directory "
-                                      "(the one used to make your .gba file, e.g. 'pokeemerald').").arg(editor->project->root));
-    auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
-    msgBox.exec();
-    if (msgBox.clickedButton() == tryAnyway) {
-        // The user has chosen to try to load this project anyway.
+        // The user may choose to try to load this project anyway.
         // This will almost certainly fail, but they'll get a more specific error message.
-        return true;
+        if (msgBox.clickedButton() != tryAnyway){
+            return true;
+        }
+    }
+    QString error;
+    int projectVersion = project->getSupportedMajorVersion(&error);
+    if (projectVersion <= 0) {
+        // Failed to identify a supported major version.
+        // We can't draw any conclusions from this, so we don't consider the project to be invalid.
+        logWarn(error.isEmpty() ? QStringLiteral("Unable to identify project's Porymap version.") : error);
+    } else {
+        logInfo(QString("Successful project version check. Supports at least Porymap v%1.").arg(projectVersion));
+
+        if (projectVersion < porymapVersion.majorVersion() && projectConfig.forcedMajorVersion < porymapVersion.majorVersion()) {
+            // We were unable to find the necessary changes for Porymap's current major version.
+            // Warn the user that this might mean their project is missing breaking changes.
+            // Note: Do not report 'projectVersion' to the user in this message. We've already logged it for troubleshooting.
+            //       It is very plausible that the user may have reproduced the required changes in an
+            //       unknown commit, rather than merging the required changes directly from the base repo.
+            //       In this case the 'projectVersion' may actually be too old to use for their repo.
+            ErrorMessage msgBox(QStringLiteral("Your project may be incompatible!"), this);
+            msgBox.setInformativeText(QString("Make sure '%1' has all the required changes for Porymap version %2."
+                                              "") // TODO: Once we have a wiki or manual page describing breaking changes, link that here.
+                                              .arg(project->getProjectTitle())
+                                              .arg(porymapVersion.majorVersion()));
+            auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
+            msgBox.exec();
+            if (msgBox.clickedButton() != tryAnyway){
+                return true;
+            }
+            // User opted to try with this version anyway. Don't warn them about this version again.
+            projectConfig.forcedMajorVersion = porymapVersion.majorVersion();
+        }
     }
     return false;
 }

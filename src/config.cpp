@@ -835,6 +835,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
             this->warpBehaviors.append(getConfigUint32(key, s));
     } else if (key == "max_events_per_group") {
         this->maxEventsPerGroup = getConfigInteger(key, value, 1, INT_MAX, 255);
+    } else if (key == "forced_major_version") {
+        this->forcedMajorVersion = getConfigInteger(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -931,6 +933,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
     map.insert("max_events_per_group", QString::number(this->maxEventsPerGroup));
+    map.insert("forced_major_version", QString::number(this->forcedMajorVersion));
 
     return map;
 }
