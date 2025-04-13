@@ -60,6 +60,23 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
     connect(ui->comboBox_MapSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MapImageExporter::updateMapSelection);
     connect(ui->comboBox_MapSelection->lineEdit(), &QLineEdit::editingFinished, this, &MapImageExporter::updateMapSelection);
 
+    connect(ui->checkBox_Objects,               &QCheckBox::toggled, this, &MapImageExporter::setShowObjects);
+    connect(ui->checkBox_Warps,                 &QCheckBox::toggled, this, &MapImageExporter::setShowWarps);
+    connect(ui->checkBox_BGs,                   &QCheckBox::toggled, this, &MapImageExporter::setShowBgs);
+    connect(ui->checkBox_Triggers,              &QCheckBox::toggled, this, &MapImageExporter::setShowTriggers);
+    connect(ui->checkBox_HealLocations,         &QCheckBox::toggled, this, &MapImageExporter::setShowHealLocations);
+    connect(ui->checkBox_AllEvents,             &QCheckBox::toggled, this, &MapImageExporter::setShowAllEvents);
+    connect(ui->checkBox_ConnectionUp,          &QCheckBox::toggled, this, &MapImageExporter::setShowConnectionUp);
+    connect(ui->checkBox_ConnectionDown,        &QCheckBox::toggled, this, &MapImageExporter::setShowConnectionDown);
+    connect(ui->checkBox_ConnectionLeft,        &QCheckBox::toggled, this, &MapImageExporter::setShowConnectionLeft);
+    connect(ui->checkBox_ConnectionRight,       &QCheckBox::toggled, this, &MapImageExporter::setShowConnectionRight);
+    connect(ui->checkBox_AllConnections,        &QCheckBox::toggled, this, &MapImageExporter::setShowAllConnections);
+    connect(ui->checkBox_Collision,             &QCheckBox::toggled, this, &MapImageExporter::setShowCollision);
+    connect(ui->checkBox_Grid,                  &QCheckBox::toggled, this, &MapImageExporter::setShowGrid);
+    connect(ui->checkBox_Border,                &QCheckBox::toggled, this, &MapImageExporter::setShowBorder);
+    connect(ui->checkBox_DisablePreviewScaling, &QCheckBox::toggled, this, &MapImageExporter::setDisablePreviewScaling);
+    connect(ui->checkBox_DisablePreviewUpdates, &QCheckBox::toggled, this, &MapImageExporter::setDisablePreviewUpdates);
+
     ui->graphicsView_Preview->setFocus();
 }
 
@@ -719,127 +736,123 @@ void MapImageExporter::setConnectionDirectionEnabled(const QString &dir, bool en
     }
 }
 
-void MapImageExporter::on_checkBox_Collision_stateChanged(int state) {
-    m_settings.showCollision = (state == Qt::Checked);
+void MapImageExporter::setShowCollision(bool checked) {
+    m_settings.showCollision = checked;
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Grid_stateChanged(int state) {
-    m_settings.showGrid = (state == Qt::Checked);
+void MapImageExporter::setShowGrid(bool checked) {
+    m_settings.showGrid = checked;
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Border_stateChanged(int state) {
-    m_settings.showBorder = (state == Qt::Checked);
+void MapImageExporter::setShowBorder(bool checked) {
+    m_settings.showBorder = checked;
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Objects_stateChanged(int state) {
-    setEventGroupEnabled(Event::Group::Object, state == Qt::Checked);
+void MapImageExporter::setShowObjects(bool checked) {
+    setEventGroupEnabled(Event::Group::Object, checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Warps_stateChanged(int state) {
-    setEventGroupEnabled(Event::Group::Warp, state == Qt::Checked);
+void MapImageExporter::setShowWarps(bool checked) {
+    setEventGroupEnabled(Event::Group::Warp, checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_BGs_stateChanged(int state) {
-    setEventGroupEnabled(Event::Group::Bg, state == Qt::Checked);
+void MapImageExporter::setShowBgs(bool checked) {
+    setEventGroupEnabled(Event::Group::Bg, checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_Triggers_stateChanged(int state) {
-    setEventGroupEnabled(Event::Group::Coord, state == Qt::Checked);
+void MapImageExporter::setShowTriggers(bool checked) {
+    setEventGroupEnabled(Event::Group::Coord, checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_HealLocations_stateChanged(int state) {
-    setEventGroupEnabled(Event::Group::Heal, state == Qt::Checked);
+void MapImageExporter::setShowHealLocations(bool checked) {
+    setEventGroupEnabled(Event::Group::Heal, checked);
     updatePreview();
 }
 
 // Shortcut setting for enabling all events
-void MapImageExporter::on_checkBox_AllEvents_stateChanged(int state) {
-    bool on = (state == Qt::Checked);
-
+void MapImageExporter::setShowAllEvents(bool checked) {
     const QSignalBlocker b_Objects(ui->checkBox_Objects);
-    ui->checkBox_Objects->setChecked(on);
-    ui->checkBox_Objects->setDisabled(on);
-    setEventGroupEnabled(Event::Group::Object, on);
+    ui->checkBox_Objects->setChecked(checked);
+    ui->checkBox_Objects->setDisabled(checked);
+    setEventGroupEnabled(Event::Group::Object, checked);
 
     const QSignalBlocker b_Warps(ui->checkBox_Warps);
-    ui->checkBox_Warps->setChecked(on);
-    ui->checkBox_Warps->setDisabled(on);
-    setEventGroupEnabled(Event::Group::Warp, on);
+    ui->checkBox_Warps->setChecked(checked);
+    ui->checkBox_Warps->setDisabled(checked);
+    setEventGroupEnabled(Event::Group::Warp, checked);
 
     const QSignalBlocker b_BGs(ui->checkBox_BGs);
-    ui->checkBox_BGs->setChecked(on);
-    ui->checkBox_BGs->setDisabled(on);
-    setEventGroupEnabled(Event::Group::Bg, on);
+    ui->checkBox_BGs->setChecked(checked);
+    ui->checkBox_BGs->setDisabled(checked);
+    setEventGroupEnabled(Event::Group::Bg, checked);
 
     const QSignalBlocker b_Triggers(ui->checkBox_Triggers);
-    ui->checkBox_Triggers->setChecked(on);
-    ui->checkBox_Triggers->setDisabled(on);
-    setEventGroupEnabled(Event::Group::Coord, on);
+    ui->checkBox_Triggers->setChecked(checked);
+    ui->checkBox_Triggers->setDisabled(checked);
+    setEventGroupEnabled(Event::Group::Coord, checked);
 
     const QSignalBlocker b_HealLocations(ui->checkBox_HealLocations);
-    ui->checkBox_HealLocations->setChecked(on);
-    ui->checkBox_HealLocations->setDisabled(on);
-    setEventGroupEnabled(Event::Group::Heal, on);
+    ui->checkBox_HealLocations->setChecked(checked);
+    ui->checkBox_HealLocations->setDisabled(checked);
+    setEventGroupEnabled(Event::Group::Heal, checked);
 
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionUp_stateChanged(int state) {
-    setConnectionDirectionEnabled("up", state == Qt::Checked);
+void MapImageExporter::setShowConnectionUp(bool checked) {
+    setConnectionDirectionEnabled("up", checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionDown_stateChanged(int state) {
-    setConnectionDirectionEnabled("down", state == Qt::Checked);
+void MapImageExporter::setShowConnectionDown(bool checked) {
+    setConnectionDirectionEnabled("down", checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionLeft_stateChanged(int state) {
-    setConnectionDirectionEnabled("left", state == Qt::Checked);
+void MapImageExporter::setShowConnectionLeft(bool checked) {
+    setConnectionDirectionEnabled("left", checked);
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_ConnectionRight_stateChanged(int state) {
-    setConnectionDirectionEnabled("right", state == Qt::Checked);
+void MapImageExporter::setShowConnectionRight(bool checked) {
+    setConnectionDirectionEnabled("right", checked);
     updatePreview();
 }
 
 // Shortcut setting for enabling all connection directions
-void MapImageExporter::on_checkBox_AllConnections_stateChanged(int state) {
-    bool on = (state == Qt::Checked);
-
+void MapImageExporter::setShowAllConnections(bool checked) {
     const QSignalBlocker b_Up(ui->checkBox_ConnectionUp);
-    ui->checkBox_ConnectionUp->setChecked(on);
-    ui->checkBox_ConnectionUp->setDisabled(on);
-    setConnectionDirectionEnabled("up", on);
+    ui->checkBox_ConnectionUp->setChecked(checked);
+    ui->checkBox_ConnectionUp->setDisabled(checked);
+    setConnectionDirectionEnabled("up", checked);
 
     const QSignalBlocker b_Down(ui->checkBox_ConnectionDown);
-    ui->checkBox_ConnectionDown->setChecked(on);
-    ui->checkBox_ConnectionDown->setDisabled(on);
-    setConnectionDirectionEnabled("down", on);
+    ui->checkBox_ConnectionDown->setChecked(checked);
+    ui->checkBox_ConnectionDown->setDisabled(checked);
+    setConnectionDirectionEnabled("down", checked);
 
     const QSignalBlocker b_Left(ui->checkBox_ConnectionLeft);
-    ui->checkBox_ConnectionLeft->setChecked(on);
-    ui->checkBox_ConnectionLeft->setDisabled(on);
-    setConnectionDirectionEnabled("left", on);
+    ui->checkBox_ConnectionLeft->setChecked(checked);
+    ui->checkBox_ConnectionLeft->setDisabled(checked);
+    setConnectionDirectionEnabled("left", checked);
 
     const QSignalBlocker b_Right(ui->checkBox_ConnectionRight);
-    ui->checkBox_ConnectionRight->setChecked(on);
-    ui->checkBox_ConnectionRight->setDisabled(on);
-    setConnectionDirectionEnabled("right", on);
+    ui->checkBox_ConnectionRight->setChecked(checked);
+    ui->checkBox_ConnectionRight->setDisabled(checked);
+    setConnectionDirectionEnabled("right", checked);
 
     updatePreview();
 }
 
-void MapImageExporter::on_checkBox_DisablePreviewScaling_stateChanged(int state) {
-    m_settings.disablePreviewScaling = (state == Qt::Checked);
+void MapImageExporter::setDisablePreviewScaling(bool checked) {
+    m_settings.disablePreviewScaling = checked;
     if (m_settings.disablePreviewScaling) {
         ui->graphicsView_Preview->resetTransform();
     } else {
@@ -847,8 +860,8 @@ void MapImageExporter::on_checkBox_DisablePreviewScaling_stateChanged(int state)
     }
 }
 
-void MapImageExporter::on_checkBox_DisablePreviewUpdates_stateChanged(int state) {
-    m_settings.disablePreviewUpdates = (state == Qt::Checked);
+void MapImageExporter::setDisablePreviewUpdates(bool checked) {
+    m_settings.disablePreviewUpdates = checked;
     if (m_settings.disablePreviewUpdates) {
         if (m_timelapseMovie) {
             m_timelapseMovie->stop();

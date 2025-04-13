@@ -127,7 +127,12 @@ QImage getMetatileImage(
         color.setAlpha(0);
         tile_image.setColor(0, color.rgba());
 
-        metatile_painter.drawImage(origin, tile_image.mirrored(tile.xflip, tile.yflip));
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
+        tile_image.flip(Util::getOrientation(tile.xflip, tile.yflip));
+#else
+        tile_image = tile_image.mirrored(tile.xflip, tile.yflip);
+#endif
+        metatile_painter.drawImage(origin, tile_image);
     }
     metatile_painter.end();
 
