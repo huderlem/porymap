@@ -214,6 +214,8 @@ enum ProjectIdentifier {
     define_pals_total,
     define_tiles_per_metatile,
     define_map_size,
+    define_map_offset_width,
+    define_map_offset_height,
     define_mask_metatile,
     define_mask_collision,
     define_mask_elevation,
