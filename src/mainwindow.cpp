@@ -299,6 +299,9 @@ void MainWindow::initExtraSignals() {
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
     connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
     connect(ui->comboBox_LayoutSelector->lineEdit(), &QLineEdit::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
+    connect(ui->checkBox_smartPaths, &QCheckBox::toggled, this, &MainWindow::setSmartPathsEnabled);
+    connect(ui->checkBox_ToggleBorder, &QCheckBox::toggled, this, &MainWindow::setBorderVisibility);
+    connect(ui->checkBox_MirrorConnections, &QCheckBox::toggled, this, &MainWindow::setMirrorConnectionsEnabled);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -2753,25 +2756,20 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
     }
 }
 
-void MainWindow::on_checkBox_smartPaths_stateChanged(int selected)
+void MainWindow::setSmartPathsEnabled(bool enabled)
 {
-    bool enabled = selected == Qt::Checked;
-    editor->settings->smartPathsEnabled = enabled;
-    if (enabled) {
-        editor->cursorMapTileRect->setSmartPathMode(true);
-    } else {
-        editor->cursorMapTileRect->setSmartPathMode(false);
-    }
+    this->editor->settings->smartPathsEnabled = enabled;
+    this->editor->cursorMapTileRect->setSmartPathMode(enabled);
 }
 
-void MainWindow::on_checkBox_ToggleBorder_stateChanged(int selected)
+void MainWindow::setBorderVisibility(bool visible)
 {
-    editor->toggleBorderVisibility(selected != 0);
+    editor->toggleBorderVisibility(visible);
 }
 
-void MainWindow::on_checkBox_MirrorConnections_stateChanged(int selected)
+void MainWindow::setMirrorConnectionsEnabled(bool enabled)
 {
-    porymapConfig.mirrorConnectingMaps = (selected == Qt::Checked);
+    porymapConfig.mirrorConnectingMaps = enabled;
 }
 
 void MainWindow::on_actionTileset_Editor_triggered()

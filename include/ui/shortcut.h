@@ -49,9 +49,6 @@ public:
     void setAutoRepeat(bool on);
     bool autoRepeat() const;
 
-    int id() const;
-    QList<int> ids() const;
-
     inline QWidget *parentWidget() const
     { return static_cast<QWidget *>(QObject::parent()); }
 
