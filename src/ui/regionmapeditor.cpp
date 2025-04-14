@@ -112,12 +112,12 @@ void RegionMapEditor::applyUserShortcuts() {
 }
 
 bool RegionMapEditor::loadRegionMapEntries() {
-    this->region_map_entries = this->project->regionMapEntries;
+    this->region_map_entries = this->project->getRegionMapEntries();
     return true;
 }
 
 bool RegionMapEditor::saveRegionMapEntries() {
-    this->project->regionMapEntries = this->region_map_entries;
+    this->project->setRegionMapEntries(this->region_map_entries);
     this->project->saveRegionMapSections();
     return true;
 }

@@ -31,6 +31,7 @@ void Layout::copyFrom(const Layout *other) {
     this->tileset_secondary = other->tileset_secondary;
     this->blockdata = other->blockdata;
     this->border = other->border;
+    this->customData = other->customData;
 }
 
 QString Layout::layoutConstantFromName(const QString &name) {

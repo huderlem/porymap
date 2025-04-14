@@ -100,8 +100,8 @@ public:
     bool hasUnsavedChanges() const;
     void pruneEditHistory();
 
-    void setCustomAttributes(const QMap<QString, QJsonValue> &attributes) { m_customAttributes = attributes; }
-    QMap<QString, QJsonValue> customAttributes() const { return m_customAttributes; }
+    void setCustomAttributes(const QJsonObject &attributes) { m_customAttributes = attributes; }
+    QJsonObject customAttributes() const { return m_customAttributes; }
 
 private:
     QString m_name;
@@ -110,7 +110,7 @@ private:
     QString m_sharedScriptsMap = "";
 
     QStringList m_scriptsFileLabels;
-    QMap<QString, QJsonValue> m_customAttributes;
+    QJsonObject m_customAttributes;
 
     MapHeader *m_header = nullptr;
     Layout *m_layout = nullptr;
