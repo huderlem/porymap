@@ -154,7 +154,7 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
 
     // We now know which base repo that the user's repo shares history with.
     // Next we check to see if it contains the changes required to support particular major versions of Porymap.
-    // We'll start with the most recent latest version and work backwards.
+    // We'll start with the most recent major version and work backwards.
     for (const auto &pair : historyMap.value(rootCommit)) {
         int versionNum = pair.first;
         QString commitHash = pair.second;
