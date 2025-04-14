@@ -351,12 +351,6 @@
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
-                     <property name="transformationAnchor">
-                      <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-                     </property>
-                     <property name="resizeAnchor">
-                      <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-                     </property>
                     </widget>
                    </item>
                   </layout>

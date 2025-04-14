@@ -261,6 +261,10 @@ void MainWindow::initCustomUI() {
     // Create map header data widget
     this->mapHeaderForm = new MapHeaderForm();
     ui->layout_HeaderData->addWidget(this->mapHeaderForm);
+
+    // Center zooming on the mouse
+    ui->graphicsView_Map->setTransformationAnchor(QGraphicsView::ViewportAnchor::AnchorUnderMouse);
+    ui->graphicsView_Map->setResizeAnchor(QGraphicsView::ViewportAnchor::AnchorUnderMouse);
 }
 
 void MainWindow::initExtraSignals() {
