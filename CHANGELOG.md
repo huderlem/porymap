@@ -30,6 +30,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Redesigned the new map dialog, including better error checking and a collapsible section for header data.
 - New maps/layouts are no longer saved automatically, and can be fully discarded by closing without saving.
 - Map groups and ``MAPSEC`` names specified when creating a new map will be added automatically if they don't already exist.
+- Custom fields in JSON files that Porymap writes are no longer discarded.
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
 - A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
