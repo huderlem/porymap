@@ -246,7 +246,7 @@ public:
     int getMaxMapHeight() const;
     bool mapDimensionsValid(int width, int height) const;
     bool calculateDefaultMapSize();
-    int getDefaultMapDimension() const { return this->defaultMapDimension; }
+    QSize getDefaultMapSize() const { return this->defaultMapSize; }
     QSize getMapSizeAddition() const { return this->mapSizeAddition; }
 
     int getMaxEvents(Event::Group group) const;
@@ -306,9 +306,9 @@ private:
     QString findSpeciesIconPath(const QStringList &names) const;
 
     int maxObjectEvents;
-    QSize mapSizeAddition;
     int maxMapDataSize;
-    int defaultMapDimension;
+    QSize defaultMapSize;
+    QSize mapSizeAddition;
 
     // TODO: These really shouldn't be static, they're specific to a single project.
     //       We're making an assumption here that we only have one project open at a single time

@@ -1990,8 +1990,8 @@ void Project::initNewMapSettings() {
     this->newMapSettings.layout.folderName = this->newMapSettings.name;
     this->newMapSettings.layout.name = QString();
     this->newMapSettings.layout.id = Layout::layoutConstantFromName(this->newMapSettings.name);
-    this->newMapSettings.layout.width = getDefaultMapDimension();
-    this->newMapSettings.layout.height = getDefaultMapDimension();
+    this->newMapSettings.layout.width = this->defaultMapSize.width();
+    this->newMapSettings.layout.height = this->defaultMapSize.height();
     this->newMapSettings.layout.borderWidth = DEFAULT_BORDER_WIDTH;
     this->newMapSettings.layout.borderHeight = DEFAULT_BORDER_HEIGHT;
     this->newMapSettings.layout.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
@@ -2013,8 +2013,8 @@ void Project::initNewMapSettings() {
 void Project::initNewLayoutSettings() {
     this->newLayoutSettings.name = QString();
     this->newLayoutSettings.id = Layout::layoutConstantFromName(this->newLayoutSettings.name);
-    this->newLayoutSettings.width = getDefaultMapDimension();
-    this->newLayoutSettings.height = getDefaultMapDimension();
+    this->newLayoutSettings.width = this->defaultMapSize.width();
+    this->newLayoutSettings.height = this->defaultMapSize.height();
     this->newLayoutSettings.borderWidth = DEFAULT_BORDER_WIDTH;
     this->newLayoutSettings.borderHeight = DEFAULT_BORDER_HEIGHT;
     this->newLayoutSettings.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
@@ -2154,16 +2154,23 @@ bool Project::readFieldmapProperties() {
     this->mapSizeAddition = QSize(w, h);
 
     this->maxMapDataSize = 10240; // Default value of MAX_MAP_DATA_SIZE
-    this->defaultMapDimension = 20; // Arbitrary default of 20x20.
+    this->defaultMapSize = projectConfig.defaultMapSize;
     auto it = defines.find(maxMapSizeName);
     if (it != defines.end()) {
         int min = getMapDataSize(1, 1);
         if (it.value() >= min) {
             this->maxMapDataSize = it.value();
-            if (getMapDataSize(this->defaultMapDimension, this->defaultMapDimension) > this->maxMapDataSize) {
+            if (getMapDataSize(this->defaultMapSize.width(), this->defaultMapSize.height()) > this->maxMapDataSize) {
                 // The specified map size is too small to use the default map dimensions.
                 // Calculate the largest square map size that we can use instead.
-                this->defaultMapDimension = qFloor((qSqrt(4 * this->maxMapDataSize + 1) - (w + h)) / 2);
+                int dimension = qFloor((qSqrt(4 * this->maxMapDataSize + 1) - (w + h)) / 2);
+                logWarn(QString("Value for '%1' (%2) is too small to support the default %3x%4 map. Default changed to %5x%5.")
+                    .arg(maxMapSizeName)
+                    .arg(it.value())
+                    .arg(this->defaultMapSize.width())
+                    .arg(this->defaultMapSize.height())
+                    .arg(dimension));
+                this->defaultMapSize = QSize(dimension, dimension);
             }
         } else {
             logWarn(QString("Value for '%1' (%2) is too small to support a 1x1 map. Must be at least %3. Using default (%4) instead.")

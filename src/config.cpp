@@ -265,7 +265,7 @@ int KeyValueConfigBase::getConfigInteger(QString key, QString value, int min, in
     int result = value.toInt(&ok, 0);
     if (!ok) {
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
-        return defaultValue;
+        result = defaultValue;
     }
     return qMin(max, qMax(min, result));
 }
@@ -275,7 +275,7 @@ uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_
     uint32_t result = value.toUInt(&ok, 0);
     if (!ok) {
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
-        return defaultValue;
+        result = defaultValue;
     }
     return qMin(max, qMax(min, result));
 }
@@ -739,6 +739,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->defaultElevation = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "default_collision") {
         this->defaultCollision = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "default_map_width") {
+        this->defaultMapSize.setWidth(getConfigInteger(key, value, 1));
+    } else if (key == "default_map_height") {
+        this->defaultMapSize.setHeight(getConfigInteger(key, value, 1));
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
@@ -890,6 +894,8 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("default_metatile", Metatile::getMetatileIdString(this->defaultMetatileId));
     map.insert("default_elevation", QString::number(this->defaultElevation));
     map.insert("default_collision", QString::number(this->defaultCollision));
+    map.insert("default_map_width", QString::number(this->defaultMapSize.width()));
+    map.insert("default_map_height", QString::number(this->defaultMapSize.height()));
     map.insert("new_map_border_metatiles", Metatile::getMetatileIdStrings(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);

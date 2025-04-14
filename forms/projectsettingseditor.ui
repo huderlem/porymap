@@ -369,7 +369,7 @@
              <x>0</x>
              <y>0</y>
              <width>559</width>
-             <height>560</height>
+             <height>622</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -379,41 +379,48 @@
                <string>Map Data Defaults</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_3">
-               <item row="1" column="1" colspan="3">
-                <widget class="QWidget" name="widget_CustomSizeBorderMetatiles" native="true">
-                 <layout class="QHBoxLayout" name="horizontalLayout_3">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                 </layout>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_FillMetatile">
-                 <property name="toolTip">
-                  <string>The default metatile value that will be used to fill new maps</string>
-                 </property>
-                 <property name="prefix">
-                  <string>0x</string>
-                 </property>
-                 <property name="displayIntegerBase">
-                  <number>16</number>
-                 </property>
-                </widget>
-               </item>
                <item row="5" column="0">
                 <widget class="QLabel" name="label_Elevation">
                  <property name="text">
                   <string>Elevation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="label_MapWidth">
+                 <property name="text">
+                  <string>Width</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_Elevation">
+                 <property name="toolTip">
+                  <string>The default elevation that will be used to fill new maps</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0" colspan="2">
+                <widget class="QCheckBox" name="checkBox_CreateTextFile">
+                 <property name="toolTip">
+                  <string>Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file</string>
+                 </property>
+                 <property name="text">
+                  <string>Create separate text file</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_MapWidth">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_MapHeight">
+                 <property name="minimum">
+                  <number>1</number>
                  </property>
                 </widget>
                </item>
@@ -424,13 +431,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0" colspan="2">
-                <widget class="QCheckBox" name="checkBox_CreateTextFile">
-                 <property name="toolTip">
-                  <string>Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file</string>
-                 </property>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_Collision">
                  <property name="text">
-                  <string>Create separate text file</string>
+                  <string>Collision</string>
                  </property>
                 </widget>
                </item>
@@ -438,6 +442,20 @@
                 <widget class="QLabel" name="label_BorderMetatiles">
                  <property name="text">
                   <string>Border Metatiles</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="UIntHexSpinBox" name="spinBox_FillMetatile">
+                 <property name="toolTip">
+                  <string>The default metatile value that will be used to fill new maps</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_Collision">
+                 <property name="toolTip">
+                  <string>The default collision that will be used to fill new maps</string>
                  </property>
                 </widget>
                </item>
@@ -481,54 +499,30 @@
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile1">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile1">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the top-left border metatile on new maps.</string>
                      </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
-                     </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile2">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile2">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the top-right border metatile on new maps.</string>
                      </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
-                     </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile3">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile3">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the bottom-left border metatile on new maps.</string>
                      </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
-                     </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile4">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile4">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the bottom-right border metatile on new maps.</string>
-                     </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
                      </property>
                     </widget>
                    </item>
@@ -536,24 +530,28 @@
                  </widget>
                 </widget>
                </item>
-               <item row="5" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Elevation">
-                 <property name="toolTip">
-                  <string>The default elevation that will be used to fill new maps</string>
-                 </property>
+               <item row="1" column="1" colspan="3">
+                <widget class="QWidget" name="widget_CustomSizeBorderMetatiles" native="true">
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                 </layout>
                 </widget>
                </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_Collision">
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_MapHeight">
                  <property name="text">
-                  <string>Collision</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Collision">
-                 <property name="toolTip">
-                  <string>The default collision that will be used to fill new maps</string>
+                  <string>Height</string>
                  </property>
                 </widget>
                </item>
@@ -1084,7 +1082,7 @@
              <x>0</x>
              <y>0</y>
              <width>559</width>
-             <height>788</height>
+             <height>840</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">

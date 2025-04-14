@@ -319,6 +319,7 @@ public:
         this->defaultMetatileId = 1;
         this->defaultElevation = 3;
         this->defaultCollision = 0;
+        this->defaultMapSize = QSize(20,20);
         this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
@@ -383,6 +384,7 @@ public:
     uint16_t defaultMetatileId;
     uint16_t defaultElevation;
     uint16_t defaultCollision;
+    QSize defaultMapSize;
     QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;

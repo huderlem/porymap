@@ -136,6 +136,8 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_UnusedTileCovered->setMaximum(Tile::maxValue);
     ui->spinBox_UnusedTileSplit->setMaximum(Tile::maxValue);
     ui->spinBox_MaxEvents->setMaximum(INT_MAX);
+    ui->spinBox_MapWidth->setMaximum(INT_MAX);
+    ui->spinBox_MapHeight->setMaximum(INT_MAX);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -455,6 +457,8 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
     ui->spinBox_Collision->setValue(projectConfig.defaultCollision);
     ui->spinBox_FillMetatile->setValue(projectConfig.defaultMetatileId);
+    ui->spinBox_MapWidth->setValue(projectConfig.defaultMapSize.width());
+    ui->spinBox_MapHeight->setValue(projectConfig.defaultMapSize.height());
     ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetHeight - 1);
     ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetWidth - 1);
     ui->spinBox_BehaviorMask->setValue(projectConfig.metatileBehaviorMask & ui->spinBox_BehaviorMask->maximum());
@@ -530,6 +534,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.defaultElevation = ui->spinBox_Elevation->value();
     projectConfig.defaultCollision = ui->spinBox_Collision->value();
     projectConfig.defaultMetatileId = ui->spinBox_FillMetatile->value();
+    projectConfig.defaultMapSize = QSize(ui->spinBox_MapWidth->value(), ui->spinBox_MapHeight->value());
     projectConfig.collisionSheetHeight = ui->spinBox_MaxElevation->value() + 1;
     projectConfig.collisionSheetWidth = ui->spinBox_MaxCollision->value() + 1;
     projectConfig.metatileBehaviorMask = ui->spinBox_BehaviorMask->value();
