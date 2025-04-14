@@ -8,7 +8,6 @@ NewMapConnectionDialog::NewMapConnectionDialog(QWidget *parent, Map* map, const 
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    ui->comboBox_Direction->setEditable(false);
     ui->comboBox_Direction->addItems(MapConnection::cardinalDirections);
 
     ui->comboBox_Map->addItems(mapNames);

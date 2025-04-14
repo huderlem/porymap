@@ -36,19 +36,18 @@ private:
 
 protected:
     virtual void mousePressEvent(QMouseEvent*) override;
-    virtual void focusInEvent(QFocusEvent*) override;
     virtual void keyPressEvent(QKeyEvent*) override;
+    virtual bool eventFilter(QObject*, QEvent *event) override;
 
 signals:
     void selected();
     void openMapClicked(MapConnection*);
 
-private slots:
-    void on_comboBox_Direction_currentTextChanged(QString direction);
-    void on_comboBox_Map_currentTextChanged(QString mapName);
-    void on_spinBox_Offset_valueChanged(int offset);
-    void on_button_Delete_clicked();
-    void on_button_OpenMap_clicked();
+private:
+    void commitDirection();
+    void commitMap(const QString &mapName);
+    void commitMove(int offset);
+    void commitRemove();
 };
 
 #endif // CONNECTIONSLISTITEM_H
