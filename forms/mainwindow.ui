@@ -2429,6 +2429,9 @@
                   </item>
                   <item row="1" column="0">
                    <widget class="QToolButton" name="button_OpenDiveMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
                      <string>Open the selected Dive Map</string>
                     </property>
@@ -2563,6 +2566,9 @@
                   </item>
                   <item row="0" column="0">
                    <widget class="QToolButton" name="button_OpenEmergeMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
                      <string>Open the selected Emerge Map</string>
                     </property>

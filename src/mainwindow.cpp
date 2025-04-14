@@ -1217,10 +1217,7 @@ void MainWindow::clearProjectUI() {
     const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
     ui->comboBox_SecondaryTileset->clear();
 
-    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
     ui->comboBox_DiveMap->clear();
-
-    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
     ui->comboBox_EmergeMap->clear();
 
     const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
@@ -1381,8 +1378,6 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     // (other combo boxes like for warp destinations are repopulated when the map changes).
     int mapIndex = this->editor->project->mapNames.indexOf(newMap->name());
     if (mapIndex >= 0) {
-        const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
-        const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
         ui->comboBox_DiveMap->insertItem(mapIndex, newMap->name());
         ui->comboBox_EmergeMap->insertItem(mapIndex, newMap->name());
     }
@@ -2644,17 +2639,6 @@ void MainWindow::on_button_OpenDiveMap_clicked() {
 
 void MainWindow::on_button_OpenEmergeMap_clicked() {
     userSetMap(ui->comboBox_EmergeMap->currentText());
-}
-
-void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName) {
-    // Include empty names as an update (user is deleting the connection)
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName))
-        editor->updateDiveMap(mapName);
-}
-
-void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName) {
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName))
-        editor->updateEmergeMap(mapName);
 }
 
 void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)

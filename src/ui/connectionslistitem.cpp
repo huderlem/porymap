@@ -20,9 +20,7 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
     ui->comboBox_Direction->addItems(MapConnection::cardinalDirections);
     ui->comboBox_Direction->installEventFilter(this);
 
-    // We don't use QComboBox::currentTextChanged here to avoid unnecessary commits while typing.
-    connect(ui->comboBox_Direction, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ConnectionsListItem::commitDirection);
-    connect(ui->comboBox_Direction->lineEdit(), &QLineEdit::editingFinished, this, &ConnectionsListItem::commitDirection);
+    connect(ui->comboBox_Direction, &NoScrollComboBox::editingFinished, this, &ConnectionsListItem::commitDirection);
 
     // Map
     const QSignalBlocker b_Map(ui->comboBox_Map);
@@ -32,7 +30,6 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
     ui->comboBox_Map->setInsertPolicy(QComboBox::NoInsert);
     ui->comboBox_Map->installEventFilter(this);
 
-    // The map combo box only commits the change if it's a valid map name, so unlike Direction we can use QComboBox::currentTextChanged.
     connect(ui->comboBox_Map, &QComboBox::currentTextChanged, this, &ConnectionsListItem::commitMap);
 
     // Invalid map names are not considered a change. If editing finishes with an invalid name, restore the previous name.

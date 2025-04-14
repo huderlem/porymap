@@ -125,16 +125,10 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 }
 
 void TilesetEditor::initAttributesUi() {
-    // Update the metatile's attributes values when the attribute combo boxes are edited.
-    // We avoid using the 'currentTextChanged' signal here, we want to know when we can clean up the input field and commit changes.
-    connect(ui->comboBox_metatileBehaviors->lineEdit(), &QLineEdit::editingFinished, this, &TilesetEditor::commitMetatileBehavior);
-    connect(ui->comboBox_encounterType->lineEdit(), &QLineEdit::editingFinished, this, &TilesetEditor::commitEncounterType);
-    connect(ui->comboBox_terrainType->lineEdit(), &QLineEdit::editingFinished, this, &TilesetEditor::commitTerrainType);
-    connect(ui->comboBox_layerType->lineEdit(), &QLineEdit::editingFinished, this, &TilesetEditor::commitLayerType);
-    connect(ui->comboBox_metatileBehaviors, QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitMetatileBehavior);
-    connect(ui->comboBox_encounterType,  QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitEncounterType);
-    connect(ui->comboBox_terrainType, QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitTerrainType);
-    connect(ui->comboBox_layerType, QOverload<int>::of(&QComboBox::activated), this, &TilesetEditor::commitLayerType);
+    connect(ui->comboBox_metatileBehaviors, &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitMetatileBehavior);
+    connect(ui->comboBox_encounterType,     &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitEncounterType);
+    connect(ui->comboBox_terrainType,       &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitTerrainType);
+    connect(ui->comboBox_layerType,         &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitLayerType);
 
     // Behavior
     if (projectConfig.metatileBehaviorMask) {

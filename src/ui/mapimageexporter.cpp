@@ -55,10 +55,7 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
     connect(ui->pushButton_Save,   &QPushButton::pressed, this, &MapImageExporter::saveImage);
     connect(ui->pushButton_Cancel, &QPushButton::pressed, this, &MapImageExporter::close);
 
-    // Update the map selector when the text changes.
-    // We don't use QComboBox::currentTextChanged to avoid unnecessary re-rendering.
-    connect(ui->comboBox_MapSelection, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MapImageExporter::updateMapSelection);
-    connect(ui->comboBox_MapSelection->lineEdit(), &QLineEdit::editingFinished, this, &MapImageExporter::updateMapSelection);
+    connect(ui->comboBox_MapSelection, &NoScrollComboBox::editingFinished, this, &MapImageExporter::updateMapSelection);
 
     connect(ui->checkBox_Objects,               &QCheckBox::toggled, this, &MapImageExporter::setShowObjects);
     connect(ui->checkBox_Warps,                 &QCheckBox::toggled, this, &MapImageExporter::setShowWarps);

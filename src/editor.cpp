@@ -54,6 +54,19 @@ Editor::Editor(Ui::MainWindow* ui)
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this, &Editor::openProjectInTextEditor);
     connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, this, &Editor::toggleGrid);
     connect(ui->mapCustomAttributesFrame->table(), &CustomAttributesTable::edited, this, &Editor::updateCustomMapAttributes);
+
+    connect(ui->comboBox_DiveMap, &NoScrollComboBox::editingFinished, [this] {
+        onDivingMapEditingFinished(this->ui->comboBox_DiveMap, "dive");
+    });
+    connect(ui->comboBox_EmergeMap, &NoScrollComboBox::editingFinished, [this] {
+        onDivingMapEditingFinished(this->ui->comboBox_EmergeMap, "emerge");
+    });
+    connect(ui->comboBox_DiveMap, &NoScrollComboBox::currentTextChanged, [this] {
+        updateDivingMapButton(this->ui->button_OpenDiveMap, this->ui->comboBox_DiveMap->currentText());
+    });
+    connect(ui->comboBox_EmergeMap, &NoScrollComboBox::currentTextChanged, [this] {
+        updateDivingMapButton(this->ui->button_OpenEmergeMap, this->ui->comboBox_EmergeMap->currentText());
+    });
 }
 
 Editor::~Editor()
@@ -914,21 +927,18 @@ void Editor::removeDivingMapPixmap(MapConnection *connection) {
     updateDivingMapsVisibility();
 }
 
-void Editor::updateDiveMap(QString mapName) {
-    setDivingMapName(mapName, "dive");
-}
+bool Editor::setDivingMapName(const QString &mapName, const QString &direction) {
+    if (!mapName.isEmpty() && !this->project->mapNames.contains(mapName))
+        return false;
+    if (!MapConnection::isDiving(direction))
+        return false;
 
-void Editor::updateEmergeMap(QString mapName) {
-    setDivingMapName(mapName, "emerge");
-}
-
-void Editor::setDivingMapName(QString mapName, QString direction) {
     auto pixmapItem = diving_map_items.value(direction);
     MapConnection *connection = pixmapItem ? pixmapItem->connection() : nullptr;
 
     if (connection) {
         if (mapName == connection->targetMapName())
-            return; // No change
+            return true; // No change
 
         // Update existing connection
         if (mapName.isEmpty()) {
@@ -940,6 +950,23 @@ void Editor::setDivingMapName(QString mapName, QString direction) {
         // Create new connection
         addConnection(new MapConnection(mapName, direction));
     }
+    return true;
+}
+
+QString Editor::getDivingMapName(const QString &direction) const {
+    auto pixmapItem = diving_map_items.value(direction);
+    return (pixmapItem && pixmapItem->connection()) ? pixmapItem->connection()->targetMapName() : QString();
+}
+
+void Editor::onDivingMapEditingFinished(NoScrollComboBox *combo, const QString &direction) {
+    if (!setDivingMapName(combo->currentText(), direction)) {
+        // If user input was invalid, restore the combo to the previously-valid text.
+        combo->setCurrentText(getDivingMapName(direction));
+    }
+}
+
+void Editor::updateDivingMapButton(QToolButton* button, const QString &mapName) {
+    if (this->project) button->setDisabled(!this->project->mapNames.contains(mapName));
 }
 
 void Editor::updateDivingMapsVisibility() {
@@ -1722,8 +1749,6 @@ void Editor::clearMapConnections() {
     }
     connection_items.clear();
 
-    const QSignalBlocker blocker1(ui->comboBox_DiveMap);
-    const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
     ui->comboBox_DiveMap->setCurrentText("");
     ui->comboBox_EmergeMap->setCurrentText("");
 
