@@ -2129,14 +2129,14 @@ bool Project::readFieldmapProperties() {
         if (it != defines.end()) {
             *dest = it.value();
             if (*dest < min) {
-                logWarn(QString("Value for tileset property '%1' (%2) is below the minimum (%3). Defaulting to minimum.").arg(name).arg(*dest).arg(min));
+                logWarn(QString("Value for '%1' (%2) is below the minimum (%3). Defaulting to minimum.").arg(name).arg(*dest).arg(min));
                 *dest = min;
             } else if (*dest > max) {
-                logWarn(QString("Value for tileset property '%1' (%2) is above the maximum (%3). Defaulting to maximum.").arg(name).arg(*dest).arg(max));
+                logWarn(QString("Value for '%1' (%2) is above the maximum (%3). Defaulting to maximum.").arg(name).arg(*dest).arg(max));
                 *dest = max;
             }
         } else {
-            logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
+            logWarn(QString("Value for '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
         }
     };
     loadDefine(numPalsTotalName,        &Project::num_pals_total, 2, INT_MAX); // In reality the max would be 16, but as far as Porymap is concerned it doesn't matter.
@@ -2166,7 +2166,7 @@ bool Project::readFieldmapProperties() {
                 this->defaultMapDimension = qFloor((qSqrt(4 * this->maxMapDataSize + 1) - (w + h)) / 2);
             }
         } else {
-            logWarn(QString("Value for map property '%1' of %2 is too small to support a 1x1 map. Must be at least %3. Using default (%4) instead.")
+            logWarn(QString("Value for '%1' (%2) is too small to support a 1x1 map. Must be at least %3. Using default (%4) instead.")
                     .arg(maxMapSizeName)
                     .arg(it.value())
                     .arg(min)
@@ -2174,7 +2174,7 @@ bool Project::readFieldmapProperties() {
         }
     }
     else {
-        logWarn(QString("Value for map property '%1' not found. Using default (%2) instead.")
+        logWarn(QString("Value for '%1' not found. Using default (%2) instead.")
                 .arg(maxMapSizeName)
                 .arg(this->maxMapDataSize));
     }
