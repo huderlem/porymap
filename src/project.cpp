@@ -175,8 +175,8 @@ Map* Project::loadMap(const QString &mapName) {
     return map;
 }
 
-void Project::initTopLevelMapFields() {
-    static const QSet<QString> defaultTopLevelMapFields = {
+QSet<QString> Project::getTopLevelMapFields() const {
+    QSet<QString> fields = {
         "id",
         "name",
         "layout",
@@ -195,15 +195,15 @@ void Project::initTopLevelMapFields() {
         "shared_events_map",
         "shared_scripts_map",
     };
-    this->topLevelMapFields = defaultTopLevelMapFields;
     if (projectConfig.mapAllowFlagsEnabled) {
-        this->topLevelMapFields.insert("allow_cycling");
-        this->topLevelMapFields.insert("allow_escaping");
-        this->topLevelMapFields.insert("allow_running");
+        fields.insert("allow_cycling");
+        fields.insert("allow_escaping");
+        fields.insert("allow_running");
     }
     if (projectConfig.floorNumberEnabled) {
-        this->topLevelMapFields.insert("floor_number");
+        fields.insert("floor_number");
     }
+    return fields;
 }
 
 bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
@@ -216,8 +216,8 @@ bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
     return true;
 }
 
-bool Project::loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType) {
-    QString typeString = ParseUtil::jsonToQString(json["type"]);
+bool Project::loadMapEvent(Map *map, QJsonObject json, Event::Type defaultType) {
+    QString typeString = ParseUtil::jsonToQString(json.take("type"));
     Event::Type type = typeString.isEmpty() ? defaultType : Event::typeFromJsonKey(typeString);
     Event* event = Event::create(type);
     if (!event) {
@@ -243,10 +243,10 @@ bool Project::loadMapData(Map* map) {
     QJsonObject mapObj = mapDoc.object();
 
     // We should already know the map constant ID from the initial project launch, but we'll ensure it's correct here anyway.
-    map->setConstantName(ParseUtil::jsonToQString(mapObj["id"]));
+    map->setConstantName(ParseUtil::jsonToQString(mapObj.take("id")));
     this->mapConstantsToMapNames.insert(map->constantName(), map->name());
 
-    const QString layoutId = ParseUtil::jsonToQString(mapObj["layout"]);
+    const QString layoutId = ParseUtil::jsonToQString(mapObj.take("layout"));
     Layout* layout = this->mapLayouts.value(layoutId);
     if (!layout) {
         // We've already verified layout IDs on project launch and ignored maps with invalid IDs, so this shouldn't happen.
@@ -255,24 +255,24 @@ bool Project::loadMapData(Map* map) {
     }
     map->setLayout(layout);
 
-    map->header()->setSong(ParseUtil::jsonToQString(mapObj["music"]));
-    map->header()->setLocation(ParseUtil::jsonToQString(mapObj["region_map_section"]));
-    map->header()->setRequiresFlash(ParseUtil::jsonToBool(mapObj["requires_flash"]));
-    map->header()->setWeather(ParseUtil::jsonToQString(mapObj["weather"]));
-    map->header()->setType(ParseUtil::jsonToQString(mapObj["map_type"]));
-    map->header()->setShowsLocationName(ParseUtil::jsonToBool(mapObj["show_map_name"]));
-    map->header()->setBattleScene(ParseUtil::jsonToQString(mapObj["battle_scene"]));
+    map->header()->setSong(ParseUtil::jsonToQString(mapObj.take("music")));
+    map->header()->setLocation(ParseUtil::jsonToQString(mapObj.take("region_map_section")));
+    map->header()->setRequiresFlash(ParseUtil::jsonToBool(mapObj.take("requires_flash")));
+    map->header()->setWeather(ParseUtil::jsonToQString(mapObj.take("weather")));
+    map->header()->setType(ParseUtil::jsonToQString(mapObj.take("map_type")));
+    map->header()->setShowsLocationName(ParseUtil::jsonToBool(mapObj.take("show_map_name")));
+    map->header()->setBattleScene(ParseUtil::jsonToQString(mapObj.take("battle_scene")));
 
     if (projectConfig.mapAllowFlagsEnabled) {
-        map->header()->setAllowsBiking(ParseUtil::jsonToBool(mapObj["allow_cycling"]));
-        map->header()->setAllowsEscaping(ParseUtil::jsonToBool(mapObj["allow_escaping"]));
-        map->header()->setAllowsRunning(ParseUtil::jsonToBool(mapObj["allow_running"]));
+        map->header()->setAllowsBiking(ParseUtil::jsonToBool(mapObj.take("allow_cycling")));
+        map->header()->setAllowsEscaping(ParseUtil::jsonToBool(mapObj.take("allow_escaping")));
+        map->header()->setAllowsRunning(ParseUtil::jsonToBool(mapObj.take("allow_running")));
     }
     if (projectConfig.floorNumberEnabled) {
-        map->header()->setFloorNumber(ParseUtil::jsonToInt(mapObj["floor_number"]));
+        map->header()->setFloorNumber(ParseUtil::jsonToInt(mapObj.take("floor_number")));
     }
-    map->setSharedEventsMap(ParseUtil::jsonToQString(mapObj["shared_events_map"]));
-    map->setSharedScriptsMap(ParseUtil::jsonToQString(mapObj["shared_scripts_map"]));
+    map->setSharedEventsMap(ParseUtil::jsonToQString(mapObj.take("shared_events_map")));
+    map->setSharedScriptsMap(ParseUtil::jsonToQString(mapObj.take("shared_scripts_map")));
 
     // Events
     map->resetEvents();
@@ -287,7 +287,7 @@ bool Project::loadMapData(Map* map) {
     for (auto i = defaultEventTypes.constBegin(); i != defaultEventTypes.constEnd(); i++) {
         QString eventGroupKey = i.key();
         Event::Type defaultType = i.value();
-        const QJsonArray eventsJsonArr = mapObj[eventGroupKey].toArray();
+        const QJsonArray eventsJsonArr = mapObj.take(eventGroupKey).toArray();
         for (int i = 0; i < eventsJsonArr.size(); i++) {
             if (!loadMapEvent(map, eventsJsonArr.at(i).toObject(), defaultType)) {
                 logError(QString("Failed to load event for %1, in %2 at index %3.").arg(map->name()).arg(eventGroupKey).arg(i));
@@ -302,24 +302,19 @@ bool Project::loadMapData(Map* map) {
     }
 
     map->deleteConnections();
-    QJsonArray connectionsArr = mapObj["connections"].toArray();
+    QJsonArray connectionsArr = mapObj.take("connections").toArray();
     if (!connectionsArr.isEmpty()) {
         for (int i = 0; i < connectionsArr.size(); i++) {
             QJsonObject connectionObj = connectionsArr[i].toObject();
-            const QString direction = ParseUtil::jsonToQString(connectionObj["direction"]);
-            const int offset = ParseUtil::jsonToInt(connectionObj["offset"]);
-            const QString mapConstant = ParseUtil::jsonToQString(connectionObj["map"]);
-            map->loadConnection(new MapConnection(this->mapConstantsToMapNames.value(mapConstant, mapConstant), direction, offset));
+            const QString direction = ParseUtil::jsonToQString(connectionObj.take("direction"));
+            const int offset = ParseUtil::jsonToInt(connectionObj.take("offset"));
+            const QString mapConstant = ParseUtil::jsonToQString(connectionObj.take("map"));
+            auto connection = new MapConnection(this->mapConstantsToMapNames.value(mapConstant, mapConstant), direction, offset);
+            connection->setCustomData(connectionObj);
+            map->loadConnection(connection);
         }
     }
-
-    QMap<QString, QJsonValue> customAttributes;
-    for (auto i = mapObj.constBegin(); i != mapObj.constEnd(); i++) {
-        if (!this->topLevelMapFields.contains(i.key())) {
-            customAttributes.insert(i.key(), i.value());
-        }
-    }
-    map->setCustomAttributes(customAttributes);
+    map->setCustomAttributes(mapObj);
 
     return true;
 }
@@ -471,6 +466,7 @@ void Project::clearMapLayouts() {
     this->layoutIds.clear();
     this->layoutIdsMaster.clear();
     this->loadedLayoutIds.clear();
+    this->customLayoutsData = QJsonObject();
 }
 
 bool Project::readMapLayouts() {
@@ -487,7 +483,7 @@ bool Project::readMapLayouts() {
 
     QJsonObject layoutsObj = layoutsDoc.object();
 
-    this->layoutsLabel = ParseUtil::jsonToQString(layoutsObj["layouts_table_label"]);
+    this->layoutsLabel = ParseUtil::jsonToQString(layoutsObj.take("layouts_table_label"));
     if (this->layoutsLabel.isEmpty()) {
         this->layoutsLabel = "gMapLayouts";
         logWarn(QString("'layouts_table_label' value is missing from %1. Defaulting to %2")
@@ -495,13 +491,13 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
-    QJsonArray layouts = layoutsObj["layouts"].toArray();
+    QJsonArray layouts = layoutsObj.take("layouts").toArray();
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
             continue;
         Layout *layout = new Layout();
-        layout->id = ParseUtil::jsonToQString(layoutObj["id"]);
+        layout->id = ParseUtil::jsonToQString(layoutObj.take("id"));
         if (layout->id.isEmpty()) {
             logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
             delete layout;
@@ -512,20 +508,20 @@ bool Project::readMapLayouts() {
             delete layout;
             continue;
         }
-        layout->name = ParseUtil::jsonToQString(layoutObj["name"]);
+        layout->name = ParseUtil::jsonToQString(layoutObj.take("name"));
         if (layout->name.isEmpty()) {
             logError(QString("Missing 'name' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        int lwidth = ParseUtil::jsonToInt(layoutObj["width"]);
+        int lwidth = ParseUtil::jsonToInt(layoutObj.take("width"));
         if (lwidth <= 0) {
             logError(QString("Invalid 'width' value '%1' for %2 in %3. Must be greater than 0.").arg(lwidth).arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
         layout->width = lwidth;
-        int lheight = ParseUtil::jsonToInt(layoutObj["height"]);
+        int lheight = ParseUtil::jsonToInt(layoutObj.take("height"));
         if (lheight <= 0) {
             logError(QString("Invalid 'height' value '%1' for %2 in %3. Must be greater than 0.").arg(lheight).arg(layout->id).arg(layoutsFilepath));
             delete layout;
@@ -533,12 +529,12 @@ bool Project::readMapLayouts() {
         }
         layout->height = lheight;
         if (projectConfig.useCustomBorderSize) {
-            int bwidth = ParseUtil::jsonToInt(layoutObj["border_width"]);
+            int bwidth = ParseUtil::jsonToInt(layoutObj.take("border_width"));
             if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
                 bwidth = DEFAULT_BORDER_WIDTH;
             }
             layout->border_width = bwidth;
-            int bheight = ParseUtil::jsonToInt(layoutObj["border_height"]);
+            int bheight = ParseUtil::jsonToInt(layoutObj.take("border_height"));
             if (bheight <= 0) {
                 bheight = DEFAULT_BORDER_HEIGHT;
             }
@@ -547,30 +543,31 @@ bool Project::readMapLayouts() {
             layout->border_width = DEFAULT_BORDER_WIDTH;
             layout->border_height = DEFAULT_BORDER_HEIGHT;
         }
-        layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj["primary_tileset"]);
+        layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj.take("primary_tileset"));
         if (layout->tileset_primary_label.isEmpty()) {
             logError(QString("Missing 'primary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj["secondary_tileset"]);
+        layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj.take("secondary_tileset"));
         if (layout->tileset_secondary_label.isEmpty()) {
             logError(QString("Missing 'secondary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        layout->border_path = ParseUtil::jsonToQString(layoutObj["border_filepath"]);
+        layout->border_path = ParseUtil::jsonToQString(layoutObj.take("border_filepath"));
         if (layout->border_path.isEmpty()) {
             logError(QString("Missing 'border_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
-        layout->blockdata_path = ParseUtil::jsonToQString(layoutObj["blockdata_filepath"]);
+        layout->blockdata_path = ParseUtil::jsonToQString(layoutObj.take("blockdata_filepath"));
         if (layout->blockdata_path.isEmpty()) {
             logError(QString("Missing 'blockdata_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
             delete layout;
             return false;
         }
+        layout->customData = layoutObj;
 
         this->mapLayouts.insert(layout->id, layout);
         this->mapLayoutsMaster.insert(layout->id, layout->copy());
@@ -582,6 +579,8 @@ bool Project::readMapLayouts() {
         logError(QString("Failed to read any map layouts from '%1'. At least one map layout is required.").arg(layoutsFilepath));
         return false;
     }
+
+    this->customLayoutsData = layoutsObj;
 
     return true;
 }
@@ -613,12 +612,14 @@ void Project::saveMapLayouts() {
         layoutObj["secondary_tileset"] = layout->tileset_secondary_label;
         layoutObj["border_filepath"] = layout->border_path;
         layoutObj["blockdata_filepath"] = layout->blockdata_path;
+        OrderedJson::append(&layoutObj, layout->customData);
         layoutsArr.push_back(layoutObj);
     }
+    layoutsObj["layouts"] = layoutsArr;
+    OrderedJson::append(&layoutsObj, this->customLayoutsData);
 
     ignoreWatchedFileTemporarily(layoutsFilepath);
 
-    layoutsObj["layouts"] = layoutsArr;
     OrderedJson layoutJson(layoutsObj);
     OrderedJsonDoc jsonDoc(&layoutJson);
     jsonDoc.dump(&layoutsFile);
@@ -675,6 +676,7 @@ void Project::saveMapGroups() {
         }
         mapGroupsObj[groupName] = groupArr;
     }
+    OrderedJson::append(&mapGroupsObj, this->customMapGroupsData);
 
     ignoreWatchedFileTemporarily(mapGroupsFilepath);
 
@@ -694,26 +696,29 @@ void Project::saveRegionMapSections() {
 
     OrderedJson::array mapSectionArray;
     for (const auto &idName : this->mapSectionIdNamesSaveOrder) {
+        const LocationData location = this->locationData.value(idName);
+
         OrderedJson::object mapSectionObj;
         mapSectionObj["id"] = idName;
 
-        if (this->mapSectionDisplayNames.contains(idName)) {
-            mapSectionObj["name"] = this->mapSectionDisplayNames.value(idName);
+        if (!location.displayName.isEmpty()) {
+            mapSectionObj["name"] = location.displayName;
         }
 
-        if (this->regionMapEntries.contains(idName)) {
-            MapSectionEntry entry = this->regionMapEntries.value(idName);
-            mapSectionObj["x"] = entry.x;
-            mapSectionObj["y"] = entry.y;
-            mapSectionObj["width"] = entry.width;
-            mapSectionObj["height"] = entry.height;
+        if (location.map.valid) {
+            mapSectionObj["x"] = location.map.x;
+            mapSectionObj["y"] = location.map.y;
+            mapSectionObj["width"] = location.map.width;
+            mapSectionObj["height"] = location.map.height;
         }
+        OrderedJson::append(&mapSectionObj, location.custom);
 
         mapSectionArray.append(mapSectionObj);
     }
 
     OrderedJson::object object;
     object["map_sections"] = mapSectionArray;
+    OrderedJson::append(&object, this->customMapSectionsData);
 
     ignoreWatchedFileTemporarily(filepath);
     OrderedJson json(object);
@@ -740,7 +745,7 @@ void Project::saveWildMonData() {
     monHeadersObject["for_maps"] = true;
 
     OrderedJson::array fieldsInfoArray;
-    for (EncounterField fieldInfo : wildMonFields) {
+    for (EncounterField fieldInfo : this->wildMonFields) {
         OrderedJson::object fieldObject;
         OrderedJson::array rateArray;
 
@@ -763,48 +768,52 @@ void Project::saveWildMonData() {
         }
         if (!groupsObject.empty()) fieldObject["groups"] = groupsObject;
 
+        OrderedJson::append(&fieldObject, fieldInfo.customData);
         fieldsInfoArray.append(fieldObject);
     }
     monHeadersObject["fields"] = fieldsInfoArray;
 
     OrderedJson::array encountersArray;
-    for (auto keyPair : wildMonData) {
+    for (auto keyPair : this->wildMonData) {
         QString key = keyPair.first;
-        for (auto grouplLabelPair : wildMonData[key]) {
+        for (auto grouplLabelPair : this->wildMonData[key]) {
             QString groupLabel = grouplLabelPair.first;
             OrderedJson::object encounterObject;
             encounterObject["map"] = key;
             encounterObject["base_label"] = groupLabel;
 
-            WildPokemonHeader encounterHeader = wildMonData[key][groupLabel];
+            WildPokemonHeader encounterHeader = this->wildMonData[key][groupLabel];
             for (auto fieldNamePair : encounterHeader.wildMons) {
                 QString fieldName = fieldNamePair.first;
-                OrderedJson::object fieldObject;
+                OrderedJson::object monInfoObject;
                 WildMonInfo monInfo = encounterHeader.wildMons[fieldName];
-                fieldObject["encounter_rate"] = monInfo.encounterRate;
+                monInfoObject["encounter_rate"] = monInfo.encounterRate;
                 OrderedJson::array monArray;
                 for (WildPokemon wildMon : monInfo.wildPokemon) {
                     OrderedJson::object monEntry;
                     monEntry["min_level"] = wildMon.minLevel;
                     monEntry["max_level"] = wildMon.maxLevel;
                     monEntry["species"] = wildMon.species;
+                    OrderedJson::append(&monEntry, wildMon.customData);
                     monArray.push_back(monEntry);
                 }
-                fieldObject["mons"] = monArray;
-                encounterObject[fieldName] = fieldObject;
+                monInfoObject["mons"] = monArray;
+                OrderedJson::append(&monInfoObject, monInfo.customData);
+
+                encounterObject[fieldName] = monInfoObject;
+                OrderedJson::append(&encounterObject, encounterHeader.customData);
             }
             encountersArray.push_back(encounterObject);
         }
     }
     monHeadersObject["encounters"] = encountersArray;
-    wildEncounterGroups.push_back(monHeadersObject);
+    OrderedJson::append(&monHeadersObject, this->customWildMonGroupData);
 
-    // add extra Json objects that are not associated with maps to the file
-    for (auto extraObject : extraEncounterGroups) {
-        wildEncounterGroups.push_back(extraObject);
-    }
+    wildEncounterGroups.push_back(monHeadersObject);
+    OrderedJson::append(&wildEncounterGroups, this->extraEncounterGroups);
 
     wildEncountersObject["wild_encounter_groups"] = wildEncounterGroups;
+    OrderedJson::append(&wildEncountersObject, this->customWildMonData);
 
     ignoreWatchedFileTemporarily(wildEncountersJsonFilepath);
     OrderedJson encounterJson(wildEncountersObject);
@@ -868,6 +877,7 @@ void Project::saveHealLocations() {
 
     OrderedJson::object object;
     object["heal_locations"] = eventJsonArr;
+    OrderedJson::append(&object, this->customHealLocationsData);
 
     ignoreWatchedFileTemporarily(filepath);
     OrderedJson json(object);
@@ -1201,6 +1211,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
             connectionObj["map"] = getMapConstant(connection->targetMapName(), connection->targetMapName());
             connectionObj["offset"] = connection->offset();
             connectionObj["direction"] = connection->direction();
+            OrderedJson::append(&connectionObj, connection->customData());
             connectionsArr.append(connectionObj);
         }
         mapObj["connections"] = connectionsArr;
@@ -1256,10 +1267,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
     this->healLocations[map->constantName()] = hlEvents;
 
     // Custom header fields.
-    const auto customAttributes = map->customAttributes();
-    for (auto i = customAttributes.constBegin(); i != customAttributes.constEnd(); i++) {
-        mapObj[i.key()] = OrderedJson::fromQJsonValue(i.value());
-    }
+    OrderedJson::append(&mapObj, map->customAttributes());
 
     OrderedJson mapJson(mapObj);
     OrderedJsonDoc jsonDoc(&mapJson);
@@ -1601,6 +1609,8 @@ bool Project::readWildMonData() {
     this->pokemonMaxLevel = 100;
     this->maxEncounterRate = 2880/16;
     this->wildEncountersLoaded = false;
+    this->customWildMonData = OrderedJson::object();
+    this->customWildMonGroupData = OrderedJson::object();
     if (!userConfig.useEncounterJson) {
         return true;
     }
@@ -1646,7 +1656,8 @@ bool Project::readWildMonData() {
     QMap<QString, QMap<int, int>> encounterRateFrequencyMaps;
 
     // Parse "wild_encounter_groups". This is the main object array containing all the data in this file.
-    for (OrderedJson mainArrayJson : wildMonObj["wild_encounter_groups"].array_items()) {
+    OrderedJson::array mainArray = wildMonObj.take("wild_encounter_groups").array_items();
+    for (const OrderedJson &mainArrayJson : mainArray) {
         OrderedJson::object mainArrayObject = mainArrayJson.object_items();
 
         // We're only interested in wild encounter data that's associated with maps ("for_maps" == true).
@@ -1655,10 +1666,14 @@ bool Project::readWildMonData() {
         if (!mainArrayObject["for_maps"].bool_value()) {
             this->extraEncounterGroups.push_back(mainArrayObject);
             continue;
+        } else {
+            // Note: We don't call 'take' above, we don't want to strip data from extraEncounterGroups.
+            //       We do want to strip it from the main group, because it shouldn't be treated as custom data.
+            mainArrayObject.erase("for_maps");
         }
 
         // If multiple "for_maps" data sets are found they will be collapsed into a single set.
-        QString label = mainArrayObject["label"].string_value();
+        QString label = mainArrayObject.take("label").string_value();
         if (this->wildMonTableName.isEmpty()) {
             this->wildMonTableName = label;
         } else {
@@ -1671,24 +1686,25 @@ bool Project::readWildMonData() {
         // Each element describes a type of wild encounter Porymap can expect to find, and we represent this data with an EncounterField.
         // They should contain a name ("type"), the number of encounter slots and the ratio at which they occur ("encounter_rates"),
         // and whether the encounters are divided into groups (like fishing rods).
-        for (const OrderedJson &fieldJson : mainArrayObject["fields"].array_items()) {
+        for (const OrderedJson &fieldJson : mainArrayObject.take("fields").array_items()) {
             OrderedJson::object fieldObject = fieldJson.object_items();
 
             EncounterField encounterField;
-            encounterField.name = fieldObject["type"].string_value();
+            encounterField.name = fieldObject.take("type").string_value();
 
-            for (auto val : fieldObject["encounter_rates"].array_items()) {
+            for (auto val : fieldObject.take("encounter_rates").array_items()) {
                 encounterField.encounterRates.append(val.int_value());
             }
 
             // Each element of the "groups" array is an object with the group name as the key (e.g. "old_rod")
             // and an array of slot numbers indicating which encounter slots in this encounter type belong to that group.
-            for (auto groupPair : fieldObject["groups"].object_items()) {
+            for (auto groupPair : fieldObject.take("groups").object_items()) {
                 const QString groupName = groupPair.first;
                 for (auto slotNum : groupPair.second.array_items()) {
                     encounterField.groups[groupName].append(slotNum.int_value());
                 }
             }
+            encounterField.customData = fieldObject;
 
             encounterRateFrequencyMaps.insert(encounterField.name, QMap<int, int>());
             this->wildMonFields.append(encounterField);
@@ -1698,7 +1714,7 @@ bool Project::readWildMonData() {
         // Each element is an object that will tell us which map it's associated with,
         // its symbol name (which we will display in the Groups dropdown) and a list of
         // pokémon associated with any of the encounter types described by the data we parsed above.
-        for (const auto &encounterJson : mainArrayObject["encounters"].array_items()) {
+        for (const auto &encounterJson : mainArrayObject.take("encounters").array_items()) {
             OrderedJson::object encounterObj = encounterJson.object_items();
 
             WildPokemonHeader header;
@@ -1706,29 +1722,31 @@ bool Project::readWildMonData() {
             // Check for each possible encounter type.
             for (const EncounterField &monField : this->wildMonFields) {
                 const QString field = monField.name;
-                if (encounterObj[field].is_null()) {
+                if (!encounterObj.contains(field)) {
                     // Encounter type isn't present
                     continue;
                 }
-                OrderedJson::object encounterFieldObj = encounterObj[field].object_items();
+                OrderedJson::object encounterFieldObj = encounterObj.take(field).object_items();
 
                 WildMonInfo monInfo;
                 monInfo.active = true;
 
                 // Read encounter rate
-                monInfo.encounterRate = encounterFieldObj["encounter_rate"].int_value();
+                monInfo.encounterRate = encounterFieldObj.take("encounter_rate").int_value();
                 encounterRateFrequencyMaps[field][monInfo.encounterRate]++;
 
                 // Read wild pokémon list
-                for (auto monJson : encounterFieldObj["mons"].array_items()) {
+                for (const auto &monJson : encounterFieldObj.take("mons").array_items()) {
                     OrderedJson::object monObj = monJson.object_items();
 
                     WildPokemon newMon;
-                    newMon.minLevel = monObj["min_level"].int_value();
-                    newMon.maxLevel = monObj["max_level"].int_value();
-                    newMon.species = monObj["species"].string_value();
+                    newMon.minLevel = monObj.take("min_level").int_value();
+                    newMon.maxLevel = monObj.take("max_level").int_value();
+                    newMon.species = monObj.take("species").string_value();
+                    newMon.customData = monObj;
                     monInfo.wildPokemon.append(newMon);
                 }
+                monInfo.customData = encounterFieldObj;
 
                 // If the user supplied too few pokémon for this group then we fill in the rest with default values.
                 for (int i = monInfo.wildPokemon.length(); i < monField.encounterRates.length(); i++) {
@@ -1736,13 +1754,15 @@ bool Project::readWildMonData() {
                 }
                 header.wildMons[field] = monInfo;
             }
-
-            const QString mapConstant = encounterObj["map"].string_value();
-            const QString baseLabel = encounterObj["base_label"].string_value();
+            const QString mapConstant = encounterObj.take("map").string_value();
+            const QString baseLabel = encounterObj.take("base_label").string_value();
+            header.customData = encounterObj;
             this->wildMonData[mapConstant].insert({baseLabel, header});
             this->encounterGroupLabels.append(baseLabel);
         }
+        this->customWildMonGroupData = mainArrayObject;
     }
+    this->customWildMonData = wildMonObj;
 
     // For each encounter type, set default encounter rate to most common value.
     // Iterate over map of encounter type names to frequency maps...
@@ -1770,8 +1790,7 @@ bool Project::readMapGroups() {
     this->mapNames.clear();
     this->groupNames.clear();
     this->groupNameToMapNames.clear();
-
-    this->initTopLevelMapFields();
+    this->customMapGroupsData = QJsonObject();
 
     const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_map_groups);
     fileWatcher.addPath(root + "/" + filepath);
@@ -1783,7 +1802,7 @@ bool Project::readMapGroups() {
     }
 
     QJsonObject mapGroupsObj = mapGroupsDoc.object();
-    QJsonArray mapGroupOrder = mapGroupsObj["group_order"].toArray();
+    QJsonArray mapGroupOrder = mapGroupsObj.take("group_order").toArray();
 
     const QString dynamicMapName = getDynamicMapName();
     const QString dynamicMapConstant = getDynamicMapDefineName();
@@ -1792,7 +1811,12 @@ bool Project::readMapGroups() {
     QStringList failedMapNames;
     for (int groupIndex = 0; groupIndex < mapGroupOrder.size(); groupIndex++) {
         const QString groupName = ParseUtil::jsonToQString(mapGroupOrder.at(groupIndex));
-        const QJsonArray mapNamesJson = mapGroupsObj.value(groupName).toArray();
+        if (this->groupNames.contains(groupName)) {
+            logWarn(QString("Ignoring repeated map group name '%1'.").arg(groupName));
+            continue;
+        }
+
+        const QJsonArray mapNamesJson = mapGroupsObj.take(groupName).toArray();
         this->groupNames.append(groupName);
         
         // Process the names in this map group
@@ -1885,6 +1909,14 @@ bool Project::readMapGroups() {
     // Save special "Dynamic" constant
     this->mapConstantsToMapNames.insert(dynamicMapConstant, dynamicMapName);
     this->mapNames.append(dynamicMapName);
+
+    // Chuck the "connections_include_order" field, this is only for matching.
+    if (!projectConfig.preserveMatchingOnlyData) {
+        mapGroupsObj.remove("connections_include_order");
+    }
+
+    // Preserve any remaining fields for when we save.
+    this->customMapGroupsData = mapGroupsObj;
 
     return true;
 }
@@ -2336,10 +2368,11 @@ bool Project::readFieldmapMasks() {
 }
 
 bool Project::readRegionMapSections() {
+    this->locationData.clear();
     this->mapSectionIdNames.clear();
     this->mapSectionIdNamesSaveOrder.clear();
-    this->mapSectionDisplayNames.clear();
-    this->regionMapEntries.clear();
+    this->customMapSectionsData = QJsonObject();
+
     const QString defaultName = getEmptyMapsecName();
     const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix);
 
@@ -2352,7 +2385,8 @@ bool Project::readRegionMapSections() {
     }
     fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filepath));
 
-    QJsonArray mapSections = doc.object()["map_sections"].toArray();
+    QJsonObject mapSectionsGlobalObj = doc.object();
+    QJsonArray mapSections = mapSectionsGlobalObj.take("map_sections").toArray();
     for (int i = 0; i < mapSections.size(); i++) {
         QJsonObject mapSectionObj = mapSections.at(i).toObject();
 
@@ -2370,7 +2404,7 @@ bool Project::readRegionMapSections() {
                 continue;
             }
         }
-        const QString idName = ParseUtil::jsonToQString(mapSectionObj[idField]);
+        const QString idName = ParseUtil::jsonToQString(mapSectionObj.take(idField));
         if (!idName.startsWith(requiredPrefix)) {
             logWarn(QString("Ignoring data for map section '%1' in '%2'. IDs must start with the prefix '%3'").arg(idName).arg(filepath).arg(requiredPrefix));
             continue;
@@ -2379,8 +2413,10 @@ bool Project::readRegionMapSections() {
         this->mapSectionIdNames.append(idName);
         this->mapSectionIdNamesSaveOrder.append(idName);
 
-        if (mapSectionObj.contains("name"))
-            this->mapSectionDisplayNames.insert(idName, ParseUtil::jsonToQString(mapSectionObj["name"]));
+        LocationData location;
+        if (mapSectionObj.contains("name")) {
+            location.displayName = ParseUtil::jsonToQString(mapSectionObj.take("name"));
+        }
 
         // Map sections may have additional data indicating their position on the region map.
         // If they have this data, we can add them to the region map entry list.
@@ -2392,17 +2428,25 @@ bool Project::readRegionMapSections() {
                 break;
             }
         }
-        if (!hasRegionMapData)
-            continue;
+        if (hasRegionMapData) {
+            location.map.x = ParseUtil::jsonToInt(mapSectionObj.take("x"));
+            location.map.y = ParseUtil::jsonToInt(mapSectionObj.take("y"));
+            location.map.width = ParseUtil::jsonToInt(mapSectionObj.take("width"));
+            location.map.height = ParseUtil::jsonToInt(mapSectionObj.take("height"));
+            location.map.valid = true;
+        }
 
-        MapSectionEntry entry;
-        entry.x = ParseUtil::jsonToInt(mapSectionObj["x"]);
-        entry.y = ParseUtil::jsonToInt(mapSectionObj["y"]);
-        entry.width = ParseUtil::jsonToInt(mapSectionObj["width"]);
-        entry.height = ParseUtil::jsonToInt(mapSectionObj["height"]);
-        entry.valid = true;
-        this->regionMapEntries[idName] = entry;
+        // Chuck the "name_clone" field, this is only for matching.
+        if (!projectConfig.preserveMatchingOnlyData) {
+            mapSectionObj.remove("name_clone");
+        }
+
+        // Preserve any remaining fields for when we save.
+        location.custom = mapSectionObj;
+
+        this->locationData.insert(idName, location);
     }
+    this->customMapSectionsData = mapSectionsGlobalObj;
 
     // Make sure the default name is present in the list.
     if (!this->mapSectionIdNames.contains(defaultName)) {
@@ -2411,6 +2455,20 @@ bool Project::readRegionMapSections() {
     Util::numericalModeSort(this->mapSectionIdNames);
 
     return true;
+}
+
+void Project::setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries) {
+    for (auto it = entries.constBegin(); it != entries.constEnd(); it++) {
+        this->locationData[it.key()].map = it.value();
+    }
+}
+
+QHash<QString, MapSectionEntry> Project::getRegionMapEntries() const {
+    QHash<QString, MapSectionEntry> entries;
+    for (auto it = this->locationData.constBegin(); it != this->locationData.constEnd(); it++) {
+        entries[it.key()] = it.value().map;
+    }
+    return entries;
 }
 
 QString Project::getEmptyMapsecName() {
@@ -2463,9 +2521,9 @@ void Project::removeMapsec(const QString &idName) {
 }
 
 void Project::setMapsecDisplayName(const QString &idName, const QString &displayName) {
-    if (this->mapSectionDisplayNames.value(idName) == displayName)
+    if (getMapsecDisplayName(idName) == displayName)
         return;
-    this->mapSectionDisplayNames[idName] = displayName;
+    this->locationData[idName].displayName = displayName;
     this->hasUnsavedDataChanges = true;
     emit mapSectionDisplayNameChanged(idName, displayName);
 }
@@ -2476,6 +2534,7 @@ void Project::clearHealLocations() {
     }
     this->healLocations.clear();
     this->healLocationSaveOrder.clear();
+    this->customHealLocationsData = QJsonObject();
 }
 
 bool Project::readHealLocations() {
@@ -2490,7 +2549,8 @@ bool Project::readHealLocations() {
     }
     fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filepath));
 
-    QJsonArray healLocations = doc.object()["heal_locations"].toArray();
+    QJsonObject healLocationsObj = doc.object();
+    QJsonArray healLocations = healLocationsObj.take("heal_locations").toArray();
     for (int i = 0; i < healLocations.size(); i++) {
         QJsonObject healLocationObj = healLocations.at(i).toObject();
         static const QString mapField = QStringLiteral("map");
@@ -2501,9 +2561,10 @@ bool Project::readHealLocations() {
 
         auto event = new HealLocationEvent();
         event->loadFromJson(healLocationObj, this);
-        this->healLocations[ParseUtil::jsonToQString(healLocationObj["map"])].append(event);
+        this->healLocations[event->getHostMapName()].append(event);
         this->healLocationSaveOrder.append(event->getIdName());
     }
+    this->customHealLocationsData = healLocationsObj;
     return true;
 }
 

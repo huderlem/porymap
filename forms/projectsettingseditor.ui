@@ -39,7 +39,7 @@
              <x>0</x>
              <y>0</y>
              <width>559</width>
-             <height>568</height>
+             <height>589</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -63,6 +63,16 @@
                 <widget class="QCheckBox" name="checkBox_ShowWildEncounterTables">
                  <property name="text">
                   <string>Show Wild Encounter Tables</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBox_PreserveMatchingOnlyData">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, Porymap will not discard data like &amp;quot;connections_include_order&amp;quot; or &amp;quot;name_clone&amp;quot;, which serve no purpose other than recreating the original game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Preserve data only needed to match the original game</string>
                  </property>
                 </widget>
                </item>

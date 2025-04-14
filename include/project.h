@@ -62,7 +62,6 @@ public:
     QStringList mapSectionIdNames;
     QMap<uint32_t, QString> encounterTypeToName;
     QMap<uint32_t, QString> terrainTypeToName;
-    QMap<QString, MapSectionEntry> regionMapEntries;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
     QMap<QString, uint16_t> unusedMetatileLabels;
     QMap<QString, uint32_t> metatileBehaviorMap;
@@ -72,7 +71,6 @@ public:
     QSet<QString> modifiedFiles;
     bool usingAsmTilesets;
     QSet<QString> disabledSettingsNames;
-    QSet<QString> topLevelMapFields;
     int pokemonMinLevel;
     int pokemonMaxLevel;
     int maxEncounterRate;
@@ -144,12 +142,11 @@ public:
     QString getNewHealLocationName(const Map* map) const;
 
     bool readWildMonData();
-    tsl::ordered_map<QString, tsl::ordered_map<QString, WildPokemonHeader>> wildMonData;
+    OrderedMap<QString, OrderedMap<QString, WildPokemonHeader>> wildMonData;
 
     QString wildMonTableName;
     QVector<EncounterField> wildMonFields;
     QVector<QString> encounterGroupLabels;
-    QVector<poryjson::Json::object> extraEncounterGroups;
 
     bool readSpeciesIconPaths();
     QString getDefaultSpeciesIconPath(const QString &species);
@@ -157,15 +154,14 @@ public:
 
     bool addNewMapsec(const QString &idName, const QString &displayName = QString());
     void removeMapsec(const QString &idName);
-    QString getMapsecDisplayName(const QString &idName) const { return this->mapSectionDisplayNames.value(idName); }
+    QString getMapsecDisplayName(const QString &idName) const { return this->locationData.value(idName).displayName; }
     void setMapsecDisplayName(const QString &idName, const QString &displayName);
 
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
 
-    void initTopLevelMapFields();
     bool readMapJson(const QString &mapName, QJsonDocument * out);
-    bool loadMapEvent(Map *map, const QJsonObject &json, Event::Type defaultType = Event::Type::None);
+    bool loadMapEvent(Map *map, QJsonObject json, Event::Type defaultType = Event::Type::None);
     bool loadMapData(Map*);
     bool readMapLayouts();
     Layout *loadLayout(QString layoutId);
@@ -239,6 +235,11 @@ public:
 
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
+    
+    void setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries);
+    QHash<QString, MapSectionEntry> getRegionMapEntries() const;
+
+    QSet<QString> getTopLevelMapFields() const;
 
     int getMapDataSize(int width, int height) const;
     int getMaxMapDataSize() const { return this->maxMapDataSize; }
@@ -265,11 +266,19 @@ public:
     static QString getMapGroupPrefix();
 
 private:
-    QHash<QString, QString> mapSectionDisplayNames;
     QMap<QString, qint64> modifiedFileTimestamps;
     QMap<QString, QString> facingDirections;
     QHash<QString, QString> speciesToIconPath;
     QHash<QString, Map*> maps;
+
+    // Fields for preserving top-level JSON data that Porymap isn't expecting.
+    QJsonObject customLayoutsData;
+    QJsonObject customMapSectionsData;
+    QJsonObject customMapGroupsData;
+    QJsonObject customHealLocationsData;
+    OrderedJson::object customWildMonData;
+    OrderedJson::object customWildMonGroupData;
+    OrderedJson::array extraEncounterGroups;
 
     // Maps/layouts represented in these sets have been fully loaded from the project.
     // If a valid map name / layout id is not in these sets, a Map / Layout object exists
@@ -293,6 +302,15 @@ private:
         bool inanimate = false;
     };
     QMap<QString, EventGraphics*> eventGraphicsMap;
+
+    // The extra data that can be associated with each MAPSEC name.
+    struct LocationData
+    {
+        MapSectionEntry map;
+        QString displayName;
+        QJsonObject custom;
+    };
+    QHash<QString, LocationData> locationData;
 
     void updateLayout(Layout *);
 

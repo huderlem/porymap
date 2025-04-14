@@ -1977,6 +1977,14 @@ public:
     size_type erase(const K& key, std::size_t precalculated_hash) { 
         return m_ht.erase(key, precalculated_hash); 
     }
+
+    // Naive solution for take, should probably be replaced with one that does a single lookup and no unnecessary insertion.
+    // We want to mirror the behavior of QMap::take, which returns a default-constructed value if the key is not present.
+    T take(const key_type& key) {
+        typename ValueSelect::value_type value = m_ht[key];
+        m_ht.erase(key);
+        return value;
+    }
     
     
     
@@ -2403,5 +2411,8 @@ private:
 };
 
 } // end namespace tsl
+
+template<class Key, class T>
+using OrderedMap = tsl::ordered_map<Key, T>;
 
 #endif
