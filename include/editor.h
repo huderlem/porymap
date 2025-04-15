@@ -92,7 +92,8 @@ public:
     void setConnectionsVisibility(bool visible);
     void updateDivingMapsVisibility();
     void renderDivingConnections();
-    void addConnection(MapConnection* connection);
+    void addNewConnection(const QString &mapName, const QString &direction);
+    void replaceConnection(const QString &mapName, const QString &direction);
     void removeConnection(MapConnection* connection);
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();

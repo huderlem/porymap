@@ -143,6 +143,8 @@ void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
     emit connectionItemDoubleClicked(this->connection);
 }
 
+// TODO: Rather than listening for this here and on the list item, listen for it on the connections graphics view,
+//       and delete whichever map connections are currently selected. This should fix our weird focus requirements in here.
 void ConnectionPixmapItem::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
         emit deleteRequested(this->connection);

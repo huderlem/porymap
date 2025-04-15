@@ -100,7 +100,17 @@ void ConnectionsListItem::mousePressEvent(QMouseEvent *) {
 
 void ConnectionsListItem::commitDirection() {
     const QString direction = ui->comboBox_Direction->currentText();
-    if (this->map && this->connection && this->connection->direction() != direction) {
+    if (!this->connection || this->connection->direction() == direction)
+        return;
+
+    if (MapConnection::isDiving(direction)) {
+        // Diving maps are displayed separately, no support right now for replacing a list item with a diving map.
+        // For now just restore the original direction.
+        ui->comboBox_Direction->setCurrentText(this->connection->direction());
+        return;
+    }
+
+    if (this->map) {
         this->map->commit(new MapConnectionChangeDirection(this->connection, direction));
     }
 }

@@ -818,19 +818,32 @@ void Editor::displayConnection(MapConnection *connection) {
     }
 }
 
-void Editor::addConnection(MapConnection *connection) {
-    if (!connection)
+void Editor::addNewConnection(const QString &mapName, const QString &direction) {
+    if (!this->map)
         return;
+
+    MapConnection *connection = new MapConnection(mapName, direction);
 
     // Mark this connection to be selected once its display elements have been created.
     // It's possible this is a Dive/Emerge connection, but that's ok (no selection will occur).
-    connection_to_select = connection;
+    this->connection_to_select = connection;
 
     this->map->commit(new MapConnectionAdd(this->map, connection));
 }
 
+void Editor::replaceConnection(const QString &mapName, const QString &direction) {
+    if (!this->map)
+        return;
+
+    MapConnection *connection = this->map->getConnection(direction);
+    if (!connection || connection->targetMapName() == mapName)
+        return;
+
+    this->map->commit(new MapConnectionChangeMap(connection, mapName));
+}
+
 void Editor::removeConnection(MapConnection *connection) {
-    if (!connection)
+    if (!this->map || !connection)
         return;
     this->map->commit(new MapConnectionRemove(this->map, connection));
 }
@@ -948,7 +961,7 @@ bool Editor::setDivingMapName(const QString &mapName, const QString &direction) 
         }
     } else if (!mapName.isEmpty()) {
         // Create new connection
-        addConnection(new MapConnection(mapName, direction));
+        addNewConnection(mapName, direction);
     }
     return true;
 }

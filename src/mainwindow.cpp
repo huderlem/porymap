@@ -2588,7 +2588,8 @@ void MainWindow::on_pushButton_AddConnection_clicked() {
         return;
 
     auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames);
-    connect(dialog, &NewMapConnectionDialog::accepted, this->editor, &Editor::addConnection);
+    connect(dialog, &NewMapConnectionDialog::newConnectionedAdded, this->editor, &Editor::addNewConnection);
+    connect(dialog, &NewMapConnectionDialog::connectionReplaced, this->editor, &Editor::replaceConnection);
     dialog->open();
 }
 
