@@ -116,8 +116,11 @@ public:
     void clearBorderCache();
     void cacheBorder();
 
-    void setClean();
     bool hasUnsavedChanges() const;
+
+    bool save(const QString &root);
+    bool saveBorder(const QString &root);
+    bool saveBlockdata(const QString &root);
 
     bool layoutBlockChanged(int i, const Blockdata &cache);
 
@@ -143,6 +146,7 @@ public:
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
+    bool writeBlockdata(const QString &path, const Blockdata &blockdata) const;
 
     static int getBorderDrawDistance(int dimension, qreal minimum);
 

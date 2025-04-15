@@ -467,11 +467,50 @@ QPixmap Layout::getLayoutItemPixmap() {
     return this->layoutItem ? this->layoutItem->pixmap() : QPixmap();
 }
 
-void Layout::setClean() {
-    this->editHistory.setClean();
-    this->hasUnsavedDataChanges = false;
-}
-
 bool Layout::hasUnsavedChanges() const {
     return !this->editHistory.isClean() || this->hasUnsavedDataChanges || !this->newFolderPath.isEmpty();
+}
+
+bool Layout::save(const QString &root) {
+    if (!this->newFolderPath.isEmpty()) {
+        // Layout directory doesn't exist yet, create it now.
+        const QString fullPath = QString("%1/%2").arg(root).arg(this->newFolderPath);
+        if (!QDir::root().mkpath(fullPath)) {
+            logError(QString("Failed to create directory for new layout: '%1'").arg(fullPath));
+            return false;
+        }
+        this->newFolderPath = QString();
+    }
+
+    bool success = true;
+    if (!saveBorder(root)) success = false;
+    if (!saveBlockdata(root)) success = false;
+    if (!success)
+        return false;
+
+    this->editHistory.setClean();
+    this->hasUnsavedDataChanges = false;
+    return true;
+}
+
+bool Layout::saveBorder(const QString &root) {
+    QString path = QString("%1/%2").arg(root).arg(this->border_path);
+    return writeBlockdata(path, this->border);
+}
+
+bool Layout::saveBlockdata(const QString &root) {
+    QString path = QString("%1/%2").arg(root).arg(this->blockdata_path);
+    return writeBlockdata(path, this->blockdata);
+}
+
+bool Layout::writeBlockdata(const QString &path, const Blockdata &blockdata) const {
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(path).arg(file.errorString()));
+        return false;
+    }
+
+    QByteArray data = blockdata.serialize();
+    file.write(data);
+    return true;
 }

@@ -68,30 +68,33 @@ Editor::~Editor()
     closeProject();
 }
 
-void Editor::saveCurrent() {
-    save(true);
+bool Editor::saveCurrent() {
+    return save(true);
 }
 
-void Editor::saveAll() {
-    save(false);
+bool Editor::saveAll() {
+    return save(false);
 }
 
-void Editor::save(bool currentOnly) {
+bool Editor::save(bool currentOnly) {
     if (!this->project)
-        return;
+        return true;
 
     saveEncounterTabData();
 
+    bool success = true;
     if (currentOnly) {
         if (this->map) {
-            this->project->saveMap(this->map);
+            success = this->project->saveMap(this->map);
         } else if (this->layout) {
-            this->project->saveLayout(this->layout);
+            success = this->project->saveLayout(this->layout);
         }
-        this->project->saveGlobalData();
+        if (!this->project->saveGlobalData())
+            success = false;
     } else {
-        this->project->saveAll();
+        success = this->project->saveAll();
     }
+    return success;
 }
 
 void Editor::setProject(Project * project) {
