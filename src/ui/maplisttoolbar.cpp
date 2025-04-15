@@ -121,7 +121,9 @@ void MapListToolBar::applyFilter(const QString &filterText) {
         return;
 
     const QSignalBlocker b(ui->lineEdit_filterBox);
-    ui->lineEdit_filterBox->setText(filterText);
+    if (ui->lineEdit_filterBox->text() != filterText) {
+        ui->lineEdit_filterBox->setText(filterText);
+    }
 
     // The clear button does not properly disappear when filterText is empty.
     // It seems like this is because blocking the QLineEdit's signals prevents
