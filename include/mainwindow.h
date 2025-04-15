@@ -352,7 +352,7 @@ private:
     void refreshCollisionSelector();
     void setLayoutOnlyMode(bool layoutOnly);
 
-    bool checkProjectSanity();
+    bool isInvalidProject(Project *project);
     bool loadProjectData();
     bool setProjectUI();
     void clearProjectUI();
