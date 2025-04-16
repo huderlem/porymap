@@ -1,5 +1,6 @@
 #include "log.h"
 #include "parseutil.h"
+#include "loadingscreen.h"
 
 #include <QRegularExpression>
 #include <QJsonDocument>
@@ -74,6 +75,8 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
 }
 
 QString ParseUtil::readTextFile(const QString &path, QString *error) {
+    // splash screen message
+    porysplash->showMessage(path);
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         if (error) *error = file.errorString();

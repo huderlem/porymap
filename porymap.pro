@@ -133,6 +133,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/preferenceeditor.cpp \
     src/ui/regionmappropertiesdialog.cpp \
     src/ui/colorpicker.cpp \
+    src/ui/loadingscreen.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -248,6 +249,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/preferenceeditor.h \
     include/ui/regionmappropertiesdialog.h \
     include/ui/colorpicker.h \
+    include/ui/loadingscreen.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
@@ -267,6 +269,7 @@ FORMS    += forms/mainwindow.ui \
     forms/connectionslistitem.ui \
     forms/customattributesframe.ui \
     forms/gridsettingsdialog.ui \
+    forms/loadingscreen.ui \
     forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
     forms/newlayoutdialog.ui \
