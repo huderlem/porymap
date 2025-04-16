@@ -1152,12 +1152,6 @@ void TilesetEditor::countMetatileUsage() {
     this->metatileSelector->usedMetatiles.fill(0);
 
     for (auto layout : this->project->mapLayouts) {
-        // It's possible for a layout's tileset labels to change if they are invalid,
-        // so we need to load all the tilesets even if they aren't the tileset we're looking for.
-        // Otherwise the metatile usage counts may change because the layouts with invalid tilesets
-        // were updated to use a tileset we were looking for.
-        this->project->loadLayoutTilesets(layout);
-
         bool usesPrimary = (layout->tileset_primary_label == this->primaryTileset->name);
         bool usesSecondary = (layout->tileset_secondary_label == this->secondaryTileset->name);
 
@@ -1196,10 +1190,10 @@ void TilesetEditor::countTileUsage() {
     QSet<Tileset*> secondaryTilesets;
 
     for (auto &layout : this->project->mapLayouts) {
-        this->project->loadLayoutTilesets(layout);
         if (layout->tileset_primary_label == this->primaryTileset->name
          || layout->tileset_secondary_label == this->secondaryTileset->name) {
             // need to check metatiles
+            this->project->loadLayoutTilesets(layout);
             if (layout->tileset_primary && layout->tileset_secondary) {
                 primaryTilesets.insert(layout->tileset_primary);
                 secondaryTilesets.insert(layout->tileset_secondary);
