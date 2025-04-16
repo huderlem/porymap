@@ -52,6 +52,8 @@ public:
     MainWindow(const MainWindow &) = delete;
     MainWindow & operator = (const MainWindow &) = delete;
 
+    void initialize();
+
     // Scripting API
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);

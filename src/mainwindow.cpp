@@ -29,6 +29,7 @@
 #include "newmapgroupdialog.h"
 #include "newlocationdialog.h"
 #include "message.h"
+#include "loadingscreen.h"
 
 #include <QClipboard>
 #include <QDirIterator>
@@ -75,10 +76,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     cleanupLargeLog();
     logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
+}
 
+void MainWindow::initialize() {
+    porysplash->start();
     this->initWindow();
-    if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true))
+    if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true)) {
         on_toolButton_Paint_clicked();
+    }
 
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
     // the warning is a bit annoying, so it is disabled here
@@ -86,6 +91,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if (porymapConfig.checkForUpdates)
         this->checkForUpdates(false);
+
+    porysplash->close();
+    this->show();
 }
 
 MainWindow::~MainWindow()
@@ -153,7 +161,6 @@ void MainWindow::initWindow() {
 #endif
 
     setWindowDisabled(true);
-    show();
 }
 
 void MainWindow::initShortcuts() {
