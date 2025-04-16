@@ -83,16 +83,17 @@ QRect Map::getConnectionRect(const QString &direction, Layout * fromLayout) cons
     int x = 0, y = 0;
     int w = getWidth(), h = getHeight();
 
+    QSize viewDistance = Project::getMetatileViewDistance();
     if (direction == "up") {
-        h = qMin(h, BORDER_DISTANCE);
+        h = qMin(h, viewDistance.height());
         y = getHeight() - h;
     } else if (direction == "down") {
-        h = qMin(h, BORDER_DISTANCE);
+        h = qMin(h, viewDistance.height());
     } else if (direction == "left") {
-        w = qMin(w, BORDER_DISTANCE);
+        w = qMin(w, viewDistance.width());
         x = getWidth() - w;
     } else if (direction == "right") {
-        w = qMin(w, BORDER_DISTANCE);
+        w = qMin(w, viewDistance.width());
     } else if (MapConnection::isDiving(direction)) {
         if (fromLayout) {
             w = qMin(w, fromLayout->getWidth());

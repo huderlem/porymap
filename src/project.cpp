@@ -3235,6 +3235,21 @@ QString Project::getEmptySpeciesName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_species_empty);
 }
 
+// Get the distance in pixels that the player is able to see from the space they're standing on.
+// For the default size of the view area (i.e. the full 240x160 GBA screen) this is 112x72.
+QSize Project::getViewDistance() {
+    return ((projectConfig.playerViewSize) - QSize(16,16)) / 2;
+}
+
+// Get the distance in metatiles that the player is able to see from the space they're standing on, rounded up.
+// For the default size of the view area (i.e. the full 240x160 GBA screen) this is 7x5 metatiles.
+QSize Project::getMetatileViewDistance() {
+    QSize viewDistance = getViewDistance();
+    viewDistance.setWidth(qCeil(viewDistance.width() / 16.0));
+    viewDistance.setHeight(qCeil(viewDistance.height() / 16.0));
+    return viewDistance;
+}
+
 // If the provided filepath is an absolute path to an existing file, return filepath.
 // If not, and the provided filepath is a relative path from the project dir to an existing file, return the relative path.
 // Otherwise return empty string.

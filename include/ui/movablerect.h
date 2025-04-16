@@ -22,10 +22,10 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
         if (!(*enabled)) return;
         painter->setPen(this->color);
-        painter->drawRect(this->rect().x() - 2, this->rect().y() - 2, this->rect().width() + 3, this->rect().height() + 3);
-        painter->setPen(QColor(0, 0, 0));
-        painter->drawRect(this->rect().x() - 3, this->rect().y() - 3, this->rect().width() + 5, this->rect().height() + 5);
-        painter->drawRect(this->rect().x() - 1, this->rect().y() - 1, this->rect().width() + 1, this->rect().height() + 1);
+        painter->drawRect(this->rect() + QMargins(1,1,1,1)); // Fill
+        painter->setPen(Qt::black);
+        painter->drawRect(this->rect() + QMargins(2,2,2,2)); // Outer border
+        painter->drawRect(this->rect()); // Inner border
     }
     void updateLocation(int x, int y);
     bool *enabled;

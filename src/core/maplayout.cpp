@@ -64,22 +64,32 @@ bool Layout::isWithinBorderBounds(int x, int y) const {
 }
 
 int Layout::getBorderDrawWidth() const {
-    return getBorderDrawDistance(border_width, BORDER_DISTANCE);
+    return getBorderDrawDistance(border_width, Project::getMetatileViewDistance().width());
 }
 
 int Layout::getBorderDrawHeight() const {
-    return getBorderDrawDistance(border_height, BORDER_DISTANCE);
+    return getBorderDrawDistance(border_height, Project::getMetatileViewDistance().height());
 }
 
-// We need to draw sufficient border blocks to fill the area that gets loaded around the player in-game (BORDER_DISTANCE).
-// Note that this is not the same as the player's view distance.
-// The result will be some multiple of the input dimension, because we only draw the border in increments of its full width/height.
+// Calculate the distance away from the layout's edge that we need to start drawing border blocks.
+// We need to fulfill two requirements here:
+// - We should draw enough to fill the player's in-game view
+// - The value should be some multiple of the border's dimension
+//   (otherwise the border won't be positioned the same as it would in-game).
 int Layout::getBorderDrawDistance(int dimension, qreal minimum) {
     if (dimension >= minimum)
         return dimension;
 
     // Get first multiple of dimension >= the minimum
     return dimension * qCeil(minimum / qMax(dimension, 1));
+}
+
+// Get a rectangle that represents (in pixels) the layout's map area and the visible area of its border.
+QRect Layout::getVisibleRect() const {
+    QRect area = QRect(0, 0, this->width * 16, this->height * 16);
+    QSize viewDistance = Project::getMetatileViewDistance() * 16;
+    area += QMargins(viewDistance.width(), viewDistance.height(), viewDistance.width(), viewDistance.height());
+    return area;
 }
 
 bool Layout::getBlock(int x, int y, Block *out) {

@@ -1572,14 +1572,8 @@ void Editor::displayMapMetatiles() {
     map_item->draw(true);
     scene->addItem(map_item);
 
-    int tw = 16;
-    int th = 16;
-    scene->setSceneRect(
-        -BORDER_DISTANCE * tw,
-        -BORDER_DISTANCE * th,
-        map_item->pixmap().width() + BORDER_DISTANCE * 2 * tw,
-        map_item->pixmap().height() + BORDER_DISTANCE * 2 * th
-    );
+    // Scene rect is the map plus a margin that gives enough space to scroll and see the edge of the player view rectangle.
+    scene->setSceneRect(this->layout->getVisibleRect() + QMargins(3,3,3,3));
 }
 
 void Editor::clearMapMovementPermissions() {
@@ -1772,18 +1766,13 @@ void Editor::clearConnectionMask() {
     }
 }
 
-// Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
+// Hides connected map tiles that cannot be seen from the current map
 void Editor::maskNonVisibleConnectionTiles() {
     clearConnectionMask();
 
     QPainterPath mask;
     mask.addRect(scene->itemsBoundingRect().toRect());
-    mask.addRect(
-        -BORDER_DISTANCE * 16,
-        -BORDER_DISTANCE * 16,
-        (layout->getWidth() + BORDER_DISTANCE * 2) * 16,
-        (layout->getHeight() + BORDER_DISTANCE * 2) * 16
-    );
+    mask.addRect(layout->getVisibleRect());
 
     // Mask the tiles with the current theme's background color.
     QPen pen(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
@@ -1805,13 +1794,11 @@ void Editor::clearMapBorder() {
 void Editor::displayMapBorder() {
     clearMapBorder();
 
-    int borderWidth = this->layout->getBorderWidth();
-    int borderHeight = this->layout->getBorderHeight();
     int borderHorzDist = this->layout->getBorderDrawWidth();
     int borderVertDist = this->layout->getBorderDrawHeight();
     QPixmap pixmap = this->layout->renderBorder();
-    for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += borderHeight)
-    for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += borderWidth) {
+    for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += this->layout->getBorderHeight())
+    for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += this->layout->getBorderWidth()) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
