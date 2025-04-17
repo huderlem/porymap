@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>631</width>
-    <height>600</height>
+    <width>642</width>
+    <height>609</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,8 +38,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>589</height>
+             <width>570</width>
+             <height>692</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -281,6 +281,91 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_PlayerViewDistance">
+              <property name="title">
+               <string>Player View Distance</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <layout class="QFormLayout" name="formLayout_PlayerViewDistanceCol1">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_North">
+                   <property name="text">
+                    <string>North</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_South">
+                   <property name="text">
+                    <string>South</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_North">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see North of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 160 pixel tall GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_South">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see South of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 160 pixel tall GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QFormLayout" name="formLayout_PlayerViewDistanceCol2">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_West">
+                   <property name="text">
+                    <string>West</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_East">
+                   <property name="text">
+                    <string>East</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_West">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see West of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 240 pixel wide GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_East">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see East of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 240 pixel wide GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QFrame" name="frame_Warning">
               <property name="styleSheet">
                <string notr="true">.QFrame { border: 1px solid red; }</string>
@@ -378,8 +463,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>560</height>
+             <width>561</width>
+             <height>622</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -389,41 +474,48 @@
                <string>Map Data Defaults</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_3">
-               <item row="1" column="1" colspan="3">
-                <widget class="QWidget" name="widget_CustomSizeBorderMetatiles" native="true">
-                 <layout class="QHBoxLayout" name="horizontalLayout_3">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                 </layout>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_FillMetatile">
-                 <property name="toolTip">
-                  <string>The default metatile value that will be used to fill new maps</string>
-                 </property>
-                 <property name="prefix">
-                  <string>0x</string>
-                 </property>
-                 <property name="displayIntegerBase">
-                  <number>16</number>
-                 </property>
-                </widget>
-               </item>
                <item row="5" column="0">
                 <widget class="QLabel" name="label_Elevation">
                  <property name="text">
                   <string>Elevation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="label_MapWidth">
+                 <property name="text">
+                  <string>Width</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_Elevation">
+                 <property name="toolTip">
+                  <string>The default elevation that will be used to fill new maps</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0" colspan="2">
+                <widget class="QCheckBox" name="checkBox_CreateTextFile">
+                 <property name="toolTip">
+                  <string>Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file</string>
+                 </property>
+                 <property name="text">
+                  <string>Create separate text file</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_MapWidth">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_MapHeight">
+                 <property name="minimum">
+                  <number>1</number>
                  </property>
                 </widget>
                </item>
@@ -434,13 +526,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0" colspan="2">
-                <widget class="QCheckBox" name="checkBox_CreateTextFile">
-                 <property name="toolTip">
-                  <string>Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file</string>
-                 </property>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_Collision">
                  <property name="text">
-                  <string>Create separate text file</string>
+                  <string>Collision</string>
                  </property>
                 </widget>
                </item>
@@ -448,6 +537,20 @@
                 <widget class="QLabel" name="label_BorderMetatiles">
                  <property name="text">
                   <string>Border Metatiles</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="UIntHexSpinBox" name="spinBox_FillMetatile">
+                 <property name="toolTip">
+                  <string>The default metatile value that will be used to fill new maps</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_Collision">
+                 <property name="toolTip">
+                  <string>The default collision that will be used to fill new maps</string>
                  </property>
                 </widget>
                </item>
@@ -491,54 +594,30 @@
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile1">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile1">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the top-left border metatile on new maps.</string>
                      </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
-                     </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile2">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile2">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the top-right border metatile on new maps.</string>
                      </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
-                     </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile3">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile3">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the bottom-left border metatile on new maps.</string>
                      </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
-                     </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile4">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile4">
                      <property name="toolTip">
                       <string>The default metatile value that will be used for the bottom-right border metatile on new maps.</string>
-                     </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
                      </property>
                     </widget>
                    </item>
@@ -546,24 +625,28 @@
                  </widget>
                 </widget>
                </item>
-               <item row="5" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Elevation">
-                 <property name="toolTip">
-                  <string>The default elevation that will be used to fill new maps</string>
-                 </property>
+               <item row="1" column="1" colspan="3">
+                <widget class="QWidget" name="widget_CustomSizeBorderMetatiles" native="true">
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                 </layout>
                 </widget>
                </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_Collision">
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_MapHeight">
                  <property name="text">
-                  <string>Collision</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Collision">
-                 <property name="toolTip">
-                  <string>The default collision that will be used to fill new maps</string>
+                  <string>Height</string>
                  </property>
                 </widget>
                </item>
@@ -751,7 +834,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
+             <width>561</width>
              <height>798</height>
             </rect>
            </property>
@@ -1093,7 +1176,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
+             <width>561</width>
              <height>840</height>
             </rect>
            </property>
@@ -1475,8 +1558,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>490</height>
+             <width>561</width>
+             <height>593</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1522,8 +1605,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>533</width>
-                    <height>428</height>
+                    <width>535</width>
+                    <height>531</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_ProjectPaths">
@@ -1564,8 +1647,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>490</height>
+             <width>561</width>
+             <height>593</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -1611,8 +1694,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>533</width>
-                    <height>428</height>
+                    <width>535</width>
+                    <height>531</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_Identifiers">

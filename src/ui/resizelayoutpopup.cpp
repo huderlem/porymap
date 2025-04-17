@@ -145,15 +145,18 @@ void ResizeLayoutPopup::setupLayoutView() {
         // Upper limits: maximum metatiles in a map formula:
         //     max = (width + 15) * (height + 14)
         // This limit can be found in fieldmap.c in pokeruby/pokeemerald/pokefirered.
-        int numMetatiles = editor->project->getMapDataSize(rect.width() / 16, rect.height() / 16);
-        int maxMetatiles = editor->project->getMaxMapDataSize();
-        if (numMetatiles > maxMetatiles) {
-            QString errorText = QString("The maximum layout width and height is the following: (width + 15) * (height + 14) <= %1\n"
-                    "The specified layout width and height was: (%2 + 15) * (%3 + 14) = %4")
-                        .arg(maxMetatiles)
+        int size = editor->project->getMapDataSize(rect.width() / 16, rect.height() / 16);
+        int maxSize = editor->project->getMaxMapDataSize();
+        if (size > maxSize) {
+            QSize addition = editor->project->getMapSizeAddition();
+            QString errorText = QString("The maximum layout width and height is the following: (width + %1) * (height + %2) <= %3\n"
+                    "The specified layout width and height was: (%4 + %1) * (%5 + %2) = %6")
+                        .arg(addition.width())
+                        .arg(addition.height())
+                        .arg(maxSize)
                         .arg(rect.width() / 16)
                         .arg(rect.height() / 16)
-                        .arg(numMetatiles);
+                        .arg(size);
             QMessageBox warning;
             warning.setIcon(QMessageBox::Warning);
             warning.setText("The specified width and height are too large.");
