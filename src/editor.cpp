@@ -848,6 +848,11 @@ void Editor::removeConnection(MapConnection *connection) {
     this->map->commit(new MapConnectionRemove(this->map, connection));
 }
 
+void Editor::removeSelectedConnection() {
+    if (selected_connection_item)
+        removeConnection(selected_connection_item->connection);
+}
+
 void Editor::removeConnectionPixmap(MapConnection *connection) {
     if (!connection)
         return;

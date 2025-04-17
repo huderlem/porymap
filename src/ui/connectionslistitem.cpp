@@ -129,12 +129,3 @@ void ConnectionsListItem::commitRemove() {
     if (this->map)
         this->map->commit(new MapConnectionRemove(this->map, this->connection));
 }
-
-void ConnectionsListItem::keyPressEvent(QKeyEvent* event) {
-    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
-        commitRemove();
-        event->accept();
-    } else {
-        QFrame::keyPressEvent(event);
-    }
-}

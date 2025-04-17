@@ -95,6 +95,7 @@ public:
     void addNewConnection(const QString &mapName, const QString &direction);
     void replaceConnection(const QString &mapName, const QString &direction);
     void removeConnection(MapConnection* connection);
+    void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
     void configureEncounterJSON(QWidget *);

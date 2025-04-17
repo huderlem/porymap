@@ -36,7 +36,6 @@ private:
 
 protected:
     virtual void mousePressEvent(QMouseEvent*) override;
-    virtual void keyPressEvent(QKeyEvent*) override;
     virtual bool eventFilter(QObject*, QEvent *event) override;
 
 signals:

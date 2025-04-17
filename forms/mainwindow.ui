@@ -2589,7 +2589,7 @@
                  <property name="orientation">
                   <enum>Qt::Orientation::Horizontal</enum>
                  </property>
-                 <widget class="QGraphicsView" name="graphicsView_Connections">
+                 <widget class="ConnectionsView" name="graphicsView_Connections">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -3310,8 +3310,13 @@
   </customwidget>
   <customwidget>
    <class>MapView</class>
-   <extends>QWidget</extends>
+   <extends>QGraphicsView</extends>
    <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ConnectionsView</class>
+   <extends>QGraphicsView</extends>
+   <header>graphicsview.h</header>
   </customwidget>
   <customwidget>
    <class>MapTree</class>
@@ -3321,7 +3326,7 @@
   <customwidget>
    <class>NoScrollGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>mapview.h</header>
+   <header>graphicsview.h</header>
   </customwidget>
   <customwidget>
    <class>MapListToolBar</class>
