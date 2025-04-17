@@ -46,7 +46,7 @@ ConnectionsListItem::ConnectionsListItem(QWidget *parent, MapConnection * connec
     ui->spinBox_Offset->installEventFilter(this);
 
     connect(ui->spinBox_Offset, &QSpinBox::editingFinished, [this] { this->actionId++; }); // Distinguish between move actions for the edit history
-    connect(ui->spinBox_Offset, &QSpinBox::valueChanged, this, &ConnectionsListItem::commitMove);
+    connect(ui->spinBox_Offset, QOverload<int>::of(&QSpinBox::valueChanged), this, &ConnectionsListItem::commitMove);
 
     // If the connection changes externally we want to update to reflect the change.
     connect(connection, &MapConnection::offsetChanged, this, &ConnectionsListItem::updateUI);

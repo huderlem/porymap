@@ -26,7 +26,7 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
 
     // QComboBox (as of writing) has no 'editing finished' signal to capture
     // changes made either through the text edit or the drop-down.
-    connect(this, &QComboBox::activated, this, &NoScrollComboBox::editingFinished);
+    connect(this, QOverload<int>::of(&QComboBox::activated), this, &NoScrollComboBox::editingFinished);
     connect(this->lineEdit(), &QLineEdit::editingFinished, this, &NoScrollComboBox::editingFinished);
 }
 
