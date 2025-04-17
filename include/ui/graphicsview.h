@@ -32,6 +32,19 @@ signals:
     void clicked(QMouseEvent *event);
 };
 
+class ConnectionsView : public QGraphicsView
+{
+    Q_OBJECT
+public:
+    ConnectionsView(QWidget *parent = nullptr) : QGraphicsView(parent) {}
+
+signals:
+    void pressedDelete();
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *event) override;
+};
+
 class Editor;
 
 // TODO: This should just be MapView. It makes map-based assumptions, and no other class inherits GraphicsView.

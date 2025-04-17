@@ -243,8 +243,6 @@ private slots:
     void on_pushButton_AddConnection_clicked();
     void on_button_OpenDiveMap_clicked();
     void on_button_OpenEmergeMap_clicked();
-    void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
-    void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
     void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
     void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();

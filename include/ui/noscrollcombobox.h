@@ -18,6 +18,9 @@ public:
     void setLineEdit(QLineEdit *edit);
     void setFocusedScrollingEnabled(bool enabled);
 
+signals:
+    void editingFinished();
+
 private:
     void setItem(int index, const QString &text);
 
