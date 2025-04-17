@@ -1112,13 +1112,8 @@ void MainWindow::openEventMap(Event *sourceEvent) {
         return;
 
     // Map opened successfully, now try to select the targeted event on that map.
-    Event* targetEvent = this->editor->map->getEvent(targetEventGroup, targetEventIdName);
-    if (targetEvent) {
-        this->editor->selectMapEvent(targetEvent);
-    } else {
-        // Can still warp to this map, but can't select the specified event
-        logWarn(QString("%1 '%2' doesn't exist on map '%3'").arg(Event::groupToString(targetEventGroup)).arg(targetEventIdName).arg(targetMapName));
-    }
+    Event *targetEvent = this->editor->map->getEvent(targetEventGroup, targetEventIdName);
+    this->editor->selectMapEvent(targetEvent);
 }
 
 void MainWindow::displayMapProperties() {

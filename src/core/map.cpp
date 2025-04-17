@@ -212,6 +212,31 @@ Event* Map::getEvent(Event::Group group, const QString &idName) const {
     return nullptr;
 }
 
+// Returns a list of ID names for the given event group (or all events, if no group is given).
+// For events with no explicit ID name, their index string is given instead.
+QStringList Map::getEventIdNames(Event::Group group) const {
+    QList<Event::Group> groups;
+    if (group == Event::Group::None) {
+        groups = Event::groups();
+    } else {
+        groups.append(group);
+    }
+
+    QStringList idNames;
+    for (const auto &group : groups) {
+        const auto events = m_events[group];
+        int indexOffset = Event::getIndexOffset(group);
+        for (int i = 0; i < events.length(); i++) {
+            QString idName = events.at(i)->getIdName();
+            if (idName.isEmpty()) {
+                idName = QString::number(i + indexOffset);
+            }
+            idNames.append(idName);
+        }
+    }
+    return idNames;
+}
+
 int Map::getNumEvents(Event::Group group) const {
     if (group == Event::Group::None) {
         // Total number of events

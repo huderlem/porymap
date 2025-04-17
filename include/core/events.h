@@ -79,9 +79,13 @@ public:
         None,
     };
 
-    // all event groups except warps have IDs that start at 1
+    // Normally we refer to events using their index in the list of that group's events.
+    // Object events often get referred to with a special "local ID", which is really just the index + 1.
+    // We use this local ID number in the index spinner for object events instead of the actual index.
+    // This distinction is only really important for object and warp events, because these are normally
+    // the only two groups of events that need to be explicitly referred to.
     static int getIndexOffset(Event::Group group) {
-        return (group == Event::Group::Warp) ? 0 : 1;
+        return (group == Event::Group::Object) ? 1 : 0;
     }
 
     static Event::Group typeToGroup(Event::Type type) {

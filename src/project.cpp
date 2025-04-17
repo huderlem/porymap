@@ -161,6 +161,11 @@ void Project::clearTilesetCache() {
 }
 
 Map* Project::loadMap(const QString &mapName) {
+    if (mapName == getDynamicMapName()) {
+        // Silently ignored, caller is expected to handle this if they want this to be an error.
+        return nullptr;
+    }
+
     Map* map = this->maps.value(mapName);
     if (!map) {
         logError(QString("Unknown map name '%1'.").arg(mapName));

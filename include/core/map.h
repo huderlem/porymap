@@ -77,6 +77,7 @@ public:
     QList<Event *> getEvents(Event::Group group = Event::Group::None) const;
     Event* getEvent(Event::Group group, int index) const;
     Event* getEvent(Event::Group group, const QString &idName) const;
+    QStringList getEventIdNames(Event::Group group) const;
     int getNumEvents(Event::Group group = Event::Group::None) const;
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
     QString getScriptsFilePath() const;
