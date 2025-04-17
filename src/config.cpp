@@ -18,6 +18,12 @@
 #include <QAction>
 #include <QAbstractButton>
 
+const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
+
+// In both versions the default new map border is a generic tree
+const QList<uint16_t> defaultBorder_RSE = {0x1D4, 0x1D5, 0x1DC, 0x1DD};
+const QList<uint16_t> defaultBorder_FRLG = {0x14, 0x15, 0x1C, 0x1D};
+
 const QList<uint32_t> defaultWarpBehaviors_RSE = {
     0x0E, // MB_MOSSDEEP_GYM_WARP
     0x0F, // MB_MT_PYRE_HOLE
@@ -835,10 +841,14 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->collisionSheetSize.setWidth(getConfigInteger(key, value, 1, Block::maxValue));
     } else if (key == "collision_sheet_height") {
         this->collisionSheetSize.setHeight(getConfigInteger(key, value, 1, Block::maxValue));
-    } else if (key == "player_view_width") {
-        this->playerViewSize.setWidth(getConfigInteger(key, value, 16, INT_MAX, 240));
-    } else if (key == "player_view_height") {
-        this->playerViewSize.setHeight(getConfigInteger(key, value, 16, INT_MAX, 160));
+    } else if (key == "player_view_north") {
+        this->playerViewDistance.setTop(getConfigInteger(key, value, 0, INT_MAX, GBA_V_DIST_TO_CENTER));
+    } else if (key == "player_view_south") {
+        this->playerViewDistance.setBottom(getConfigInteger(key, value, 0, INT_MAX, GBA_V_DIST_TO_CENTER));
+    } else if (key == "player_view_west") {
+        this->playerViewDistance.setLeft(getConfigInteger(key, value, 0, INT_MAX, GBA_H_DIST_TO_CENTER));
+    } else if (key == "player_view_east") {
+        this->playerViewDistance.setRight(getConfigInteger(key, value, 0, INT_MAX, GBA_H_DIST_TO_CENTER));
     } else if (key == "warp_behaviors") {
         this->warpBehaviors.clear();
         value.remove(" ");
@@ -872,7 +882,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("enable_event_clone_object")) this->eventCloneObjectEnabled = isPokefirered;
     if (!readKeys.contains("enable_floor_number")) this->floorNumberEnabled = isPokefirered;
     if (!readKeys.contains("create_map_text_file")) this->createMapTextFileEnabled = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
+    if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? defaultBorder_FRLG : defaultBorder_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
     if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
     if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::Behavior);
@@ -941,8 +951,10 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetSize.width()));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetSize.height()));
-    map.insert("player_view_width", QString::number(this->playerViewSize.width()));
-    map.insert("player_view_height", QString::number(this->playerViewSize.height()));
+    map.insert("player_view_north", QString::number(this->playerViewDistance.top()));
+    map.insert("player_view_south", QString::number(this->playerViewDistance.bottom()));
+    map.insert("player_view_west", QString::number(this->playerViewDistance.left()));
+    map.insert("player_view_east", QString::number(this->playerViewDistance.right()));
     QStringList warpBehaviorStrs;
     for (const auto &value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());

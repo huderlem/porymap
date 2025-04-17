@@ -3235,18 +3235,14 @@ QString Project::getEmptySpeciesName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_species_empty);
 }
 
-// Get the distance in pixels that the player is able to see from the space they're standing on.
-// For the default size of the view area (i.e. the full 240x160 GBA screen) this is 112x72.
-QSize Project::getViewDistance() {
-    return ((projectConfig.playerViewSize) - QSize(16,16)) / 2;
-}
-
-// Get the distance in metatiles that the player is able to see from the space they're standing on, rounded up.
-// For the default size of the view area (i.e. the full 240x160 GBA screen) this is 7x5 metatiles.
-QSize Project::getMetatileViewDistance() {
-    QSize viewDistance = getViewDistance();
-    viewDistance.setWidth(qCeil(viewDistance.width() / 16.0));
-    viewDistance.setHeight(qCeil(viewDistance.height() / 16.0));
+// Get the distance in metatiles (rounded up) that the player is able to see in each direction in-game.
+// For the default view distance (i.e. assuming the player is centered in a 240x160 pixel GBA screen) this is 7x5 metatiles.
+QMargins Project::getMetatileViewDistance() {
+    QMargins viewDistance = projectConfig.playerViewDistance;
+    viewDistance.setTop(qCeil(viewDistance.top() / 16.0));
+    viewDistance.setBottom(qCeil(viewDistance.bottom() / 16.0));
+    viewDistance.setLeft(qCeil(viewDistance.left() / 16.0));
+    viewDistance.setRight(qCeil(viewDistance.right() / 16.0));
     return viewDistance;
 }
 

@@ -119,7 +119,7 @@ public:
     void redrawEventPixmapItem(DraggablePixmapItem *item);
     qreal getEventOpacity(const Event *event) const;
 
-    void setPlayerViewSize(const QSize &size);
+    void setPlayerViewRect(const QRectF &rect);
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
 

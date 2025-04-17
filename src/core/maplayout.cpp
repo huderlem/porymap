@@ -63,14 +63,6 @@ bool Layout::isWithinBorderBounds(int x, int y) const {
     return (x >= 0 && x < this->getBorderWidth() && y >= 0 && y < this->getBorderHeight());
 }
 
-int Layout::getBorderDrawWidth() const {
-    return getBorderDrawDistance(border_width, Project::getMetatileViewDistance().width());
-}
-
-int Layout::getBorderDrawHeight() const {
-    return getBorderDrawDistance(border_height, Project::getMetatileViewDistance().height());
-}
-
 // Calculate the distance away from the layout's edge that we need to start drawing border blocks.
 // We need to fulfill two requirements here:
 // - We should draw enough to fill the player's in-game view
@@ -83,13 +75,22 @@ int Layout::getBorderDrawDistance(int dimension, qreal minimum) {
     // Get first multiple of dimension >= the minimum
     return dimension * qCeil(minimum / qMax(dimension, 1));
 }
+QMargins Layout::getBorderMargins() const {
+    QMargins minimum = Project::getMetatileViewDistance();
+    QMargins distance;
+    distance.setTop(getBorderDrawDistance(this->border_height, minimum.top()));
+    distance.setBottom(getBorderDrawDistance(this->border_height, minimum.bottom()));
+    distance.setLeft(getBorderDrawDistance(this->border_width, minimum.left()));
+    distance.setRight(getBorderDrawDistance(this->border_width, minimum.right()));
+    return distance;
+}
 
 // Get a rectangle that represents (in pixels) the layout's map area and the visible area of its border.
+// At maximum, this is equal to the map size plus the border margins.
+// If the border is large (and so beyond player the view) it may be smaller than that.
 QRect Layout::getVisibleRect() const {
     QRect area = QRect(0, 0, this->width * 16, this->height * 16);
-    QSize viewDistance = Project::getMetatileViewDistance() * 16;
-    area += QMargins(viewDistance.width(), viewDistance.height(), viewDistance.width(), viewDistance.height());
-    return area;
+    return area += (Project::getMetatileViewDistance() * 16);
 }
 
 bool Layout::getBlock(int x, int y, Block *out) {

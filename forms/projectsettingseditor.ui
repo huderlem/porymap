@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>631</width>
-    <height>600</height>
+    <width>642</width>
+    <height>609</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,8 +38,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>589</height>
+             <width>570</width>
+             <height>692</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -281,44 +281,86 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_PlayerViewSize">
+             <widget class="QGroupBox" name="groupBox_PlayerViewDistance">
               <property name="title">
-               <string>Player View Size</string>
+               <string>Player View Distance</string>
               </property>
-              <layout class="QFormLayout" name="formLayout_PlayerViewSize">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_PlayerViewWidth">
-                 <property name="text">
-                  <string>Width</string>
-                 </property>
-                </widget>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <layout class="QFormLayout" name="formLayout_PlayerViewDistanceCol1">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_North">
+                   <property name="text">
+                    <string>North</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_South">
+                   <property name="text">
+                    <string>South</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_North">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see North of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 160 pixel tall GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_South">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see South of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 160 pixel tall GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
-               <item row="0" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_PlayerViewWidth">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The horizontal size in pixels of the area that the player can see in-game (normally, the full width of the GBA screen).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="minimum">
-                  <number>16</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_PlayerViewHeight">
-                 <property name="text">
-                  <string>Height</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_PlayerViewHeight">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The vertical size in pixels of the area that the player can see in-game (normally, the full height of the GBA screen).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="minimum">
-                  <number>16</number>
-                 </property>
-                </widget>
+               <item>
+                <layout class="QFormLayout" name="formLayout_PlayerViewDistanceCol2">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_West">
+                   <property name="text">
+                    <string>West</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_East">
+                   <property name="text">
+                    <string>East</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_West">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see West of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 240 pixel wide GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_East">
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see East of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 240 pixel wide GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -421,7 +463,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
+             <width>561</width>
              <height>622</height>
             </rect>
            </property>
@@ -792,7 +834,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
+             <width>561</width>
              <height>798</height>
             </rect>
            </property>
@@ -1134,7 +1176,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
+             <width>561</width>
              <height>840</height>
             </rect>
            </property>
@@ -1516,8 +1558,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>490</height>
+             <width>561</width>
+             <height>593</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1563,8 +1605,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>533</width>
-                    <height>428</height>
+                    <width>535</width>
+                    <height>531</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_ProjectPaths">
@@ -1605,8 +1647,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>490</height>
+             <width>561</width>
+             <height>593</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -1652,8 +1694,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>533</width>
-                    <height>428</height>
+                    <width>535</width>
+                    <height>531</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_Identifiers">

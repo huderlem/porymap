@@ -10,7 +10,7 @@
 class MovableRect : public QGraphicsRectItem
 {
 public:
-    MovableRect(bool *enabled, int width, int height, QRgb color);
+    MovableRect(bool *enabled, const QRectF &rect, const QRgb &color);
     QRectF boundingRect() const override {
         qreal penWidth = 4;
         return QRectF(-penWidth,
@@ -31,6 +31,7 @@ public:
     bool *enabled;
 
 protected:
+    QRectF baseRect;
     QRgb color;
 };
 

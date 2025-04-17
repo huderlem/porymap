@@ -15,11 +15,11 @@
 
 #include "events.h"
 
-static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
+extern const QVersionNumber porymapVersion;
 
-// In both versions the default new map border is a generic tree
-#define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
-#define DEFAULT_BORDER_FRLG (QList<uint16_t>{0x14, 0x15, 0x1C, 0x1D})
+// Distance in pixels from the edge of a GBA screen (240x160) to the center 16x16 pixels.
+#define GBA_H_DIST_TO_CENTER ((240-16)/2)
+#define GBA_V_DIST_TO_CENTER ((160-16)/2)
 
 #define CONFIG_BACKWARDS_COMPATABILITY
 
@@ -332,7 +332,7 @@ public:
         this->pokemonIconPaths.clear();
         this->collisionSheetPath = QString();
         this->collisionSheetSize = QSize(2, 16);
-        this->playerViewSize = QSize(240, 160);
+        this->playerViewDistance = QMargins(GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER, GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER);
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
@@ -409,7 +409,7 @@ public:
     bool mapAllowFlagsEnabled;
     QString collisionSheetPath;
     QSize collisionSheetSize;
-    QSize playerViewSize;
+    QMargins playerViewDistance;
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
 

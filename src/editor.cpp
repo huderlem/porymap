@@ -30,7 +30,6 @@ Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
     this->settings = new Settings();
-    this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
     this->map_ruler = new MapRuler(4);
     connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
@@ -1061,14 +1060,9 @@ void Editor::scaleMapView(int s) {
     ui->graphicsView_Connections->setTransform(transform);
 }
 
-void Editor::setPlayerViewSize(const QSize &size) {
-    if (!this->playerViewRect)
-        return;
-
-    auto rect = this->playerViewRect->rect();
-    rect.setWidth(qMax(size.width(), 16));
-    rect.setHeight(qMax(size.height(), 16));
-    this->playerViewRect->setRect(rect);
+void Editor::setPlayerViewRect(const QRectF &rect) {
+    delete this->playerViewRect;
+    this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, rect, qRgb(255, 255, 255));
     if (ui->graphicsView_Map->scene())
         ui->graphicsView_Map->scene()->update();
 }
@@ -1794,11 +1788,10 @@ void Editor::clearMapBorder() {
 void Editor::displayMapBorder() {
     clearMapBorder();
 
-    int borderHorzDist = this->layout->getBorderDrawWidth();
-    int borderVertDist = this->layout->getBorderDrawHeight();
     QPixmap pixmap = this->layout->renderBorder();
-    for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += this->layout->getBorderHeight())
-    for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += this->layout->getBorderWidth()) {
+    const QMargins borderMargins = layout->getBorderMargins();
+    for (int y = -borderMargins.top(); y < this->layout->getHeight() + borderMargins.bottom(); y += this->layout->getBorderHeight())
+    for (int x = -borderMargins.left(); x < this->layout->getWidth() + borderMargins.right(); x += this->layout->getBorderWidth()) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
