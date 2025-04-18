@@ -1634,16 +1634,15 @@ void MainWindow::on_action_Save_triggered() {
     save(true);
 }
 
-void MainWindow::save(bool currentOnly) {
-    if (currentOnly) {
-        this->editor->saveCurrent();
-    } else {
-        this->editor->saveAll();
+bool MainWindow::save(bool currentOnly) {
+    bool success = currentOnly ? this->editor->saveCurrent() : this->editor->saveAll();
+    if (!success) {
+        RecentErrorMessage::show(QStringLiteral("Failed to save some project changes."), this);
     }
     updateWindowTitle();
     updateMapList();
 
-    if (!porymapConfig.shownInGameReloadMessage) {
+    if (success && !porymapConfig.shownInGameReloadMessage) {
         // Show a one-time warning that the user may need to reload their map to see their new changes.
         InfoMessage::show(QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
                                          "the changes may not appear until you leave the map and return."),
@@ -1652,6 +1651,7 @@ void MainWindow::save(bool currentOnly) {
     }
 
     saveGlobalConfigs();
+    return success;
 }
 
 void MainWindow::duplicate() {
@@ -3048,7 +3048,8 @@ bool MainWindow::closeProject() {
 
         auto reply = msgBox.exec();
         if (reply == QMessageBox::Yes) {
-            save();
+            if (!save())
+                return false;
         } else if (reply == QMessageBox::No) {
             logWarn("Closing project with unsaved changes.");
         } else if (reply == QMessageBox::Cancel) {

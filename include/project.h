@@ -108,10 +108,6 @@ public:
     bool loadBlockdata(Layout *);
     bool loadLayoutBorder(Layout *);
 
-    void saveTextFile(QString path, QString text);
-    void appendTextFile(QString path, QString text);
-    void deleteFile(QString path);
-
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
     QString mapNameToMapGroup(const QString &mapName) const;
@@ -168,25 +164,20 @@ public:
     bool loadLayout(Layout *);
     bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
-    void loadTilesetAssets(Tileset*);
+    bool loadTilesetAssets(Tileset*);
     void loadTilesetMetatileLabels(Tileset*);
     void readTilesetPaths(Tileset* tileset);
 
-    void saveAll();
-    void saveGlobalData();
-    void saveLayout(Layout *);
-    void saveLayoutBlockdata(Layout *);
-    void saveLayoutBorder(Layout *);
-    void writeBlockdata(QString, const Blockdata &);
-    void saveMap(Map *map, bool skipLayout = false);
-    void saveConfig();
-    void saveMapLayouts();
-    void saveMapGroups();
-    void saveRegionMapSections();
-    void saveWildMonData();
-    void saveHealLocations();
-    void saveTilesets(Tileset*, Tileset*);
-    void saveTilesetMetatileLabels(Tileset*, Tileset*);
+    bool saveAll();
+    bool saveGlobalData();
+    bool saveConfig();
+    bool saveLayout(Layout *layout);
+    bool saveMap(Map *map, bool skipLayout = false);
+    bool saveTextFile(const QString &path, const QString &text);
+    bool saveRegionMapSections();
+    bool saveTilesets(Tileset*, Tileset*);
+    bool saveTilesetMetatileLabels(Tileset*, Tileset*);
+
     void appendTilesetLabel(const QString &label, const QString &isSecondaryStr);
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();
@@ -309,14 +300,18 @@ private:
     };
     QHash<QString, LocationData> locationData;
 
-    void updateLayout(Layout *);
-
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
 
     void ignoreWatchedFileTemporarily(QString filepath);
     void recordFileChange(const QString &filepath);
     void resetFileCache();
+
+    bool saveMapLayouts();
+    bool saveMapGroups();
+    bool saveWildMonData();
+    bool saveHealLocations();
+    bool appendTextFile(const QString &path, const QString &text);
 
     QString findSpeciesIconPath(const QStringList &names) const;
 

@@ -71,8 +71,6 @@ private slots:
 
     void on_spinBox_paletteSelector_valueChanged(int arg1);
 
-    void on_actionSave_Tileset_triggered();
-
     void on_actionImport_Primary_Tiles_triggered();
 
     void on_actionImport_Secondary_Tiles_triggered();
@@ -172,6 +170,8 @@ private:
     QGraphicsScene *metatileLayersScene = nullptr;
     bool lockSelection = false;
     QSet<uint16_t> metatileReloadQueue;
+
+    bool save();
 
 signals:
     void tilesetsSaved(QString, QString);

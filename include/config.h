@@ -26,7 +26,7 @@ static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_
 class KeyValueConfigBase
 {
 public:
-    void save();
+    bool save();
     void load();
     virtual ~KeyValueConfigBase();
     virtual void reset() = 0;

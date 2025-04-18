@@ -162,8 +162,10 @@ void Project::clearTilesetCache() {
 
 Map* Project::loadMap(const QString &mapName) {
     Map* map = this->maps.value(mapName);
-    if (!map)
+    if (!map) {
+        logError(QString("Unknown map name '%1'.").arg(mapName));
         return nullptr;
+    }
 
     if (isMapLoaded(map))
         return map;
@@ -445,8 +447,13 @@ bool Project::loadLayout(Layout *layout) {
 
 Layout *Project::loadLayout(QString layoutId) {
     Layout *layout = this->mapLayouts.value(layoutId);
-    if (!layout || !loadLayout(layout)) {
-        logError(QString("Failed to load layout '%1'").arg(layoutId));
+    if (!layout) {
+        logError(QString("Unknown layout ID '%1'.").arg(layoutId));
+        return nullptr;
+    }
+
+    if (!loadLayout(layout)) {
+        // Error should already be logged.
         return nullptr;
     }
     return layout;
@@ -587,12 +594,12 @@ bool Project::readMapLayouts() {
     return true;
 }
 
-void Project::saveMapLayouts() {
+bool Project::saveMapLayouts() {
     QString layoutsFilepath = root + "/" + projectConfig.getFilePath(ProjectFilePath::json_layouts);
     QFile layoutsFile(layoutsFilepath);
     if (!layoutsFile.open(QIODevice::WriteOnly)) {
-        logError(QString("Error: Could not open %1 for writing").arg(layoutsFilepath));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(layoutsFilepath).arg(layoutsFile.errorString()));
+        return false;
     }
 
     OrderedJson::object layoutsObj;
@@ -626,6 +633,7 @@ void Project::saveMapLayouts() {
     OrderedJsonDoc jsonDoc(&layoutJson);
     jsonDoc.dump(&layoutsFile);
     layoutsFile.close();
+    return true;
 }
 
 void Project::ignoreWatchedFileTemporarily(QString filepath) {
@@ -651,12 +659,12 @@ void Project::recordFileChange(const QString &filepath) {
     emit fileChanged(filepath);
 }
 
-void Project::saveMapGroups() {
+bool Project::saveMapGroups() {
     QString mapGroupsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_map_groups));
     QFile mapGroupsFile(mapGroupsFilepath);
     if (!mapGroupsFile.open(QIODevice::WriteOnly)) {
-        logError(QString("Error: Could not open %1 for writing").arg(mapGroupsFilepath));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(mapGroupsFilepath).arg(mapGroupsFile.errorString()));
+        return false;
     }
 
     OrderedJson::object mapGroupsObj;
@@ -686,14 +694,15 @@ void Project::saveMapGroups() {
     OrderedJsonDoc jsonDoc(&mapGroupJson);
     jsonDoc.dump(&mapGroupsFile);
     mapGroupsFile.close();
+    return true;
 }
 
-void Project::saveRegionMapSections() {
+bool Project::saveRegionMapSections() {
     const QString filepath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
     QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly)) {
-        logError(QString("Could not open '%1' for writing").arg(filepath));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(filepath).arg(file.errorString()));
+        return false;
     }
 
     OrderedJson::array mapSectionArray;
@@ -727,16 +736,17 @@ void Project::saveRegionMapSections() {
     OrderedJsonDoc jsonDoc(&json);
     jsonDoc.dump(&file);
     file.close();
+    return true;
 }
 
-void Project::saveWildMonData() {
-    if (!this->wildEncountersLoaded) return;
+bool Project::saveWildMonData() {
+    if (!this->wildEncountersLoaded) return true;
 
     QString wildEncountersJsonFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_wild_encounters));
     QFile wildEncountersFile(wildEncountersJsonFilepath);
     if (!wildEncountersFile.open(QIODevice::WriteOnly)) {
-        logError(QString("Error: Could not open %1 for writing").arg(wildEncountersJsonFilepath));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(wildEncountersJsonFilepath).arg(wildEncountersFile.errorString()));
+        return false;
     }
 
     OrderedJson::object wildEncountersObject;
@@ -822,6 +832,7 @@ void Project::saveWildMonData() {
     OrderedJsonDoc jsonDoc(&encounterJson);
     jsonDoc.dump(&wildEncountersFile);
     wildEncountersFile.close();
+    return true;
 }
 
 // For a map with a constant of 'MAP_FOO', returns a unique 'HEAL_LOCATION_FOO'.
@@ -838,12 +849,12 @@ QString Project::getNewHealLocationName(const Map* map) const {
     return toUniqueIdentifier(projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix) + idName);
 }
 
-void Project::saveHealLocations() {
+bool Project::saveHealLocations() {
     const QString filepath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::json_heal_locations));
     QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly)) {
-        logError(QString("Could not open '%1' for writing").arg(filepath));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(filepath).arg(file.errorString()));
+        return false;
     }
 
     // Build the JSON data for output.
@@ -886,17 +897,21 @@ void Project::saveHealLocations() {
     OrderedJsonDoc jsonDoc(&json);
     jsonDoc.dump(&file);
     file.close();
+    return true;
 }
 
-void Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
-    saveTilesetMetatileLabels(primaryTileset, secondaryTileset);
-    if (primaryTileset)
-        primaryTileset->save();
-    if (secondaryTileset)
-        secondaryTileset->save();
+bool Project::saveTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
+    bool success = saveTilesetMetatileLabels(primaryTileset, secondaryTileset);
+    if (primaryTileset && !primaryTileset->save())
+        success = false;
+    if (secondaryTileset && !secondaryTileset->save())
+        success = false;
+    return success;
 }
 
 void Project::updateTilesetMetatileLabels(Tileset *tileset) {
+    if (!tileset) return;
+
     // Erase old labels, then repopulate with new labels
     const QString prefix = tileset->getMetatileLabelPrefix();
     this->metatileLabelsMap[tileset->name].clear();
@@ -931,11 +946,11 @@ QString Project::buildMetatileLabelsText(const QMap<QString, uint16_t> defines) 
     return output;
 }
 
-void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *secondaryTileset) {
+bool Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *secondaryTileset) {
     // Skip writing the file if there are no labels in both the new and old sets
-    if (metatileLabelsMap[primaryTileset->name].size() == 0 && primaryTileset->metatileLabels.size() == 0
-     && metatileLabelsMap[secondaryTileset->name].size() == 0 && secondaryTileset->metatileLabels.size() == 0)
-        return;
+    if ((!primaryTileset || (metatileLabelsMap[primaryTileset->name].size() == 0 && primaryTileset->metatileLabels.size() == 0))
+     && (!secondaryTileset || (metatileLabelsMap[secondaryTileset->name].size() == 0 && secondaryTileset->metatileLabels.size() == 0)))
+        return true;
 
     updateTilesetMetatileLabels(primaryTileset);
     updateTilesetMetatileLabels(secondaryTileset);
@@ -962,42 +977,23 @@ void Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_labels);
     ignoreWatchedFileTemporarily(root + "/" + filename);
-    saveTextFile(root + "/" + filename, outputText);
+    return saveTextFile(root + "/" + filename, outputText);
 }
 
 bool Project::loadLayoutTilesets(Layout *layout) {
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
-    if (!layout->tileset_primary) {
-        QString defaultTileset = this->getDefaultPrimaryTilesetLabel();
-        layout->tileset_primary_label = defaultTileset;
-        layout->tileset_primary = getTileset(layout->tileset_primary_label);
-        if (!layout->tileset_primary) {
-            logError(QString("%1 has invalid primary tileset '%2'.").arg(layout->name).arg(layout->tileset_primary_label));
-            return false;
-        }
-        logWarn(QString("%1 has invalid primary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_primary_label).arg(defaultTileset));
-    }
-
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
-    if (!layout->tileset_secondary) {
-        QString defaultTileset = this->getDefaultSecondaryTilesetLabel();
-        layout->tileset_secondary_label = defaultTileset;
-        layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
-        if (!layout->tileset_secondary) {
-            logError(QString("%1 has invalid secondary tileset '%2'.").arg(layout->name).arg(layout->tileset_secondary_label));
-            return false;
-        }
-        logWarn(QString("%1 has invalid secondary tileset '%2'. Using default '%3'").arg(layout->name).arg(layout->tileset_secondary_label).arg(defaultTileset));
-    }
-    return true;
+    return layout->tileset_primary && layout->tileset_secondary;
 }
 
 Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     auto memberMap = Tileset::getHeaderMemberMap(this->usingAsmTilesets);
     if (this->usingAsmTilesets) {
         // Read asm tileset header. Backwards compatibility
-        const QStringList values = parser.getLabelValues(parser.parseAsm(projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm)), label);
+        const QString path = projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm);
+        const QStringList values = parser.getLabelValues(parser.parseAsm(path), label);
         if (values.isEmpty()) {
+            logError(QString("Failed to find header data in '%1' for tileset '%2'.").arg(path).arg(label));
             return nullptr;
         }
         if (tileset == nullptr) {
@@ -1011,8 +1007,10 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         tileset->metatile_attrs_label = values.value(memberMap.key("metatileAttributes"));
     } else {
         // Read C tileset header
-        auto structs = parser.readCStructs(projectConfig.getFilePath(ProjectFilePath::tilesets_headers), label, memberMap);
+        const QString path = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
+        auto structs = parser.readCStructs(path, label, memberMap);
         if (!structs.contains(label)) {
+            logError(QString("Failed to find header data in '%1' for tileset '%2'.").arg(path).arg(label));
             return nullptr;
         }
         if (tileset == nullptr) {
@@ -1027,7 +1025,11 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         tileset->metatile_attrs_label = tilesetAttributes.value("metatileAttributes");
     }
 
-    loadTilesetAssets(tileset);
+    if (!loadTilesetAssets(tileset)) {
+        // Error should already be logged.
+        delete tileset;
+        return nullptr;
+    }
 
     tilesetCache.insert(label, tileset);
     return tileset;
@@ -1116,38 +1118,22 @@ void Project::setNewLayoutBorder(Layout *layout) {
     layout->lastCommitBlocks.borderDimensions = QSize(width, height);
 }
 
-void Project::saveLayoutBorder(Layout *layout) {
-    QString path = QString("%1/%2").arg(root).arg(layout->border_path);
-    writeBlockdata(path, layout->border);
-}
-
-void Project::saveLayoutBlockdata(Layout *layout) {
-    QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
-    writeBlockdata(path, layout->blockdata);
-}
-
-void Project::writeBlockdata(QString path, const Blockdata &blockdata) {
-    QFile file(path);
-    if (file.open(QIODevice::WriteOnly)) {
-        QByteArray data = blockdata.serialize();
-        file.write(data);
-    } else {
-        logError(QString("Failed to open blockdata file for writing: '%1'").arg(path));
-    }
-}
-
-void Project::saveAll() {
+bool Project::saveAll() {
+    bool success = true;
     for (auto map : this->maps) {
-        saveMap(map, true); // Avoid double-saving the layouts
+        if (!saveMap(map, true)) // Avoid double-saving the layouts
+            success = false;
     }
     for (auto layout : this->mapLayouts) {
-        saveLayout(layout);
+        if (!saveLayout(layout))
+            success = false;
     }
-    saveGlobalData();
+    if (!saveGlobalData()) success = false;
+    return success;
 }
 
-void Project::saveMap(Map *map, bool skipLayout) {
-    if (!map || !isMapLoaded(map)) return;
+bool Project::saveMap(Map *map, bool skipLayout) {
+    if (!map || !isMapLoaded(map)) return true;
 
     // Create/Modify a few collateral files for brand new maps.
     const QString folderPath = projectConfig.getFilePath(ProjectFilePath::data_map_folders) + map->name();
@@ -1155,7 +1141,7 @@ void Project::saveMap(Map *map, bool skipLayout) {
     if (!map->isPersistedToFile()) {
         if (!QDir::root().mkpath(fullPath)) {
             logError(QString("Failed to create directory for new map: '%1'").arg(fullPath));
-            return;
+            return false;
         }
 
         // Create file data/maps/<map_name>/scripts.inc
@@ -1179,8 +1165,8 @@ void Project::saveMap(Map *map, bool skipLayout) {
     QString mapFilepath = fullPath + "/map.json";
     QFile mapFile(mapFilepath);
     if (!mapFile.open(QIODevice::WriteOnly)) {
-        logError(QString("Error: Could not open %1 for writing").arg(mapFilepath));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(mapFilepath).arg(mapFile.errorString()));
+        return false;
     }
 
     OrderedJson::object mapObj;
@@ -1276,72 +1262,61 @@ void Project::saveMap(Map *map, bool skipLayout) {
     jsonDoc.dump(&mapFile);
     mapFile.close();
 
-    if (!skipLayout) saveLayout(map->layout());
-
     // Try to record the MAPSEC name in case this is a new name.
     addNewMapsec(map->header()->location());
-
     map->setClean();
+
+    if (!skipLayout && !saveLayout(map->layout()))
+        return false;
+    return true;
 }
 
-void Project::saveLayout(Layout *layout) {
+bool Project::saveLayout(Layout *layout) {
     if (!layout || !isLayoutLoaded(layout))
-        return;
+        return true;
 
-    if (!layout->newFolderPath.isEmpty()) {
-        // Layout directory doesn't exist yet, create it now.
-        const QString fullPath = QString("%1/%2").arg(this->root).arg(layout->newFolderPath);
-        if (!QDir::root().mkpath(fullPath)) {
-            logError(QString("Failed to create directory for new layout: '%1'").arg(fullPath));
-            return;
-        }
-        layout->newFolderPath = QString();
-    }
-
-    saveLayoutBorder(layout);
-    saveLayoutBlockdata(layout);
+    if (!layout->save(this->root))
+        return false;
 
     // Update global data structures with current map data.
-    updateLayout(layout);
-
-    layout->setClean();
-}
-
-void Project::updateLayout(Layout *layout) {
     if (!this->layoutIdsMaster.contains(layout->id)) {
         this->layoutIdsMaster.append(layout->id);
     }
 
     if (this->mapLayoutsMaster.contains(layout->id)) {
         this->mapLayoutsMaster[layout->id]->copyFrom(layout);
-    }
-    else {
+    } else {
         this->mapLayoutsMaster.insert(layout->id, layout->copy());
     }
+    return true;
 }
 
-void Project::saveGlobalData() {
-    saveMapLayouts();
-    saveMapGroups();
-    saveRegionMapSections();
-    saveHealLocations();
-    saveWildMonData();
-    saveConfig();
+bool Project::saveGlobalData() {
+    bool success = true;
+    if (!saveMapLayouts()) success = false;
+    if (!saveMapGroups()) success = false;
+    if (!saveRegionMapSections()) success = false;
+    if (!saveHealLocations()) success = false;
+    if (!saveWildMonData()) success = false;
+    if (!saveConfig()) success = false;
+    if (!success)
+        return false;
+
     this->hasUnsavedDataChanges = false;
+    return true;
 }
 
-void Project::saveConfig() {
-    projectConfig.save();
-    userConfig.save();
+bool Project::saveConfig() {
+    bool success = true;
+    if (!projectConfig.save()) success = false;
+    if (!userConfig.save()) success = false;
+    return success;
 }
 
-void Project::loadTilesetAssets(Tileset* tileset) {
-    if (tileset->name.isNull()) {
-        return;
-    }
+bool Project::loadTilesetAssets(Tileset* tileset) {
     readTilesetPaths(tileset);
     loadTilesetMetatileLabels(tileset);
-    tileset->load();
+    return tileset->load();
 }
 
 void Project::readTilesetPaths(Tileset* tileset) {
@@ -1535,6 +1510,8 @@ bool Project::readTilesetMetatileLabels() {
 }
 
 void Project::loadTilesetMetatileLabels(Tileset* tileset) {
+    if (!tileset || tileset->name.isEmpty()) return;
+
     QString metatileLabelPrefix = tileset->getMetatileLabelPrefix();
 
     // Reverse map for faster lookup by metatile id
@@ -1576,29 +1553,24 @@ Tileset* Project::getTileset(QString label, bool forceLoad) {
     }
 }
 
-void Project::saveTextFile(QString path, QString text) {
+bool Project::saveTextFile(const QString &path, const QString &text) {
     QFile file(path);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(text.toUtf8());
-    } else {
+    if (!file.open(QIODevice::WriteOnly)) {
         logError(QString("Could not open '%1' for writing: ").arg(path) + file.errorString());
+        return false;
     }
+    file.write(text.toUtf8());
+    return true;
 }
 
-void Project::appendTextFile(QString path, QString text) {
+bool Project::appendTextFile(const QString &path, const QString &text) {
     QFile file(path);
-    if (file.open(QIODevice::Append)) {
-        file.write(text.toUtf8());
-    } else {
+    if (!file.open(QIODevice::Append)) {
         logError(QString("Could not open '%1' for appending: ").arg(path) + file.errorString());
+        return false;
     }
-}
-
-void Project::deleteFile(QString path) {
-    QFile file(path);
-    if (file.exists() && !file.remove()) {
-        logError(QString("Could not delete file '%1': ").arg(path) + file.errorString());
-    }
+    file.write(text.toUtf8());
+    return true;
 }
 
 bool Project::readWildMonData() {

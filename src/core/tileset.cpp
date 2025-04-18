@@ -402,13 +402,13 @@ QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
     return map;
 }
 
-void Tileset::loadMetatiles() {
+bool Tileset::loadMetatiles() {
     clearMetatiles();
 
     QFile metatiles_file(this->metatiles_path);
     if (!metatiles_file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1' for reading.").arg(this->metatiles_path));
-        return;
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+        return false;
     }
 
     QByteArray data = metatiles_file.readAll();
@@ -425,13 +425,14 @@ void Tileset::loadMetatiles() {
         }
         m_metatiles.append(metatile);
     }
+    return true;
 }
 
-void Tileset::saveMetatiles() {
+bool Tileset::saveMetatiles() {
     QFile metatiles_file(this->metatiles_path);
     if (!metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        logError(QString("Could not open '%1' for writing.").arg(this->metatiles_path));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+        return false;
     }
 
     QByteArray data;
@@ -444,13 +445,14 @@ void Tileset::saveMetatiles() {
         }
     }
     metatiles_file.write(data);
+    return true;
 }
 
-void Tileset::loadMetatileAttributes() {
+bool Tileset::loadMetatileAttributes() {
     QFile attrs_file(this->metatile_attrs_path);
     if (!attrs_file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1' for reading.").arg(this->metatile_attrs_path));
-        return;
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+        return false;
     }
 
     QByteArray data = attrs_file.readAll();
@@ -467,13 +469,14 @@ void Tileset::loadMetatileAttributes() {
             attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
         m_metatiles.at(i)->setAttributes(attributes);
     }
+    return true;
 }
 
-void Tileset::saveMetatileAttributes() {
+bool Tileset::saveMetatileAttributes() {
     QFile attrs_file(this->metatile_attrs_path);
     if (!attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        logError(QString("Could not open '%1' for writing.").arg(this->metatile_attrs_path));
-        return;
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+        return false;
     }
 
     QByteArray data;
@@ -483,9 +486,10 @@ void Tileset::saveMetatileAttributes() {
             data.append(static_cast<char>(attributes >> (8 * i)));
     }
     attrs_file.write(data);
+    return true;
 }
 
-void Tileset::loadTilesImage(QImage *importedImage) {
+bool Tileset::loadTilesImage(QImage *importedImage) {
     QImage image;
     if (importedImage) {
         image = *importedImage;
@@ -520,23 +524,25 @@ void Tileset::loadTilesImage(QImage *importedImage) {
     }
     this->tilesImage = image;
     this->tiles = tiles;
+    return true;
 }
 
-void Tileset::saveTilesImage() {
+bool Tileset::saveTilesImage() {
     // Only write the tiles image if it was changed.
     // Porymap will only ever change an existing tiles image by importing a new one.
     if (!m_hasUnsavedTilesImage)
-        return;
+        return true;
 
     if (!this->tilesImage.save(this->tilesImagePath, "PNG")) {
         logError(QString("Failed to save tiles image '%1'").arg(this->tilesImagePath));
-        return;
+        return false;
     }
 
     m_hasUnsavedTilesImage = false;
+    return true;
 }
 
-void Tileset::loadPalettes() {
+bool Tileset::loadPalettes() {
     this->palettes.clear();
     this->palettePreviews.clear();
 
@@ -559,26 +565,34 @@ void Tileset::loadPalettes() {
         this->palettes.append(palette);
         this->palettePreviews.append(palette);
     }
+    return true;
 }
 
-void Tileset::savePalettes() {
+bool Tileset::savePalettes() {
+    bool success = true;
     int numPalettes = qMin(this->palettePaths.length(), this->palettes.length());
     for (int i = 0; i < numPalettes; i++) {
-        PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, 16);
+        if (!PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, 16))
+            success = false;
     }
+    return success;
 }
 
-void Tileset::load() {
-    loadMetatiles();
-    loadMetatileAttributes();
-    loadTilesImage();
-    loadPalettes();
+bool Tileset::load() {
+    bool success = true;
+    if (!loadMetatiles()) success = false;
+    if (!loadMetatileAttributes()) success = false;
+    if (!loadTilesImage()) success = false;
+    if (!loadPalettes()) success = false;
+    return success;
 }
 
 // Because metatile labels are global (and handled by the project) we don't save them here.
-void Tileset::save() {
-    saveMetatiles();
-    saveMetatileAttributes();
-    saveTilesImage();
-    savePalettes();
+bool Tileset::save() {
+    bool success = true;
+    if (!saveMetatiles()) success = false;
+    if (!saveMetatileAttributes()) success = false;
+    if (!saveTilesImage()) success = false;
+    if (!savePalettes()) success = false;
+    return success;
 }
