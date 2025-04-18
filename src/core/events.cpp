@@ -114,9 +114,10 @@ QString Event::typeToString(Event::Type type) {
     return typeToStringMap.value(type);
 }
 
-void Event::loadPixmap(Project *project) {
+QPixmap Event::loadPixmap(Project *project) {
     this->pixmap = project->getEventPixmap(this->getEventGroup());
     this->usesDefaultPixmap = true;
+    return this->pixmap;
 }
 
 
@@ -225,13 +226,13 @@ QSet<QString> ObjectEvent::getExpectedFields() {
     return expectedFields;
 }
 
-void ObjectEvent::loadPixmap(Project *project) {
+QPixmap ObjectEvent::loadPixmap(Project *project) {
     this->pixmap = project->getEventPixmap(this->gfx, this->movement);
     if (!this->pixmap.isNull()) {
         this->usesDefaultPixmap = false;
-    } else {
-        Event::loadPixmap(project);
+        return this->pixmap;
     }
+    return Event::loadPixmap(project);
 }
 
 
@@ -314,7 +315,7 @@ QSet<QString> CloneObjectEvent::getExpectedFields() {
     return expectedFields;
 }
 
-void CloneObjectEvent::loadPixmap(Project *project) {
+QPixmap CloneObjectEvent::loadPixmap(Project *project) {
     // Try to get the targeted object to clone
     Map *clonedMap = project->loadMap(this->targetMap);
     Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, this->targetID) : nullptr;
@@ -329,7 +330,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
         this->gfx = project->gfxDefines.key(0, "0");
         this->movement = project->movementTypes.value(0, "0");
     }
-    ObjectEvent::loadPixmap(project);
+    return ObjectEvent::loadPixmap(project);
 }
 
 

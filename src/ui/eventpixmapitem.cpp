@@ -1,52 +1,80 @@
 #include "eventpixmapitem.h"
-#include "editor.h"
+#include "project.h"
 #include "editcommands.h"
 #include "mapruler.h"
 #include "metatile.h"
 
+EventPixmapItem::EventPixmapItem(Event *event)
+  : QGraphicsPixmapItem(event->getPixmap()),
+    m_basePixmap(pixmap()),
+    m_event(event)
+{
+    m_event->setPixmapItem(this);
+    updatePixelPosition();
+}
+
+void EventPixmapItem::render(Project *project) {
+    if (!m_event)
+        return;
+
+    m_basePixmap = m_event->loadPixmap(project);
+
+    // If the base pixmap changes, the event's pixel position may change.
+    updatePixelPosition();
+
+    QPixmap pixmap = m_basePixmap;
+    if (m_selected) {
+        // Draw the selection rectangle
+        QPainter painter(&pixmap);
+        painter.setPen(Qt::magenta);
+        painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
+    }
+    setPixmap(pixmap);
+    emit rendered(m_basePixmap);
+}
+
 void EventPixmapItem::move(int dx, int dy) {
-    event->setX(event->getX() + dx);
-    event->setY(event->getY() + dy);
-    updatePosition();
-    emitPositionChanged();
+    moveTo(m_event->getX() + dx,
+           m_event->getY() + dy);
 }
 
 void EventPixmapItem::moveTo(const QPoint &pos) {
-    event->setX(pos.x());
-    event->setY(pos.y());
-    updatePosition();
-    emitPositionChanged();
+    moveTo(pos.x(), pos.y());
 }
 
-void EventPixmapItem::updatePosition() {
-    int x = this->event->getPixelX();
-    int y = this->event->getPixelY();
-    setX(x);
-    setY(y);
-    editor->updateWarpEventWarning(event);
+void EventPixmapItem::moveTo(int x, int y) {
+    bool changed = false;
+    if (m_event->getX() != x) {
+        m_event->setX(x);
+        emit xChanged(x);
+        changed = true;
+    }
+    if (m_event->getY() != y) {
+        m_event->setY(y);
+        emit yChanged(y);
+        changed = true;
+    }
+    if (changed) {
+        updatePixelPosition();
+        emit posChanged(x, y);
+    }
 }
 
-void EventPixmapItem::emitPositionChanged() {
-    emit xChanged(event->getX());
-    emit yChanged(event->getY());
-}
-
-void EventPixmapItem::updatePixmap() {
-    editor->redrawEventPixmapItem(this);
-    emit spriteChanged(event->getPixmap());
+void EventPixmapItem::updatePixelPosition() {
+    setPos(m_event->getPixelX(), m_event->getPixelY());
 }
 
 void EventPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
-    if (this->active)
+    if (m_active)
         return;
-    this->active = true;
-    this->lastPos = Metatile::coordFromPixmapCoord(mouseEvent->scenePos());
+    m_active = true;
+    m_lastPos = Metatile::coordFromPixmapCoord(mouseEvent->scenePos());
 
     bool selectionToggle = mouseEvent->modifiers() & Qt::ControlModifier;
-    if (selectionToggle || !this->editor->selectedEvents.contains(this->event)) {
+    if (selectionToggle || !m_selected) {
         // User is either toggling this selection on/off as part of a group selection,
         // or they're newly selecting just this item.
-        emit selected(this->event, selectionToggle);
+        emit selected(m_event, selectionToggle);
     } else {
         // This item is already selected and the user isn't toggling the selection, so there are 4 possibilities:
         // 1. This is the only selected event, and the selection is pointless.
@@ -55,32 +83,32 @@ void EventPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
         // 4. There's a group selection, and they want to drag the group around.
         // 'selectMapEvent' will immediately clear the rest of the selection, which supports #1-3 but prevents #4.
         // To support #4 we set the flag below, and we only call 'selectMapEvent' on mouse release if no move occurred.
-        this->releaseSelectionQueued = true;
+        m_releaseSelectionQueued = true;
     }
     mouseEvent->accept();
 }
 
 void EventPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) {
-    if (!this->active)
+    if (!m_active)
         return;
 
     QPoint pos = Metatile::coordFromPixmapCoord(mouseEvent->scenePos());
-    if (pos == this->lastPos)
+    if (pos == m_lastPos)
         return;
 
-    this->releaseSelectionQueued = false;
-    emit dragged(this->event, this->lastPos, pos);
-    this->lastPos = pos;
+    m_releaseSelectionQueued = false;
+    emit dragged(m_event, m_lastPos, pos);
+    m_lastPos = pos;
 }
 
 void EventPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) {
-    if (!this->active)
+    if (!m_active)
         return;
-    this->active = false;
-    if (this->releaseSelectionQueued) {
-        this->releaseSelectionQueued = false;
-        if (Metatile::coordFromPixmapCoord(mouseEvent->scenePos()) == this->lastPos)
-            emit selected(this->event, false);
+    m_active = false;
+    if (m_releaseSelectionQueued) {
+        m_releaseSelectionQueued = false;
+        if (Metatile::coordFromPixmapCoord(mouseEvent->scenePos()) == m_lastPos)
+            emit selected(m_event, false);
     }
-    emit released(this->event, this->lastPos);
+    emit released(m_event, m_lastPos);
 }

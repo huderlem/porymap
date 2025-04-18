@@ -320,6 +320,7 @@ void ObjectFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
     EventFrame::connectSignals(window);
+    Project *project = window->editor->project;
 
     // local id
     this->line_edit_local_id->disconnect();
@@ -330,18 +331,18 @@ void ObjectFrame::connectSignals(MainWindow *window) {
 
     // sprite update
     this->combo_sprite->disconnect();
-    connect(this->combo_sprite, &QComboBox::currentTextChanged, [this](const QString &text) {
+    connect(this->combo_sprite, &QComboBox::currentTextChanged, [this, project](const QString &text) {
         this->object->setGfx(text);
-        this->object->getPixmapItem()->updatePixmap();
+        this->object->getPixmapItem()->render(project);
         this->object->modify();
     });
-    connect(this->object->getPixmapItem(), &EventPixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
+    connect(this->object->getPixmapItem(), &EventPixmapItem::rendered, this->label_icon, &QLabel::setPixmap);
 
     // movement
     this->combo_movement->disconnect();
-    connect(this->combo_movement, &QComboBox::currentTextChanged, [this](const QString &text) {
+    connect(this->combo_movement, &QComboBox::currentTextChanged, [this, project](const QString &text) {
         this->object->setMovement(text);
-        this->object->getPixmapItem()->updatePixmap();
+        this->object->getPixmapItem()->render(project);
         this->object->modify();
     });
 
@@ -498,13 +499,13 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
     });
 
     // update icon displayed in frame with target
-    connect(this->clone->getPixmapItem(), &EventPixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
+    connect(this->clone->getPixmapItem(), &EventPixmapItem::rendered, this->label_icon, &QLabel::setPixmap);
 
     // target map
     this->combo_target_map->disconnect();
     connect(this->combo_target_map, &QComboBox::currentTextChanged, [this, project](const QString &mapName) {
         this->clone->setTargetMap(mapName);
-        this->clone->getPixmapItem()->updatePixmap();
+        this->clone->getPixmapItem()->render(project);
         this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
         populateIdNameDropdown(this->combo_target_id, project, mapName, Event::Group::Object);
@@ -513,9 +514,9 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
 
     // target id
     this->combo_target_id->disconnect();
-    connect(this->combo_target_id, &QComboBox::currentTextChanged, [this](const QString &text) {
+    connect(this->combo_target_id, &QComboBox::currentTextChanged, [this, project](const QString &text) {
         this->clone->setTargetID(text);
-        this->clone->getPixmapItem()->updatePixmap();
+        this->clone->getPixmapItem()->render(project);
         this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
     });

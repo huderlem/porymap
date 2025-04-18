@@ -1,6 +1,7 @@
 #include "connectionpixmapitem.h"
 #include "editcommands.h"
 #include "map.h"
+#include "editor.h"
 
 #include <math.h>
 
@@ -31,7 +32,7 @@ void ConnectionPixmapItem::render(bool ignoreCache) {
         this->basePixmap = this->connection->render();
 
     QPixmap pixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
-    this->setZValue(-1);
+    this->setZValue(Editor::ZValue::MapConnectionActive);
 
     // When editing is inactive the current selection is ignored, all connections should appear normal.
     if (this->getEditable()) {
@@ -43,7 +44,7 @@ void ConnectionPixmapItem::render(bool ignoreCache) {
             painter.end();
         } else {
             // Darken the image
-            this->setZValue(-2);
+            this->setZValue(Editor::ZValue::MapConnectionInactive);
             QPainter painter(&pixmap);
             int alpha = static_cast<int>(255 * 0.25);
             painter.fillRect(0, 0, pixmap.width(), pixmap.height(), QColor(0, 0, 0, alpha));

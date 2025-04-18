@@ -1484,7 +1484,7 @@ bool Editor::displayLayout() {
         scene->installEventFilter(filter);
         connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
         scene->installEventFilter(this->map_ruler);
-        this->map_ruler->setZValue(1000);
+        this->map_ruler->setZValue(ZValue::Ruler);
         scene->addItem(this->map_ruler);
     }
 
@@ -1696,11 +1696,13 @@ void Editor::displayMapEvents() {
 
 EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
     this->project->loadEventPixmap(event);
-    auto item = new EventPixmapItem(event, this);
+    auto item = new EventPixmapItem(event);
     connect(item, &EventPixmapItem::doubleClicked, this, &Editor::openEventMap);
     connect(item, &EventPixmapItem::dragged, this, &Editor::onEventDragged);
     connect(item, &EventPixmapItem::released, this, &Editor::onEventReleased);
     connect(item, &EventPixmapItem::selected, this, &Editor::selectMapEvent);
+    connect(item, &EventPixmapItem::posChanged, [this, event] { updateWarpEventWarning(event); });
+    connect(item, &EventPixmapItem::yChanged, [this, item] { updateEventPixmapItemZValue(item); });
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;
@@ -1781,6 +1783,7 @@ void Editor::maskNonVisibleConnectionTiles() {
     QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
 
     connection_mask = scene->addPath(mask, pen, brush);
+    connection_mask->setZValue(ZValue::MapConnectionMask);
 }
 
 void Editor::clearMapBorder() {
@@ -1806,7 +1809,7 @@ void Editor::displayMapBorder() {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
-        item->setZValue(-3);
+        item->setZValue(ZValue::MapBorder);
         scene->addItem(item);
         borderItems.append(item);
     }
@@ -1977,36 +1980,36 @@ qreal Editor::getEventOpacity(const Event *event) const {
 }
 
 void Editor::redrawEventPixmapItem(EventPixmapItem *item) {
-    if (!item || !item->event)
-        return;
+    if (!item) return;
+    Event *event = item->getEvent();
+    if (!event) return;
 
-    project->loadEventPixmap(item->event, true);
-
-    QPixmap pixmap = item->event->getPixmap();
-    if (pixmap.isNull())
-        return;
-
-    qreal zValue = item->event->getY();
     if (this->editMode == EditMode::Events) {
-        if (this->selectedEvents.contains(item->event)) {
-            // Draw the selection rectangle
-            QPainter painter(&pixmap);
-            painter.setPen(Qt::magenta);
-            painter.drawRect(0, 0, pixmap.width() - 1, pixmap.height() - 1);
-            zValue++;
-        }
         item->setAcceptedMouseButtons(Qt::AllButtons);
+        item->setSelected(this->selectedEvents.contains(event));
     } else {
         // Can't interact with event pixmaps outside of event editing mode.
         // We could do setEnabled(false), but rather than ignoring the mouse events this
         // would reject them, which would prevent painting on the map behind the events.
         item->setAcceptedMouseButtons(Qt::NoButton);
+        item->setSelected(false);
     }
-    item->setPixmap(pixmap);
-    item->setZValue(zValue);
-    item->setOpacity(getEventOpacity(item->event));
+    updateEventPixmapItemZValue(item);
+    item->setOpacity(getEventOpacity(event));
     item->setShapeMode(porymapConfig.eventSelectionShapeMode);
-    item->updatePosition();
+    item->render(project);
+}
+
+void Editor::updateEventPixmapItemZValue(EventPixmapItem *item) {
+    if (!item) return;
+    Event *event = item->getEvent();
+    if (!event) return;
+
+    if (item->isSelected()) {
+        item->setZValue(ZValue::EventMaximum);
+    } else {
+        item->setZValue(event->getY() + ((ZValue::EventMaximum - ZValue::EventMinimum) / 2));
+    }
 }
 
 void Editor::onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition) {

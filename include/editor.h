@@ -117,6 +117,7 @@ public:
     void redrawAllEvents();
     void redrawEvents(const QList<Event*> &events);
     void redrawEventPixmapItem(EventPixmapItem *item);
+    void updateEventPixmapItemZValue(EventPixmapItem *item);
     qreal getEventOpacity(const Event *event) const;
 
     void updateCursorRectPos(int x, int y);
@@ -181,6 +182,22 @@ public:
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
     void setCollisionGraphics();
+
+    enum ZValue {
+        MapBorder = -4,
+        MapConnectionInactive = -3,
+        MapConnectionActive = -2,
+        MapConnectionMask = -1,
+
+        // Event pixmaps set their z value to be their y position on the map.
+        // Their y value is int16_t, so we have enough space to allocate the
+        // full range + 1 for the selected event (which should always be on top).
+        EventMinimum = 1,
+        EventMaximum = EventMinimum + 0x10000,
+
+        Ruler,
+        ResizeLayoutPopup
+    };
 
 public slots:
     void openMapScripts() const;

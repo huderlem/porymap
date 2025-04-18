@@ -10,38 +10,39 @@
 
 #include "events.h"
 
-class Editor;
+class Project;
 
 class EventPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
-    EventPixmapItem(QPixmap pixmap): QGraphicsPixmapItem(pixmap) {}
-    
-    EventPixmapItem(Event *event, Editor *editor) : QGraphicsPixmapItem(event->getPixmap()) {
-        this->event = event;
-        event->setPixmapItem(this);
-        this->editor = editor;
-        updatePosition();
-    }
+    explicit EventPixmapItem(Event *event);
 
-    Event *event = nullptr;
+    void render(Project *project);
 
-    void updatePosition();
+    bool isSelected() const { return m_selected; }
+    void setSelected(bool selected) { m_selected = selected; }
+
+    Event * getEvent() const { return m_event; }
+
     void move(int dx, int dy);
+    void moveTo(int x, int y);
     void moveTo(const QPoint &pos);
-    void emitPositionChanged();
-    void updatePixmap();
 
 private:
-    Editor *editor = nullptr;
-    QPoint lastPos;
-    bool active = false;
-    bool releaseSelectionQueued = false;
+    QPixmap m_basePixmap;
+    Event *const m_event = nullptr;
+    QPoint m_lastPos;
+    bool m_active = false;
+    bool m_selected = false;
+    bool m_releaseSelectionQueued = false;
+
+    void updatePixelPosition();
 
 signals:
-    void xChanged(int);
-    void yChanged(int);
-    void spriteChanged(const QPixmap &pixmap);
+    void xChanged(int x);
+    void yChanged(int y);
+    void posChanged(int x, int y);
+    void rendered(const QPixmap &pixmap);
     void selected(Event *event, bool toggle);
     void dragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition);
     void released(Event *event, const QPoint &position);
@@ -51,7 +52,7 @@ protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
-    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override { emit doubleClicked(this->event); }
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override { emit doubleClicked(m_event); }
 };
 
 #endif // EVENTPIXMAPITEM_H

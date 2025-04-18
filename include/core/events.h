@@ -153,7 +153,7 @@ public:
     QJsonObject getCustomAttributes() const { return this->customAttributes; }
     void setCustomAttributes(const QJsonObject &newCustomAttributes) { this->customAttributes = newCustomAttributes; }
 
-    virtual void loadPixmap(Project *project);
+    virtual QPixmap loadPixmap(Project *project);
 
     void setPixmap(QPixmap newPixmap) { this->pixmap = newPixmap; }
     QPixmap getPixmap() const { return this->pixmap; }
@@ -233,7 +233,7 @@ public:
 
     virtual QSet<QString> getExpectedFields() override;
 
-    virtual void loadPixmap(Project *project) override;
+    virtual QPixmap loadPixmap(Project *project) override;
 
     void setGfx(QString newGfx) { this->gfx = newGfx; }
     QString getGfx() const { return this->gfx; }
@@ -300,7 +300,7 @@ public:
 
     virtual QSet<QString> getExpectedFields() override;
 
-    virtual void loadPixmap(Project *project) override;
+    virtual QPixmap loadPixmap(Project *project) override;
 
     void setTargetMap(QString newTargetMap) { this->targetMap = newTargetMap; }
     QString getTargetMap() const { return this->targetMap; }

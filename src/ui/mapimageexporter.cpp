@@ -113,8 +113,7 @@ void MapImageExporter::setModeSpecificUi() {
     }
 
     if (m_mode == ImageExporterMode::Timelapse) {
-        // TODO: At the moment edit history for events (and the EventPixmapItem class)
-        // explicitly depend on the editor and assume their map is currently open.
+        // TODO: At the moment edit history for events explicitly depend on the editor and assume their map is currently open.
         // Other edit commands rely on this more subtly, like triggering API callbacks or
         // spending time rendering their layout (which can make creating timelapses very slow).
         // Until this is resolved, the selected map/layout must remain the same as in the editor.

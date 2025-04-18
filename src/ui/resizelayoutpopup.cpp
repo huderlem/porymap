@@ -139,6 +139,7 @@ void ResizeLayoutPopup::setupLayoutView() {
     static bool layoutSizeRectVisible = true;
 
     this->outline = new ResizableRect(this, &layoutSizeRectVisible, this->editor->layout->getWidth(), this->editor->layout->getHeight(), qRgb(255, 0, 255));
+    this->outline->setZValue(Editor::ZValue::ResizeLayoutPopup); // Ensure on top of view
     this->outline->setLimit(cover->rect().toAlignedRect());
     connect(outline, &ResizableRect::rectUpdated, [=](QRect rect){
         // Note: this extra limit check needs access to the project values, so it is done here and not ResizableRect::mouseMoveEvent
