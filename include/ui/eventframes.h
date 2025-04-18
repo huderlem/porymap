@@ -57,6 +57,7 @@ protected:
     bool initialized = false;
     bool connected = false;
 
+    void populateDropdown(NoScrollComboBox * combo, const QStringList &items);
     void populateScriptDropdown(NoScrollComboBox * combo, Project * project);
     void populateIdNameDropdown(NoScrollComboBox * combo, Project * project, const QString &mapName, Event::Group group);
 
@@ -117,6 +118,8 @@ public:
 
 private:
     CloneObjectEvent *clone;
+
+    void tryInvalidateIdDropdown(Map *map);
 };
 
 
@@ -141,6 +144,8 @@ public:
 
 private:
     WarpEvent *warp;
+
+    void tryInvalidateIdDropdown(Map *map);
 };
 
 
@@ -279,6 +284,8 @@ public:
 
 private:
     HealLocationEvent *healLocation;
+
+    void tryInvalidateIdDropdown(Map *map);
 };
 
 #endif // EVENTRAMES_H

@@ -197,8 +197,7 @@ private slots:
     void onMapLoaded(Map *map);
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
-    void markMapEdited();
-    void markSpecificMapEdited(Map*);
+    void markMapEdited(Map*);
     void markLayoutEdited();
 
     void on_actionNew_Tileset_triggered();

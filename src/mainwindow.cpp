@@ -343,7 +343,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
     connect(this->editor, &Editor::openEventMap, this, &MainWindow::openEventMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
-    connect(this->editor, &Editor::wildMonTableEdited, this,  &MainWindow::markMapEdited);
+    connect(this->editor, &Editor::wildMonTableEdited, [this] { markMapEdited(this->editor->map); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
@@ -523,11 +523,7 @@ void MainWindow::updateWindowTitle() {
     }
 }
 
-void MainWindow::markMapEdited() {
-    if (editor) markSpecificMapEdited(editor->map);
-}
-
-void MainWindow::markSpecificMapEdited(Map* map) {
+void MainWindow::markMapEdited(Map* map) {
     if (!map)
         return;
     map->setHasUnsavedDataChanges(true);
@@ -949,8 +945,6 @@ bool MainWindow::setMap(QString map_name) {
     updateMapList();
     resetMapListFilters();
 
-    connect(editor->map, &Map::modified, this, &MainWindow::markMapEdited, Qt::UniqueConnection);
-
     // If the map's MAPSEC / layout changes, update the map's position in the map list.
     // These are doing more work than necessary, rather than rebuilding the entire list they should find and relocate the appropriate row.
     connect(editor->map, &Map::layoutChanged, this, &MainWindow::rebuildMapList_Layouts, Qt::UniqueConnection);
@@ -1153,7 +1147,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
     }
     this->editor->map->setLayout(layout);
     setMap(this->editor->map->name());
-    markMapEdited();
+    markMapEdited(this->editor->map);
 }
 
 void MainWindow::onLayoutSelectorEditingFinished() {
@@ -2520,7 +2514,7 @@ void MainWindow::onOpenConnectedMap(MapConnection *connection) {
 }
 
 void MainWindow::onMapLoaded(Map *map) {
-    connect(map, &Map::modified, [this, map] { this->markSpecificMapEdited(map); });
+    connect(map, &Map::modified, [this, map] { markMapEdited(map); });
 }
 
 void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
