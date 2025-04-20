@@ -774,7 +774,10 @@ void RegionMapEditor::displayRegionMapTileSelector() {
 
     this->mapsquare_selector_item = new TilemapTileSelector(this->region_map->pngPath(), this->region_map->tilemapFormat(), this->region_map->palPath());
 
-    this->mapsquare_selector_item->draw();
+    // Initialize with current settings
+    this->mapsquare_selector_item->selectHFlip(ui->checkBox_tileHFlip->isChecked());
+    this->mapsquare_selector_item->selectVFlip(ui->checkBox_tileVFlip->isChecked());
+    this->mapsquare_selector_item->selectPalette(ui->spinBox_tilePalette->value()); // This will also draw the selector
 
     this->scene_region_map_tiles->addItem(this->mapsquare_selector_item);
 

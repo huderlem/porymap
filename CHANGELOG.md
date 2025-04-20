@@ -58,6 +58,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix `Add Region Map...` not updating the region map settings file.
 - Fix some crashes on invalid region map tilesets.
 - Improve error reporting for invalid region map editor settings.
+- Fix the region map editor's palette resetting between region maps.
 - Fix config files being written before the project is opened successfully.
 - Fix the map and other project info still displaying if a new project fails to open.
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
