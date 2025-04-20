@@ -74,6 +74,7 @@ void EventPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     if (selectionToggle || !m_selected) {
         // User is either toggling this selection on/off as part of a group selection,
         // or they're newly selecting just this item.
+        m_selected = (selectionToggle) ? !m_selected : true;
         emit selected(m_event, selectionToggle);
     } else {
         // This item is already selected and the user isn't toggling the selection, so there are 4 possibilities:
@@ -89,7 +90,7 @@ void EventPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
 }
 
 void EventPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) {
-    if (!m_active)
+    if (!m_active || !m_selected)
         return;
 
     QPoint pos = Metatile::coordFromPixmapCoord(mouseEvent->scenePos());
