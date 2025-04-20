@@ -59,6 +59,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix some crashes on invalid region map tilesets.
 - Improve error reporting for invalid region map editor settings.
 - Fix the region map editor's palette resetting between region maps.
+- Fix the region map editor's h-flip and v-flip settings being swapped.
 - Fix config files being written before the project is opened successfully.
 - Fix the map and other project info still displaying if a new project fails to open.
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
