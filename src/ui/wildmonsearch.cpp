@@ -129,6 +129,7 @@ void WildMonSearch::updateResults(const QString &species) {
             .fieldName = QStringLiteral("--"),
             .levelRange = QStringLiteral("--"),
             .chance = QStringLiteral("--"),
+            .mapName = "",
         };
         addTableEntry(noResults);
     } else {

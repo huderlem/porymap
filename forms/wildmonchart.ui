@@ -145,7 +145,7 @@
              <bool>false</bool>
             </property>
             <property name="sizeAdjustPolicy">
-             <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+             <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
             </property>
             <property name="minimumContentsLength">
              <number>8</number>

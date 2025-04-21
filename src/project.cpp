@@ -1688,19 +1688,22 @@ bool Project::readWildMonData() {
         // Each element describes a type of wild encounter Porymap can expect to find, and we represent this data with an EncounterField.
         // They should contain a name ("type"), the number of encounter slots and the ratio at which they occur ("encounter_rates"),
         // and whether the encounters are divided into groups (like fishing rods).
-        for (const OrderedJson &fieldJson : mainArrayObject.take("fields").array_items()) {
+        OrderedJson::array fieldsArray = mainArrayObject.take("fields").array_items();
+        for (const OrderedJson &fieldJson : fieldsArray) {
             OrderedJson::object fieldObject = fieldJson.object_items();
 
             EncounterField encounterField;
             encounterField.name = fieldObject.take("type").string_value();
 
-            for (auto val : fieldObject.take("encounter_rates").array_items()) {
+            OrderedJson::array encounterRatesArray = fieldObject.take("encounter_rates").array_items();
+            for (const auto &val : encounterRatesArray) {
                 encounterField.encounterRates.append(val.int_value());
             }
 
             // Each element of the "groups" array is an object with the group name as the key (e.g. "old_rod")
             // and an array of slot numbers indicating which encounter slots in this encounter type belong to that group.
-            for (auto groupPair : fieldObject.take("groups").object_items()) {
+            OrderedJson::object groups = fieldObject.take("groups").object_items();
+            for (auto groupPair : groups) {
                 const QString groupName = groupPair.first;
                 for (auto slotNum : groupPair.second.array_items()) {
                     encounterField.groups[groupName].append(slotNum.int_value());
@@ -1716,7 +1719,8 @@ bool Project::readWildMonData() {
         // Each element is an object that will tell us which map it's associated with,
         // its symbol name (which we will display in the Groups dropdown) and a list of
         // pokémon associated with any of the encounter types described by the data we parsed above.
-        for (const auto &encounterJson : mainArrayObject.take("encounters").array_items()) {
+        OrderedJson::array encountersArray = mainArrayObject.take("encounters").array_items();
+        for (const auto &encounterJson : encountersArray) {
             OrderedJson::object encounterObj = encounterJson.object_items();
 
             WildPokemonHeader header;
@@ -1738,7 +1742,8 @@ bool Project::readWildMonData() {
                 encounterRateFrequencyMaps[field][monInfo.encounterRate]++;
 
                 // Read wild pokémon list
-                for (const auto &monJson : encounterFieldObj.take("mons").array_items()) {
+                OrderedJson::array monsArray = encounterFieldObj.take("mons").array_items();
+                for (const auto &monJson : monsArray) {
                     OrderedJson::object monObj = monJson.object_items();
 
                     WildPokemon newMon;
