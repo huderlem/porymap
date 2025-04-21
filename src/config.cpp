@@ -259,7 +259,7 @@ bool KeyValueConfigBase::save() {
     return true;
 }
 
-bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
+bool KeyValueConfigBase::getConfigBool(const QString &key, const QString &value) {
     bool ok;
     int result = value.toInt(&ok, 0);
     if (!ok || (result != 0 && result != 1)) {
@@ -268,24 +268,33 @@ bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
     return (result != 0);
 }
 
-int KeyValueConfigBase::getConfigInteger(QString key, QString value, int min, int max, int defaultValue) {
+int KeyValueConfigBase::getConfigInteger(const QString &key, const QString &value, int min, int max, int defaultValue) {
     bool ok;
     int result = value.toInt(&ok, 0);
     if (!ok) {
-        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
+        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
         result = defaultValue;
     }
     return qMin(max, qMax(min, result));
 }
 
-uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_t min, uint32_t max, uint32_t defaultValue) {
+uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &value, uint32_t min, uint32_t max, uint32_t defaultValue) {
     bool ok;
     uint32_t result = value.toUInt(&ok, 0);
     if (!ok) {
-        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
+        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
         result = defaultValue;
     }
     return qMin(max, qMax(min, result));
+}
+
+QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &value, const QColor &defaultValue) {
+    QColor color = QColor("#" + value);
+    if (!color.isValid()) {
+        logWarn(QString("Invalid config value for %1: '%2'. Must be a color in the format 'RRGGBB'. Using default value '%3'.").arg(key).arg(value).arg(defaultValue.name()));
+        color = defaultValue;
+    }
+    return color;
 }
 
 PorymapConfig porymapConfig;
@@ -455,6 +464,18 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "shown_in_game_reload_message") {
         this->shownInGameReloadMessage = getConfigBool(key, value);
+    } else if (key == "grid_width") {
+        this->gridSettings.width = getConfigUint32(key, value);
+    } else if (key == "grid_height") {
+        this->gridSettings.height = getConfigUint32(key, value);
+    } else if (key == "grid_x") {
+        this->gridSettings.offsetX = getConfigInteger(key, value, 0, 999);
+    } else if (key == "grid_y") {
+        this->gridSettings.offsetY = getConfigInteger(key, value, 0, 999);
+    } else if (key == "grid_style") {
+        this->gridSettings.style = GridSettings::getStyleFromName(value);
+    } else if (key == "grid_color") {
+        this->gridSettings.color = getConfigColor(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -532,6 +553,12 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     }
     map.insert("event_selection_shape_mode", (this->eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) ? "mask" : "bounding_rect");
     map.insert("shown_in_game_reload_message", this->shownInGameReloadMessage ? "1" : "0");
+    map.insert("grid_width", QString::number(this->gridSettings.width));
+    map.insert("grid_height", QString::number(this->gridSettings.height));
+    map.insert("grid_x", QString::number(this->gridSettings.offsetX));
+    map.insert("grid_y", QString::number(this->gridSettings.offsetY));
+    map.insert("grid_style", GridSettings::getStyleName(this->gridSettings.style));
+    map.insert("grid_color", this->gridSettings.color.name().remove("#")); // Our text config treats '#' as the start of a comment.
     
     return map;
 }

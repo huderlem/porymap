@@ -587,6 +587,8 @@ void MainWindow::loadUserSettings() {
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
     ui->actionShow_Events_In_Map_View->setChecked(porymapConfig.eventOverlayEnabled);
 
+    this->editor->gridSettings = porymapConfig.gridSettings;
+
     setTheme(porymapConfig.theme);
     setDivingMapsVisible(porymapConfig.showDiveEmergeMaps);
 }
@@ -1989,6 +1991,7 @@ void MainWindow::on_actionGrid_Settings_triggered() {
     if (!this->gridSettingsDialog) {
         this->gridSettingsDialog = new GridSettingsDialog(&this->editor->gridSettings, this);
         connect(this->gridSettingsDialog, &GridSettingsDialog::changedGridSettings, this->editor, &Editor::updateMapGrid);
+        connect(this->gridSettingsDialog, &GridSettingsDialog::accepted, [this] { porymapConfig.gridSettings = this->editor->gridSettings; });
     }
     openSubWindow(this->gridSettingsDialog);
 }

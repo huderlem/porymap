@@ -14,6 +14,7 @@
 #include <QGraphicsPixmapItem>
 
 #include "events.h"
+#include "gridsettings.h"
 
 extern const QVersionNumber porymapVersion;
 
@@ -36,9 +37,11 @@ protected:
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void init() = 0;
     virtual void setUnreadKeys() = 0;
-    bool getConfigBool(QString key, QString value);
-    int getConfigInteger(QString key, QString value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
-    uint32_t getConfigUint32(QString key, QString value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
+
+    static bool getConfigBool(const QString &key, const QString &value);
+    static int getConfigInteger(const QString &key, const QString &value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
+    static uint32_t getConfigUint32(const QString &key, const QString &value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
+    static QColor getConfigColor(const QString &key, const QString &value, const QColor &defaultValue = Qt::black);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -92,6 +95,7 @@ public:
         this->rateLimitTimes.clear();
         this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
         this->shownInGameReloadMessage = false;
+        this->gridSettings = GridSettings();
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -156,6 +160,7 @@ public:
     QByteArray newMapDialogGeometry;
     QByteArray newLayoutDialogGeometry;
     bool shownInGameReloadMessage;
+    GridSettings gridSettings;
 
 protected:
     virtual QString getConfigFilepath() override;
