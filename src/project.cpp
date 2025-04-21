@@ -848,15 +848,9 @@ void Project::saveHealLocations() {
 
     // Build the JSON data for output.
     QMap<QString, QList<OrderedJson::object>> idNameToJson;
-    for (auto i = this->healLocations.constBegin(); i != this->healLocations.constEnd(); i++) {
-        const QString mapConstant = i.key();
-        for (const auto &event : i.value()) {
-            // Heal location events don't need to track the "map" field, we're already tracking it either with
-            // the keys in the healLocations map or by virtue of the event being added to a particular Map object.
-            // The global JSON data needs this field, so we add it back here.
-            auto eventJson = event->buildEventJson(this);
-            eventJson["map"] = mapConstant;
-            idNameToJson[event->getIdName()].append(eventJson);
+    for (const auto &events : this->healLocations) {
+        for (const auto &event : events) {
+            idNameToJson[event->getIdName()].append(event->buildEventJson(this));
         }
     }
 
@@ -871,8 +865,8 @@ void Project::saveHealLocations() {
         }
     }
     // Save any heal locations that weren't covered above (should be any new data).
-    for (auto i = idNameToJson.constBegin(); i != idNameToJson.constEnd(); i++) {
-        for (const auto &object : i.value()) {
+    for (const auto &objects : idNameToJson) {
+        for (const auto &object : objects) {
             eventJsonArr.push_back(object);
         }
     }
