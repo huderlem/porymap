@@ -233,7 +233,7 @@ void KeyValueConfigBase::load() {
     file.close();
 }
 
-void KeyValueConfigBase::save() {
+bool KeyValueConfigBase::save() {
     QString text = "";
     QMap<QString, QString> map = this->getKeyValueMap();
     for (QMap<QString, QString>::iterator it = map.begin(); it != map.end(); it++) {
@@ -241,12 +241,14 @@ void KeyValueConfigBase::save() {
     }
 
     QFile file(this->getConfigFilepath());
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(text.toUtf8());
-        file.close();
-    } else {
+    if (!file.open(QIODevice::WriteOnly)) {
         logError(QString("Could not open config file '%1' for writing: ").arg(this->getConfigFilepath()) + file.errorString());
+        return false;
     }
+
+    file.write(text.toUtf8());
+    file.close();
+    return true;
 }
 
 bool KeyValueConfigBase::getConfigBool(QString key, QString value) {

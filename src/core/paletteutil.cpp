@@ -38,14 +38,14 @@ QList<QRgb> PaletteUtil::parse(QString filepath, bool *error) {
     return QList<QRgb>();
 }
 
-void PaletteUtil::writeJASC(QString filepath, QVector<QRgb> palette, int offset, int nColors) {
+bool PaletteUtil::writeJASC(const QString &filepath, const QVector<QRgb> &palette, int offset, int nColors) {
     if (!nColors) {
-        logWarn(QString("Cannot save a palette with no colors."));
-        return;
+        logError(QString("Cannot save a palette with no colors."));
+        return false;
     }
     if (offset > palette.size() || offset + nColors > palette.size()) {
-        logWarn("Palette offset out of range for color table.");
-        return;
+        logError("Palette offset out of range for color table.");
+        return false;
     }
 
     QString text = "JASC-PAL\r\n0100\r\n";
@@ -59,11 +59,13 @@ void PaletteUtil::writeJASC(QString filepath, QVector<QRgb> palette, int offset,
     }
 
     QFile file(filepath);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(text.toUtf8());
-    } else {
-        logWarn(QString("Could not write to file '%1': ").arg(filepath) + file.errorString());
+    if (!file.open(QIODevice::WriteOnly)) {
+        logError(QString("Could not write to file '%1': ").arg(filepath) + file.errorString());
+        return false;
     }
+
+    file.write(text.toUtf8());
+    return true;
 }
 
 QList<QRgb> parsePal(QString filepath, bool *error) {

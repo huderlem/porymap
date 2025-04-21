@@ -55,17 +55,17 @@ public:
     static QString getExpectedDir(QString tilesetName, bool isSecondary);
     QString getExpectedDir();
 
-    void load();
-    void loadMetatiles();
-    void loadMetatileAttributes();
-    void loadTilesImage(QImage *importedImage = nullptr);
-    void loadPalettes();
+    bool load();
+    bool loadMetatiles();
+    bool loadMetatileAttributes();
+    bool loadTilesImage(QImage *importedImage = nullptr);
+    bool loadPalettes();
 
-    void save();
-    void saveMetatileAttributes();
-    void saveMetatiles();
-    void saveTilesImage();
-    void savePalettes();
+    bool save();
+    bool saveMetatileAttributes();
+    bool saveMetatiles();
+    bool saveTilesImage();
+    bool savePalettes();
 
     bool appendToHeaders(QString root, QString friendlyName, bool usingAsm);
     bool appendToGraphics(QString root, QString friendlyName, bool usingAsm);

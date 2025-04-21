@@ -33,6 +33,8 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     this->tileYFlip = ui->checkBox_yFlip->isChecked();
     this->paletteId = ui->spinBox_paletteSelector->value();
 
+    connect(ui->actionSave_Tileset, &QAction::triggered, this, &TilesetEditor::save);
+
     ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
     ui->actionShow_Raw_Metatile_Attributes->setChecked(porymapConfig.showTilesetEditorRawAttributes);
 
@@ -94,7 +96,7 @@ void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondar
             QMessageBox::No | QMessageBox::Yes,
             QMessageBox::Yes);
         if (result == QMessageBox::Yes)
-            this->on_actionSave_Tileset_triggered();
+            this->save();
     }
     this->setTilesets(primaryTilesetLabel, secondaryTilesetLabel);
     this->refresh();
@@ -688,19 +690,23 @@ void TilesetEditor::commitLayerType() {
     this->metatileSelector->drawSelectedMetatile(); // Changing the layer type can affect how fully transparent metatiles appear
 }
 
-void TilesetEditor::on_actionSave_Tileset_triggered()
-{
+bool TilesetEditor::save() {
     // Need this temporary flag to stop selection resetting after saving.
     // This is a workaround; redrawing the map's metatile selector shouldn't emit the same signal as when it's selected.
     this->lockSelection = true;
-    this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
+
+    bool success = this->project->saveTilesets(this->primaryTileset, this->secondaryTileset);
     emit this->tilesetsSaved(this->primaryTileset->name, this->secondaryTileset->name);
     if (this->paletteEditor) {
         this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
     }
-    this->ui->statusbar->showMessage(QString("Saved primary and secondary Tilesets!"), 5000);
-    this->hasUnsavedChanges = false;
+    this->ui->statusbar->showMessage(success ? QStringLiteral("Saved primary and secondary Tilesets!")
+                                             : QStringLiteral("Failed to save tilesets! See log for details."), 5000);
+    if (success) {
+        this->hasUnsavedChanges = false;
+    }
     this->lockSelection = false;
+    return success;
 }
 
 void TilesetEditor::on_actionImport_Primary_Tiles_triggered()
@@ -812,8 +818,11 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
             QMessageBox::Yes);
 
         if (result == QMessageBox::Yes) {
-            this->on_actionSave_Tileset_triggered();
-            event->accept();
+            if (this->save()) {
+                event->accept();
+            } else {
+                event->ignore();
+            }
         } else if (result == QMessageBox::No) {
             this->reset();
             event->accept();
@@ -1143,12 +1152,6 @@ void TilesetEditor::countMetatileUsage() {
     this->metatileSelector->usedMetatiles.fill(0);
 
     for (auto layout : this->project->mapLayouts) {
-        // It's possible for a layout's tileset labels to change if they are invalid,
-        // so we need to load all the tilesets even if they aren't the tileset we're looking for.
-        // Otherwise the metatile usage counts may change because the layouts with invalid tilesets
-        // were updated to use a tileset we were looking for.
-        this->project->loadLayoutTilesets(layout);
-
         bool usesPrimary = (layout->tileset_primary_label == this->primaryTileset->name);
         bool usesSecondary = (layout->tileset_secondary_label == this->secondaryTileset->name);
 
@@ -1187,10 +1190,10 @@ void TilesetEditor::countTileUsage() {
     QSet<Tileset*> secondaryTilesets;
 
     for (auto &layout : this->project->mapLayouts) {
-        this->project->loadLayoutTilesets(layout);
         if (layout->tileset_primary_label == this->primaryTileset->name
          || layout->tileset_secondary_label == this->secondaryTileset->name) {
             // need to check metatiles
+            this->project->loadLayoutTilesets(layout);
             if (layout->tileset_primary && layout->tileset_secondary) {
                 primaryTilesets.insert(layout->tileset_primary);
                 secondaryTilesets.insert(layout->tileset_secondary);
