@@ -10,27 +10,28 @@
 class MovableRect : public QGraphicsRectItem
 {
 public:
-    MovableRect(bool *enabled, int width, int height, QRgb color);
+    MovableRect(bool *enabled, const QRectF &rect, const QRgb &color);
     QRectF boundingRect() const override {
         qreal penWidth = 4;
         return QRectF(-penWidth,
                       -penWidth,
-                      30 * 8 + penWidth * 2,
-                      20 * 8 + penWidth * 2);
+                      this->rect().width() + penWidth * 2,
+                      this->rect().height() + penWidth * 2);
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
         if (!(*enabled)) return;
         painter->setPen(this->color);
-        painter->drawRect(this->rect().x() - 2, this->rect().y() - 2, this->rect().width() + 3, this->rect().height() + 3);
-        painter->setPen(QColor(0, 0, 0));
-        painter->drawRect(this->rect().x() - 3, this->rect().y() - 3, this->rect().width() + 5, this->rect().height() + 5);
-        painter->drawRect(this->rect().x() - 1, this->rect().y() - 1, this->rect().width() + 1, this->rect().height() + 1);
+        painter->drawRect(this->rect() + QMargins(1,1,1,1)); // Fill
+        painter->setPen(Qt::black);
+        painter->drawRect(this->rect() + QMargins(2,2,2,2)); // Outer border
+        painter->drawRect(this->rect()); // Inner border
     }
     void updateLocation(int x, int y);
     bool *enabled;
 
 protected:
+    QRectF baseRect;
     QRgb color;
 };
 

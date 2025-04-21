@@ -30,7 +30,6 @@ Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
     this->settings = new Settings();
-    this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
     this->map_ruler = new MapRuler(4);
     connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
@@ -1064,6 +1063,13 @@ void Editor::scaleMapView(int s) {
     ui->graphicsView_Connections->setTransform(transform);
 }
 
+void Editor::setPlayerViewRect(const QRectF &rect) {
+    delete this->playerViewRect;
+    this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, rect, qRgb(255, 255, 255));
+    if (ui->graphicsView_Map->scene())
+        ui->graphicsView_Map->scene()->update();
+}
+
 void Editor::updateCursorRectPos(int x, int y) {
     if (this->playerViewRect)
         this->playerViewRect->updateLocation(x, y);
@@ -1563,14 +1569,8 @@ void Editor::displayMapMetatiles() {
     map_item->draw(true);
     scene->addItem(map_item);
 
-    int tw = 16;
-    int th = 16;
-    scene->setSceneRect(
-        -BORDER_DISTANCE * tw,
-        -BORDER_DISTANCE * th,
-        map_item->pixmap().width() + BORDER_DISTANCE * 2 * tw,
-        map_item->pixmap().height() + BORDER_DISTANCE * 2 * th
-    );
+    // Scene rect is the map plus a margin that gives enough space to scroll and see the edge of the player view rectangle.
+    scene->setSceneRect(this->layout->getVisibleRect() + QMargins(3,3,3,3));
 }
 
 void Editor::clearMapMovementPermissions() {
@@ -1763,18 +1763,13 @@ void Editor::clearConnectionMask() {
     }
 }
 
-// Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
+// Hides connected map tiles that cannot be seen from the current map
 void Editor::maskNonVisibleConnectionTiles() {
     clearConnectionMask();
 
     QPainterPath mask;
     mask.addRect(scene->itemsBoundingRect().toRect());
-    mask.addRect(
-        -BORDER_DISTANCE * 16,
-        -BORDER_DISTANCE * 16,
-        (layout->getWidth() + BORDER_DISTANCE * 2) * 16,
-        (layout->getHeight() + BORDER_DISTANCE * 2) * 16
-    );
+    mask.addRect(layout->getVisibleRect());
 
     // Mask the tiles with the current theme's background color.
     QPen pen(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
@@ -1796,13 +1791,10 @@ void Editor::clearMapBorder() {
 void Editor::displayMapBorder() {
     clearMapBorder();
 
-    int borderWidth = this->layout->getBorderWidth();
-    int borderHeight = this->layout->getBorderHeight();
-    int borderHorzDist = this->layout->getBorderDrawWidth();
-    int borderVertDist = this->layout->getBorderDrawHeight();
     QPixmap pixmap = this->layout->renderBorder();
-    for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += borderHeight)
-    for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += borderWidth) {
+    const QMargins borderMargins = layout->getBorderMargins();
+    for (int y = -borderMargins.top(); y < this->layout->getHeight() + borderMargins.bottom(); y += this->layout->getBorderHeight())
+    for (int x = -borderMargins.left(); x < this->layout->getWidth() + borderMargins.right(); x += this->layout->getBorderWidth()) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
@@ -2341,8 +2333,8 @@ void Editor::setCollisionGraphics() {
 
     // Users are not required to provide an image that gives an icon for every elevation/collision combination.
     // Instead they tell us how many are provided in their image by specifying the number of columns and rows.
-    const int imgColumns = projectConfig.collisionSheetWidth;
-    const int imgRows = projectConfig.collisionSheetHeight;
+    const int imgColumns = projectConfig.collisionSheetSize.width();
+    const int imgRows = projectConfig.collisionSheetSize.height();
 
     // Create a pixmap for the selector on the Collision tab. If a project was previously opened we'll also need to refresh the selector.
     this->collisionSheetPixmap = QPixmap::fromImage(imgSheet).scaled(MovementPermissionsSelector::CellWidth * imgColumns,

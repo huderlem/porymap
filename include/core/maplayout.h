@@ -96,8 +96,8 @@ public:
     int getHeight() const { return height; }
     int getBorderWidth() const { return border_width; }
     int getBorderHeight() const { return border_height; }
-    int getBorderDrawWidth() const;
-    int getBorderDrawHeight() const;
+    QMargins getBorderMargins() const;
+    QRect getVisibleRect() const;
 
     bool isWithinBounds(int x, int y) const;
     bool isWithinBounds(const QRect &rect) const;

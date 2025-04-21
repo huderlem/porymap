@@ -15,11 +15,11 @@
 
 #include "events.h"
 
-static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
+extern const QVersionNumber porymapVersion;
 
-// In both versions the default new map border is a generic tree
-#define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
-#define DEFAULT_BORDER_FRLG (QList<uint16_t>{0x14, 0x15, 0x1C, 0x1D})
+// Distance in pixels from the edge of a GBA screen (240x160) to the center 16x16 pixels.
+#define GBA_H_DIST_TO_CENTER ((240-16)/2)
+#define GBA_V_DIST_TO_CENTER ((160-16)/2)
 
 #define CONFIG_BACKWARDS_COMPATABILITY
 
@@ -214,6 +214,8 @@ enum ProjectIdentifier {
     define_pals_total,
     define_tiles_per_metatile,
     define_map_size,
+    define_map_offset_width,
+    define_map_offset_height,
     define_mask_metatile,
     define_mask_collision,
     define_mask_elevation,
@@ -317,6 +319,7 @@ public:
         this->defaultMetatileId = 1;
         this->defaultElevation = 3;
         this->defaultCollision = 0;
+        this->defaultMapSize = QSize(20,20);
         this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
@@ -328,8 +331,8 @@ public:
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
         this->collisionSheetPath = QString();
-        this->collisionSheetWidth = 2;
-        this->collisionSheetHeight = 16;
+        this->collisionSheetSize = QSize(2, 16);
+        this->playerViewDistance = QMargins(GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER, GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER);
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
@@ -382,6 +385,7 @@ public:
     uint16_t defaultMetatileId;
     uint16_t defaultElevation;
     uint16_t defaultCollision;
+    QSize defaultMapSize;
     QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;
@@ -404,8 +408,8 @@ public:
     uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
     QString collisionSheetPath;
-    int collisionSheetWidth;
-    int collisionSheetHeight;
+    QSize collisionSheetSize;
+    QMargins playerViewDistance;
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
 

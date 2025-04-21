@@ -606,9 +606,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap() {
 QMargins MapImageExporter::getMargins(const Map *map) {
     QMargins margins;
     if (m_settings.showBorder) {
-        // The border may technically extend beyond BORDER_DISTANCE, but when the border is painted
-        // we will be limiting it to the visible sight range.
-        margins = QMargins(BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE) * 16;
+        margins = m_project->getMetatileViewDistance() * 16;
     } else if (map && connectionsEnabled()) {
         for (const auto &connection : map->getConnections()) {
             const QString dir = connection->direction();
@@ -649,15 +647,12 @@ void MapImageExporter::paintBorder(QPainter *painter, Layout *layout) {
     layout->renderBorder(true);
 
     // Clip parts of the border that would be beyond player visibility.
-    QRect visibleArea(0, 0, layout->getWidth() * 16, layout->getHeight() * 16);
-    visibleArea += (QMargins(BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE, BORDER_DISTANCE) * 16);
     painter->save();
-    painter->setClipRect(visibleArea);
+    painter->setClipRect(layout->getVisibleRect());
 
-    int borderHorzDist = layout->getBorderDrawWidth();
-    int borderVertDist = layout->getBorderDrawHeight();
-    for (int y = -borderVertDist; y < layout->getHeight() + borderVertDist; y += layout->getBorderHeight())
-    for (int x = -borderHorzDist; x < layout->getWidth() + borderHorzDist; x += layout->getBorderWidth()) {
+    const QMargins borderMargins = layout->getBorderMargins();
+    for (int y = -borderMargins.top(); y < layout->getHeight() + borderMargins.bottom(); y += layout->getBorderHeight())
+    for (int x = -borderMargins.left(); x < layout->getWidth() + borderMargins.right(); x += layout->getBorderWidth()) {
          // Skip border painting if it would be fully covered by the rest of the map
         if (layout->isWithinBounds(QRect(x, y, layout->getBorderWidth(), layout->getBorderHeight())))
             continue;

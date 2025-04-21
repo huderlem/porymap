@@ -29,8 +29,6 @@ int Project::num_tiles_total = 1024;
 int Project::num_metatiles_primary = 512;
 int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
-int Project::max_map_data_size = 10240; // 0x2800
-int Project::default_map_dimension = 20;
 
 Project::Project(QObject *parent) :
     QObject(parent),
@@ -1995,8 +1993,8 @@ void Project::initNewMapSettings() {
     this->newMapSettings.layout.folderName = this->newMapSettings.name;
     this->newMapSettings.layout.name = QString();
     this->newMapSettings.layout.id = Layout::layoutConstantFromName(this->newMapSettings.name);
-    this->newMapSettings.layout.width = getDefaultMapDimension();
-    this->newMapSettings.layout.height = getDefaultMapDimension();
+    this->newMapSettings.layout.width = this->defaultMapSize.width();
+    this->newMapSettings.layout.height = this->defaultMapSize.height();
     this->newMapSettings.layout.borderWidth = DEFAULT_BORDER_WIDTH;
     this->newMapSettings.layout.borderHeight = DEFAULT_BORDER_HEIGHT;
     this->newMapSettings.layout.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
@@ -2018,8 +2016,8 @@ void Project::initNewMapSettings() {
 void Project::initNewLayoutSettings() {
     this->newLayoutSettings.name = QString();
     this->newLayoutSettings.id = Layout::layoutConstantFromName(this->newLayoutSettings.name);
-    this->newLayoutSettings.width = getDefaultMapDimension();
-    this->newLayoutSettings.height = getDefaultMapDimension();
+    this->newLayoutSettings.width = this->defaultMapSize.width();
+    this->newLayoutSettings.height = this->defaultMapSize.height();
     this->newLayoutSettings.borderWidth = DEFAULT_BORDER_WIDTH;
     this->newLayoutSettings.borderHeight = DEFAULT_BORDER_HEIGHT;
     this->newLayoutSettings.primaryTilesetLabel = getDefaultPrimaryTilesetLabel();
@@ -2112,7 +2110,12 @@ bool Project::readFieldmapProperties() {
     const QString numPalsTotalName = projectConfig.getIdentifier(ProjectIdentifier::define_pals_total);
     const QString maxMapSizeName = projectConfig.getIdentifier(ProjectIdentifier::define_map_size);
     const QString numTilesPerMetatileName = projectConfig.getIdentifier(ProjectIdentifier::define_tiles_per_metatile);
-    const QSet<QString> names = {
+    const QString mapOffsetWidthName = projectConfig.getIdentifier(ProjectIdentifier::define_map_offset_width);
+    const QString mapOffsetHeightName = projectConfig.getIdentifier(ProjectIdentifier::define_map_offset_height);
+
+    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
+    fileWatcher.addPath(root + "/" + filename);
+    const QMap<QString, int> defines = parser.readCDefinesByName(filename, {
         numTilesPrimaryName,
         numTilesTotalName,
         numMetatilesPrimaryName,
@@ -2120,24 +2123,23 @@ bool Project::readFieldmapProperties() {
         numPalsTotalName,
         maxMapSizeName,
         numTilesPerMetatileName,
-    };
-    const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
-    fileWatcher.addPath(root + "/" + filename);
-    const QMap<QString, int> defines = parser.readCDefinesByName(filename, names);
+        mapOffsetWidthName,
+        mapOffsetHeightName,
+    });
 
     auto loadDefine = [defines](const QString name, int * dest, int min, int max) {
         auto it = defines.find(name);
         if (it != defines.end()) {
             *dest = it.value();
             if (*dest < min) {
-                logWarn(QString("Value for tileset property '%1' (%2) is below the minimum (%3). Defaulting to minimum.").arg(name).arg(*dest).arg(min));
+                logWarn(QString("Value for '%1' (%2) is below the minimum (%3). Defaulting to minimum.").arg(name).arg(*dest).arg(min));
                 *dest = min;
             } else if (*dest > max) {
-                logWarn(QString("Value for tileset property '%1' (%2) is above the maximum (%3). Defaulting to maximum.").arg(name).arg(*dest).arg(max));
+                logWarn(QString("Value for '%1' (%2) is above the maximum (%3). Defaulting to maximum.").arg(name).arg(*dest).arg(max));
                 *dest = max;
             }
         } else {
-            logWarn(QString("Value for tileset property '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
+            logWarn(QString("Value for '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
         }
     };
     loadDefine(numPalsTotalName,        &Project::num_pals_total, 2, INT_MAX); // In reality the max would be 16, but as far as Porymap is concerned it doesn't matter.
@@ -2149,25 +2151,42 @@ bool Project::readFieldmapProperties() {
     // we don't actually know what the maximum number of metatiles is.
     loadDefine(numMetatilesPrimaryName, &Project::num_metatiles_primary, 1, 0xFFFF - 1);
 
+    int w = 15, h = 14; // Default values of MAP_OFFSET_W, MAP_OFFSET_H
+    loadDefine(mapOffsetWidthName, &w, 0, INT_MAX);
+    loadDefine(mapOffsetHeightName, &h, 0, INT_MAX);
+    this->mapSizeAddition = QSize(w, h);
+
+    this->maxMapDataSize = 10240; // Default value of MAX_MAP_DATA_SIZE
+    this->defaultMapSize = projectConfig.defaultMapSize;
     auto it = defines.find(maxMapSizeName);
     if (it != defines.end()) {
         int min = getMapDataSize(1, 1);
         if (it.value() >= min) {
-            Project::max_map_data_size = it.value();
-            calculateDefaultMapSize();
+            this->maxMapDataSize = it.value();
+            if (getMapDataSize(this->defaultMapSize.width(), this->defaultMapSize.height()) > this->maxMapDataSize) {
+                // The specified map size is too small to use the default map dimensions.
+                // Calculate the largest square map size that we can use instead.
+                int dimension = qFloor((qSqrt(4 * this->maxMapDataSize + 1) - (w + h)) / 2);
+                logWarn(QString("Value for '%1' (%2) is too small to support the default %3x%4 map. Default changed to %5x%5.")
+                    .arg(maxMapSizeName)
+                    .arg(it.value())
+                    .arg(this->defaultMapSize.width())
+                    .arg(this->defaultMapSize.height())
+                    .arg(dimension));
+                this->defaultMapSize = QSize(dimension, dimension);
+            }
         } else {
-            // must be large enough to support a 1x1 map
-            logWarn(QString("Value for map property '%1' is %2, must be at least %3. Using default (%4) instead.")
+            logWarn(QString("Value for '%1' (%2) is too small to support a 1x1 map. Must be at least %3. Using default (%4) instead.")
                     .arg(maxMapSizeName)
                     .arg(it.value())
                     .arg(min)
-                    .arg(Project::max_map_data_size));
+                    .arg(this->maxMapDataSize));
         }
     }
     else {
-        logWarn(QString("Value for map property '%1' not found. Using default (%2) instead.")
+        logWarn(QString("Value for '%1' not found. Using default (%2) instead.")
                 .arg(maxMapSizeName)
-                .arg(Project::max_map_data_size));
+                .arg(this->maxMapDataSize));
     }
 
     it = defines.find(numTilesPerMetatileName);
@@ -3144,91 +3163,28 @@ QPixmap Project::getSpeciesIcon(const QString &species) {
     return pixmap;
 }
 
-int Project::getNumTilesPrimary()
-{
-    return Project::num_tiles_primary;
+int Project::getMapDataSize(int width, int height) const {
+    return (width + this->mapSizeAddition.width())
+         * (height + this->mapSizeAddition.height());
 }
 
-int Project::getNumTilesTotal()
-{
-    return Project::num_tiles_total;
+int Project::getMaxMapWidth() const {
+    return (getMaxMapDataSize() / (1 + this->mapSizeAddition.height())) - this->mapSizeAddition.width();
 }
 
-int Project::getNumMetatilesPrimary()
-{
-    return Project::num_metatiles_primary;
+int Project::getMaxMapHeight() const {
+    return (getMaxMapDataSize() / (1 + this->mapSizeAddition.width())) - this->mapSizeAddition.height();
 }
 
-int Project::getNumMetatilesTotal()
-{
-    return Block::getMaxMetatileId() + 1;
-}
-
-int Project::getNumPalettesPrimary()
-{
-    return Project::num_pals_primary;
-}
-
-int Project::getNumPalettesTotal()
-{
-    return Project::num_pals_total;
-}
-
-int Project::getMaxMapDataSize()
-{
-    return Project::max_map_data_size;
-}
-
-int Project::getMapDataSize(int width, int height)
-{
-    // + 15 and + 14 come from fieldmap.c in pokeruby/pokeemerald/pokefirered.
-    return (width + 15) * (height + 14);
-}
-
-int Project::getDefaultMapDimension()
-{
-    return Project::default_map_dimension;
-}
-
-int Project::getMaxMapWidth()
-{
-    return (getMaxMapDataSize() / (1 + 14)) - 15;
-}
-
-int Project::getMaxMapHeight()
-{
-    return (getMaxMapDataSize() / (1 + 15)) - 14;
-}
-
-bool Project::mapDimensionsValid(int width, int height) {
+bool Project::mapDimensionsValid(int width, int height) const {
     return getMapDataSize(width, height) <= getMaxMapDataSize();
-}
-
-// Get largest possible square dimensions for a map up to maximum of 20x20 (arbitrary)
-bool Project::calculateDefaultMapSize(){
-    int max = getMaxMapDataSize();
-
-    if (max >= getMapDataSize(20, 20)) {
-        default_map_dimension = 20;
-    } else if (max >= getMapDataSize(1, 1)) {
-        // Below equation derived from max >= (x + 15) * (x + 14)
-        // x^2 + 29x + (210 - max), then complete the square and simplify
-        default_map_dimension = qFloor((qSqrt(4 * getMaxMapDataSize() + 1) - 29) / 2);
-    } else {
-        logError(QString("'%1' of %2 is too small to support a 1x1 map. Must be at least %3.")
-                    .arg(projectConfig.getIdentifier(ProjectIdentifier::define_map_size))
-                    .arg(max)
-                    .arg(getMapDataSize(1, 1)));
-        return false;
-    }
-    return true;
 }
 
 // Object events have their own limit specified by ProjectIdentifier::define_obj_event_count.
 // The default value for this is 64. All events (object events included) are also limited by
 // the data types of the event counters in the project. This would normally be u8, so the limit is 255.
 // We let the users tell us this limit in case they change these data types.
-int Project::getMaxEvents(Event::Group group) {
+int Project::getMaxEvents(Event::Group group) const {
     if (group == Event::Group::Object)
         return qMin(this->maxObjectEvents, projectConfig.maxEventsPerGroup);
     return projectConfig.maxEventsPerGroup;
@@ -3248,6 +3204,17 @@ QString Project::getDynamicMapName() {
 
 QString Project::getEmptySpeciesName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_species_empty);
+}
+
+// Get the distance in metatiles (rounded up) that the player is able to see in each direction in-game.
+// For the default view distance (i.e. assuming the player is centered in a 240x160 pixel GBA screen) this is 7x5 metatiles.
+QMargins Project::getMetatileViewDistance() {
+    QMargins viewDistance = projectConfig.playerViewDistance;
+    viewDistance.setTop(qCeil(viewDistance.top() / 16.0));
+    viewDistance.setBottom(qCeil(viewDistance.bottom() / 16.0));
+    viewDistance.setLeft(qCeil(viewDistance.left() / 16.0));
+    viewDistance.setRight(qCeil(viewDistance.right() / 16.0));
+    return viewDistance;
 }
 
 // If the provided filepath is an absolute path to an existing file, return filepath.
@@ -3283,8 +3250,8 @@ void Project::applyParsedLimits() {
     projectConfig.defaultMetatileId = qMin(projectConfig.defaultMetatileId, Block::getMaxMetatileId());
     projectConfig.defaultElevation = qMin(projectConfig.defaultElevation, Block::getMaxElevation());
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
-    projectConfig.collisionSheetHeight = qMin(qMax(projectConfig.collisionSheetHeight, 1), Block::getMaxElevation() + 1);
-    projectConfig.collisionSheetWidth = qMin(qMax(projectConfig.collisionSheetWidth, 1), Block::getMaxCollision() + 1);
+    projectConfig.collisionSheetSize.setHeight(qMin(qMax(projectConfig.collisionSheetSize.height(), 1), Block::getMaxElevation() + 1));
+    projectConfig.collisionSheetSize.setWidth(qMin(qMax(projectConfig.collisionSheetSize.width(), 1), Block::getMaxCollision() + 1));
 }
 
 bool Project::hasUnsavedChanges() {

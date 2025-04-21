@@ -226,30 +226,34 @@ public:
 
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
-
+    
     void setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries);
     QHash<QString, MapSectionEntry> getRegionMapEntries() const;
 
     QSet<QString> getTopLevelMapFields() const;
 
+    int getMapDataSize(int width, int height) const;
+    int getMaxMapDataSize() const { return this->maxMapDataSize; }
+    int getMaxMapWidth() const;
+    int getMaxMapHeight() const;
+    bool mapDimensionsValid(int width, int height) const;
+    bool calculateDefaultMapSize();
+    QSize getDefaultMapSize() const { return this->defaultMapSize; }
+    QSize getMapSizeAddition() const { return this->mapSizeAddition; }
+
+    int getMaxEvents(Event::Group group) const;
+
     static QString getEmptyMapDefineName();
     static QString getDynamicMapDefineName();
     static QString getDynamicMapName();
     static QString getEmptySpeciesName();
-    static int getNumTilesPrimary();
-    static int getNumTilesTotal();
-    static int getNumMetatilesPrimary();
-    static int getNumMetatilesTotal();
-    static int getNumPalettesPrimary();
-    static int getNumPalettesTotal();
-    static int getMaxMapDataSize();
-    static int getDefaultMapDimension();
-    static int getMaxMapWidth();
-    static int getMaxMapHeight();
-    static int getMapDataSize(int width, int height);
-    static bool mapDimensionsValid(int width, int height);
-    bool calculateDefaultMapSize();
-    int getMaxEvents(Event::Group group);
+    static QMargins getMetatileViewDistance();
+    static int getNumTilesPrimary() { return num_tiles_primary; }
+    static int getNumTilesTotal() { return num_tiles_total; }
+    static int getNumMetatilesPrimary() { return num_metatiles_primary; }
+    static int getNumMetatilesTotal() { return Block::getMaxMetatileId() + 1; }
+    static int getNumPalettesPrimary(){ return num_pals_primary; }
+    static int getNumPalettesTotal() { return num_pals_total; }
     static QString getEmptyMapsecName();
     static QString getMapGroupPrefix();
 
@@ -315,15 +319,19 @@ private:
 
     QString findSpeciesIconPath(const QStringList &names) const;
 
-    int maxEventsPerGroup;
     int maxObjectEvents;
+    int maxMapDataSize;
+    QSize defaultMapSize;
+    QSize mapSizeAddition;
+
+    // TODO: These really shouldn't be static, they're specific to a single project.
+    //       We're making an assumption here that we only have one project open at a single time
+    //       (which is true, but then if that's the case we should have some global Project instance instead)
     static int num_tiles_primary;
     static int num_tiles_total;
     static int num_metatiles_primary;
     static int num_pals_primary;
     static int num_pals_total;
-    static int max_map_data_size;
-    static int default_map_dimension;
 
 signals:
     void fileChanged(const QString &filepath);

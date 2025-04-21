@@ -86,17 +86,14 @@ bool NewLayoutForm::validateMapDimensions() {
     int size = m_project->getMapDataSize(ui->spinBox_MapWidth->value(), ui->spinBox_MapHeight->value());
     int maxSize = m_project->getMaxMapDataSize();
 
-    // TODO: Get from project
-    const int additionalWidth = 15;
-    const int additionalHeight = 14;
-
     QString errorText;
     if (size > maxSize) {
+        QSize addition = m_project->getMapSizeAddition();
         errorText = QString("The specified width and height are too large.\n"
                     "The maximum map width and height is the following: (width + %1) * (height + %2) <= %3\n"
                     "The specified map width and height was: (%4 + %1) * (%5 + %2) = %6")
-                        .arg(additionalWidth)
-                        .arg(additionalHeight)
+                        .arg(addition.width())
+                        .arg(addition.height())
                         .arg(maxSize)
                         .arg(ui->spinBox_MapWidth->value())
                         .arg(ui->spinBox_MapHeight->value())
