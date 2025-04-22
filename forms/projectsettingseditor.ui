@@ -1374,7 +1374,7 @@
                 <widget class="NoScrollComboBox" name="comboBox_WarpBehaviors"/>
                </item>
                <item row="4" column="0" colspan="3">
-                <widget class="QTextEdit" name="textEdit_WarpBehaviors">
+                <widget class="NoScrollTextEdit" name="textEdit_WarpBehaviors">
                  <property name="toolTip">
                   <string>Metatile Behaviors on this list won't trigger warnings for Warp Events</string>
                  </property>
@@ -1743,6 +1743,11 @@
    <class>NoScrollSpinBox</class>
    <extends>QSpinBox</extends>
    <header>noscrollspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>noscrolltextedit.h</header>
   </customwidget>
   <customwidget>
    <class>UIntSpinBox</class>
