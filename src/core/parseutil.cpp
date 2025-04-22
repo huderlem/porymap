@@ -483,7 +483,7 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
         const QString expression = defines.expressions.take(name);
         if (expression == " ") continue;
         this->curDefine = name;
-        filteredValues.insert(name, evaluateDefine(name, expression, &allValues, &defines.expressions));
+        filteredValues.insert(name, evaluateDefine(name, expression, &allValues, &defines.expressions)); // TODO: Unite map with global expressions? Allows users to overwrite project defines
         logRecordedErrors(); // Only log errors for defines that Porymap is looking for
     }
 
@@ -509,8 +509,12 @@ QStringList ParseUtil::readCDefineNames(const QString &filename, const QSet<QStr
 
 // Find any defines in the specified file and save their expressions.
 // If any of these defines are encountered later by other define parsing functions then they'll be recognized and evaluated.
-void ParseUtil::loadGlobalCDefines(const QString &filename, QString *error) {
-    this->globalDefineExpressions.insert(readCDefines(filename, {}, false, error).expressions);
+void ParseUtil::loadGlobalCDefinesFromFile(const QString &filename, QString *error) {
+    loadGlobalCDefines(readCDefines(filename, {}, false, error).expressions);
+}
+
+void ParseUtil::loadGlobalCDefines(const QMap<QString,QString> &defines) {
+    this->globalDefineExpressions.insert(defines);
 }
 
 void ParseUtil::resetGlobalCDefines() {

@@ -2747,11 +2747,12 @@ bool Project::readGlobalConstants() {
     this->parser.resetGlobalCDefines();
     for (const auto &path : projectConfig.globalConstantsFilepaths) {
         QString error;
-        this->parser.loadGlobalCDefines(path, &error);
+        this->parser.loadGlobalCDefinesFromFile(path, &error);
         if (!error.isEmpty()) {
             logWarn(QString("Failed to read global constants file '%1': %2").arg(path).arg(error));
         }
     }
+    this->parser.loadGlobalCDefines(projectConfig.globalConstants);
     return true;
 }
 

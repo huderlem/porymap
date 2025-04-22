@@ -58,7 +58,8 @@ public:
     QMap<QString, int> readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
     QMap<QString, int> readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error = nullptr);
     QStringList readCDefineNames(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
-    void loadGlobalCDefines(const QString &filename, QString *error = nullptr);
+    void loadGlobalCDefinesFromFile(const QString &filename, QString *error = nullptr);
+    void loadGlobalCDefines(const QMap<QString,QString> &defines);
     void resetGlobalCDefines();
     OrderedMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString>& = {});
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);

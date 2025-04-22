@@ -346,6 +346,7 @@ public:
         this->unusedTileSplit = 0x0000;
         this->maxEventsPerGroup = 255;
         this->globalConstantsFilepaths.clear();
+        this->globalConstants.clear();
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -419,6 +420,7 @@ public:
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
     QStringList globalConstantsFilepaths;
+    QMap<QString,QString> globalConstants;
 
 protected:
     virtual QString getConfigFilepath() override;

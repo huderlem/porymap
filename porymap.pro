@@ -104,6 +104,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
     src/ui/movementpermissionsselector.cpp \
+    src/ui/newdefinedialog.cpp \
     src/ui/neweventtoolbutton.cpp \
     src/ui/newlayoutdialog.cpp \
     src/ui/newlayoutform.cpp \
@@ -216,6 +217,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/metatileselector.h \
     include/ui/movablerect.h \
     include/ui/movementpermissionsselector.h \
+    include/ui/newdefinedialog.h \
     include/ui/neweventtoolbutton.h \
     include/ui/newlayoutdialog.h \
     include/ui/newlayoutform.h \
@@ -269,6 +271,7 @@ FORMS    += forms/mainwindow.ui \
     forms/gridsettingsdialog.ui \
     forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
+    forms/newdefinedialog.ui \
     forms/newlayoutdialog.ui \
     forms/newlayoutform.ui \
     forms/newlocationdialog.ui \

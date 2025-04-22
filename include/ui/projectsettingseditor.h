@@ -67,6 +67,12 @@ private:
     void setWarpBehaviorsList(QStringList list);
     void openFilesHelp();
     void openIdentifiersHelp();
+    void addNewGlobalConstantsFilepath();
+    void addGlobalConstantsFilepath(const QString &filepath);
+    QStringList getGlobalConstantsFilepaths();
+    void addNewGlobalConstant();
+    void addGlobalConstant(const QString &name, const QString &expression);
+    QMap<QString,QString> getGlobalConstants();
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
