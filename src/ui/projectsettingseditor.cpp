@@ -173,7 +173,10 @@ void ProjectSettingsEditor::initUi() {
 bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &identifier, const QString &filepath) {
     if (project && project->disabledSettingsNames.contains(identifier)) {
         widget->setEnabled(false);
-        widget->setToolTip(QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath));
+        QString toolTip = QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath);
+        if (!widget->toolTip().isEmpty())
+            toolTip.prepend(QString("%1\n\n").arg(widget->toolTip()));
+        widget->setToolTip(Util::toHtmlParagraph(toolTip));
         return true;
     }
     return false;

@@ -93,7 +93,7 @@ void MapListToolBar::setEmptyFoldersVisible(bool visible) {
     }
 
     // Update tool tip to reflect what will happen if the button is pressed.
-    const QString toolTip = QString("%1 empty folders in the list.").arg(visible ? "Hide" : "Show");
+    const QString toolTip = Util::toHtmlParagraph(QString("%1 empty folders in the list.").arg(visible ? "Hide" : "Show"));
     ui->button_ToggleEmptyFolders->setToolTip(toolTip);
 
     const QSignalBlocker b(ui->button_ToggleEmptyFolders);
