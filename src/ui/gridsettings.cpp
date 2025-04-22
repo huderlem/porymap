@@ -1,8 +1,6 @@
 #include "ui_gridsettingsdialog.h"
 #include "gridsettings.h"
 
-// TODO: Save settings in config
-
 const QMap<GridSettings::Style, QString> GridSettings::styleToName = {
     {Style::Solid, "Solid"},
     {Style::LargeDashes, "Large Dashes"},

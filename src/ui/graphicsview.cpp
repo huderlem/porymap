@@ -64,3 +64,12 @@ Overlay * MapView::getOverlay(int layer) {
     }
     return overlay;
 }
+
+void ConnectionsView::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
+        emit pressedDelete();
+        event->accept();
+    } else {
+        QGraphicsView::keyPressEvent(event);
+    }
+}

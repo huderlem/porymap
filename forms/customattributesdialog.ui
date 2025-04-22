@@ -33,7 +33,7 @@
       <item row="0" column="1">
        <widget class="QLineEdit" name="lineEdit_Name">
         <property name="toolTip">
-         <string>The key name for the new JSON field</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The key name for the new JSON field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="clearButtonEnabled">
          <bool>true</bool>
@@ -50,7 +50,7 @@
       <item row="2" column="1">
        <widget class="NoScrollComboBox" name="comboBox_Type">
         <property name="toolTip">
-         <string>The data type for the new JSON field</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The data type for the new JSON field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -70,7 +70,7 @@
          </sizepolicy>
         </property>
         <property name="toolTip">
-         <string>The value for the new JSON field</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The value for the new JSON field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <widget class="QWidget" name="page_String">
          <layout class="QHBoxLayout" name="horizontalLayout">

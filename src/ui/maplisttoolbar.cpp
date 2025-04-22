@@ -93,7 +93,7 @@ void MapListToolBar::setEmptyFoldersVisible(bool visible) {
     }
 
     // Update tool tip to reflect what will happen if the button is pressed.
-    const QString toolTip = QString("%1 empty folders in the list.").arg(visible ? "Hide" : "Show");
+    const QString toolTip = Util::toHtmlParagraph(QString("%1 empty folders in the list.").arg(visible ? "Hide" : "Show"));
     ui->button_ToggleEmptyFolders->setToolTip(toolTip);
 
     const QSignalBlocker b(ui->button_ToggleEmptyFolders);
@@ -121,7 +121,9 @@ void MapListToolBar::applyFilter(const QString &filterText) {
         return;
 
     const QSignalBlocker b(ui->lineEdit_filterBox);
-    ui->lineEdit_filterBox->setText(filterText);
+    if (ui->lineEdit_filterBox->text() != filterText) {
+        ui->lineEdit_filterBox->setText(filterText);
+    }
 
     // The clear button does not properly disappear when filterText is empty.
     // It seems like this is because blocking the QLineEdit's signals prevents

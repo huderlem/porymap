@@ -125,6 +125,7 @@ void WildMonSearch::updateResults(const QString &species) {
     const QList<RowData> results = this->resultsCache.value(species, search(species));
     if (results.isEmpty()) {
         static const RowData noResults = {
+            .mapName = "",
             .groupName = QStringLiteral("Species not found."),
             .fieldName = QStringLiteral("--"),
             .levelRange = QStringLiteral("--"),

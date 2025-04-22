@@ -64,6 +64,8 @@ private:
     QPointer<Project> m_project = nullptr;
     bool m_allowProjectChanges = true;
 
+    void setText(QComboBox *combo, const QString &text) const;
+    void setText(QLineEdit *lineEdit, const QString &text) const;
     void setLocations(const QStringList &locations);
     void updateLocationName();
 

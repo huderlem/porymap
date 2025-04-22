@@ -227,7 +227,7 @@ int MainWindow::getHeight() {
 void MainWindow::setDimensions(int width, int height) {
     if (!this->editor || !this->editor->layout)
         return;
-    if (!Project::mapDimensionsValid(width, height))
+    if (this->editor->project && !this->editor->project->mapDimensionsValid(width, height))
         return;
     this->editor->layout->setDimensions(width, height);
     this->tryCommitMapChanges(true);
@@ -237,7 +237,7 @@ void MainWindow::setDimensions(int width, int height) {
 void MainWindow::setWidth(int width) {
     if (!this->editor || !this->editor->layout)
         return;
-    if (!Project::mapDimensionsValid(width, this->editor->layout->getHeight()))
+    if (this->editor->project && !this->editor->project->mapDimensionsValid(width, this->editor->layout->getHeight()))
         return;
     this->editor->layout->setDimensions(width, this->editor->layout->getHeight());
     this->tryCommitMapChanges(true);
@@ -247,7 +247,7 @@ void MainWindow::setWidth(int width) {
 void MainWindow::setHeight(int height) {
     if (!this->editor || !this->editor->layout)
         return;
-    if (!Project::mapDimensionsValid(this->editor->layout->getWidth(), height))
+    if (this->editor->project && !this->editor->project->mapDimensionsValid(this->editor->layout->getWidth(), height))
         return;
     this->editor->layout->setDimensions(this->editor->layout->getWidth(), height);
     this->tryCommitMapChanges(true);

@@ -136,6 +136,12 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_UnusedTileCovered->setMaximum(Tile::maxValue);
     ui->spinBox_UnusedTileSplit->setMaximum(Tile::maxValue);
     ui->spinBox_MaxEvents->setMaximum(INT_MAX);
+    ui->spinBox_MapWidth->setMaximum(INT_MAX);
+    ui->spinBox_MapHeight->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_West->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_North->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_East->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_South->setMaximum(INT_MAX);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -167,7 +173,10 @@ void ProjectSettingsEditor::initUi() {
 bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &identifier, const QString &filepath) {
     if (project && project->disabledSettingsNames.contains(identifier)) {
         widget->setEnabled(false);
-        widget->setToolTip(QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath));
+        QString toolTip = QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath);
+        if (!widget->toolTip().isEmpty())
+            toolTip.prepend(QString("%1\n\n").arg(widget->toolTip()));
+        widget->setToolTip(Util::toHtmlParagraph(toolTip));
         return true;
     }
     return false;
@@ -456,8 +465,10 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
     ui->spinBox_Collision->setValue(projectConfig.defaultCollision);
     ui->spinBox_FillMetatile->setValue(projectConfig.defaultMetatileId);
-    ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetHeight - 1);
-    ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetWidth - 1);
+    ui->spinBox_MapWidth->setValue(projectConfig.defaultMapSize.width());
+    ui->spinBox_MapHeight->setValue(projectConfig.defaultMapSize.height());
+    ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetSize.height() - 1);
+    ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetSize.width() - 1);
     ui->spinBox_BehaviorMask->setValue(projectConfig.metatileBehaviorMask & ui->spinBox_BehaviorMask->maximum());
     ui->spinBox_EncounterTypeMask->setValue(projectConfig.metatileEncounterTypeMask & ui->spinBox_EncounterTypeMask->maximum());
     ui->spinBox_LayerTypeMask->setValue(projectConfig.metatileLayerTypeMask & ui->spinBox_LayerTypeMask->maximum());
@@ -469,6 +480,10 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_UnusedTileCovered->setValue(projectConfig.unusedTileCovered);
     ui->spinBox_UnusedTileSplit->setValue(projectConfig.unusedTileSplit);
     ui->spinBox_MaxEvents->setValue(projectConfig.maxEventsPerGroup);
+    ui->spinBox_PlayerViewDistance_West->setValue(projectConfig.playerViewDistance.left());
+    ui->spinBox_PlayerViewDistance_North->setValue(projectConfig.playerViewDistance.top());
+    ui->spinBox_PlayerViewDistance_East->setValue(projectConfig.playerViewDistance.right());
+    ui->spinBox_PlayerViewDistance_South->setValue(projectConfig.playerViewDistance.bottom());
 
     // Set (and sync) border metatile IDs
     this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
@@ -532,8 +547,8 @@ void ProjectSettingsEditor::save() {
     projectConfig.defaultElevation = ui->spinBox_Elevation->value();
     projectConfig.defaultCollision = ui->spinBox_Collision->value();
     projectConfig.defaultMetatileId = ui->spinBox_FillMetatile->value();
-    projectConfig.collisionSheetHeight = ui->spinBox_MaxElevation->value() + 1;
-    projectConfig.collisionSheetWidth = ui->spinBox_MaxCollision->value() + 1;
+    projectConfig.defaultMapSize = QSize(ui->spinBox_MapWidth->value(), ui->spinBox_MapHeight->value());
+    projectConfig.collisionSheetSize = QSize(ui->spinBox_MaxElevation->value() + 1, ui->spinBox_MaxCollision->value() + 1);
     projectConfig.metatileBehaviorMask = ui->spinBox_BehaviorMask->value();
     projectConfig.metatileTerrainTypeMask = ui->spinBox_TerrainTypeMask->value();
     projectConfig.metatileEncounterTypeMask = ui->spinBox_EncounterTypeMask->value();
@@ -545,6 +560,10 @@ void ProjectSettingsEditor::save() {
     projectConfig.unusedTileCovered = ui->spinBox_UnusedTileCovered->value();
     projectConfig.unusedTileSplit = ui->spinBox_UnusedTileSplit->value();
     projectConfig.maxEventsPerGroup = ui->spinBox_MaxEvents->value();
+    projectConfig.playerViewDistance = QMargins(ui->spinBox_PlayerViewDistance_West->value(),
+                                                ui->spinBox_PlayerViewDistance_North->value(),
+                                                ui->spinBox_PlayerViewDistance_East->value(),
+                                                ui->spinBox_PlayerViewDistance_South->value());
 
     // Save line edit settings
     projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();

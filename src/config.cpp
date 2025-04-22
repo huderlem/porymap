@@ -18,6 +18,12 @@
 #include <QAction>
 #include <QAbstractButton>
 
+const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
+
+// In both versions the default new map border is a generic tree
+const QList<uint16_t> defaultBorder_RSE = {0x1D4, 0x1D5, 0x1DC, 0x1DD};
+const QList<uint16_t> defaultBorder_FRLG = {0x14, 0x15, 0x1C, 0x1D};
+
 const QList<uint32_t> defaultWarpBehaviors_RSE = {
     0x0E, // MB_MOSSDEEP_GYM_WARP
     0x0F, // MB_MT_PYRE_HOLE
@@ -89,6 +95,8 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_pals_total,             {"define_pals_total",             "NUM_PALS_TOTAL"}},
     {ProjectIdentifier::define_tiles_per_metatile,     {"define_tiles_per_metatile",     "NUM_TILES_PER_METATILE"}},
     {ProjectIdentifier::define_map_size,               {"define_map_size",               "MAX_MAP_DATA_SIZE"}},
+    {ProjectIdentifier::define_map_offset_width,       {"define_map_offset_width",       "MAP_OFFSET_W"}},
+    {ProjectIdentifier::define_map_offset_height,      {"define_map_offset_height",      "MAP_OFFSET_H"}},
     {ProjectIdentifier::define_mask_metatile,          {"define_mask_metatile",          "MAPGRID_METATILE_ID_MASK"}},
     {ProjectIdentifier::define_mask_collision,         {"define_mask_collision",         "MAPGRID_COLLISION_MASK"}},
     {ProjectIdentifier::define_mask_elevation,         {"define_mask_elevation",         "MAPGRID_ELEVATION_MASK"}},
@@ -233,7 +241,7 @@ void KeyValueConfigBase::load() {
     file.close();
 }
 
-void KeyValueConfigBase::save() {
+bool KeyValueConfigBase::save() {
     QString text = "";
     QMap<QString, QString> map = this->getKeyValueMap();
     for (QMap<QString, QString>::iterator it = map.begin(); it != map.end(); it++) {
@@ -241,15 +249,17 @@ void KeyValueConfigBase::save() {
     }
 
     QFile file(this->getConfigFilepath());
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(text.toUtf8());
-        file.close();
-    } else {
+    if (!file.open(QIODevice::WriteOnly)) {
         logError(QString("Could not open config file '%1' for writing: ").arg(this->getConfigFilepath()) + file.errorString());
+        return false;
     }
+
+    file.write(text.toUtf8());
+    file.close();
+    return true;
 }
 
-bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
+bool KeyValueConfigBase::getConfigBool(const QString &key, const QString &value) {
     bool ok;
     int result = value.toInt(&ok, 0);
     if (!ok || (result != 0 && result != 1)) {
@@ -258,24 +268,33 @@ bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
     return (result != 0);
 }
 
-int KeyValueConfigBase::getConfigInteger(QString key, QString value, int min, int max, int defaultValue) {
+int KeyValueConfigBase::getConfigInteger(const QString &key, const QString &value, int min, int max, int defaultValue) {
     bool ok;
     int result = value.toInt(&ok, 0);
     if (!ok) {
-        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
-        return defaultValue;
+        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
+        result = defaultValue;
     }
     return qMin(max, qMax(min, result));
 }
 
-uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_t min, uint32_t max, uint32_t defaultValue) {
+uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &value, uint32_t min, uint32_t max, uint32_t defaultValue) {
     bool ok;
     uint32_t result = value.toUInt(&ok, 0);
     if (!ok) {
-        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
-        return defaultValue;
+        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
+        result = defaultValue;
     }
     return qMin(max, qMax(min, result));
+}
+
+QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &value, const QColor &defaultValue) {
+    QColor color = QColor("#" + value);
+    if (!color.isValid()) {
+        logWarn(QString("Invalid config value for %1: '%2'. Must be a color in the format 'RRGGBB'. Using default value '%3'.").arg(key).arg(value).arg(defaultValue.name()));
+        color = defaultValue;
+    }
+    return color;
 }
 
 PorymapConfig porymapConfig;
@@ -445,6 +464,18 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "shown_in_game_reload_message") {
         this->shownInGameReloadMessage = getConfigBool(key, value);
+    } else if (key == "grid_width") {
+        this->gridSettings.width = getConfigUint32(key, value);
+    } else if (key == "grid_height") {
+        this->gridSettings.height = getConfigUint32(key, value);
+    } else if (key == "grid_x") {
+        this->gridSettings.offsetX = getConfigInteger(key, value, 0, 999);
+    } else if (key == "grid_y") {
+        this->gridSettings.offsetY = getConfigInteger(key, value, 0, 999);
+    } else if (key == "grid_style") {
+        this->gridSettings.style = GridSettings::getStyleFromName(value);
+    } else if (key == "grid_color") {
+        this->gridSettings.color = getConfigColor(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -522,6 +553,12 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     }
     map.insert("event_selection_shape_mode", (this->eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) ? "mask" : "bounding_rect");
     map.insert("shown_in_game_reload_message", this->shownInGameReloadMessage ? "1" : "0");
+    map.insert("grid_width", QString::number(this->gridSettings.width));
+    map.insert("grid_height", QString::number(this->gridSettings.height));
+    map.insert("grid_x", QString::number(this->gridSettings.offsetX));
+    map.insert("grid_y", QString::number(this->gridSettings.offsetY));
+    map.insert("grid_style", GridSettings::getStyleName(this->gridSettings.style));
+    map.insert("grid_color", this->gridSettings.color.name().remove("#")); // Our text config treats '#' as the start of a comment.
     
     return map;
 }
@@ -737,6 +774,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->defaultElevation = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "default_collision") {
         this->defaultCollision = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "default_map_width") {
+        this->defaultMapSize.setWidth(getConfigInteger(key, value, 1));
+    } else if (key == "default_map_height") {
+        this->defaultMapSize.setHeight(getConfigInteger(key, value, 1));
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
@@ -826,9 +867,17 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
-        this->collisionSheetWidth = getConfigUint32(key, value, 1, Block::maxValue);
+        this->collisionSheetSize.setWidth(getConfigInteger(key, value, 1, Block::maxValue));
     } else if (key == "collision_sheet_height") {
-        this->collisionSheetHeight = getConfigUint32(key, value, 1, Block::maxValue);
+        this->collisionSheetSize.setHeight(getConfigInteger(key, value, 1, Block::maxValue));
+    } else if (key == "player_view_north") {
+        this->playerViewDistance.setTop(getConfigInteger(key, value, 0, INT_MAX, GBA_V_DIST_TO_CENTER));
+    } else if (key == "player_view_south") {
+        this->playerViewDistance.setBottom(getConfigInteger(key, value, 0, INT_MAX, GBA_V_DIST_TO_CENTER));
+    } else if (key == "player_view_west") {
+        this->playerViewDistance.setLeft(getConfigInteger(key, value, 0, INT_MAX, GBA_H_DIST_TO_CENTER));
+    } else if (key == "player_view_east") {
+        this->playerViewDistance.setRight(getConfigInteger(key, value, 0, INT_MAX, GBA_H_DIST_TO_CENTER));
     } else if (key == "warp_behaviors") {
         this->warpBehaviors.clear();
         value.remove(" ");
@@ -862,7 +911,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("enable_event_clone_object")) this->eventCloneObjectEnabled = isPokefirered;
     if (!readKeys.contains("enable_floor_number")) this->floorNumberEnabled = isPokefirered;
     if (!readKeys.contains("create_map_text_file")) this->createMapTextFileEnabled = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
+    if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? defaultBorder_FRLG : defaultBorder_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
     if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
     if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::Behavior);
@@ -890,6 +939,8 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("default_metatile", Metatile::getMetatileIdString(this->defaultMetatileId));
     map.insert("default_elevation", QString::number(this->defaultElevation));
     map.insert("default_collision", QString::number(this->defaultCollision));
+    map.insert("default_map_width", QString::number(this->defaultMapSize.width()));
+    map.insert("default_map_height", QString::number(this->defaultMapSize.height()));
     map.insert("new_map_border_metatiles", Metatile::getMetatileIdStrings(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
@@ -927,8 +978,12 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
         map.insert("ident/"+defaultIdentifiers.value(i.key()).first, i.value());
     }
     map.insert("collision_sheet_path", this->collisionSheetPath);
-    map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
-    map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
+    map.insert("collision_sheet_width", QString::number(this->collisionSheetSize.width()));
+    map.insert("collision_sheet_height", QString::number(this->collisionSheetSize.height()));
+    map.insert("player_view_north", QString::number(this->playerViewDistance.top()));
+    map.insert("player_view_south", QString::number(this->playerViewDistance.bottom()));
+    map.insert("player_view_west", QString::number(this->playerViewDistance.left()));
+    map.insert("player_view_east", QString::number(this->playerViewDistance.right()));
     QStringList warpBehaviorStrs;
     for (const auto &value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());

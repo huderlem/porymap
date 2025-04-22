@@ -63,23 +63,34 @@ bool Layout::isWithinBorderBounds(int x, int y) const {
     return (x >= 0 && x < this->getBorderWidth() && y >= 0 && y < this->getBorderHeight());
 }
 
-int Layout::getBorderDrawWidth() const {
-    return getBorderDrawDistance(border_width, BORDER_DISTANCE);
-}
-
-int Layout::getBorderDrawHeight() const {
-    return getBorderDrawDistance(border_height, BORDER_DISTANCE);
-}
-
-// We need to draw sufficient border blocks to fill the area that gets loaded around the player in-game (BORDER_DISTANCE).
-// Note that this is not the same as the player's view distance.
-// The result will be some multiple of the input dimension, because we only draw the border in increments of its full width/height.
+// Calculate the distance away from the layout's edge that we need to start drawing border blocks.
+// We need to fulfill two requirements here:
+// - We should draw enough to fill the player's in-game view
+// - The value should be some multiple of the border's dimension
+//   (otherwise the border won't be positioned the same as it would in-game).
 int Layout::getBorderDrawDistance(int dimension, qreal minimum) {
     if (dimension >= minimum)
         return dimension;
 
     // Get first multiple of dimension >= the minimum
     return dimension * qCeil(minimum / qMax(dimension, 1));
+}
+QMargins Layout::getBorderMargins() const {
+    QMargins minimum = Project::getMetatileViewDistance();
+    QMargins distance;
+    distance.setTop(getBorderDrawDistance(this->border_height, minimum.top()));
+    distance.setBottom(getBorderDrawDistance(this->border_height, minimum.bottom()));
+    distance.setLeft(getBorderDrawDistance(this->border_width, minimum.left()));
+    distance.setRight(getBorderDrawDistance(this->border_width, minimum.right()));
+    return distance;
+}
+
+// Get a rectangle that represents (in pixels) the layout's map area and the visible area of its border.
+// At maximum, this is equal to the map size plus the border margins.
+// If the border is large (and so beyond player the view) it may be smaller than that.
+QRect Layout::getVisibleRect() const {
+    QRect area = QRect(0, 0, this->width * 16, this->height * 16);
+    return area += (Project::getMetatileViewDistance() * 16);
 }
 
 bool Layout::getBlock(int x, int y, Block *out) {
@@ -467,11 +478,50 @@ QPixmap Layout::getLayoutItemPixmap() {
     return this->layoutItem ? this->layoutItem->pixmap() : QPixmap();
 }
 
-void Layout::setClean() {
-    this->editHistory.setClean();
-    this->hasUnsavedDataChanges = false;
-}
-
 bool Layout::hasUnsavedChanges() const {
     return !this->editHistory.isClean() || this->hasUnsavedDataChanges || !this->newFolderPath.isEmpty();
+}
+
+bool Layout::save(const QString &root) {
+    if (!this->newFolderPath.isEmpty()) {
+        // Layout directory doesn't exist yet, create it now.
+        const QString fullPath = QString("%1/%2").arg(root).arg(this->newFolderPath);
+        if (!QDir::root().mkpath(fullPath)) {
+            logError(QString("Failed to create directory for new layout: '%1'").arg(fullPath));
+            return false;
+        }
+        this->newFolderPath = QString();
+    }
+
+    bool success = true;
+    if (!saveBorder(root)) success = false;
+    if (!saveBlockdata(root)) success = false;
+    if (!success)
+        return false;
+
+    this->editHistory.setClean();
+    this->hasUnsavedDataChanges = false;
+    return true;
+}
+
+bool Layout::saveBorder(const QString &root) {
+    QString path = QString("%1/%2").arg(root).arg(this->border_path);
+    return writeBlockdata(path, this->border);
+}
+
+bool Layout::saveBlockdata(const QString &root) {
+    QString path = QString("%1/%2").arg(root).arg(this->blockdata_path);
+    return writeBlockdata(path, this->blockdata);
+}
+
+bool Layout::writeBlockdata(const QString &path, const Blockdata &blockdata) const {
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(path).arg(file.errorString()));
+        return false;
+    }
+
+    QByteArray data = blockdata.serialize();
+    file.write(data);
+    return true;
 }

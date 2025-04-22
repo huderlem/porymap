@@ -57,8 +57,8 @@ public:
     GridSettings gridSettings;
 
     void setProject(Project * project);
-    void saveAll();
-    void saveCurrent();
+    bool saveAll();
+    bool saveCurrent();
     void saveEncounterTabData();
 
     void closeProject();
@@ -92,14 +92,16 @@ public:
     void setConnectionsVisibility(bool visible);
     void updateDivingMapsVisibility();
     void renderDivingConnections();
-    void addConnection(MapConnection* connection);
+    void addNewConnection(const QString &mapName, const QString &direction);
+    void replaceConnection(const QString &mapName, const QString &direction);
     void removeConnection(MapConnection* connection);
+    void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
     void configureEncounterJSON(QWidget *);
     EncounterTableModel* getCurrentWildMonTable();
-    void updateDiveMap(QString mapName);
-    void updateEmergeMap(QString mapName);
+    bool setDivingMapName(const QString &mapName, const QString &direction);
+    QString getDivingMapName(const QString &direction) const;
     void setSelectedConnection(MapConnection *connection);
 
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
@@ -120,6 +122,7 @@ public:
     void updateEventPixmapItemZValue(EventPixmapItem *item);
     qreal getEventOpacity(const Event *event) const;
 
+    void setPlayerViewRect(const QRectF &rect);
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
 
@@ -215,7 +218,7 @@ private:
 
     EditMode editMode = EditMode::None;
 
-    void save(bool currentOnly);
+    bool save(bool currentOnly);
     void clearMap();
     void clearMetatileSelector();
     void clearMovementPermissionSelector();
@@ -234,8 +237,9 @@ private:
     void removeConnectionPixmap(MapConnection *connection);
     void displayConnection(MapConnection *connection);
     void displayDivingConnection(MapConnection *connection);
-    void setDivingMapName(QString mapName, QString direction);
     void removeDivingMapPixmap(MapConnection *connection);
+    void onDivingMapEditingFinished(NoScrollComboBox* combo, const QString &direction);
+    void updateDivingMapButton(QToolButton* button, const QString &mapName);
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);

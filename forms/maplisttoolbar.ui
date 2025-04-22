@@ -32,7 +32,7 @@
    <item>
     <widget class="QToolButton" name="button_AddFolder">
      <property name="toolTip">
-      <string>Add a new folder to the list.</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a new folder to the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string/>
@@ -73,7 +73,7 @@
    <item>
     <widget class="QToolButton" name="button_ExpandAll">
      <property name="toolTip">
-      <string>Expand all folders in the list.</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all folders in the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string/>
@@ -93,7 +93,7 @@
    <item>
     <widget class="QToolButton" name="button_CollapseAll">
      <property name="toolTip">
-      <string>Collapse all folders in the list.</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all folders in the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string/>
@@ -113,7 +113,7 @@
    <item>
     <widget class="QToolButton" name="button_ToggleEdit">
      <property name="toolTip">
-      <string>If enabled, folders may be renamed and items in the list may be rearranged.</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, folders may be renamed and items in the list may be rearranged.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string/>

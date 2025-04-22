@@ -22,10 +22,6 @@
 #define MAX_BORDER_WIDTH 255
 #define MAX_BORDER_HEIGHT 255
 
-// Number of metatiles to draw out from edge of map. Could allow modification of this in the future.
-// porymap will reflect changes to it, but the value is hard-coded in the projects at the moment
-#define BORDER_DISTANCE 7
-
 class LayoutPixmapItem;
 class CollisionPixmapItem;
 class BorderMetatilesPixmapItem;
@@ -89,6 +85,7 @@ public:
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const { return m_connections; }
+    MapConnection* getConnection(const QString &direction) const;
     void removeConnection(MapConnection *);
     void addConnection(MapConnection *);
     void loadConnection(MapConnection *);

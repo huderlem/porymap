@@ -10,7 +10,6 @@ ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection)
       connection(connection)
 {
     this->setEditable(true);
-    setFlag(ItemIsFocusable, true);
     this->basePixmap = pixmap();
     updateOrigin();
     render(false);
@@ -119,10 +118,6 @@ bool ConnectionPixmapItem::getEditable() {
 }
 
 void ConnectionPixmapItem::setSelected(bool selected) {
-    if (selected && !hasFocus()) {
-        setFocus(Qt::OtherFocusReason);
-    }
-
     if (this->selected == selected)
         return;
     this->selected = selected;
@@ -132,7 +127,7 @@ void ConnectionPixmapItem::setSelected(bool selected) {
 }
 
 void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
-    setFocus(Qt::MouseFocusReason);
+    this->setSelected(true);
 }
 
 void ConnectionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
@@ -142,19 +137,4 @@ void ConnectionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
     emit connectionItemDoubleClicked(this->connection);
-}
-
-void ConnectionPixmapItem::keyPressEvent(QKeyEvent* event) {
-    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
-        emit deleteRequested(this->connection);
-    } else {
-        QGraphicsPixmapItem::keyPressEvent(event);
-    }
-}
-
-void ConnectionPixmapItem::focusInEvent(QFocusEvent* event) {
-    if (!this->getEditable())
-        return;
-    this->setSelected(true);
-    QGraphicsPixmapItem::focusInEvent(event);
 }

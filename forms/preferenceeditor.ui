@@ -40,7 +40,7 @@
         <item>
          <widget class="QCheckBox" name="checkBox_MonitorProjectFiles">
           <property name="toolTip">
-           <string>If checked, a prompt to reload your project will appear if relevant project files are edited</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a prompt to reload your project will appear if relevant project files are edited&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Monitor project files</string>
@@ -50,7 +50,7 @@
         <item>
          <widget class="QCheckBox" name="checkBox_OpenRecentProject">
           <property name="toolTip">
-           <string>If checked, Porymap will automatically open your most recently opened project on startup</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, Porymap will automatically open your most recently opened project on startup&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Open recent project on launch</string>
@@ -60,7 +60,7 @@
         <item>
          <widget class="QCheckBox" name="checkBox_CheckForUpdates">
           <property name="toolTip">
-           <string>If checked, Porymap will automatically alert you on startup if a new release is available</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, Porymap will automatically alert you on startup if a new release is available&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Automatically check for updates</string>
@@ -112,7 +112,7 @@
         <item>
          <widget class="QCheckBox" name="checkBox_DisableEventWarning">
           <property name="toolTip">
-           <string>If checked, no warning will be shown when deleting an event that has an associated #define that may also be deleted.</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, no warning will be shown when deleting an event that has an associated #define that may also be deleted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Disable warning when deleting events with IDs</string>
@@ -138,7 +138,7 @@
            <item>
             <widget class="QRadioButton" name="radioButton_OnSprite">
              <property name="toolTip">
-              <string>If enabled, an event can be selected by clicking directly on the opaque pixels of its sprite. This may be preferable when events are overlapping.</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, an event can be selected by clicking directly on the opaque pixels of its sprite. This may be preferable when events are overlapping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Select by clicking on sprite</string>
@@ -148,7 +148,7 @@
            <item>
             <widget class="QRadioButton" name="radioButton_WithinRect">
              <property name="toolTip">
-              <string>If enabled, an event can be selected by clicking anywhere within its sprite dimensions. This may be preferable for events with small or mostly transparent sprites.</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, an event can be selected by clicking anywhere within its sprite dimensions. This may be preferable for events with small or mostly transparent sprites.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Select by clicking within bounding rectangle</string>
@@ -231,7 +231,7 @@
             <item row="0" column="1">
              <widget class="QLineEdit" name="lineEdit_TextEditorOpenFolder">
               <property name="toolTip">
-               <string>The shell command for your preferred text editor (possibly an absolute path if the program doesn't exist in your PATH).</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The shell command for your preferred text editor (possibly an absolute path if the program doesn't exist in your PATH).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="placeholderText">
                <string>e.g. code %D</string>
@@ -264,7 +264,7 @@
             <item row="5" column="1">
              <widget class="QLineEdit" name="lineEdit_TextEditorGotoLine">
               <property name="toolTip">
-               <string>The shell command for your preferred text editor to open a file to a specific line number (possibly an absolute path if the program doesn't exist in your PATH).</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The shell command for your preferred text editor to open a file to a specific line number (possibly an absolute path if the program doesn't exist in your PATH).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="placeholderText">
                <string>e.g. code --goto %F:%L</string>

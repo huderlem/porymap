@@ -43,8 +43,6 @@ protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent*) override;
-    virtual void keyPressEvent(QKeyEvent*) override;
-    virtual void focusInEvent(QFocusEvent*) override;
 
 signals:
     void connectionItemDoubleClicked(MapConnection*);

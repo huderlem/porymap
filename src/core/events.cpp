@@ -777,6 +777,7 @@ Event *HealLocationEvent::duplicate() const {
     copy->setX(this->getX());
     copy->setY(this->getY());
     copy->setIdName(this->getIdName());
+    copy->setHostMapName(this->getHostMapName());
     copy->setRespawnMapName(this->getRespawnMapName());
     copy->setRespawnNPC(this->getRespawnNPC());
 

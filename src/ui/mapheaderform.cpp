@@ -174,18 +174,28 @@ void MapHeaderForm::updateLocationName() {
 }
 
 // Set data in UI
-void MapHeaderForm::setSong(const QString &song) {                 ui->comboBox_Song->setCurrentText(song); }
-void MapHeaderForm::setLocation(const QString &location) {         ui->comboBox_Location->setCurrentText(location); }
-void MapHeaderForm::setLocationName(const QString &locationName) { ui->lineEdit_LocationName->setText(locationName); }
+void MapHeaderForm::setSong(const QString &song) {                 setText(ui->comboBox_Song, song); }
+void MapHeaderForm::setLocation(const QString &location) {         setText(ui->comboBox_Location, location); }
+void MapHeaderForm::setLocationName(const QString &locationName) { setText(ui->lineEdit_LocationName, locationName); }
 void MapHeaderForm::setRequiresFlash(bool requiresFlash) {         ui->checkBox_RequiresFlash->setChecked(requiresFlash); }
-void MapHeaderForm::setWeather(const QString &weather) {           ui->comboBox_Weather->setCurrentText(weather); }
-void MapHeaderForm::setType(const QString &type) {                 ui->comboBox_Type->setCurrentText(type); }
-void MapHeaderForm::setBattleScene(const QString &battleScene) {   ui->comboBox_BattleScene->setCurrentText(battleScene); }
+void MapHeaderForm::setWeather(const QString &weather) {           setText(ui->comboBox_Weather, weather); }
+void MapHeaderForm::setType(const QString &type) {                 setText(ui->comboBox_Type, type); }
+void MapHeaderForm::setBattleScene(const QString &battleScene) {   setText(ui->comboBox_BattleScene, battleScene); }
 void MapHeaderForm::setShowsLocationName(bool showsLocationName) { ui->checkBox_ShowLocationName->setChecked(showsLocationName); }
 void MapHeaderForm::setAllowsRunning(bool allowsRunning) {         ui->checkBox_AllowRunning->setChecked(allowsRunning); }
 void MapHeaderForm::setAllowsBiking(bool allowsBiking) {           ui->checkBox_AllowBiking->setChecked(allowsBiking); }
 void MapHeaderForm::setAllowsEscaping(bool allowsEscaping) {       ui->checkBox_AllowEscaping->setChecked(allowsEscaping); }
 void MapHeaderForm::setFloorNumber(int floorNumber) {              ui->spinBox_FloorNumber->setValue(floorNumber); }
+
+// If we always call setText / setCurrentText the user's cursor may move to the end of the text while they're typing.
+void MapHeaderForm::setText(QComboBox *combo, const QString &text) const {
+    if (combo->currentText() != text)
+        combo->setCurrentText(text);
+}
+void MapHeaderForm::setText(QLineEdit *lineEdit, const QString &text) const {
+    if (lineEdit->text() != text)
+        lineEdit->setText(text);
+}
 
 // Read data from UI
 QString MapHeaderForm::song() const {           return ui->comboBox_Song->currentText(); }

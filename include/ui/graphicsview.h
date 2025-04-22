@@ -32,4 +32,17 @@ signals:
     void clicked(QMouseEvent *event);
 };
 
+class ConnectionsView : public QGraphicsView
+{
+    Q_OBJECT
+public:
+    ConnectionsView(QWidget *parent = nullptr) : QGraphicsView(parent) {}
+
+signals:
+    void pressedDelete();
+
+protected:
+    virtual void keyPressEvent(QKeyEvent *event) override;
+};
+
 #endif // GRAPHICSVIEW_H

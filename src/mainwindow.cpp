@@ -261,6 +261,10 @@ void MainWindow::initCustomUI() {
     // Create map header data widget
     this->mapHeaderForm = new MapHeaderForm();
     ui->layout_HeaderData->addWidget(this->mapHeaderForm);
+
+    // Center zooming on the mouse
+    ui->graphicsView_Map->setTransformationAnchor(QGraphicsView::ViewportAnchor::AnchorUnderMouse);
+    ui->graphicsView_Map->setResizeAnchor(QGraphicsView::ViewportAnchor::AnchorUnderMouse);
 }
 
 void MainWindow::initExtraSignals() {
@@ -348,6 +352,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
     connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
+    connect(ui->graphicsView_Connections, &ConnectionsView::pressedDelete, this->editor, &Editor::removeSelectedConnection);
 
     this->loadUserSettings();
 
@@ -582,6 +587,8 @@ void MainWindow::loadUserSettings() {
     ui->checkBox_MirrorConnections->setChecked(porymapConfig.mirrorConnectingMaps);
     ui->checkBox_ToggleBorder->setChecked(porymapConfig.showBorder);
     ui->actionShow_Events_In_Map_View->setChecked(porymapConfig.eventOverlayEnabled);
+
+    this->editor->gridSettings = porymapConfig.gridSettings;
 
     setTheme(porymapConfig.theme);
     setDivingMapsVisible(porymapConfig.showDiveEmergeMaps);
@@ -1202,6 +1209,8 @@ bool MainWindow::setProjectUI() {
     ui->newEventToolButton->setEventTypeVisible(Event::Type::SecretBase, projectConfig.eventSecretBaseEnabled);
     ui->newEventToolButton->setEventTypeVisible(Event::Type::CloneObject, projectConfig.eventCloneObjectEnabled);
 
+    this->editor->setPlayerViewRect(QRectF(0, 0, 16, 16).marginsAdded(projectConfig.playerViewDistance));
+
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_SelectedCollision->setMaximum(Block::getMaxCollision());
@@ -1244,10 +1253,7 @@ void MainWindow::clearProjectUI() {
     const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
     ui->comboBox_SecondaryTileset->clear();
 
-    const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
     ui->comboBox_DiveMap->clear();
-
-    const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
     ui->comboBox_EmergeMap->clear();
 
     const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
@@ -1408,8 +1414,6 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     // (other combo boxes like for warp destinations are repopulated when the map changes).
     int mapIndex = this->editor->project->mapNames.indexOf(newMap->name());
     if (mapIndex >= 0) {
-        const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
-        const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
         ui->comboBox_DiveMap->insertItem(mapIndex, newMap->name());
         ui->comboBox_EmergeMap->insertItem(mapIndex, newMap->name());
     }
@@ -1665,16 +1669,15 @@ void MainWindow::on_action_Save_triggered() {
     save(true);
 }
 
-void MainWindow::save(bool currentOnly) {
-    if (currentOnly) {
-        this->editor->saveCurrent();
-    } else {
-        this->editor->saveAll();
+bool MainWindow::save(bool currentOnly) {
+    bool success = currentOnly ? this->editor->saveCurrent() : this->editor->saveAll();
+    if (!success) {
+        RecentErrorMessage::show(QStringLiteral("Failed to save some project changes."), this);
     }
     updateWindowTitle();
     updateMapList();
 
-    if (!porymapConfig.shownInGameReloadMessage) {
+    if (success && !porymapConfig.shownInGameReloadMessage) {
         // Show a one-time warning that the user may need to reload their map to see their new changes.
         InfoMessage::show(QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
                                          "the changes may not appear until you leave the map and return."),
@@ -1683,6 +1686,7 @@ void MainWindow::save(bool currentOnly) {
     }
 
     saveGlobalConfigs();
+    return success;
 }
 
 void MainWindow::duplicate() {
@@ -2018,6 +2022,7 @@ void MainWindow::on_actionGrid_Settings_triggered() {
     if (!this->gridSettingsDialog) {
         this->gridSettingsDialog = new GridSettingsDialog(&this->editor->gridSettings, this);
         connect(this->gridSettingsDialog, &GridSettingsDialog::changedGridSettings, this->editor, &Editor::updateMapGrid);
+        connect(this->gridSettingsDialog, &GridSettingsDialog::accepted, [this] { porymapConfig.gridSettings = this->editor->gridSettings; });
     }
     openSubWindow(this->gridSettingsDialog);
 }
@@ -2620,7 +2625,8 @@ void MainWindow::on_pushButton_AddConnection_clicked() {
         return;
 
     auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames);
-    connect(dialog, &NewMapConnectionDialog::accepted, this->editor, &Editor::addConnection);
+    connect(dialog, &NewMapConnectionDialog::newConnectionedAdded, this->editor, &Editor::addNewConnection);
+    connect(dialog, &NewMapConnectionDialog::connectionReplaced, this->editor, &Editor::replaceConnection);
     dialog->open();
 }
 
@@ -2671,17 +2677,6 @@ void MainWindow::on_button_OpenDiveMap_clicked() {
 
 void MainWindow::on_button_OpenEmergeMap_clicked() {
     userSetMap(ui->comboBox_EmergeMap->currentText());
-}
-
-void MainWindow::on_comboBox_DiveMap_currentTextChanged(const QString &mapName) {
-    // Include empty names as an update (user is deleting the connection)
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName))
-        editor->updateDiveMap(mapName);
-}
-
-void MainWindow::on_comboBox_EmergeMap_currentTextChanged(const QString &mapName) {
-    if (mapName.isEmpty() || editor->project->mapNames.contains(mapName))
-        editor->updateEmergeMap(mapName);
 }
 
 void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
@@ -3079,7 +3074,8 @@ bool MainWindow::closeProject() {
 
         auto reply = msgBox.exec();
         if (reply == QMessageBox::Yes) {
-            save();
+            if (!save())
+                return false;
         } else if (reply == QMessageBox::No) {
             logWarn("Closing project with unsaved changes.");
         } else if (reply == QMessageBox::Cancel) {

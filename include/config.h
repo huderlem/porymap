@@ -14,19 +14,20 @@
 #include <QGraphicsPixmapItem>
 
 #include "events.h"
+#include "gridsettings.h"
 
-static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
+extern const QVersionNumber porymapVersion;
 
-// In both versions the default new map border is a generic tree
-#define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
-#define DEFAULT_BORDER_FRLG (QList<uint16_t>{0x14, 0x15, 0x1C, 0x1D})
+// Distance in pixels from the edge of a GBA screen (240x160) to the center 16x16 pixels.
+#define GBA_H_DIST_TO_CENTER ((240-16)/2)
+#define GBA_V_DIST_TO_CENTER ((160-16)/2)
 
 #define CONFIG_BACKWARDS_COMPATABILITY
 
 class KeyValueConfigBase
 {
 public:
-    void save();
+    bool save();
     void load();
     virtual ~KeyValueConfigBase();
     virtual void reset() = 0;
@@ -36,9 +37,11 @@ protected:
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void init() = 0;
     virtual void setUnreadKeys() = 0;
-    bool getConfigBool(QString key, QString value);
-    int getConfigInteger(QString key, QString value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
-    uint32_t getConfigUint32(QString key, QString value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
+
+    static bool getConfigBool(const QString &key, const QString &value);
+    static int getConfigInteger(const QString &key, const QString &value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
+    static uint32_t getConfigUint32(const QString &key, const QString &value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
+    static QColor getConfigColor(const QString &key, const QString &value, const QColor &defaultValue = Qt::black);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -92,6 +95,7 @@ public:
         this->rateLimitTimes.clear();
         this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
         this->shownInGameReloadMessage = false;
+        this->gridSettings = GridSettings();
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -156,6 +160,7 @@ public:
     QByteArray newMapDialogGeometry;
     QByteArray newLayoutDialogGeometry;
     bool shownInGameReloadMessage;
+    GridSettings gridSettings;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -214,6 +219,8 @@ enum ProjectIdentifier {
     define_pals_total,
     define_tiles_per_metatile,
     define_map_size,
+    define_map_offset_width,
+    define_map_offset_height,
     define_mask_metatile,
     define_mask_collision,
     define_mask_elevation,
@@ -317,6 +324,7 @@ public:
         this->defaultMetatileId = 1;
         this->defaultElevation = 3;
         this->defaultCollision = 0;
+        this->defaultMapSize = QSize(20,20);
         this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
@@ -328,8 +336,8 @@ public:
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
         this->collisionSheetPath = QString();
-        this->collisionSheetWidth = 2;
-        this->collisionSheetHeight = 16;
+        this->collisionSheetSize = QSize(2, 16);
+        this->playerViewDistance = QMargins(GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER, GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER);
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
@@ -382,6 +390,7 @@ public:
     uint16_t defaultMetatileId;
     uint16_t defaultElevation;
     uint16_t defaultCollision;
+    QSize defaultMapSize;
     QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;
@@ -404,8 +413,8 @@ public:
     uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
     QString collisionSheetPath;
-    int collisionSheetWidth;
-    int collisionSheetHeight;
+    QSize collisionSheetSize;
+    QMargins playerViewDistance;
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
 
