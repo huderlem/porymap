@@ -83,6 +83,7 @@ public:
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const { return m_connections; }
+    MapConnection* getConnection(const QString &direction) const;
     void removeConnection(MapConnection *);
     void addConnection(MapConnection *);
     void loadConnection(MapConnection *);

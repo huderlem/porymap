@@ -223,6 +223,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/newmapgroupdialog.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
+    include/ui/noscrolltextedit.h \
     include/ui/montabwidget.h \
     include/ui/encountertablemodel.h \
     include/ui/encountertabledelegates.h \

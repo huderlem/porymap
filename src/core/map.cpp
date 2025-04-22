@@ -289,6 +289,15 @@ void Map::removeConnection(MapConnection *connection) {
     emit connectionRemoved(connection);
 }
 
+// Return the first map connection that has the given direction.
+MapConnection* Map::getConnection(const QString &direction) const {
+    for (const auto &connection : m_connections) {
+        if (connection->direction() == direction)
+            return connection;
+    }
+    return nullptr;
+}
+
 void Map::commit(QUndoCommand *cmd) {
     m_editHistory->push(cmd);
 }
