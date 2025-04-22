@@ -18,8 +18,8 @@ NewLayoutForm::NewLayoutForm(QWidget *parent)
     connect(ui->spinBox_MapWidth,  QOverload<int>::of(&QSpinBox::valueChanged), [=](int){ validateMapDimensions(); });
     connect(ui->spinBox_MapHeight, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){ validateMapDimensions(); });
 
-    connect(ui->comboBox_PrimaryTileset->lineEdit(),   &QLineEdit::editingFinished, [this]{ validatePrimaryTileset(true); });
-    connect(ui->comboBox_SecondaryTileset->lineEdit(), &QLineEdit::editingFinished, [this]{ validateSecondaryTileset(true); });
+    connect(ui->comboBox_PrimaryTileset,   &NoScrollComboBox::editingFinished, [this]{ validatePrimaryTileset(true); });
+    connect(ui->comboBox_SecondaryTileset, &NoScrollComboBox::editingFinished, [this]{ validateSecondaryTileset(true); });
 }
 
 NewLayoutForm::~NewLayoutForm()

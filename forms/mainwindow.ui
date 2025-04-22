@@ -351,12 +351,6 @@
                      <property name="autoFillBackground">
                       <bool>false</bool>
                      </property>
-                     <property name="transformationAnchor">
-                      <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-                     </property>
-                     <property name="resizeAnchor">
-                      <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-                     </property>
                     </widget>
                    </item>
                   </layout>
@@ -2435,6 +2429,9 @@
                   </item>
                   <item row="1" column="0">
                    <widget class="QToolButton" name="button_OpenDiveMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
                      <string>Open the selected Dive Map</string>
                     </property>
@@ -2569,6 +2566,9 @@
                   </item>
                   <item row="0" column="0">
                    <widget class="QToolButton" name="button_OpenEmergeMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
                      <string>Open the selected Emerge Map</string>
                     </property>
@@ -2589,7 +2589,7 @@
                  <property name="orientation">
                   <enum>Qt::Orientation::Horizontal</enum>
                  </property>
-                 <widget class="QGraphicsView" name="graphicsView_Connections">
+                 <widget class="ConnectionsView" name="graphicsView_Connections">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -3313,8 +3313,13 @@
   </customwidget>
   <customwidget>
    <class>MapView</class>
-   <extends>QWidget</extends>
+   <extends>QGraphicsView</extends>
    <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ConnectionsView</class>
+   <extends>QGraphicsView</extends>
+   <header>graphicsview.h</header>
   </customwidget>
   <customwidget>
    <class>MapTree</class>
@@ -3324,7 +3329,7 @@
   <customwidget>
    <class>NoScrollGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>mapview.h</header>
+   <header>graphicsview.h</header>
   </customwidget>
   <customwidget>
    <class>MapListToolBar</class>
