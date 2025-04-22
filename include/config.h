@@ -345,6 +345,7 @@ public:
         this->unusedTileCovered = 0x0000;
         this->unusedTileSplit = 0x0000;
         this->maxEventsPerGroup = 255;
+        this->globalConstantsFilepaths.clear();
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -417,6 +418,7 @@ public:
     QMargins playerViewDistance;
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
+    QStringList globalConstantsFilepaths;
 
 protected:
     virtual QString getConfigFilepath() override;

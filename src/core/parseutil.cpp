@@ -15,26 +15,8 @@ const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|l
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
-static const QMap<QString, int> globalDefineValues = {
-    {"FALSE", 0},
-    {"TRUE", 1},
-    {"SCHAR_MIN", SCHAR_MIN},
-    {"SCHAR_MAX", SCHAR_MAX},
-    {"CHAR_MIN", CHAR_MIN},
-    {"CHAR_MAX", CHAR_MAX},
-    {"UCHAR_MAX", UCHAR_MAX},
-    {"SHRT_MIN", SHRT_MIN},
-    {"SHRT_MAX", SHRT_MAX},
-    {"USHRT_MAX", USHRT_MAX},
-    {"INT_MIN", INT_MIN},
-    {"INT_MAX", INT_MAX},
-    {"UINT_MAX", UINT_MAX},
-};
-
-ParseUtil::ParseUtil() { }
-
-void ParseUtil::set_root(const QString &dir) {
-    this->root = dir;
+ParseUtil::ParseUtil() {
+    resetGlobalCDefines();
 }
 
 QString ParseUtil::pathWithRoot(const QString &path) {
@@ -181,10 +163,14 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int
             QString token = match.captured(tokenType);
             if (!token.isEmpty()) {
                 if (tokenType == "identifier") {
+                    // If this expression depends on a define we know of but haven't evaluated then evaluate it now
                     if (unevaluatedExpressions->contains(token)) {
-                        // This expression depends on a define we know of but haven't evaluated. Evaluate it now
                         evaluateDefine(token, unevaluatedExpressions->value(token), knownValues, unevaluatedExpressions);
+                    } else if (this->globalDefineExpressions.contains(token)) {
+                        int value = evaluateDefine(token, this->globalDefineExpressions.value(token), &this->globalDefineValues, &this->globalDefineExpressions);
+                        knownValues->insert(token, value);
                     }
+
                     if (knownValues->contains(token)) {
                         // Any errors encountered when this identifier was evaluated should be recorded for this expression as well.
                         recordErrors(this->errorMap.value(token));
@@ -490,7 +476,7 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
 
     // Evaluate defines
     QMap<QString, int> filteredValues;
-    QMap<QString, int> allValues = globalDefineValues;
+    QMap<QString, int> allValues = this->globalDefineValues;
     this->errorMap.clear();
     while (!defines.filteredNames.isEmpty()) {
         const QString name = defines.filteredNames.takeFirst();
@@ -519,6 +505,32 @@ QMap<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const
 // We can skip evaluating any expressions (and by extension skip reporting any errors from this process).
 QStringList ParseUtil::readCDefineNames(const QString &filename, const QSet<QString> &regexList, QString *error) {
     return readCDefines(filename, regexList, true, error).filteredNames;
+}
+
+// Find any defines in the specified file and save their expressions.
+// If any of these defines are encountered later by other define parsing functions then they'll be recognized and evaluated.
+void ParseUtil::loadGlobalCDefines(const QString &filename, QString *error) {
+    this->globalDefineExpressions.insert(readCDefines(filename, {}, false, error).expressions);
+}
+
+void ParseUtil::resetGlobalCDefines() {
+    static const QMap<QString, int> defaultDefineValues = {
+        {"FALSE", 0},
+        {"TRUE", 1},
+        {"SCHAR_MIN", SCHAR_MIN},
+        {"SCHAR_MAX", SCHAR_MAX},
+        {"CHAR_MIN", CHAR_MIN},
+        {"CHAR_MAX", CHAR_MAX},
+        {"UCHAR_MAX", UCHAR_MAX},
+        {"SHRT_MIN", SHRT_MIN},
+        {"SHRT_MAX", SHRT_MAX},
+        {"USHRT_MAX", USHRT_MAX},
+        {"INT_MIN", INT_MIN},
+        {"INT_MAX", INT_MAX},
+        {"UINT_MAX", UINT_MAX},
+    };
+    this->globalDefineValues = defaultDefineValues;
+    this->globalDefineExpressions.clear();
 }
 
 QStringList ParseUtil::readCArray(const QString &filename, const QString &label) {

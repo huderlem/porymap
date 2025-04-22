@@ -48,10 +48,10 @@ Project::~Project()
     QPixmapCache::clear();
 }
 
-void Project::set_root(QString dir) {
+void Project::setRoot(const QString &dir) {
     this->root = dir;
     FileDialog::setDirectory(dir);
-    this->parser.set_root(dir);
+    this->parser.setRoot(dir);
 }
 
 // Before attempting the initial project load we should check for a few notable files.
@@ -78,7 +78,8 @@ bool Project::sanityCheck() {
 bool Project::load() {
     resetFileCache();
     this->disabledSettingsNames.clear();
-    bool success = readMapLayouts()
+    bool success = readGlobalConstants()
+                && readMapLayouts()
                 && readRegionMapSections()
                 && readItemNames()
                 && readFlagNames()
@@ -2739,6 +2740,18 @@ bool Project::readMiscellaneousConstants() {
                 .arg(this->maxObjectEvents));
     }
 
+    return true;
+}
+
+bool Project::readGlobalConstants() {
+    this->parser.resetGlobalCDefines();
+    for (const auto &path : projectConfig.globalConstantsFilepaths) {
+        QString error;
+        this->parser.loadGlobalCDefines(path, &error);
+        if (!error.isEmpty()) {
+            logWarn(QString("Failed to read global constants file '%1': %2").arg(path).arg(error));
+        }
+    }
     return true;
 }
 

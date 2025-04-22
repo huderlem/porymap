@@ -660,7 +660,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
 
     // Create the project
     auto project = new Project(editor);
-    project->set_root(dir);
+    project->setRoot(dir);
     connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
     connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
     connect(project, &Project::mapCreated, this, &MainWindow::onNewMapCreated);

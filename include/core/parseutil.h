@@ -43,7 +43,7 @@ class ParseUtil
 {
 public:
     ParseUtil();
-    void set_root(const QString &dir);
+    void setRoot(const QString &dir) { this->root = dir; }
     static QString readTextFile(const QString &path, QString *error = nullptr);
     bool cacheFile(const QString &path, QString *error = nullptr);
     void clearFileCache() { this->fileCache.clear(); }
@@ -58,6 +58,8 @@ public:
     QMap<QString, int> readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
     QMap<QString, int> readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error = nullptr);
     QStringList readCDefineNames(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
+    void loadGlobalCDefines(const QString &filename, QString *error = nullptr);
+    void resetGlobalCDefines();
     OrderedMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString>& = {});
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
@@ -90,6 +92,8 @@ private:
     QString curDefine;
     QHash<QString, QString> fileCache;
     QHash<QString, QStringList> errorMap;
+    QMap<QString, int> globalDefineValues;
+    QMap<QString, QString> globalDefineExpressions;
     int evaluateDefine(const QString&, const QString &, QMap<QString, int>*, QMap<QString, QString>*);
     QList<Token> tokenizeExpression(QString, QMap<QString, int>*, QMap<QString, QString>*);
     QList<Token> generatePostfix(const QList<Token> &tokens);
