@@ -60,7 +60,7 @@ public:
     QStringList readCDefineNames(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
     void loadGlobalCDefinesFromFile(const QString &filename, QString *error = nullptr);
     void loadGlobalCDefines(const QMap<QString,QString> &defines);
-    void resetGlobalCDefines();
+    void resetCDefines();
     OrderedMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString>& = {});
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
     QStringList getLabelValues(const QList<QStringList>&, const QString&);
@@ -93,10 +93,20 @@ private:
     QString curDefine;
     QHash<QString, QString> fileCache;
     QHash<QString, QStringList> errorMap;
+
+    // The maps of define names to values/expressions that are available while parsing C defines.
+    // As the parser reads and evaluates more defines it will update these maps accordingly.
+    QMap<QString, int> knownDefineValues;
+    QMap<QString, QString> knownDefineExpressions;
+
+    // Maps of special define names to values/expressions that take precedence over defines encountered while parsing.
+    // Some (like 'TRUE'/'FALSE') are always present in these maps, others may be specified by the user with 'loadGlobalCDefines' / 'loadGlobalCDefinesFromFile'.
     QMap<QString, int> globalDefineValues;
     QMap<QString, QString> globalDefineExpressions;
-    int evaluateDefine(const QString&, const QString &, QMap<QString, int>*, QMap<QString, QString>*);
-    QList<Token> tokenizeExpression(QString, QMap<QString, int>*, QMap<QString, QString>*);
+
+    int evaluateDefine(const QString &identifier, bool *ok = nullptr);
+    int evaluateExpression(const QString &expression);
+    QList<Token> tokenizeExpression(QString expression);
     QList<Token> generatePostfix(const QList<Token> &tokens);
     int evaluatePostfix(const QList<Token> &postfix);
     void recordError(const QString &message);

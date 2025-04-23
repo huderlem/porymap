@@ -2744,7 +2744,7 @@ bool Project::readMiscellaneousConstants() {
 }
 
 bool Project::readGlobalConstants() {
-    this->parser.resetGlobalCDefines();
+    this->parser.resetCDefines();
     for (const auto &path : projectConfig.globalConstantsFilepaths) {
         QString error;
         this->parser.loadGlobalCDefinesFromFile(path, &error);

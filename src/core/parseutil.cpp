@@ -16,7 +16,7 @@ const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((gl
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
 ParseUtil::ParseUtil() {
-    resetGlobalCDefines();
+    resetCDefines();
 }
 
 QString ParseUtil::pathWithRoot(const QString &path) {
@@ -125,28 +125,48 @@ QList<QStringList> ParseUtil::parseAsm(const QString &filename) {
     return parsed;
 }
 
-// 'identifier' is the name of the #define to evaluate, e.g. 'FOO' in '#define FOO (BAR+1)'
-// 'expression' is the text of the #define to evaluate, e.g. '(BAR+1)' in '#define FOO (BAR+1)'
-// 'knownValues' is a pointer to a map of identifier->values for defines that have already been evaluated.
-// 'unevaluatedExpressions' is a pointer to a map of identifier->expressions for defines that have not been evaluated. If this map contains any
-//   identifiers found in 'expression' then this function will be called recursively to evaluate that define first.
-// This function will maintain the passed maps appropriately as new #defines are evaluated.
-int ParseUtil::evaluateDefine(const QString &identifier, const QString &expression, QMap<QString, int> *knownValues, QMap<QString, QString> *unevaluatedExpressions) {
-    if (unevaluatedExpressions->contains(identifier))
-        unevaluatedExpressions->remove(identifier);
+// Try to evaluate the given #define/enum 'identifier' name using the information the parser has.
+// If it recognizes the name as an identifier it's aware of (either from having parsed it or having been told about
+// it using 'loadGlobalCDefines') it will evaluate it if necessary then return the resulting value and set 'ok' to true.
+// Evaluated identifiers are cached, and will only be re-evaluated if the parser encounters a new expression for that identifier.
+// If it doesn't recognize it, 'ok' will be set to false and it will return 0.
+int ParseUtil::evaluateDefine(const QString &identifier, bool *ok) {
+    if (ok) *ok = true;
 
-    if (knownValues->contains(identifier))
-        return knownValues->value(identifier);
+    // Global defines take precedence
+    if (this->globalDefineExpressions.contains(identifier)) {
+        int value = evaluateExpression(this->globalDefineExpressions.take(identifier));
+        this->globalDefineValues.insert(identifier, value);
+        return value;
+    }
+    auto it = this->globalDefineValues.constFind(identifier);
+    if (it != this->globalDefineValues.constEnd()) {
+        return it.value();
+    }
 
-    QList<Token> tokens = tokenizeExpression(expression, knownValues, unevaluatedExpressions);
-    QList<Token> postfixExpression = generatePostfix(tokens);
-    int value = evaluatePostfix(postfixExpression);
+    // Check known expressions before checking known values.
+    // If an identifier is redefined then we'll receive a new expression for it, and we want to make sure we re-evaluate it.
+    if (this->knownDefineExpressions.contains(identifier)) {
+        int value = evaluateExpression(this->knownDefineExpressions.take(identifier));
+        this->knownDefineValues.insert(identifier, value);
+        return value;
+    }
+    it = this->knownDefineValues.constFind(identifier);
+    if (it != this->knownDefineValues.constEnd()) {
+        return it.value();
+    }
 
-    knownValues->insert(identifier, value);
-    return value;
+    if (ok) *ok = false;
+    return 0;
 }
 
-QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int> *knownValues, QMap<QString, QString> *unevaluatedExpressions) {
+int ParseUtil::evaluateExpression(const QString &expression) {
+    QList<Token> tokens = tokenizeExpression(expression);
+    QList<Token> postfixExpression = generatePostfix(tokens);
+    return evaluatePostfix(postfixExpression);
+}
+
+QList<Token> ParseUtil::tokenizeExpression(QString expression) {
     QList<Token> tokens;
 
     static const QStringList tokenTypes = {"hex", "decimal", "identifier", "operator", "leftparen", "rightparen"};
@@ -163,18 +183,14 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int
             QString token = match.captured(tokenType);
             if (!token.isEmpty()) {
                 if (tokenType == "identifier") {
-                    // If this expression depends on a define we know of but haven't evaluated then evaluate it now
-                    if (unevaluatedExpressions->contains(token)) {
-                        evaluateDefine(token, unevaluatedExpressions->value(token), knownValues, unevaluatedExpressions);
-                    } else if (this->globalDefineExpressions.contains(token)) {
-                        int value = evaluateDefine(token, this->globalDefineExpressions.value(token), &this->globalDefineValues, &this->globalDefineExpressions);
-                        knownValues->insert(token, value);
-                    }
-
-                    if (knownValues->contains(token)) {
+                    bool ok;
+                    int tokenValue = evaluateDefine(token, &ok);
+                    if (ok) {
                         // Any errors encountered when this identifier was evaluated should be recorded for this expression as well.
                         recordErrors(this->errorMap.value(token));
-                        QString actualToken = QString("%1").arg(knownValues->value(token));
+
+                        // Replace token with evaluated expression
+                        QString actualToken = QString::number(tokenValue);
                         expression = expression.replace(0, token.length(), actualToken);
                         token = actualToken;
                         tokenType = "decimal";
@@ -467,6 +483,7 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
                 result.filteredNames.append(name);
         }
     }
+    this->knownDefineExpressions.insert(result.expressions);
     return result;
 }
 
@@ -476,14 +493,10 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
 
     // Evaluate defines
     QMap<QString, int> filteredValues;
-    QMap<QString, int> allValues = this->globalDefineValues;
     this->errorMap.clear();
     while (!defines.filteredNames.isEmpty()) {
-        const QString name = defines.filteredNames.takeFirst();
-        const QString expression = defines.expressions.take(name);
-        if (expression == " ") continue;
-        this->curDefine = name;
-        filteredValues.insert(name, evaluateDefine(name, expression, &allValues, &defines.expressions)); // TODO: Unite map with global expressions? Allows users to overwrite project defines
+        this->curDefine = defines.filteredNames.takeFirst();
+        filteredValues.insert(this->curDefine, evaluateDefine(this->curDefine));
         logRecordedErrors(); // Only log errors for defines that Porymap is looking for
     }
 
@@ -517,7 +530,7 @@ void ParseUtil::loadGlobalCDefines(const QMap<QString,QString> &defines) {
     this->globalDefineExpressions.insert(defines);
 }
 
-void ParseUtil::resetGlobalCDefines() {
+void ParseUtil::resetCDefines() {
     static const QMap<QString, int> defaultDefineValues = {
         {"FALSE", 0},
         {"TRUE", 1},
@@ -535,6 +548,8 @@ void ParseUtil::resetGlobalCDefines() {
     };
     this->globalDefineValues = defaultDefineValues;
     this->globalDefineExpressions.clear();
+    this->knownDefineValues.clear();
+    this->knownDefineExpressions.clear();
 }
 
 QStringList ParseUtil::readCArray(const QString &filename, const QString &label) {
