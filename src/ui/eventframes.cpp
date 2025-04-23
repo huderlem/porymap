@@ -230,8 +230,9 @@ void ObjectFrame::setup() {
     // local id
     QFormLayout *l_form_local_id = new QFormLayout();
     this->line_edit_local_id = new QLineEdit(this);
-    this->line_edit_local_id->setToolTip("An optional, unique name to use to refer to this object in scripts.\n"
-                                         "If no game is given you can refer to this object using its 'object id' number.");
+    static const QString line_edit_local_id_toolTip = Util::toHtmlParagraph("An optional, unique name to use to refer to this object in scripts. "
+                                                                            "If no name is given you can refer to this object using its 'object id' number.");
+    this->line_edit_local_id->setToolTip(line_edit_local_id_toolTip);
     this->line_edit_local_id->setPlaceholderText("LOCALID_MY_NPC");
     l_form_local_id->addRow("Local ID", this->line_edit_local_id);
     this->layout_contents->addLayout(l_form_local_id);
@@ -455,8 +456,9 @@ void CloneObjectFrame::setup() {
     // local id
     QFormLayout *l_form_local_id = new QFormLayout();
     this->line_edit_local_id = new QLineEdit(this);
-    this->line_edit_local_id->setToolTip("An optional, unique name to use to refer to this object in scripts.\n"
-                                         "If no game is given you can refer to this object using its 'object id' number.");
+    static const QString line_edit_local_id_toolTip = Util::toHtmlParagraph("An optional, unique name to use to refer to this object in scripts. "
+                                                                            "If no name is given you can refer to this object using its 'object id' number.");
+    this->line_edit_local_id->setToolTip(line_edit_local_id_toolTip);
     this->line_edit_local_id->setPlaceholderText("LOCALID_MY_CLONE_NPC");
     l_form_local_id->addRow("Local ID", this->line_edit_local_id);
     this->layout_contents->addLayout(l_form_local_id);
@@ -464,9 +466,10 @@ void CloneObjectFrame::setup() {
     // sprite combo (edits disabled)
     QFormLayout *l_form_sprite = new QFormLayout();
     this->combo_sprite = new NoScrollComboBox(this);
-    this->combo_sprite->setToolTip("The sprite graphics to use for this object. This is updated automatically\n"
-                                    "to match the target object, and so can't be edited. By default the games\n"
-                                    "will get the graphics directly from the target object, so this field is ignored.");
+    static const QString combo_sprite_toolTip = Util::toHtmlParagraph("The sprite graphics to use for this object. This is updated automatically "
+                                                                      "to match the target object, and so can't be edited. By default the games "
+                                                                      "will get the graphics directly from the target object, so this field is ignored.");
+    this->combo_sprite->setToolTip(combo_sprite_toolTip);
     l_form_sprite->addRow("Sprite", this->combo_sprite);
     this->combo_sprite->setEnabled(false);
     this->layout_contents->addLayout(l_form_sprite);
@@ -574,8 +577,9 @@ void WarpFrame::setup() {
     // ID
     QFormLayout *l_form_id = new QFormLayout();
     this->line_edit_id = new QLineEdit(this);
-    this->line_edit_id->setToolTip("An optional, unique name to use to refer to this warp from other warps.\n"
-                                   "If no game is given you can refer to this warp using its 'warp id' number.");
+    static const QString line_edit_id_toolTip = Util::toHtmlParagraph("An optional, unique name to use to refer to this warp from other warps. "
+                                                                      "If no name is given you can refer to this warp using its 'warp id' number.");
+    this->line_edit_id->setToolTip(line_edit_id_toolTip);
     this->line_edit_id->setPlaceholderText("WARP_ID_MY_WARP");
     l_form_id->addRow("ID", this->line_edit_id);
     this->layout_contents->addLayout(l_form_id);
