@@ -488,11 +488,11 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
 }
 
 // Read all the define names and their expressions in the specified file, then evaluate the ones matching the search text (and any they depend on).
-QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error) {
+QHash<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error) {
     ParsedDefines defines = readCDefines(filename, filterList, useRegex, error);
 
     // Evaluate defines
-    QMap<QString, int> filteredValues;
+    QHash<QString, int> filteredValues;
     this->errorMap.clear();
     while (!defines.filteredNames.isEmpty()) {
         this->curDefine = defines.filteredNames.takeFirst();
@@ -504,12 +504,12 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
 }
 
 // Find and evaluate a specific set of defines with known names.
-QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error) {
+QHash<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error) {
     return evaluateCDefines(filename, names, false, error);
 }
 
 // Find and evaluate an unknown list of defines with a known name pattern.
-QMap<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error) {
+QHash<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error) {
     return evaluateCDefines(filename, regexList, true, error);
 }
 
@@ -526,12 +526,17 @@ void ParseUtil::loadGlobalCDefinesFromFile(const QString &filename, QString *err
     loadGlobalCDefines(readCDefines(filename, {}, false, error).expressions);
 }
 
-void ParseUtil::loadGlobalCDefines(const QMap<QString,QString> &defines) {
+void ParseUtil::loadGlobalCDefines(const QHash<QString,QString> &defines) {
     this->globalDefineExpressions.insert(defines);
 }
 
+void ParseUtil::loadGlobalCDefines(const QMap<QString,QString> &defines) {
+    for (auto it = defines.constBegin(); it != defines.constEnd(); it++)
+        this->globalDefineExpressions.insert(it.key(), it.value());
+}
+
 void ParseUtil::resetCDefines() {
-    static const QMap<QString, int> defaultDefineValues = {
+    static const QHash<QString, int> defaultDefineValues = {
         {"FALSE", 0},
         {"TRUE", 1},
         {"SCHAR_MIN", SCHAR_MIN},

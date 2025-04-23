@@ -55,11 +55,12 @@ public:
     QString readCIncbin(const QString &text, const QString &label);
     QMap<QString, QString> readCIncbinMulti(const QString &filepath);
     QStringList readCIncbinArray(const QString &filename, const QString &label);
-    QMap<QString, int> readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
-    QMap<QString, int> readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error = nullptr);
+    QHash<QString, int> readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
+    QHash<QString, int> readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error = nullptr);
     QStringList readCDefineNames(const QString &filename, const QSet<QString> &regexList, QString *error = nullptr);
     void loadGlobalCDefinesFromFile(const QString &filename, QString *error = nullptr);
     void loadGlobalCDefines(const QMap<QString,QString> &defines);
+    void loadGlobalCDefines(const QHash<QString,QString> &defines);
     void resetCDefines();
     OrderedMap<QString, QHash<QString, QString>> readCStructs(const QString &, const QString & = "", const QHash<int, QString>& = {});
     QList<QStringList> getLabelMacros(const QList<QStringList>&, const QString&);
@@ -96,13 +97,13 @@ private:
 
     // The maps of define names to values/expressions that are available while parsing C defines.
     // As the parser reads and evaluates more defines it will update these maps accordingly.
-    QMap<QString, int> knownDefineValues;
-    QMap<QString, QString> knownDefineExpressions;
+    QHash<QString, int> knownDefineValues;
+    QHash<QString, QString> knownDefineExpressions;
 
     // Maps of special define names to values/expressions that take precedence over defines encountered while parsing.
     // Some (like 'TRUE'/'FALSE') are always present in these maps, others may be specified by the user with 'loadGlobalCDefines' / 'loadGlobalCDefinesFromFile'.
-    QMap<QString, int> globalDefineValues;
-    QMap<QString, QString> globalDefineExpressions;
+    QHash<QString, int> globalDefineValues;
+    QHash<QString, QString> globalDefineExpressions;
 
     int evaluateDefine(const QString &identifier, bool *ok = nullptr);
     int evaluateExpression(const QString &expression);
@@ -115,11 +116,11 @@ private:
     QString createErrorMessage(const QString &message, const QString &expression);
 
     struct ParsedDefines {
-        QMap<QString,QString> expressions; // Map of all define names encountered to their expressions
+        QHash<QString,QString> expressions; // Map of all define names encountered to their expressions
         QStringList filteredNames; // List of define names that matched the search text, in the order that they were encountered
     };
     ParsedDefines readCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error);
-    QMap<QString, int> evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error);
+    QHash<QString, int> evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error);
     bool defineNameMatchesFilter(const QString &name, const QSet<QString> &filterList) const;
     bool defineNameMatchesFilter(const QString &name, const QSet<QRegularExpression> &filterList) const;
     QString loadTextFile(const QString &path, QString *error = nullptr);
