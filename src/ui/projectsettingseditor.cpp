@@ -548,7 +548,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.defaultCollision = ui->spinBox_Collision->value();
     projectConfig.defaultMetatileId = ui->spinBox_FillMetatile->value();
     projectConfig.defaultMapSize = QSize(ui->spinBox_MapWidth->value(), ui->spinBox_MapHeight->value());
-    projectConfig.collisionSheetSize = QSize(ui->spinBox_MaxElevation->value() + 1, ui->spinBox_MaxCollision->value() + 1);
+    projectConfig.collisionSheetSize = QSize(ui->spinBox_MaxCollision->value() + 1, ui->spinBox_MaxElevation->value() + 1);
     projectConfig.metatileBehaviorMask = ui->spinBox_BehaviorMask->value();
     projectConfig.metatileTerrainTypeMask = ui->spinBox_TerrainTypeMask->value();
     projectConfig.metatileEncounterTypeMask = ui->spinBox_EncounterTypeMask->value();
