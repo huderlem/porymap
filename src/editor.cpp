@@ -170,6 +170,7 @@ void Editor::setEditMode(EditMode editMode) {
     }
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(editingLayout);
+    this->playerViewRect->setActive(editingLayout);
     this->editGroup.setActiveStack(editStack);
     setMapEditingButtonsEnabled(editingLayout);
 
@@ -1111,6 +1112,7 @@ void Editor::scaleMapView(int s) {
 void Editor::setPlayerViewRect(const QRectF &rect) {
     delete this->playerViewRect;
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, rect, qRgb(255, 255, 255));
+    this->playerViewRect->setActive(getEditingLayout());
     if (ui->graphicsView_Map->scene())
         ui->graphicsView_Map->scene()->update();
 }

@@ -1961,7 +1961,7 @@ void MainWindow::on_actionPlayer_View_Rectangle_triggered()
     this->editor->settings->playerViewRectEnabled = enabled;
     if ((this->editor->map_item && this->editor->map_item->has_mouse)
      || (this->editor->collision_item && this->editor->collision_item->has_mouse)) {
-        this->editor->playerViewRect->setVisible(enabled);
+        this->editor->playerViewRect->setVisible(enabled && this->editor->playerViewRect->getActive());
         ui->graphicsView_Map->scene()->update();
     }
 }

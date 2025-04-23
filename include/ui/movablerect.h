@@ -20,7 +20,7 @@ public:
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
-        if (!(*enabled)) return;
+        if (!isVisible()) return;
         painter->setPen(this->color);
         painter->drawRect(this->rect() + QMargins(1,1,1,1)); // Fill
         painter->setPen(Qt::black);
@@ -28,11 +28,17 @@ public:
         painter->drawRect(this->rect()); // Inner border
     }
     void updateLocation(int x, int y);
-    bool *enabled;
+
+    void setActive(bool active);
+    bool getActive() const { return this->active; }
 
 protected:
+    bool *enabled = nullptr;
+    bool active = true;
     QRectF baseRect;
     QRgb color;
+
+    void updateVisibility();
 };
 
 

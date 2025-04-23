@@ -11,16 +11,25 @@ MovableRect::MovableRect(bool *enabled, const QRectF &rect, const QRgb &color)
     baseRect(rect),
     color(color)
 {
-    this->setVisible(*enabled);
+    updateVisibility();
 }
 
 /// Center rect on grid position (x, y)
 void MovableRect::updateLocation(int x, int y) {
-    this->setRect(this->baseRect.x() + (x * 16),
-                  this->baseRect.y() + (y * 16),
-                  this->baseRect.width(),
-                  this->baseRect.height());
-    this->setVisible(*this->enabled);
+    setRect(this->baseRect.x() + (x * 16),
+            this->baseRect.y() + (y * 16),
+            this->baseRect.width(),
+            this->baseRect.height());
+    updateVisibility();
+}
+
+void MovableRect::setActive(bool active) {
+    this->active = active;
+    updateVisibility();
+}
+
+void MovableRect::updateVisibility() {
+    setVisible(*this->enabled && this->active);
 }
 
 /******************************************************************************
