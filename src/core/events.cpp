@@ -20,8 +20,7 @@ Event* Event::create(Event::Type type) {
 }
 
 Event::~Event() {
-    if (this->eventFrame)
-        this->eventFrame->deleteLater();
+    delete this->eventFrame;
 }
 
 EventFrame *Event::getEventFrame() {
