@@ -650,9 +650,7 @@ void ProjectSettingsEditor::addNewGlobalConstantsFilepath() {
 void ProjectSettingsEditor::addGlobalConstantsFilepath(const QString &filepath) {
     auto filepathLabel = new QLabel(filepath, this);
     filepathLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
-    filepathLabel->setTextInteractionFlags(Qt::TextSelectableByMouse); // TODO: This doesn't allow Copy shortcut from the keyboard to work
-
-    // TODO: Tool tips
+    filepathLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     int newRow = ui->gridLayout_GlobalConstantsFiles->rowCount();
     ui->gridLayout_GlobalConstantsFiles->addWidget(filepathLabel, newRow, 0);
@@ -693,10 +691,9 @@ void ProjectSettingsEditor::addNewGlobalConstant() {
 }
 
 void ProjectSettingsEditor::addGlobalConstant(const QString &name, const QString &expression) {
-    // TODO: Tool tips
     auto nameLabel = new QLabel(name, this);
     nameLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
-    nameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse); // TODO: This doesn't allow Copy shortcut from the keyboard to work
+    nameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     auto expressionLineEdit = new QLineEdit(expression, this);
 

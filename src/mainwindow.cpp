@@ -1665,6 +1665,13 @@ void MainWindow::duplicate() {
 void MainWindow::copy() {
     auto focused = QApplication::focusWidget();
     if (focused) {
+        // Allow copying text from selectable QLabels.
+        auto label = dynamic_cast<QLabel*>(focused);
+        if (label && !label->selectedText().isEmpty()) {
+            setClipboardData(label->selectedText());
+            return;
+        }
+
         QString objectName = focused->objectName();
         if (objectName == "graphicsView_currentMetatileSelection") {
             // copy the current metatile selection as json data
