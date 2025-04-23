@@ -483,7 +483,14 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
                 result.filteredNames.append(name);
         }
     }
+    // QHash::insert(const QHash<K, V> &other) was introduced in 5.15.
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
     this->knownDefineExpressions.insert(result.expressions);
+#else
+    for (auto it = result.expressions.constBegin(); it != result.expressions.constEnd(); it++) {
+        this->knownDefineExpressions.insert(it.key(), it.value());
+    }
+#endif
     return result;
 }
 
@@ -527,7 +534,14 @@ void ParseUtil::loadGlobalCDefinesFromFile(const QString &filename, QString *err
 }
 
 void ParseUtil::loadGlobalCDefines(const QHash<QString,QString> &defines) {
+    // QHash::insert(const QHash<K, V> &other) was introduced in 5.15.
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
     this->globalDefineExpressions.insert(defines);
+#else
+    for (auto it = defines.constBegin(); it != defines.constEnd(); it++) {
+        this->globalDefineExpressions.insert(it.key(), it.value());
+    }
+#endif
 }
 
 void ParseUtil::loadGlobalCDefines(const QMap<QString,QString> &defines) {
