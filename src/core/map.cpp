@@ -14,6 +14,10 @@
 Map::Map(QObject *parent) : QObject(parent)
 {
     m_editHistory = new QUndoStack(this);
+
+    m_scriptFileWatcher = new QFileSystemWatcher(this);
+    connect(m_scriptFileWatcher, &QFileSystemWatcher::fileChanged, this, &Map::invalidateScripts);
+
     resetEvents();
 
     m_header = new MapHeader(this);
@@ -120,35 +124,40 @@ QPixmap Map::renderConnection(const QString &direction, Layout * fromLayout) {
     return connectionPixmap.copy(bounds.x() * 16, bounds.y() * 16, bounds.width() * 16, bounds.height() * 16);
 }
 
-void Map::openScript(QString label) {
+void Map::openScript(const QString &label) {
     emit openScriptRequested(label);
+}
+
+void Map::setSharedScriptsMap(const QString &sharedScriptsMap) {
+    if (m_sharedScriptsMap == sharedScriptsMap)
+        return;
+    m_sharedScriptsMap = sharedScriptsMap;
+    invalidateScripts();
+}
+
+void Map::invalidateScripts() {
+    m_scriptsLoaded = false;
+    emit scriptsModified();
 }
 
 QStringList Map::getScriptLabels(Event::Group group) {
     if (!m_scriptsLoaded) {
-        m_scriptsFileLabels = ParseUtil::getGlobalScriptLabels(getScriptsFilePath());
+        const QString scriptsFilePath = getScriptsFilePath();
+        m_scriptLabels = ParseUtil::getGlobalScriptLabels(scriptsFilePath);
         m_scriptsLoaded = true;
+
+        // Track the scripts file for changes. Path may have changed, so stop tracking old files.
+        m_scriptFileWatcher->removePaths(m_scriptFileWatcher->files());
+        m_scriptFileWatcher->addPath(scriptsFilePath);
     }
 
-    QStringList scriptLabels;
+    QStringList scriptLabels = m_scriptLabels;
 
-    // Get script labels currently in-use by the map's events
-    if (group == Event::Group::None) {
-        ScriptTracker scriptTracker;
-        for (const auto &event : getEvents()) {
-            event->accept(&scriptTracker);
-        }
-        scriptLabels = scriptTracker.getScripts();
-    } else {
-        ScriptTracker scriptTracker;
-        for (const auto &event : m_events.value(group)) {
-            event->accept(&scriptTracker);
-        }
-        scriptLabels = scriptTracker.getScripts();
+    // Add script labels currently in-use by the map's events
+    for (const auto &event : getEvents(group)) {
+        scriptLabels.append(event->getScripts());
     }
 
-    // Add labels from the map's scripts file
-    scriptLabels.append(m_scriptsFileLabels);
     scriptLabels.sort(Qt::CaseInsensitive);
     scriptLabels.removeAll("");
     scriptLabels.removeAll("0");

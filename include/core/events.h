@@ -34,15 +34,6 @@ class HiddenItemEvent;
 class SecretBaseEvent;
 class HealLocationEvent;
 
-class EventVisitor {
-public:
-    virtual void nothing() { }
-    virtual void visitObject(ObjectEvent *) = 0;
-    virtual void visitTrigger(TriggerEvent *) = 0;
-    virtual void visitSign(SignEvent *) = 0;
-};
-
-
 ///
 /// Event base class -- purely virtual
 ///
@@ -121,8 +112,6 @@ public:
 
     void modify();
 
-    virtual void accept(EventVisitor *) { }
-
     void setX(int newX) { this->x = newX; }
     void setY(int newY) { this->y = newY; }
     void setZ(int newZ) { this->elevation = newZ; }
@@ -149,6 +138,8 @@ public:
     virtual void setDefaultValues(Project *project);
 
     virtual QSet<QString> getExpectedFields() = 0;
+
+    virtual QStringList getScripts() const { return QStringList(); }
 
     QJsonObject getCustomAttributes() const { return this->customAttributes; }
     void setCustomAttributes(const QJsonObject &newCustomAttributes) { this->customAttributes = newCustomAttributes; }
@@ -222,8 +213,6 @@ public:
 
     virtual Event *duplicate() const override;
 
-    virtual void accept(EventVisitor *visitor) override { visitor->visitObject(this); }
-
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
@@ -232,6 +221,8 @@ public:
     virtual void setDefaultValues(Project *project) override;
 
     virtual QSet<QString> getExpectedFields() override;
+
+    virtual QStringList getScripts() const override { return {getScript()}; }
 
     virtual QPixmap loadPixmap(Project *project) override;
 
@@ -392,8 +383,6 @@ public:
 
     virtual Event *duplicate() const override;
 
-    virtual void accept(EventVisitor *visitor) override { visitor->visitTrigger(this); }
-
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
@@ -402,6 +391,8 @@ public:
     virtual void setDefaultValues(Project *project) override;
 
     virtual QSet<QString> getExpectedFields() override;
+
+    virtual QStringList getScripts() const override { return {getScriptLabel()}; }
 
     void setScriptVar(QString newScriptVar) { this->scriptVar = newScriptVar; }
     QString getScriptVar() const { return this->scriptVar; }
@@ -490,8 +481,6 @@ public:
 
     virtual Event *duplicate() const override;
 
-    virtual void accept(EventVisitor *visitor) override { visitor->visitSign(this); }
-
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
@@ -500,6 +489,8 @@ public:
     virtual void setDefaultValues(Project *project) override;
 
     virtual QSet<QString> getExpectedFields() override;
+
+    virtual QStringList getScripts() const override { return {getScriptLabel()}; }
 
     void setFacingDirection(QString newFacingDirection) { this->facingDirection = newFacingDirection; }
     QString getFacingDirection() const { return this->facingDirection; }
@@ -632,22 +623,5 @@ private:
 inline uint qHash(const Event::Group &key, uint seed = 0) {
     return qHash(static_cast<int>(key), seed);
 }
-
-
-///
-/// Keeps track of scripts
-///
-class ScriptTracker : public EventVisitor {
-public:
-    virtual void visitObject(ObjectEvent *object) override { this->scripts << object->getScript(); };
-    virtual void visitTrigger(TriggerEvent *trigger) override { this->scripts << trigger->getScriptLabel(); };
-    virtual void visitSign(SignEvent *sign) override { this->scripts << sign->getScriptLabel(); };
-
-    QStringList getScripts() const { return this->scripts; }
-
-private:
-    QStringList scripts;
-};
-
 
 #endif // EVENTS_H
