@@ -39,7 +39,7 @@ export function onBlockHoverCleared() {
 }
 
 // Called when the dimensions of the map are changed.
-export function onMapResized(oldWidth, oldHeight, newWidth, newHeight) {
+export function onMapResized(oldWidth, oldHeight, delta) {
 
 }
 
