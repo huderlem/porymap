@@ -1,5 +1,5 @@
 #include "editor.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "imageproviders.h"
 #include "log.h"
 #include "connectionslistitem.h"
@@ -1345,7 +1345,6 @@ void Editor::setStraightPathCursorMode(QGraphicsSceneMouseEvent *event) {
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
-    // TODO: add event tab event painting tool buttons stuff here
     if (!item->getEditsEnabled()) {
         return;
     }
@@ -1419,8 +1418,11 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 if (event && event->getPixmapItem())
                     event->getPixmapItem()->moveTo(pos);
             }
-        } else if (eventEditAction == EditAction::Select) {
-            // do nothing here, at least for now
+        } else if (eventEditAction == EditAction::Select && event->type() == QEvent::GraphicsSceneMousePress) {
+            if (!(event->modifiers() & Qt::ControlModifier) && this->selectedEvents.length() > 1) {
+                // User is clearing group selection by clicking on the background
+                selectMapEvent(this->selectedEvents.first());
+            }
         } else if (eventEditAction == EditAction::Shift) {
             static QPoint selection_origin;
 
@@ -1538,7 +1540,7 @@ bool Editor::displayLayout() {
         scene->installEventFilter(filter);
         connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
         scene->installEventFilter(this->map_ruler);
-        this->map_ruler->setZValue(1000);
+        this->map_ruler->setZValue(ZValue::Ruler);
         scene->addItem(this->map_ruler);
     }
 
@@ -1723,9 +1725,6 @@ void Editor::clearMapEvents() {
         if (events_group->scene()) {
             events_group->scene()->removeItem(events_group);
         }
-        // events_group does not own its children, the childrens' parent
-        // is set to the group's parent (and our group has no parent).
-        qDeleteAll(events_group->childItems());
         delete events_group;
         events_group = nullptr;
     }
@@ -1745,9 +1744,15 @@ void Editor::displayMapEvents() {
     events_group->setHandlesChildEvents(false);
 }
 
-DraggablePixmapItem *Editor::addEventPixmapItem(Event *event) {
+EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
     this->project->loadEventPixmap(event);
-    auto item = new DraggablePixmapItem(event, this);
+    auto item = new EventPixmapItem(event);
+    connect(item, &EventPixmapItem::doubleClicked, this, &Editor::openEventMap);
+    connect(item, &EventPixmapItem::dragged, this, &Editor::onEventDragged);
+    connect(item, &EventPixmapItem::released, this, &Editor::onEventReleased);
+    connect(item, &EventPixmapItem::selected, this, &Editor::selectMapEvent);
+    connect(item, &EventPixmapItem::posChanged, [this, event] { updateWarpEventWarning(event); });
+    connect(item, &EventPixmapItem::yChanged, [this, item] { updateEventPixmapItemZValue(item); });
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;
@@ -1821,6 +1826,7 @@ void Editor::maskNonVisibleConnectionTiles() {
     QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
 
     connection_mask = scene->addPath(mask, pen, brush);
+    connection_mask->setZValue(ZValue::MapConnectionMask);
 }
 
 void Editor::clearMapBorder() {
@@ -1843,7 +1849,7 @@ void Editor::displayMapBorder() {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
-        item->setZValue(-3);
+        item->setZValue(ZValue::MapBorder);
         scene->addItem(item);
         borderItems.append(item);
     }
@@ -2013,32 +2019,59 @@ qreal Editor::getEventOpacity(const Event *event) const {
     return event->getUsesDefaultPixmap() ? 0.7 : 1.0;
 }
 
-void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
-    if (item && item->event && !item->event->getPixmap().isNull()) {
-        item->setOpacity(getEventOpacity(item->event));
-        project->loadEventPixmap(item->event, true);
-        item->setPixmap(item->event->getPixmap());
-        item->setShapeMode(porymapConfig.eventSelectionShapeMode);
+void Editor::redrawEventPixmapItem(EventPixmapItem *item) {
+    if (!item) return;
+    Event *event = item->getEvent();
+    if (!event) return;
 
-        if (this->editMode == EditMode::Events) {
-            if (this->selectedEvents.contains(item->event)) {
-                // Draw the selection rectangle
-                QImage image = item->pixmap().toImage();
-                QPainter painter(&image);
-                painter.setPen(QColor(255, 0, 255));
-                painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
-                painter.end();
-                item->setPixmap(QPixmap::fromImage(image));
-            }
-            item->setAcceptedMouseButtons(Qt::AllButtons);
-        } else {
-            // Can't interact with event pixmaps outside of event editing mode.
-            // We could do setEnabled(false), but rather than ignoring the mouse events this
-            // would reject them, which would prevent painting on the map behind the events.
-            item->setAcceptedMouseButtons(Qt::NoButton);
-        }
-        item->updatePosition();
+    if (this->editMode == EditMode::Events) {
+        item->setAcceptedMouseButtons(Qt::AllButtons);
+        item->setSelected(this->selectedEvents.contains(event));
+    } else {
+        // Can't interact with event pixmaps outside of event editing mode.
+        // We could do setEnabled(false), but rather than ignoring the mouse events this
+        // would reject them, which would prevent painting on the map behind the events.
+        item->setAcceptedMouseButtons(Qt::NoButton);
+        item->setSelected(false);
     }
+    updateEventPixmapItemZValue(item);
+    item->setOpacity(getEventOpacity(event));
+    item->setShapeMode(porymapConfig.eventSelectionShapeMode);
+    item->render(project);
+}
+
+void Editor::updateEventPixmapItemZValue(EventPixmapItem *item) {
+    if (!item) return;
+    Event *event = item->getEvent();
+    if (!event) return;
+
+    if (item->isSelected()) {
+        item->setZValue(ZValue::EventMaximum);
+    } else {
+        item->setZValue(event->getY() + ((ZValue::EventMaximum - ZValue::EventMinimum) / 2));
+    }
+}
+
+void Editor::onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition) {
+    if (!this->map || !this->map_item)
+        return;
+
+    this->map_item->hoveredMapMetatileChanged(newPosition);
+
+    // Drag all the other selected events (if any) with it
+    QList<Event*> draggedEvents;
+    if (this->selectedEvents.contains(event)) {
+        draggedEvents = this->selectedEvents;
+    } else {
+        draggedEvents.append(event);
+    }
+
+    QPoint moveDistance = newPosition - oldPosition;
+    this->map->commit(new EventMove(draggedEvents, moveDistance.x(), moveDistance.y(), this->eventMoveActionId));
+}
+
+void Editor::onEventReleased(Event *, const QPoint &) {
+    this->eventMoveActionId++;
 }
 
 // Warp events display a warning if they're not positioned on a metatile with a warp behavior.
@@ -2321,32 +2354,6 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
 #endif
     process.setWorkingDirectory(workingDirectory);
     return process.startDetached(pid);
-}
-
-// It doesn't seem to be possible to prevent the mousePress event
-// from triggering both event's DraggablePixmapItem and the background mousePress.
-// Since the DraggablePixmapItem's event fires first, we can set a temp
-// variable "selectingEvent" so that we can detect whether or not the user
-// is clicking on the background instead of an event.
-void Editor::eventsView_onMousePress(QMouseEvent *event) {
-    // make sure we are in event editing mode
-    if (map_item && this->editMode != EditMode::Events) {
-        return;
-    }
-    if (this->eventEditAction == EditAction::Paint && event->buttons() & Qt::RightButton) {
-        this->eventEditAction = EditAction::Select;
-        this->settings->mapCursor = QCursor();
-        this->cursorMapTileRect->setSingleTileMode();
-        this->ui->toolButton_Paint->setChecked(false);
-        this->ui->toolButton_Select->setChecked(true);
-    }
-
-    bool multiSelect = event->modifiers() & Qt::ControlModifier;
-    if (!selectingEvent && !multiSelect && this->selectedEvents.length() > 1) {
-        // User is clearing group selection by clicking on the background
-        this->selectMapEvent(this->selectedEvents.first());
-    }
-    selectingEvent = false;
 }
 
 void Editor::setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation) {

@@ -19,7 +19,7 @@ class EventFrame;
 class ObjectFrame;
 class CloneObjectFrame;
 class WarpFrame;
-class DraggablePixmapItem;
+class EventPixmapItem;
 
 class Event;
 class ObjectEvent;
@@ -79,9 +79,13 @@ public:
         None,
     };
 
-    // all event groups except warps have IDs that start at 1
+    // Normally we refer to events using their index in the list of that group's events.
+    // Object events often get referred to with a special "local ID", which is really just the index + 1.
+    // We use this local ID number in the index spinner for object events instead of the actual index.
+    // This distinction is only really important for object and warp events, because these are normally
+    // the only two groups of events that need to be explicitly referred to.
     static int getIndexOffset(Event::Group group) {
-        return (group == Event::Group::Warp) ? 0 : 1;
+        return (group == Event::Group::Object) ? 1 : 0;
     }
 
     static Event::Group typeToGroup(Event::Type type) {
@@ -149,13 +153,13 @@ public:
     QJsonObject getCustomAttributes() const { return this->customAttributes; }
     void setCustomAttributes(const QJsonObject &newCustomAttributes) { this->customAttributes = newCustomAttributes; }
 
-    virtual void loadPixmap(Project *project);
+    virtual QPixmap loadPixmap(Project *project);
 
     void setPixmap(QPixmap newPixmap) { this->pixmap = newPixmap; }
     QPixmap getPixmap() const { return this->pixmap; }
 
-    void setPixmapItem(DraggablePixmapItem *item);
-    DraggablePixmapItem *getPixmapItem() const { return this->pixmapItem; }
+    void setPixmapItem(EventPixmapItem *item);
+    EventPixmapItem *getPixmapItem() const { return this->pixmapItem; }
 
     void setUsesDefaultPixmap(bool newUsesDefaultPixmap) { this->usesDefaultPixmap = newUsesDefaultPixmap; }
     bool getUsesDefaultPixmap() const { return this->usesDefaultPixmap; }
@@ -194,7 +198,7 @@ protected:
     QJsonObject customAttributes;
 
     QPixmap pixmap;
-    DraggablePixmapItem *pixmapItem = nullptr;
+    EventPixmapItem *pixmapItem = nullptr;
 
     QPointer<EventFrame> eventFrame;
 
@@ -229,7 +233,7 @@ public:
 
     virtual QSet<QString> getExpectedFields() override;
 
-    virtual void loadPixmap(Project *project) override;
+    virtual QPixmap loadPixmap(Project *project) override;
 
     void setGfx(QString newGfx) { this->gfx = newGfx; }
     QString getGfx() const { return this->gfx; }
@@ -296,17 +300,17 @@ public:
 
     virtual QSet<QString> getExpectedFields() override;
 
-    virtual void loadPixmap(Project *project) override;
+    virtual QPixmap loadPixmap(Project *project) override;
 
     void setTargetMap(QString newTargetMap) { this->targetMap = newTargetMap; }
     QString getTargetMap() const { return this->targetMap; }
 
-    void setTargetID(int newTargetID) { this->targetID = newTargetID; }
-    int getTargetID() const { return this->targetID; }
+    void setTargetID(QString newTargetID) { this->targetID = newTargetID; }
+    QString getTargetID() const { return this->targetID; }
 
 private:
     QString targetMap;
-    int targetID = 0;
+    QString targetID;
 };
 
 

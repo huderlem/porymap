@@ -10,7 +10,7 @@
 #include "customattributesframe.h"
 #include "scripting.h"
 #include "adjustingstackedwidget.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "editcommands.h"
 #include "flowlayout.h"
 #include "shortcut.h"
@@ -345,9 +345,9 @@ void MainWindow::initEditor() {
     this->editor = new Editor(ui);
     connect(this->editor, &Editor::eventsChanged, this, &MainWindow::updateEvents);
     connect(this->editor, &Editor::openConnectedMap, this, &MainWindow::onOpenConnectedMap);
-    connect(this->editor, &Editor::warpEventDoubleClicked, this, &MainWindow::openWarpMap);
+    connect(this->editor, &Editor::openEventMap, this, &MainWindow::openEventMap);
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
-    connect(this->editor, &Editor::wildMonTableEdited, this,  &MainWindow::markMapEdited);
+    connect(this->editor, &Editor::wildMonTableEdited, [this] { markMapEdited(this->editor->map); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
@@ -528,11 +528,7 @@ void MainWindow::updateWindowTitle() {
     }
 }
 
-void MainWindow::markMapEdited() {
-    if (editor) markSpecificMapEdited(editor->map);
-}
-
-void MainWindow::markSpecificMapEdited(Map* map) {
+void MainWindow::markMapEdited(Map* map) {
     if (!map)
         return;
     map->setHasUnsavedDataChanges(true);
@@ -956,8 +952,6 @@ bool MainWindow::setMap(QString map_name) {
     updateMapList();
     resetMapListFilters();
 
-    connect(editor->map, &Map::modified, this, &MainWindow::markMapEdited, Qt::UniqueConnection);
-
     // If the map's MAPSEC / layout changes, update the map's position in the map list.
     // These are doing more work than necessary, rather than rebuilding the entire list they should find and relocate the appropriate row.
     connect(editor->map, &Map::layoutChanged, this, &MainWindow::rebuildMapList_Layouts, Qt::UniqueConnection);
@@ -1070,20 +1064,57 @@ void MainWindow::refreshCollisionSelector() {
     on_horizontalSlider_CollisionZoom_valueChanged(ui->horizontalSlider_CollisionZoom->value());
 }
 
-void MainWindow::openWarpMap(QString map_name, int event_id, Event::Group event_group) {
-    // Open the destination map.
-    if (!userSetMap(map_name))
+// Some events (like warps) have data that refers to an event on a different map.
+// This function opens that map, and selects the event it's referring to.
+void MainWindow::openEventMap(Event *sourceEvent) {
+    if (!sourceEvent || !this->editor->map) return;
+
+    QString targetMapName;
+    QString targetEventIdName;
+    Event::Group targetEventGroup;
+
+    Event::Type eventType = sourceEvent->getEventType();
+    if (eventType == Event::Type::Warp) {
+        // Warp events open to their destination warp event.
+        WarpEvent *warp = dynamic_cast<WarpEvent *>(sourceEvent);
+        targetMapName = warp->getDestinationMap();
+        targetEventIdName = warp->getDestinationWarpID();
+        targetEventGroup = Event::Group::Warp;
+    } else if (eventType == Event::Type::CloneObject) {
+        // Clone object events open to their target object event.
+        CloneObjectEvent *clone = dynamic_cast<CloneObjectEvent *>(sourceEvent);
+        targetMapName = clone->getTargetMap();
+        targetEventIdName = clone->getTargetID();
+        targetEventGroup = Event::Group::Object;
+    } else if (eventType == Event::Type::SecretBase) {
+        // Secret Bases open to their secret base entrance
+        const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
+        SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(sourceEvent);
+
+        // Extract the map name from the secret base ID.
+        QString baseId = base->getBaseID();
+        targetMapName = this->editor->project->mapConstantsToMapNames.value(mapPrefix + baseId.left(baseId.lastIndexOf("_")));
+
+        // Just select the first warp. Normally the only warp event on every secret base map is the entrance/exit, so this is usually correct.
+        // The warp IDs for secret bases are specified in the project's C code, not in the map data, so we don't have an easy way to read the actual IDs.
+        targetEventIdName = "0";
+        targetEventGroup = Event::Group::Warp;
+    } else if (eventType == Event::Type::HealLocation && projectConfig.healLocationRespawnDataEnabled) {
+        // Heal location events open to their respawn NPC
+        HealLocationEvent *heal = dynamic_cast<HealLocationEvent *>(sourceEvent);
+        targetMapName = heal->getRespawnMapName();
+        targetEventIdName = heal->getRespawnNPC();
+        targetEventGroup = Event::Group::Object;
+    } else {
+        // Other event types have no target map to open.
+        return;
+    }
+    if (!userSetMap(targetMapName))
         return;
 
-    // Select the target event.
-    int index = event_id - Event::getIndexOffset(event_group);
-    Event* event = this->editor->map->getEvent(event_group, index);
-    if (event) {
-        this->editor->selectMapEvent(event);
-    } else {
-        // Can still warp to this map, but can't select the specified event
-        logWarn(QString("%1 %2 doesn't exist on map '%3'").arg(Event::groupToString(event_group)).arg(event_id).arg(map_name));
-    }
+    // Map opened successfully, now try to select the targeted event on that map.
+    Event *targetEvent = this->editor->map->getEvent(targetEventGroup, targetEventIdName);
+    this->editor->selectMapEvent(targetEvent);
 }
 
 void MainWindow::displayMapProperties() {
@@ -1123,7 +1154,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
     }
     this->editor->map->setLayout(layout);
     setMap(this->editor->map->name());
-    markMapEdited();
+    markMapEdited(this->editor->map);
 }
 
 void MainWindow::onLayoutSelectorEditingFinished() {
@@ -2488,7 +2519,7 @@ void MainWindow::onOpenConnectedMap(MapConnection *connection) {
 }
 
 void MainWindow::onMapLoaded(Map *map) {
-    connect(map, &Map::modified, [this, map] { this->markSpecificMapEdited(map); });
+    connect(map, &Map::modified, [this, map] { markMapEdited(map); });
 }
 
 void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryTilesetLabel) {

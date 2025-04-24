@@ -40,7 +40,6 @@ ResizableRect::ResizableRect(QObject *parent, bool *enabled, int width, int heig
   : QObject(parent),
     MovableRect(enabled, QRect(0, 0, width * 16, height * 16), color)
 {
-        setZValue(0xFFFFFFFF); // ensure on top of view
         setAcceptHoverEvents(true);
         setFlags(this->flags() | QGraphicsItem::ItemIsMovable);
 }

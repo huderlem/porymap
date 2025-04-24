@@ -45,25 +45,4 @@ protected:
     virtual void keyPressEvent(QKeyEvent *event) override;
 };
 
-class Editor;
-
-// TODO: This should just be MapView. It makes map-based assumptions, and no other class inherits GraphicsView.
-class GraphicsView : public QGraphicsView
-{
-public:
-    GraphicsView() : QGraphicsView() {}
-    GraphicsView(QWidget *parent) : QGraphicsView(parent) {}
-
-public:
-//    GraphicsView_Object object;
-    Editor *editor;
-protected:
-    virtual void mousePressEvent(QMouseEvent *event) override;
-    virtual void mouseMoveEvent(QMouseEvent *event) override;
-    virtual void mouseReleaseEvent(QMouseEvent *event) override;
-    virtual void moveEvent(QMoveEvent *event) override;
-};
-
-//Q_DECLARE_METATYPE(GraphicsView)
-
 #endif // GRAPHICSVIEW_H

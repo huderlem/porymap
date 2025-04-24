@@ -20,8 +20,7 @@ Event* Event::create(Event::Type type) {
 }
 
 Event::~Event() {
-    if (this->eventFrame)
-        this->eventFrame->deleteLater();
+    delete this->eventFrame;
 }
 
 EventFrame *Event::getEventFrame() {
@@ -34,7 +33,7 @@ void Event::destroyEventFrame() {
     this->eventFrame = nullptr;
 }
 
-void Event::setPixmapItem(DraggablePixmapItem *item) {
+void Event::setPixmapItem(EventPixmapItem *item) {
     this->pixmapItem = item;
     if (this->eventFrame) {
         this->eventFrame->invalidateConnections();
@@ -105,7 +104,7 @@ QString Event::typeToString(Event::Type type) {
         {Event::Type::CloneObject, "Clone Object"},
         {Event::Type::Warp, "Warp"},
         {Event::Type::Trigger, "Trigger"},
-        {Event::Type::WeatherTrigger, "Weather"},
+        {Event::Type::WeatherTrigger, "Weather Trigger"},
         {Event::Type::Sign, "Sign"},
         {Event::Type::HiddenItem, "Hidden Item"},
         {Event::Type::SecretBase, "Secret Base"},
@@ -114,9 +113,10 @@ QString Event::typeToString(Event::Type type) {
     return typeToStringMap.value(type);
 }
 
-void Event::loadPixmap(Project *project) {
+QPixmap Event::loadPixmap(Project *project) {
     this->pixmap = project->getEventPixmap(this->getEventGroup());
     this->usesDefaultPixmap = true;
+    return this->pixmap;
 }
 
 
@@ -152,12 +152,13 @@ EventFrame *ObjectEvent::createEventFrame() {
 OrderedJson::object ObjectEvent::buildEventJson(Project *) {
     OrderedJson::object objectJson;
 
-    if (projectConfig.eventCloneObjectEnabled) {
-        objectJson["type"] = Event::typeToJsonKey(Event::Type::Object);
-    }
     QString idName = this->getIdName();
     if (!idName.isEmpty())
         objectJson["local_id"] = idName;
+
+    if (projectConfig.eventCloneObjectEnabled) {
+        objectJson["type"] = Event::typeToJsonKey(Event::Type::Object);
+    }
     objectJson["graphics_id"] = this->getGfx();
     objectJson["x"] = this->getX();
     objectJson["y"] = this->getY();
@@ -224,13 +225,13 @@ QSet<QString> ObjectEvent::getExpectedFields() {
     return expectedFields;
 }
 
-void ObjectEvent::loadPixmap(Project *project) {
+QPixmap ObjectEvent::loadPixmap(Project *project) {
     this->pixmap = project->getEventPixmap(this->gfx, this->movement);
     if (!this->pixmap.isNull()) {
         this->usesDefaultPixmap = false;
-    } else {
-        Event::loadPixmap(project);
+        return this->pixmap;
     }
+    return Event::loadPixmap(project);
 }
 
 
@@ -261,10 +262,11 @@ EventFrame *CloneObjectEvent::createEventFrame() {
 OrderedJson::object CloneObjectEvent::buildEventJson(Project *project) {
     OrderedJson::object cloneJson;
 
-    cloneJson["type"] = Event::typeToJsonKey(Event::Type::CloneObject);
     QString idName = this->getIdName();
     if (!idName.isEmpty())
         cloneJson["local_id"] = idName;
+
+    cloneJson["type"] = Event::typeToJsonKey(Event::Type::CloneObject);
     cloneJson["graphics_id"] = this->getGfx();
     cloneJson["x"] = this->getX();
     cloneJson["y"] = this->getY();
@@ -281,7 +283,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setY(readInt(&json, "y"));
     this->setIdName(readString(&json, "local_id"));
     this->setGfx(readString(&json, "graphics_id"));
-    this->setTargetID(readInt(&json, "target_local_id"));
+    this->setTargetID(readString(&json, "target_local_id"));
 
     // Log a warning if "target_map" isn't a known map ID, but don't overwrite user data.
     const QString mapConstant = readString(&json, "target_map");
@@ -295,7 +297,7 @@ bool CloneObjectEvent::loadFromJson(QJsonObject json, Project *project) {
 
 void CloneObjectEvent::setDefaultValues(Project *project) {
     this->setGfx(project->gfxDefines.key(0, "0"));
-    this->setTargetID(1);
+    this->setTargetID(QString::number(Event::getIndexOffset(Event::Group::Object)));
     if (this->getMap()) this->setTargetMap(this->getMap()->name());
 }
 
@@ -312,11 +314,10 @@ QSet<QString> CloneObjectEvent::getExpectedFields() {
     return expectedFields;
 }
 
-void CloneObjectEvent::loadPixmap(Project *project) {
+QPixmap CloneObjectEvent::loadPixmap(Project *project) {
     // Try to get the targeted object to clone
-    int eventIndex = this->targetID - 1;
     Map *clonedMap = project->loadMap(this->targetMap);
-    Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, eventIndex) : nullptr;
+    Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, this->targetID) : nullptr;
 
     if (clonedEvent && clonedEvent->getEventType() == Event::Type::Object) {
         // Get graphics data from cloned object
@@ -328,7 +329,7 @@ void CloneObjectEvent::loadPixmap(Project *project) {
         this->gfx = project->gfxDefines.key(0, "0");
         this->movement = project->movementTypes.value(0, "0");
     }
-    ObjectEvent::loadPixmap(project);
+    return ObjectEvent::loadPixmap(project);
 }
 
 

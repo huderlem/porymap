@@ -1,7 +1,7 @@
 #include "eventframes.h"
 #include "customattributesframe.h"
 #include "editcommands.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 
 #include <limits>
 using std::numeric_limits;
@@ -74,6 +74,7 @@ void EventFrame::setup() {
     this->label_id = new QLabel("event_type");
     l_vbox_1->addWidget(this->label_id);
     l_vbox_1->addLayout(l_layout_xyz);
+    this->label_id->setText(Event::typeToString(this->event->getEventType()));
 
     // icon / pixmap label
     this->label_icon = new QLabel(this);
@@ -113,7 +114,7 @@ void EventFrame::connectSignals(MainWindow *) {
         }
     });
 
-    connect(this->event->getPixmapItem(), &DraggablePixmapItem::xChanged, this->spinner_x, &NoScrollSpinBox::setValue);
+    connect(this->event->getPixmapItem(), &EventPixmapItem::xChanged, this->spinner_x, &NoScrollSpinBox::setValue);
     
     this->spinner_y->disconnect();
     connect(this->spinner_y, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
@@ -122,7 +123,7 @@ void EventFrame::connectSignals(MainWindow *) {
             this->event->getMap()->commit(new EventMove(QList<Event *>() << this->event, 0, delta, this->spinner_y->getActionId()));
         }
     });
-    connect(this->event->getPixmapItem(), &DraggablePixmapItem::yChanged, this->spinner_y, &NoScrollSpinBox::setValue);
+    connect(this->event->getPixmapItem(), &EventPixmapItem::yChanged, this->spinner_y, &NoScrollSpinBox::setValue);
     
     this->spinner_z->disconnect();
     connect(this->spinner_z, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
@@ -172,19 +173,31 @@ void EventFrame::setActive(bool active) {
     this->blockSignals(!active);
 }
 
+void EventFrame::populateDropdown(NoScrollComboBox * combo, const QStringList &items) {
+    // Set the items in the combo box. This may be called after the frame is initialized
+    // if the frame needs to be repopulated, so ensure the text in the combo is preserved
+    // and that we don't accidentally fire 'currentTextChanged'.
+    const QSignalBlocker b(combo);
+    const QString savedText = combo->currentText();
+    combo->clear();
+    combo->addItems(items);
+    combo->setCurrentText(savedText);
+}
+
 void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * project) {
     // The script dropdown and autocomplete are populated with scripts used by the map's events and from its scripts file.
     if (!this->event->getMap())
         return;
 
     QStringList scripts = this->event->getMap()->getScriptLabels(this->event->getEventGroup());
-    combo->addItems(scripts);
+    populateDropdown(combo, scripts);
 
     // Depending on the settings, the autocomplete may also contain all global scripts.
     if (porymapConfig.loadAllEventScripts) {
         project->insertGlobalScriptLabels(scripts);
     }
 
+    // Note: Because 'combo' is the parent, the old QCompleter will be deleted when a new one is set.
     auto completer = new QCompleter(scripts, combo);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
@@ -197,14 +210,32 @@ void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * proj
     combo->setCompleter(completer);
 
     // If the project changes the script labels, update the EventFrame.
+    // TODO: At the moment this only happens when the user changes script settings (i.e. when 'porymapConfig.loadAllEventScripts' changes).
+    //       This should ultimately be connected to a file watcher so that we can also update the dropdown when the scripts file changes.
     connect(project, &Project::eventScriptLabelsRead, this, &EventFrame::invalidateValues, Qt::UniqueConnection);
+}
+
+void EventFrame::populateIdNameDropdown(NoScrollComboBox * combo, Project * project, const QString &mapName, Event::Group group) {
+    if (!project->mapNames.contains(mapName))
+        return;
+
+    Map *map = project->loadMap(mapName);
+    if (map) populateDropdown(combo, map->getEventIdNames(group));
 }
 
 
 void ObjectFrame::setup() {
     EventFrame::setup();
 
-    this->label_id->setText("Object");
+    // local id
+    QFormLayout *l_form_local_id = new QFormLayout();
+    this->line_edit_local_id = new QLineEdit(this);
+    static const QString line_edit_local_id_toolTip = Util::toHtmlParagraph("An optional, unique name to use to refer to this object in scripts. "
+                                                                            "If no name is given you can refer to this object using its 'object id' number.");
+    this->line_edit_local_id->setToolTip(line_edit_local_id_toolTip);
+    this->line_edit_local_id->setPlaceholderText("LOCALID_MY_NPC");
+    l_form_local_id->addRow("Local ID", this->line_edit_local_id);
+    this->layout_contents->addLayout(l_form_local_id);
 
     // sprite combo
     QFormLayout *l_form_sprite = new QFormLayout();
@@ -294,21 +325,29 @@ void ObjectFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
     EventFrame::connectSignals(window);
+    Project *project = window->editor->project;
+
+    // local id
+    this->line_edit_local_id->disconnect();
+    connect(this->line_edit_local_id, &QLineEdit::textChanged, [this](const QString &text) {
+        this->object->setIdName(text);
+        this->object->modify();
+    });
 
     // sprite update
     this->combo_sprite->disconnect();
-    connect(this->combo_sprite, &QComboBox::currentTextChanged, [this](const QString &text) {
+    connect(this->combo_sprite, &QComboBox::currentTextChanged, [this, project](const QString &text) {
         this->object->setGfx(text);
-        this->object->getPixmapItem()->updatePixmap();
+        this->object->getPixmapItem()->render(project);
         this->object->modify();
     });
-    connect(this->object->getPixmapItem(), &DraggablePixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
+    connect(this->object->getPixmapItem(), &EventPixmapItem::rendered, this->label_icon, &QLabel::setPixmap);
 
     // movement
     this->combo_movement->disconnect();
-    connect(this->combo_movement, &QComboBox::currentTextChanged, [this](const QString &text) {
+    connect(this->combo_movement, &QComboBox::currentTextChanged, [this, project](const QString &text) {
         this->object->setMovement(text);
-        this->object->getPixmapItem()->updatePixmap();
+        this->object->getPixmapItem()->render(project);
         this->object->modify();
     });
 
@@ -366,6 +405,9 @@ void ObjectFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
+    // local id
+    this->line_edit_local_id->setText(this->object->getIdName());
+
     // sprite
     this->combo_sprite->setTextItem(this->object->getGfx());
 
@@ -397,12 +439,11 @@ void ObjectFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    this->combo_sprite->addItems(project->gfxDefines.keys());
-    this->combo_movement->addItems(project->movementTypes);
-    this->combo_flag->addItems(project->flagNames);
-    this->combo_trainer_type->addItems(project->trainerTypes);
-
-    this->populateScriptDropdown(this->combo_script, project);
+    populateDropdown(this->combo_sprite, project->gfxDefines.keys());
+    populateDropdown(this->combo_movement, project->movementTypes);
+    populateDropdown(this->combo_flag, project->flagNames);
+    populateDropdown(this->combo_trainer_type, project->trainerTypes);
+    populateScriptDropdown(this->combo_script, project);
 }
 
 
@@ -410,13 +451,25 @@ void ObjectFrame::populate(Project *project) {
 void CloneObjectFrame::setup() {
     EventFrame::setup();
 
-    this->label_id->setText("Clone Object");
-
     this->spinner_z->setEnabled(false);
+
+    // local id
+    QFormLayout *l_form_local_id = new QFormLayout();
+    this->line_edit_local_id = new QLineEdit(this);
+    static const QString line_edit_local_id_toolTip = Util::toHtmlParagraph("An optional, unique name to use to refer to this object in scripts. "
+                                                                            "If no name is given you can refer to this object using its 'object id' number.");
+    this->line_edit_local_id->setToolTip(line_edit_local_id_toolTip);
+    this->line_edit_local_id->setPlaceholderText("LOCALID_MY_CLONE_NPC");
+    l_form_local_id->addRow("Local ID", this->line_edit_local_id);
+    this->layout_contents->addLayout(l_form_local_id);
 
     // sprite combo (edits disabled)
     QFormLayout *l_form_sprite = new QFormLayout();
     this->combo_sprite = new NoScrollComboBox(this);
+    static const QString combo_sprite_toolTip = Util::toHtmlParagraph("The sprite graphics to use for this object. This is updated automatically "
+                                                                      "to match the target object, and so can't be edited. By default the games "
+                                                                      "will get the graphics directly from the target object, so this field is ignored.");
+    this->combo_sprite->setToolTip(combo_sprite_toolTip);
     l_form_sprite->addRow("Sprite", this->combo_sprite);
     this->combo_sprite->setEnabled(false);
     this->layout_contents->addLayout(l_form_sprite);
@@ -429,12 +482,12 @@ void CloneObjectFrame::setup() {
     l_form_dest_map->addRow("Target Map", this->combo_target_map);
     this->layout_contents->addLayout(l_form_dest_map);
 
-    // clone local id spinbox
+    // clone local id combo
     QFormLayout *l_form_dest_id = new QFormLayout();
-    this->spinner_target_id = new NoScrollSpinBox(this);
-    static const QString spinner_target_id_toolTip = Util::toHtmlParagraph("event_object ID of the object being cloned.");
-    this->spinner_target_id->setToolTip(spinner_target_id_toolTip);
-    l_form_dest_id->addRow("Target Local ID", this->spinner_target_id);
+    this->combo_target_id = new NoScrollComboBox(this);
+    static const QString combo_target_id_toolTip = Util::toHtmlParagraph("The Local ID name or number of the object being cloned.");
+    this->combo_target_id->setToolTip(combo_target_id_toolTip);
+    l_form_dest_id->addRow("Target Local ID", this->combo_target_id);
     this->layout_contents->addLayout(l_form_dest_id);
 
     // custom attributes
@@ -445,27 +498,48 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
     EventFrame::connectSignals(window);
+    Project *project = window->editor->project;
+
+    // local id
+    this->line_edit_local_id->disconnect();
+    connect(this->line_edit_local_id, &QLineEdit::textChanged, [this](const QString &text) {
+        this->clone->setIdName(text);
+        this->clone->modify();
+    });
 
     // update icon displayed in frame with target
-    connect(this->clone->getPixmapItem(), &DraggablePixmapItem::spriteChanged, this->label_icon, &QLabel::setPixmap);
+    connect(this->clone->getPixmapItem(), &EventPixmapItem::rendered, this->label_icon, &QLabel::setPixmap);
 
     // target map
     this->combo_target_map->disconnect();
-    connect(this->combo_target_map, &QComboBox::currentTextChanged, [this](const QString &text) {
-        this->clone->setTargetMap(text);
-        this->clone->getPixmapItem()->updatePixmap();
+    connect(this->combo_target_map, &QComboBox::currentTextChanged, [this, project](const QString &mapName) {
+        this->clone->setTargetMap(mapName);
+        this->clone->getPixmapItem()->render(project);
+        this->combo_sprite->setCurrentText(this->clone->getGfx());
+        this->clone->modify();
+        populateIdNameDropdown(this->combo_target_id, project, mapName, Event::Group::Object);
+    });
+    connect(window, &MainWindow::mapOpened, this, &CloneObjectFrame::tryInvalidateIdDropdown, Qt::UniqueConnection);
+
+    // target id
+    this->combo_target_id->disconnect();
+    connect(this->combo_target_id, &QComboBox::currentTextChanged, [this, project](const QString &text) {
+        this->clone->setTargetID(text);
+        this->clone->getPixmapItem()->render(project);
         this->combo_sprite->setCurrentText(this->clone->getGfx());
         this->clone->modify();
     });
 
-    // target id
-    this->spinner_target_id->disconnect();
-    connect(this->spinner_target_id, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
-        this->clone->setTargetID(value);
-        this->clone->getPixmapItem()->updatePixmap();
-        this->combo_sprite->setCurrentText(this->clone->getGfx());
-        this->clone->modify();
-    });
+    // This frame type displays map names, so when a new map is created we need to repopulate it.
+    connect(project, &Project::mapCreated, this, &EventFrame::invalidateValues, Qt::UniqueConnection);
+}
+
+void CloneObjectFrame::tryInvalidateIdDropdown(Map *map) {
+    // If the clone's target map is opened then the names in this frame's ID dropdown may be changed.
+    // Make sure we update the frame next time it's opened.
+    if (map && this->clone && map->name() == this->clone->getTargetMap()) {
+        invalidateValues();
+    }
 }
 
 void CloneObjectFrame::initialize() {
@@ -474,13 +548,14 @@ void CloneObjectFrame::initialize() {
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
 
+    // local id
+    this->line_edit_local_id->setText(this->clone->getIdName());
+
     // sprite
     this->combo_sprite->setCurrentText(this->clone->getGfx());
 
     // target id
-    this->spinner_target_id->setMinimum(1);
-    this->spinner_target_id->setMaximum(126);
-    this->spinner_target_id->setValue(this->clone->getTargetID());
+    this->combo_target_id->setCurrentText(this->clone->getTargetID());
 
     // target map
     this->combo_target_map->setTextItem(this->clone->getTargetMap());
@@ -492,13 +567,22 @@ void CloneObjectFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    this->combo_target_map->addItems(project->mapNames);
+    populateDropdown(this->combo_target_map, project->mapNames);
+    populateIdNameDropdown(this->combo_target_id, project, this->clone->getTargetMap(), Event::Group::Object);
 }
 
 void WarpFrame::setup() {
     EventFrame::setup();
 
-    this->label_id->setText("Warp");
+    // ID
+    QFormLayout *l_form_id = new QFormLayout();
+    this->line_edit_id = new QLineEdit(this);
+    static const QString line_edit_id_toolTip = Util::toHtmlParagraph("An optional, unique name to use to refer to this warp from other warps. "
+                                                                      "If no name is given you can refer to this warp using its 'warp id' number.");
+    this->line_edit_id->setToolTip(line_edit_id_toolTip);
+    this->line_edit_id->setPlaceholderText("WARP_ID_MY_WARP");
+    l_form_id->addRow("ID", this->line_edit_id);
+    this->layout_contents->addLayout(l_form_id);
 
     // desination map combo
     QFormLayout *l_form_dest_map = new QFormLayout();
@@ -534,13 +618,23 @@ void WarpFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
     EventFrame::connectSignals(window);
+    Project *project = window->editor->project;
+
+    // id
+    this->line_edit_id->disconnect();
+    connect(this->line_edit_id, &QLineEdit::textChanged, [this](const QString &text) {
+        this->warp->setIdName(text);
+        this->warp->modify();
+    });
 
     // dest map
     this->combo_dest_map->disconnect();
-    connect(this->combo_dest_map, &QComboBox::currentTextChanged, [this](const QString &text) {
-        this->warp->setDestinationMap(text);
+    connect(this->combo_dest_map, &QComboBox::currentTextChanged, [this, project](const QString &mapName) {
+        this->warp->setDestinationMap(mapName);
         this->warp->modify();
+        populateIdNameDropdown(this->combo_dest_warp, project, mapName, Event::Group::Warp);
     });
+    connect(window, &MainWindow::mapOpened, this, &WarpFrame::tryInvalidateIdDropdown, Qt::UniqueConnection);
 
     // dest id
     this->combo_dest_warp->disconnect();
@@ -552,6 +646,17 @@ void WarpFrame::connectSignals(MainWindow *window) {
     // warning
     this->warning->disconnect();
     connect(this->warning, &QPushButton::clicked, window, &MainWindow::onWarpBehaviorWarningClicked);
+
+    // This frame type displays map names, so when a new map is created we need to repopulate it.
+    connect(project, &Project::mapCreated, this, &EventFrame::invalidateValues, Qt::UniqueConnection);
+}
+
+void WarpFrame::tryInvalidateIdDropdown(Map *map) {
+    // If the warps's target map is opened then the names in this frame's ID dropdown may be changed.
+    // Make sure we update the frame next time it's opened.
+    if (map && this->warp && map->name() == this->warp->getDestinationMap()) {
+        invalidateValues();
+    }
 }
 
 void WarpFrame::initialize() {
@@ -559,6 +664,9 @@ void WarpFrame::initialize() {
 
     const QSignalBlocker blocker(this);
     EventFrame::initialize();
+
+    // id
+    this->line_edit_id->setText(this->warp->getIdName());
 
     // dest map
     this->combo_dest_map->setTextItem(this->warp->getDestinationMap());
@@ -573,15 +681,14 @@ void WarpFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    this->combo_dest_map->addItems(project->mapNames);
+    populateDropdown(this->combo_dest_map, project->mapNames);
+    populateIdNameDropdown(this->combo_dest_warp, project, this->warp->getDestinationMap(), Event::Group::Warp);
 }
 
 
 
 void TriggerFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Trigger");
 
     // script combo
     QFormLayout *l_form_script = new QFormLayout();
@@ -661,18 +768,14 @@ void TriggerFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    // var combo
-    this->combo_var->addItems(project->varNames);
-
-    this->populateScriptDropdown(this->combo_script, project);
+    populateDropdown(this->combo_var, project->varNames);
+    populateScriptDropdown(this->combo_script, project);
 }
 
 
 
 void WeatherTriggerFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Weather Trigger");
 
     // weather combo
     QFormLayout *l_form_weather = new QFormLayout();
@@ -715,16 +818,13 @@ void WeatherTriggerFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    // weather
-    this->combo_weather->addItems(project->coordEventWeatherNames);
+    populateDropdown(this->combo_weather, project->coordEventWeatherNames);
 }
 
 
 
 void SignFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Sign");
 
     // facing dir combo
     QFormLayout *l_form_facing_dir = new QFormLayout();
@@ -785,18 +885,14 @@ void SignFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    // facing dir
-    this->combo_facing_dir->addItems(project->bgEventFacingDirections);
-
-    this->populateScriptDropdown(this->combo_script, project);
+    populateDropdown(this->combo_facing_dir, project->bgEventFacingDirections);
+    populateScriptDropdown(this->combo_script, project);
 }
 
 
 
 void HiddenItemFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Hidden Item");
 
     // item combo
     QFormLayout *l_form_item = new QFormLayout();
@@ -905,16 +1001,14 @@ void HiddenItemFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    this->combo_item->addItems(project->itemNames);
-    this->combo_flag->addItems(project->flagNames);
+    populateDropdown(this->combo_item, project->itemNames);
+    populateDropdown(this->combo_flag, project->flagNames);
 }
 
 
 
 void SecretBaseFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Secret Base");
 
     this->spinner_z->setEnabled(false);
 
@@ -959,15 +1053,13 @@ void SecretBaseFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    this->combo_base_id->addItems(project->secretBaseIds);
+    populateDropdown(this->combo_base_id, project->secretBaseIds);
 }
 
 
 
 void HealLocationFrame::setup() {
     EventFrame::setup();
-
-    this->label_id->setText("Heal Location");
 
     this->hideable_label_z->setVisible(false);
     this->spinner_z->setVisible(false);
@@ -996,7 +1088,8 @@ void HealLocationFrame::setup() {
     QFormLayout *l_form_respawn_npc = new QFormLayout(hideable_respawn_npc);
     l_form_respawn_npc->setContentsMargins(0, 0, 0, 0);
     this->combo_respawn_npc = new NoScrollComboBox(hideable_respawn_npc);
-    static const QString combo_respawn_npc_toolTip = Util::toHtmlParagraph("event_object ID of the NPC the player interacts with upon respawning after whiteout.");
+    static const QString combo_respawn_npc_toolTip = Util::toHtmlParagraph("The Local ID name or number of the NPC the player "
+                                                                           "interacts with upon respawning after whiteout.");
     this->combo_respawn_npc->setToolTip(combo_respawn_npc_toolTip);
     l_form_respawn_npc->addRow("Respawn NPC", this->combo_respawn_npc);
     this->layout_contents->addWidget(hideable_respawn_npc);
@@ -1009,6 +1102,7 @@ void HealLocationFrame::connectSignals(MainWindow *window) {
     if (this->connected) return;
 
     EventFrame::connectSignals(window);
+    Project *project = window->editor->project;
 
     this->line_edit_id->disconnect();
     connect(this->line_edit_id, &QLineEdit::textChanged, [this](const QString &text) {
@@ -1017,16 +1111,29 @@ void HealLocationFrame::connectSignals(MainWindow *window) {
     });
 
     this->combo_respawn_map->disconnect();
-    connect(this->combo_respawn_map, &QComboBox::currentTextChanged, [this](const QString &text) {
-        this->healLocation->setRespawnMapName(text);
+    connect(this->combo_respawn_map, &QComboBox::currentTextChanged, [this, project](const QString &mapName) {
+        this->healLocation->setRespawnMapName(mapName);
         this->healLocation->modify();
+        populateIdNameDropdown(this->combo_respawn_npc, project, mapName, Event::Group::Object);
     });
+    connect(window, &MainWindow::mapOpened, this, &HealLocationFrame::tryInvalidateIdDropdown, Qt::UniqueConnection);
 
     this->combo_respawn_npc->disconnect();
     connect(this->combo_respawn_npc, &QComboBox::currentTextChanged, [this](const QString &text) {
         this->healLocation->setRespawnNPC(text);
         this->healLocation->modify();
     });
+
+    // This frame type displays map names, so when a new map is created we need to repopulate it.
+    connect(project, &Project::mapCreated, this, &EventFrame::invalidateValues, Qt::UniqueConnection);
+}
+
+void HealLocationFrame::tryInvalidateIdDropdown(Map *map) {
+    // If the heal locations's target map is opened then the names in this frame's ID dropdown may be changed.
+    // Make sure we update the frame next time it's opened.
+    if (map && this->healLocation && map->name() == this->healLocation->getRespawnMapName()) {
+        invalidateValues();
+    }
 }
 
 void HealLocationFrame::initialize() {
@@ -1050,7 +1157,8 @@ void HealLocationFrame::populate(Project *project) {
     const QSignalBlocker blocker(this);
     EventFrame::populate(project);
 
-    this->combo_respawn_map->addItems(project->mapNames);
-    // TODO: We should dynamically populate combo_respawn_npc with the local IDs of the respawn_map
-    //       Same for warp IDs.
+    if (projectConfig.healLocationRespawnDataEnabled) {
+        populateDropdown(this->combo_respawn_map, project->mapNames);
+        populateIdNameDropdown(this->combo_respawn_npc, project, this->healLocation->getRespawnMapName(), Event::Group::Object);
+    }
 }

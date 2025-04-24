@@ -1,5 +1,5 @@
 #include "editcommands.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "bordermetatilespixmapitem.h"
 #include "editor.h"
 

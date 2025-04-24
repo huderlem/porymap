@@ -177,7 +177,7 @@ private slots:
     void on_action_Save_Project_triggered();
     bool save(bool currentOnly = false);
 
-    void openWarpMap(QString map_name, int event_id, Event::Group event_group);
+    void openEventMap(Event *event);
 
     void duplicate();
     void setClipboardData(poryjson::Json::object);
@@ -197,8 +197,7 @@ private slots:
     void onMapLoaded(Map *map);
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
-    void markMapEdited();
-    void markSpecificMapEdited(Map*);
+    void markMapEdited(Map*);
     void markLayoutEdited();
 
     void on_actionNew_Tileset_triggered();

@@ -57,7 +57,9 @@ protected:
     bool initialized = false;
     bool connected = false;
 
+    void populateDropdown(NoScrollComboBox * combo, const QStringList &items);
     void populateScriptDropdown(NoScrollComboBox * combo, Project * project);
+    void populateIdNameDropdown(NoScrollComboBox * combo, Project * project, const QString &mapName, Event::Group group);
 
 private:
     Event *event;
@@ -78,6 +80,7 @@ public:
     virtual void populate(Project *project) override;
 
 public:
+    QLineEdit *line_edit_local_id;
     NoScrollComboBox *combo_sprite;
     NoScrollComboBox *combo_movement;
     NoScrollSpinBox *spinner_radius_x;
@@ -108,12 +111,15 @@ public:
     virtual void populate(Project *project) override;
 
 public:
+    QLineEdit *line_edit_local_id;
     NoScrollComboBox *combo_sprite;
-    NoScrollSpinBox *spinner_target_id;
+    NoScrollComboBox *combo_target_id;
     NoScrollComboBox *combo_target_map;
 
 private:
     CloneObjectEvent *clone;
+
+    void tryInvalidateIdDropdown(Map *map);
 };
 
 
@@ -131,12 +137,15 @@ public:
     virtual void populate(Project *project) override;
 
 public:
+    QLineEdit *line_edit_id;
     NoScrollComboBox *combo_dest_map;
     NoScrollComboBox *combo_dest_warp;
     QPushButton *warning;
 
 private:
     WarpEvent *warp;
+
+    void tryInvalidateIdDropdown(Map *map);
 };
 
 
@@ -275,6 +284,8 @@ public:
 
 private:
     HealLocationEvent *healLocation;
+
+    void tryInvalidateIdDropdown(Map *map);
 };
 
 #endif // EVENTRAMES_H

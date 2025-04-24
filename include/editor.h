@@ -30,7 +30,7 @@
 #include "mapruler.h"
 #include "encountertablemodel.h"
 
-class DraggablePixmapItem;
+class EventPixmapItem;
 class MetatilesPixmapItem;
 
 class Editor : public QObject
@@ -109,7 +109,7 @@ public:
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapAttributes();
 
-    DraggablePixmapItem *addEventPixmapItem(Event *event);
+    EventPixmapItem *addEventPixmapItem(Event *event);
     void removeEventPixmapItem(Event *event);
     bool canAddEvents(const QList<Event*> &events);
     void selectMapEvent(Event *event, bool toggle = false);
@@ -118,13 +118,16 @@ public:
     void duplicateSelectedEvents();
     void redrawAllEvents();
     void redrawEvents(const QList<Event*> &events);
-    void redrawEventPixmapItem(DraggablePixmapItem *item);
+    void redrawEventPixmapItem(EventPixmapItem *item);
+    void updateEventPixmapItemZValue(EventPixmapItem *item);
     qreal getEventOpacity(const Event *event) const;
 
     void setPlayerViewRect(const QRectF &rect);
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
 
+    void onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition);
+    void onEventReleased(Event *event, const QPoint &position);
     void updateWarpEventWarning(Event *event);
     void updateWarpEventWarnings();
 
@@ -175,16 +178,29 @@ public:
     static QList<QList<const QImage*>> collisionIcons;
 
     int eventShiftActionId = 0;
-
-    void eventsView_onMousePress(QMouseEvent *event);
-
-    bool selectingEvent = false;
+    int eventMoveActionId = 0;
 
     void deleteSelectedEvents();
     void shouldReselectEvents();
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
     void setCollisionGraphics();
+
+    enum ZValue {
+        MapBorder = -4,
+        MapConnectionInactive = -3,
+        MapConnectionActive = -2,
+        MapConnectionMask = -1,
+
+        // Event pixmaps set their z value to be their y position on the map.
+        // Their y value is int16_t, so we have enough space to allocate the
+        // full range + 1 for the selected event (which should always be on top).
+        EventMinimum = 1,
+        EventMaximum = EventMinimum + 0x10000,
+
+        Ruler,
+        ResizeLayoutPopup
+    };
 
 public slots:
     void openMapScripts() const;
@@ -253,11 +269,11 @@ private slots:
 
 signals:
     void eventsChanged();
+    void openEventMap(Event*);
     void openConnectedMap(MapConnection*);
     void wildMonTableOpened(EncounterTableModel*);
     void wildMonTableClosed();
     void wildMonTableEdited();
-    void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void tilesetUpdated(QString);

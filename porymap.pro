@@ -73,7 +73,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
     src/ui/divingmappixmapitem.cpp \
-    src/ui/draggablepixmapitem.cpp \
+    src/ui/eventpixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
@@ -184,7 +184,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/customscriptseditor.h \
     include/ui/customscriptslistitem.h \
     include/ui/divingmappixmapitem.h \
-    include/ui/draggablepixmapitem.h \
+    include/ui/eventpixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
