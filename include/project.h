@@ -110,10 +110,6 @@ public:
     QStringList secondaryTilesetLabels;
     QStringList tilesetLabelsOrdered;
 
-    Blockdata readBlockdata(QString, bool *ok = nullptr);
-    bool loadBlockdata(Layout *);
-    bool loadLayoutBorder(Layout *);
-
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
     QString mapNameToMapGroup(const QString &mapName) const;
@@ -292,6 +288,10 @@ private:
     // list, none of the rest of its data in map.json).
     QSet<QString> loadedMapNames;
     QSet<QString> loadedLayoutIds;
+
+    // Data for layouts that failed to load at launch.
+    // We can't display these layouts to the user, but we want to preserve the data when they save.
+    QList<QJsonObject> failedLayoutsData;
 
     const QRegularExpression re_gbapalExtension;
     const QRegularExpression re_bppExtension;

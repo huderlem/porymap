@@ -452,7 +452,6 @@ void MainWindow::initMapList() {
 
     auto backArrow = new QToolButton(navigationFrame);
     backArrow->setArrowType(Qt::LeftArrow);
-    backArrow->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     backArrow->setToolTip("Open previous map");
     backArrow->setEnabled(false);
     connect(backArrow, &QToolButton::clicked, this, &MainWindow::openPreviousMap);
@@ -1019,7 +1018,6 @@ void MainWindow::openMapFromHistory(bool previous) {
     }
 
     this->ignoreNavigationRecords = false;
-
 }
 
 void MainWindow::recordNavigation(const QString &itemName) {

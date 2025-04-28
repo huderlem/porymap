@@ -508,8 +508,6 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
             // Map layouts are used as folders, but we display them with the same icons as maps.
             if (layoutId == this->activeItemName)
                 return this->mapOpenedIcon;
-            /*if (this->project->isErroredLayout(layoutId))
-                return this->mapErroredIcon;*/
             if (this->project->isUnsavedLayout(layoutId))
                 return this->mapEditedIcon;
             if (this->project->isLoadedLayout(layoutId))

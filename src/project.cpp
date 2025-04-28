@@ -324,8 +324,8 @@ Layout *Project::loadLayout(const QString &layoutId) {
 
     // Force these to run even if one fails
     bool loadedTilesets = loadLayoutTilesets(layout);
-    bool loadedBlockdata = loadBlockdata(layout);
-    bool loadedBorder = loadLayoutBorder(layout);
+    bool loadedBlockdata = layout->loadBlockdata(this->root);
+    bool loadedBorder = layout->loadBorder(this->root);
     if (!loadedTilesets || !loadedBlockdata || !loadedBorder) {
         // Error should already be logged.
         return nullptr;
@@ -597,6 +597,7 @@ void Project::clearMapLayouts() {
     this->orderedLayoutIdsMaster.clear();
     this->loadedLayoutIds.clear();
     this->customLayoutsData = QJsonObject();
+    this->failedLayoutsData.clear();
 }
 
 bool Project::readMapLayouts() {
@@ -626,80 +627,46 @@ bool Project::readMapLayouts() {
         QJsonObject layoutObj = layouts[i].toObject();
         if (layoutObj.isEmpty())
             continue;
-        Layout *layout = new Layout();
+
+        QScopedPointer<Layout> layout(new Layout());
         layout->id = ParseUtil::jsonToQString(layoutObj.take("id"));
         if (layout->id.isEmpty()) {
-            logError(QString("Missing 'id' value on layout %1 in %2").arg(i).arg(layoutsFilepath));
-            delete layout;
-            return false;
+            // Use name to identify it in the warning, if available.
+            QString name = ParseUtil::jsonToQString(layoutObj["name"]);
+            if (name.isEmpty()) name = QString("Layout %1 (unnamed)").arg(i);
+            logWarn(QString("Missing 'id' value for %1 in %2").arg(name).arg(layoutsFilepath));
+            this->failedLayoutsData.append(layouts[i].toObject());
+            continue;
         }
-        if (mapLayouts.contains(layout->id)) {
+        if (this->mapLayouts.contains(layout->id)) {
             logWarn(QString("Duplicate layout entry for %1 in %2 will be ignored.").arg(layout->id).arg(layoutsFilepath));
-            delete layout;
+            this->failedLayoutsData.append(layouts[i].toObject());
             continue;
         }
         layout->name = ParseUtil::jsonToQString(layoutObj.take("name"));
         if (layout->name.isEmpty()) {
-            logError(QString("Missing 'name' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
-            delete layout;
-            return false;
+            logWarn(QString("Missing 'name' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
+            this->failedLayoutsData.append(layouts[i].toObject());
+            continue;
         }
-        int lwidth = ParseUtil::jsonToInt(layoutObj.take("width"));
-        if (lwidth <= 0) {
-            logError(QString("Invalid 'width' value '%1' for %2 in %3. Must be greater than 0.").arg(lwidth).arg(layout->id).arg(layoutsFilepath));
-            delete layout;
-            return false;
-        }
-        layout->width = lwidth;
-        int lheight = ParseUtil::jsonToInt(layoutObj.take("height"));
-        if (lheight <= 0) {
-            logError(QString("Invalid 'height' value '%1' for %2 in %3. Must be greater than 0.").arg(lheight).arg(layout->id).arg(layoutsFilepath));
-            delete layout;
-            return false;
-        }
-        layout->height = lheight;
+
+        layout->width = ParseUtil::jsonToInt(layoutObj.take("width"));
+        layout->height = ParseUtil::jsonToInt(layoutObj.take("height"));
         if (projectConfig.useCustomBorderSize) {
-            int bwidth = ParseUtil::jsonToInt(layoutObj.take("border_width"));
-            if (bwidth <= 0) {  // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
-                bwidth = DEFAULT_BORDER_WIDTH;
-            }
-            layout->border_width = bwidth;
-            int bheight = ParseUtil::jsonToInt(layoutObj.take("border_height"));
-            if (bheight <= 0) {
-                bheight = DEFAULT_BORDER_HEIGHT;
-            }
-            layout->border_height = bheight;
+            layout->border_width = ParseUtil::jsonToInt(layoutObj.take("border_width"));
+            layout->border_height = ParseUtil::jsonToInt(layoutObj.take("border_height"));
         } else {
             layout->border_width = DEFAULT_BORDER_WIDTH;
             layout->border_height = DEFAULT_BORDER_HEIGHT;
         }
         layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj.take("primary_tileset"));
-        if (layout->tileset_primary_label.isEmpty()) {
-            logError(QString("Missing 'primary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
-            delete layout;
-            return false;
-        }
         layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj.take("secondary_tileset"));
-        if (layout->tileset_secondary_label.isEmpty()) {
-            logError(QString("Missing 'secondary_tileset' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
-            delete layout;
-            return false;
-        }
         layout->border_path = ParseUtil::jsonToQString(layoutObj.take("border_filepath"));
-        if (layout->border_path.isEmpty()) {
-            logError(QString("Missing 'border_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
-            delete layout;
-            return false;
-        }
         layout->blockdata_path = ParseUtil::jsonToQString(layoutObj.take("blockdata_filepath"));
-        if (layout->blockdata_path.isEmpty()) {
-            logError(QString("Missing 'blockdata_filepath' value for %1 in %2").arg(layout->id).arg(layoutsFilepath));
-            delete layout;
-            return false;
-        }
+
         layout->customData = layoutObj;
 
-        this->mapLayouts.insert(layout->id, layout);
+        this->mapLayouts.insert(layout->id, layout->copy());
         this->mapLayoutsMaster.insert(layout->id, layout->copy());
         this->orderedLayoutIds.append(layout->id);
         this->orderedLayoutIdsMaster.append(layout->id);
@@ -746,6 +713,22 @@ bool Project::saveMapLayouts() {
         layoutObj["border_filepath"] = layout->border_path;
         layoutObj["blockdata_filepath"] = layout->blockdata_path;
         OrderedJson::append(&layoutObj, layout->customData);
+        layoutsArr.push_back(layoutObj);
+    }
+    // Append any layouts that were hidden because we failed to load them at launch.
+    // We do a little extra work to keep the field order the same as successfully-loaded layouts.
+    for (QJsonObject failedData : this->failedLayoutsData) {
+        OrderedJson::object layoutObj;
+        static const QStringList expectedFields = {
+            "id", "name", "width", "height", "border_width", "border_height",
+            "primary_tileset", "secondary_tileset", "border_filepath", "blockdata_filepath"
+        };
+        for (const auto &field : expectedFields) {
+            if (failedData.contains(field)) {
+                layoutObj[field] = OrderedJson::fromQJsonValue(failedData.take(field));
+            }
+        }
+        OrderedJson::append(&layoutObj, failedData);
         layoutsArr.push_back(layoutObj);
     }
     layoutsObj["layouts"] = layoutsArr;
@@ -1107,6 +1090,18 @@ bool Project::saveTilesetMetatileLabels(Tileset *primaryTileset, Tileset *second
 }
 
 bool Project::loadLayoutTilesets(Layout *layout) {
+    // Note: Do not replace invalid tileset labels with the default tileset labels here.
+    //       Changing the tilesets like this can require us to load tilesets unnecessarily
+    //       in order to avoid strange behavior (e.g. tile/metatile usage counts changing).
+    if (layout->tileset_primary_label.isEmpty()) {
+        logError(QString("Failed to load %1: missing primary tileset label.").arg(layout->name));
+        return false;
+    }
+    if (layout->tileset_secondary_label.isEmpty()) {
+        logError(QString("Failed to load %1: missing secondary tileset label.").arg(layout->name));
+        return false;
+    }
+
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     return layout->tileset_primary && layout->tileset_secondary;
@@ -1161,31 +1156,6 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
     return tileset;
 }
 
-bool Project::loadBlockdata(Layout *layout) {
-    bool ok = true;
-    QString path = QString("%1/%2").arg(root).arg(layout->blockdata_path);
-    auto blockdata = readBlockdata(path, &ok);
-    if (!ok) {
-        logError(QString("Failed to load layout blockdata from '%1'").arg(path));
-        return false;
-    }
-
-    layout->blockdata = blockdata;
-    layout->lastCommitBlocks.blocks = blockdata;
-    layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
-
-    if (layout->blockdata.count() != layout->getWidth() * layout->getHeight()) {
-        logWarn(QString("%1 blockdata length %2 does not match dimensions %3x%4 (should be %5). Resizing blockdata.")
-                .arg(layout->name)
-                .arg(layout->blockdata.count())
-                .arg(layout->getWidth())
-                .arg(layout->getHeight())
-                .arg(layout->getWidth() * layout->getHeight()));
-        layout->blockdata.resize(layout->getWidth() * layout->getHeight());
-    }
-    return true;
-}
-
 void Project::setNewLayoutBlockdata(Layout *layout) {
     layout->blockdata.clear();
     int width = layout->getWidth();
@@ -1196,30 +1166,6 @@ void Project::setNewLayoutBlockdata(Layout *layout) {
     }
     layout->lastCommitBlocks.blocks = layout->blockdata;
     layout->lastCommitBlocks.layoutDimensions = QSize(width, height);
-}
-
-bool Project::loadLayoutBorder(Layout *layout) {
-    bool ok = true;
-    QString path = QString("%1/%2").arg(root).arg(layout->border_path);
-    auto blockdata = readBlockdata(path, &ok);
-    if (!ok) {
-        logError(QString("Failed to load layout border from '%1'").arg(path));
-        return false;
-    }
-
-    layout->border = blockdata;
-    layout->lastCommitBlocks.border = blockdata;
-    layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
-
-    int borderLength = layout->getBorderWidth() * layout->getBorderHeight();
-    if (layout->border.count() != borderLength) {
-        logWarn(QString("%1 border blockdata length %2 must be %3. Resizing border blockdata.")
-                .arg(layout->name)
-                .arg(layout->border.count())
-                .arg(borderLength));
-        layout->border.resize(borderLength);
-    }
-    return true;
 }
 
 void Project::setNewLayoutBorder(Layout *layout) {
@@ -1662,24 +1608,6 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     }
 }
 
-Blockdata Project::readBlockdata(QString path, bool *ok) {
-    Blockdata blockdata;
-    QFile file(path);
-    if (file.open(QIODevice::ReadOnly)) {
-        QByteArray data = file.readAll();
-        for (int i = 0; (i + 1) < data.length(); i += 2) {
-            uint16_t word = static_cast<uint16_t>((data[i] & 0xff) + ((data[i + 1] & 0xff) << 8));
-            blockdata.append(word);
-        }
-        if (ok) *ok = true;
-    } else {
-        // Failed
-        if (ok) *ok = false;
-    }
-
-    return blockdata;
-}
-
 Tileset* Project::getTileset(QString label, bool forceLoad) {
     Tileset *existingTileset = nullptr;
     if (tilesetCache.contains(label)) {
@@ -1940,23 +1868,30 @@ bool Project::readMapGroups() {
         // Process the names in this map group
         for (int j = 0; j < mapNamesJson.size(); j++) {
             const QString mapName = ParseUtil::jsonToQString(mapNamesJson.at(j));
-
-            // This list should accept all maps we find, valid or not.
-            // It will only be used to populate the map list panel.
-            // Always keeping the name prevents us from deleting it from the list
-            // if we're unable to load the rest of the necessary map data.
-            this->groupNameToMapNames[groupName].append(mapName);
-
+            if (mapName.isEmpty()) {
+                logWarn(QString("Ignoring empty map %1 in map group '%2'.").arg(j).arg(groupName).arg(mapName));
+                continue;
+            }
+            // We explicitly hide "Dynamic" from the map list, so this entry will be deleted from the file if the user changes the map list order.
             if (mapName == dynamicMapName) {
                 logWarn(QString("Ignoring map %1 in map group '%2': Cannot use reserved map name '%3'.").arg(j).arg(groupName).arg(mapName));
                 continue;
             }
+
+            // Excepting the disallowed map names above, we want to preserve the user's map list data,
+            // so this list should accept all names we find whether they have valid data or not.
+            this->groupNameToMapNames[groupName].append(mapName);
+
+            // We log a warning for this, but a repeated name in the map list otherwise functions fine.
+            // All repeated entries will refer to the same map data.
             if (this->maps.contains(mapName)) {
-                logWarn(QString("Ignoring map %1 in map group '%2': Repeated map name '%3'.").arg(j).arg(groupName).arg(mapName));
+                logWarn(QString("Map %1 in map group '%2' has repeated map name '%3'.").arg(j).arg(groupName).arg(mapName));
                 continue;
             }
 
             // Load the map's json file so we can get its ID constant (and two other constants we use for the map list).
+            // If we fail to get the ID for any reason, we flag the map as 'errored'. It can still appear in the map list,
+            // but we won't be able to translate the map name to a map constant, so the map name can't appear elsewhere.
             QString mapJsonError;
             QJsonDocument mapDoc = readMapJson(mapName, &mapJsonError);
             if (!mapJsonError.isEmpty()) {
