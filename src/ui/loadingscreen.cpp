@@ -24,6 +24,16 @@ PorymapLoadingScreen::PorymapLoadingScreen(QWidget *parent) : QWidget(parent), u
     connect(&this->timer, &QTimer::timeout, this, &PorymapLoadingScreen::updateFrame);
 }
 
+void PorymapLoadingScreen::start() {
+    this->timer.start(120);
+    this->show();
+}
+
+void PorymapLoadingScreen::stop () {
+    this->timer.stop();
+    this->hide();
+}
+
 void PorymapLoadingScreen::setPixmap(QPixmap pixmap) {
     if (!this->isVisible()) return;
     this->ui->labelPixmap->setPixmap(pixmap);
@@ -32,20 +42,13 @@ void PorymapLoadingScreen::setPixmap(QPixmap pixmap) {
 void PorymapLoadingScreen::showMessage(QString text) {
     if (!this->isVisible()) return;
     this->ui->labelText->setText(text.mid(text.lastIndexOf("/") + 1));
-    //this->updateFrame();
 
     QApplication::processEvents();
 }
 
 void PorymapLoadingScreen::updateFrame() {
-    //
     this->frame = (this->frame + 1) % this->splashImage.frameCount();
-
     this->setPixmap(QPixmap::fromImage(this->splashImage.frame(this->frame)));
 
     QApplication::processEvents();
-
-    //this->showMessage("Frame Number: " + QString::number(this->frame));
-
-    //this->repaint();
 }

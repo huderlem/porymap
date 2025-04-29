@@ -79,7 +79,6 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 void MainWindow::initialize() {
-    porysplash->start();
     this->initWindow();
     if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true)) {
         on_toolButton_Paint_clicked();
@@ -91,8 +90,6 @@ void MainWindow::initialize() {
 
     if (porymapConfig.checkForUpdates)
         this->checkForUpdates(false);
-
-    porysplash->close();
 
     this->restoreWindowState();
     this->show();
@@ -656,6 +653,8 @@ bool MainWindow::openProject(QString dir, bool initial) {
         return false;
     }
 
+    porysplash->start();
+
     const QString openMessage = QString("Opening %1").arg(projectString);
     this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
@@ -684,6 +683,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     // Make sure project looks reasonable before attempting to load it
     if (!checkProjectSanity()) {
         delete this->editor->project;
+        porysplash->stop();
         return false;
     }
 
@@ -693,6 +693,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
         showProjectOpenFailure();
         delete this->editor->project;
         // TODO: Allow changing project settings at this point
+        porysplash->stop();
         return false;
     }
 
@@ -713,6 +714,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
                 editor->layout);
     Scripting::cb_ProjectOpened(dir);
     setWindowDisabled(false);
+    porysplash->stop();
     return true;
 }
 
