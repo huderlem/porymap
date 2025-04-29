@@ -1,5 +1,6 @@
 
 #include "loadingscreen.h"
+#include "aboutporymap.h"
 #include "ui_loadingscreen.h"
 #include "qgifimage.h"
 
@@ -25,6 +26,11 @@ PorymapLoadingScreen::PorymapLoadingScreen(QWidget *parent) : QWidget(parent), u
 }
 
 void PorymapLoadingScreen::start() {
+    static bool shownVersion = false;
+    if (!shownVersion) {
+        this->ui->labelVersion->setText(AboutPorymap::getVersionString());
+        shownVersion = true;
+    }
     this->timer.start(120);
     this->show();
 }
