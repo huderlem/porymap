@@ -93,6 +93,8 @@ void MainWindow::initialize() {
         this->checkForUpdates(false);
 
     porysplash->close();
+
+    this->restoreWindowState();
     this->show();
 }
 
@@ -150,7 +152,6 @@ void MainWindow::initWindow() {
     this->initMiscHeapObjects();
     this->initMapList();
     this->initShortcuts();
-    this->restoreWindowState();
 
 #ifndef RELEASE_PLATFORM
     ui->actionCheck_for_Updates->setVisible(false);
