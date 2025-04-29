@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
     a.setStyle("fusion");
 
     porysplash = new PorymapLoadingScreen;
-    porysplash->show();
 
     QObject::connect(&a, &QCoreApplication::aboutToQuit, [=]() { delete porysplash; });
 

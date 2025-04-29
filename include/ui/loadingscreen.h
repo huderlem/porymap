@@ -27,7 +27,8 @@ public:
     void setPixmap(QPixmap pixmap);
     void showMessage(QString text);
 
-    void start() { this->timer.start(120); }
+    void start();
+    void stop ();
 
 private:
     void setupUi();
