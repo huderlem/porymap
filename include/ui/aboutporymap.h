@@ -13,6 +13,8 @@ class AboutPorymap : public QDialog
 public:
     explicit AboutPorymap(QWidget *parent = nullptr);
     ~AboutPorymap();
+
+    static QString getVersionString();
 private:
     Ui::AboutPorymap *ui;
 };
