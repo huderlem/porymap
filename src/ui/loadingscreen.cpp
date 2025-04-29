@@ -19,8 +19,6 @@ PorymapLoadingScreen::PorymapLoadingScreen(QWidget *parent) : QWidget(parent), u
 
     this->splashImage.load(":/images/porysplash.gif");
 
-    this->setPixmap(QPixmap::fromImage(this->splashImage.frame(0)));
-
     connect(&this->timer, &QTimer::timeout, this, &PorymapLoadingScreen::updateFrame);
 }
 
@@ -30,6 +28,7 @@ void PorymapLoadingScreen::start() {
         this->ui->labelVersion->setText(AboutPorymap::getVersionString());
         shownVersion = true;
     }
+    this->ui->labelPixmap->setPixmap(QPixmap::fromImage(this->splashImage.frame(0)));
     this->timer.start(120);
     this->show();
 }
