@@ -26,6 +26,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add a setting to specify the maximum number of events in a group. A warning will be shown if too many events are added.
 - Add a setting to customize the size and position of the player view distance.
 - Add `onLayoutOpened` to the scripting API.
+- Add a splash loading screen for project openings.
 
 ### Changed
 - `Change Dimensions` now has an interactive resizing rectangle.
