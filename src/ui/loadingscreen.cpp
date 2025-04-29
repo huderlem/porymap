@@ -1,4 +1,3 @@
-
 #include "loadingscreen.h"
 #include "aboutporymap.h"
 #include "ui_loadingscreen.h"
