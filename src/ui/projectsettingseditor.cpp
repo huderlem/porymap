@@ -3,6 +3,7 @@
 #include "noscrollcombobox.h"
 #include "prefab.h"
 #include "filedialog.h"
+#include "newdefinedialog.h"
 #include "utility.h"
 
 #include <QAbstractButton>
@@ -53,6 +54,9 @@ void ProjectSettingsEditor::connectSignals() {
     });
     connect(ui->button_AddWarpBehavior,    &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(true); });
     connect(ui->button_RemoveWarpBehavior, &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(false); });
+
+    connect(ui->button_AddGlobalConstantsFile, &QAbstractButton::clicked, this, &ProjectSettingsEditor::addNewGlobalConstantsFilepath);
+    connect(ui->button_AddGlobalConstant,      &QAbstractButton::clicked, this, &ProjectSettingsEditor::addNewGlobalConstant);
 
     // Connect file selection buttons
     connect(ui->button_ChoosePrefabs,     &QAbstractButton::clicked, [this](bool) { this->choosePrefabsFile(); });
@@ -501,6 +505,12 @@ void ProjectSettingsEditor::refresh() {
         lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomIdentifier(lineEdit->objectName()));
+    for (const auto &path : projectConfig.globalConstantsFilepaths) {
+        addGlobalConstantsFilepath(path);
+    }
+    for (auto it = projectConfig.globalConstants.constBegin(); it != projectConfig.globalConstants.constEnd(); it++) {
+        addGlobalConstant(it.key(), it.value());
+    }
 
     // Set warp behaviors
     QStringList behaviorNames;
@@ -578,6 +588,10 @@ void ProjectSettingsEditor::save() {
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         projectConfig.setIdentifier(lineEdit->objectName(), lineEdit->text());
 
+    // Save global constants
+    projectConfig.globalConstantsFilepaths = getGlobalConstantsFilepaths();
+    projectConfig.globalConstants = getGlobalConstants();
+
     // Save warp behaviors
     projectConfig.warpBehaviors.clear();
     const QStringList behaviorNames = this->getWarpBehaviorsList();
@@ -622,6 +636,97 @@ void ProjectSettingsEditor::chooseFile(QLineEdit * filepathEdit, const QString &
     if (filepathEdit)
         filepathEdit->setText(this->stripProjectDir(filepath));
     this->hasUnsavedChanges = true;
+}
+
+void ProjectSettingsEditor::addNewGlobalConstantsFilepath() {
+    QString filepath = stripProjectDir(FileDialog::getOpenFileName(this, "Choose Global Constants File"));
+    if (filepath.isEmpty() || getGlobalConstantsFilepaths().contains(filepath))
+        return;
+
+    addGlobalConstantsFilepath(filepath);
+    this->hasUnsavedChanges = true;
+}
+
+void ProjectSettingsEditor::addGlobalConstantsFilepath(const QString &filepath) {
+    auto filepathLabel = new QLabel(filepath, this);
+    filepathLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
+    filepathLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    int newRow = ui->gridLayout_GlobalConstantsFiles->rowCount();
+    ui->gridLayout_GlobalConstantsFiles->addWidget(filepathLabel, newRow, 0);
+
+    auto deleteButton = new QToolButton();
+    deleteButton->setIcon(QIcon(":/icons/delete.ico"));
+    connect(deleteButton, &QAbstractButton::clicked, [this, filepathLabel, deleteButton](bool) {
+        ui->gridLayout_GlobalConstantsFiles->removeWidget(filepathLabel);
+        ui->gridLayout_GlobalConstantsFiles->removeWidget(deleteButton);
+        delete filepathLabel;
+        delete deleteButton;
+        this->hasUnsavedChanges = true;
+    });
+    ui->gridLayout_GlobalConstantsFiles->addWidget(deleteButton, newRow, 1);
+}
+
+QStringList ProjectSettingsEditor::getGlobalConstantsFilepaths() {
+    QStringList paths;
+    for (int row = 1; row < ui->gridLayout_GlobalConstantsFiles->rowCount(); row++) {
+        auto item = ui->gridLayout_GlobalConstantsFiles->itemAtPosition(row, 0);
+        if (!item) continue;
+        auto pathLabel = dynamic_cast<QLabel*>(item->widget());
+        if (!pathLabel) continue;
+        paths.append(pathLabel->text());
+    }
+    return paths;
+}
+
+void ProjectSettingsEditor::addNewGlobalConstant() {
+    auto dialog = new NewDefineDialog(this);
+    connect(dialog, &NewDefineDialog::createdDefine, [this](const QString &name, const QString &expression) {
+        if (!getGlobalConstants().contains(name)) {
+            addGlobalConstant(name, expression);
+            this->hasUnsavedChanges = true;
+        }
+    });
+    dialog->open();
+}
+
+void ProjectSettingsEditor::addGlobalConstant(const QString &name, const QString &expression) {
+    auto nameLabel = new QLabel(name, this);
+    nameLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
+    nameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    auto expressionLineEdit = new QLineEdit(expression, this);
+
+    int newRow = ui->gridLayout_GlobalConstants->rowCount();
+    ui->gridLayout_GlobalConstants->addWidget(nameLabel, newRow, 0);
+    ui->gridLayout_GlobalConstants->addWidget(expressionLineEdit, newRow, 1);
+
+    auto deleteButton = new QToolButton();
+    deleteButton->setIcon(QIcon(":/icons/delete.ico"));
+    connect(deleteButton, &QAbstractButton::clicked, [this, nameLabel, expressionLineEdit, deleteButton](bool) {
+        ui->gridLayout_GlobalConstants->removeWidget(nameLabel);
+        ui->gridLayout_GlobalConstants->removeWidget(expressionLineEdit);
+        ui->gridLayout_GlobalConstants->removeWidget(deleteButton);
+        delete nameLabel;
+        delete expressionLineEdit;
+        delete deleteButton;
+        this->hasUnsavedChanges = true;
+    });
+    ui->gridLayout_GlobalConstants->addWidget(deleteButton, newRow, 2);
+}
+
+QMap<QString,QString> ProjectSettingsEditor::getGlobalConstants() {
+    QMap<QString,QString> constants;
+    for (int row = 1; row < ui->gridLayout_GlobalConstants->rowCount(); row++) {
+        auto nameItem = ui->gridLayout_GlobalConstants->itemAtPosition(row, 0);
+        auto expressionItem = ui->gridLayout_GlobalConstants->itemAtPosition(row, 1);
+        if (!nameItem || !expressionItem) continue;
+        auto nameLabel = dynamic_cast<QLabel*>(nameItem->widget());
+        auto expressionLineEdit = dynamic_cast<QLineEdit*>(expressionItem->widget());
+        if (!nameLabel || !expressionLineEdit) continue;
+        constants.insert(nameLabel->text(), expressionLineEdit->text());
+    }
+    return constants;
 }
 
 // Display relative path if this file is in the project folder

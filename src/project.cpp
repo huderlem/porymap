@@ -48,10 +48,10 @@ Project::~Project()
     QPixmapCache::clear();
 }
 
-void Project::set_root(QString dir) {
+void Project::setRoot(const QString &dir) {
     this->root = dir;
     FileDialog::setDirectory(dir);
-    this->parser.set_root(dir);
+    this->parser.setRoot(dir);
 }
 
 // Before attempting the initial project load we should check for a few notable files.
@@ -78,7 +78,8 @@ bool Project::sanityCheck() {
 bool Project::load() {
     resetFileCache();
     this->disabledSettingsNames.clear();
-    bool success = readMapLayouts()
+    bool success = readGlobalConstants()
+                && readMapLayouts()
                 && readRegionMapSections()
                 && readItemNames()
                 && readFlagNames()
@@ -1485,7 +1486,7 @@ bool Project::readTilesetMetatileLabels() {
     fileWatcher.addPath(root + "/" + metatileLabelsFilename);
 
     const QSet<QString> regexList = {QString("\\b%1").arg(projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix))};
-    const QMap<QString, int> defines = parser.readCDefinesByRegex(metatileLabelsFilename, regexList);
+    const auto defines = parser.readCDefinesByRegex(metatileLabelsFilename, regexList);
     for (auto i = defines.constBegin(); i != defines.constEnd(); i++) {
         QString label = i.key();
         uint32_t metatileId = i.value();
@@ -2120,16 +2121,15 @@ bool Project::readFieldmapProperties() {
 
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_fieldmap);
     fileWatcher.addPath(root + "/" + filename);
-    const QMap<QString, int> defines = parser.readCDefinesByName(filename, {
-        numTilesPrimaryName,
-        numTilesTotalName,
-        numMetatilesPrimaryName,
-        numPalsPrimaryName,
-        numPalsTotalName,
-        maxMapSizeName,
-        numTilesPerMetatileName,
-        mapOffsetWidthName,
-        mapOffsetHeightName,
+    const auto defines = parser.readCDefinesByName(filename, { numTilesPrimaryName,
+                                                               numTilesTotalName,
+                                                               numMetatilesPrimaryName,
+                                                               numPalsPrimaryName,
+                                                               numPalsTotalName,
+                                                               maxMapSizeName,
+                                                               numTilesPerMetatileName,
+                                                               mapOffsetWidthName,
+                                                               mapOffsetHeightName,
     });
 
     auto loadDefine = [defines](const QString name, int * dest, int min, int max) {
@@ -2223,16 +2223,15 @@ bool Project::readFieldmapMasks() {
     const QString elevationMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_elevation);
     const QString behaviorMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_behavior);
     const QString layerTypeMaskName = projectConfig.getIdentifier(ProjectIdentifier::define_mask_layer);
-    const QSet<QString> searchNames = {
-        metatileIdMaskName,
-        collisionMaskName,
-        elevationMaskName,
-        behaviorMaskName,
-        layerTypeMaskName,
-    };
+
     const QString globalFieldmap = projectConfig.getFilePath(ProjectFilePath::global_fieldmap);
     fileWatcher.addPath(root + "/" + globalFieldmap);
-    QMap<QString, int> defines = parser.readCDefinesByName(globalFieldmap, searchNames);
+    const auto defines = parser.readCDefinesByName(globalFieldmap, { metatileIdMaskName,
+                                                                     collisionMaskName,
+                                                                     elevationMaskName,
+                                                                     behaviorMaskName,
+                                                                     layerTypeMaskName,
+    });
 
     // These mask values are accessible via the settings editor for users who don't have these defines.
     // If users do have the defines we disable them in the settings editor and direct them to their project files.
@@ -2243,8 +2242,8 @@ bool Project::readFieldmapMasks() {
 
     // Read Block masks
     auto readBlockMask = [defines](const QString name, uint16_t *value) {
-        auto it = defines.find(name);
-        if (it == defines.end())
+        auto it = defines.constFind(name);
+        if (it == defines.constEnd())
             return false;
         *value = static_cast<uint16_t>(it.value());
         if (*value != it.value()){
@@ -2318,7 +2317,7 @@ bool Project::readFieldmapMasks() {
     // Read #defines for encounter and terrain types to populate in the Tileset Editor dropdowns (if necessary)
     QString error;
     if (projectConfig.metatileEncounterTypeMask) {
-        QMap<QString, int> defines = parser.readCDefinesByRegex(globalFieldmap, {projectConfig.getIdentifier(ProjectIdentifier::regex_encounter_types)}, &error);
+        const auto defines = parser.readCDefinesByRegex(globalFieldmap, {projectConfig.getIdentifier(ProjectIdentifier::regex_encounter_types)}, &error);
         if (!error.isEmpty()) {
             logWarn(QString("Failed to read encounter type constants from '%1': %2").arg(globalFieldmap).arg(error));
             error = QString();
@@ -2329,7 +2328,7 @@ bool Project::readFieldmapMasks() {
         }
     }
     if (projectConfig.metatileTerrainTypeMask) {
-        QMap<QString, int> defines = parser.readCDefinesByRegex(globalFieldmap, {projectConfig.getIdentifier(ProjectIdentifier::regex_terrain_types)}, &error);
+        const auto defines = parser.readCDefinesByRegex(globalFieldmap, {projectConfig.getIdentifier(ProjectIdentifier::regex_terrain_types)}, &error);
         if (!error.isEmpty()) {
             logWarn(QString("Failed to read terrain type constants from '%1': %2").arg(globalFieldmap).arg(error));
             error = QString();
@@ -2677,7 +2676,7 @@ bool Project::readMetatileBehaviors() {
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_metatile_behaviors);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    QMap<QString, int> defines = parser.readCDefinesByRegex(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)}, &error);
+    const auto defines = parser.readCDefinesByRegex(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_behaviors)}, &error);
     if (defines.isEmpty() && projectConfig.metatileBehaviorMask) {
         // Not having any metatile behavior names is ok (their values will be displayed instead)
         // but if the user's metatiles can have nonzero values then warn them, as they likely want names.
@@ -2714,9 +2713,14 @@ bool Project::readObjEventGfxConstants() {
     QString filename = projectConfig.getFilePath(ProjectFilePath::constants_obj_events);
     fileWatcher.addPath(root + "/" + filename);
     QString error;
-    this->gfxDefines = parser.readCDefinesByRegex(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_obj_event_gfx)}, &error);
+    const auto defines = parser.readCDefinesByRegex(filename, {projectConfig.getIdentifier(ProjectIdentifier::regex_obj_event_gfx)}, &error);
     if (!error.isEmpty())
         logWarn(QString("Failed to read object event graphics constants from '%1': %2").arg(filename).arg(error));
+
+    this->gfxDefines.clear();
+    for (auto it = defines.constBegin(); it != defines.constEnd(); it++)
+        this->gfxDefines.insert(it.key(), it.value());
+
     return true;
 }
 
@@ -2724,7 +2728,7 @@ bool Project::readMiscellaneousConstants() {
     const QString filename = projectConfig.getFilePath(ProjectFilePath::constants_global);
     const QString maxObjectEventsName = projectConfig.getIdentifier(ProjectIdentifier::define_obj_event_count);
     fileWatcher.addPath(root + "/" + filename);
-    QMap<QString, int> defines = parser.readCDefinesByName(filename, {maxObjectEventsName});
+    const auto defines = parser.readCDefinesByName(filename, {maxObjectEventsName});
 
     this->maxObjectEvents = 64; // Default value
     auto it = defines.find(maxObjectEventsName);
@@ -2744,6 +2748,19 @@ bool Project::readMiscellaneousConstants() {
                 .arg(this->maxObjectEvents));
     }
 
+    return true;
+}
+
+bool Project::readGlobalConstants() {
+    this->parser.resetCDefines();
+    for (const auto &path : projectConfig.globalConstantsFilepaths) {
+        QString error;
+        this->parser.loadGlobalCDefinesFromFile(path, &error);
+        if (!error.isEmpty()) {
+            logWarn(QString("Failed to read global constants file '%1': %2").arg(path).arg(error));
+        }
+    }
+    this->parser.loadGlobalCDefines(projectConfig.globalConstants);
     return true;
 }
 
@@ -2944,9 +2961,7 @@ QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
         // Invalid gfx constant. If this is a number, try to use that instead.
         bool ok;
         int gfxNum = ParseUtil::gameStringToInt(gfxName, &ok);
-        if (ok && gfxNum < this->gfxDefines.count()) {
-            gfx = this->eventGraphicsMap.value(this->gfxDefines.key(gfxNum, "NULL"), nullptr);
-        }
+        if (ok) gfx = this->eventGraphicsMap.value(this->gfxDefines.key(gfxNum, "NULL"), nullptr);
     }
     if (gfx && !gfx->loaded) {
         // This is the first request for this event's sprite. We'll attempt to load it now.

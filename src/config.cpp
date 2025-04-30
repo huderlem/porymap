@@ -234,7 +234,7 @@ void KeyValueConfigBase::load() {
             continue;
         }
 
-        this->parseConfigKeyValue(match.captured("key").trimmed().toLower(), match.captured("value").trimmed());
+        this->parseConfigKeyValue(match.captured("key").trimmed(), match.captured("value").trimmed());
     }
     this->setUnreadKeys();
 
@@ -840,6 +840,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
+    } else if (key.startsWith("global_constant/")) {
+        this->globalConstants.insert(key.mid(QStringLiteral("global_constant/").length()), value);
+    } else if (key == "global_constants_filepaths") {
+        this->globalConstantsFilepaths = value.split(",", Qt::SkipEmptyParts);
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
     } else if (key == "prefabs_import_prompted") {
@@ -863,7 +867,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "event_icon_path_heal") {
         this->eventIconPaths[Event::Group::Heal] = value;
     } else if (key.startsWith("pokemon_icon_path/")) {
-        this->pokemonIconPaths.insert(key.mid(QStringLiteral("pokemon_icon_path/").length()).toUpper(), value);
+        this->pokemonIconPaths.insert(key.mid(QStringLiteral("pokemon_icon_path/").length()), value);
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
@@ -970,12 +974,16 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("event_icon_path_coord", this->eventIconPaths[Event::Group::Coord]);
     map.insert("event_icon_path_bg", this->eventIconPaths[Event::Group::Bg]);
     map.insert("event_icon_path_heal", this->eventIconPaths[Event::Group::Heal]);
-    for (auto i = this->pokemonIconPaths.cbegin(), end = this->pokemonIconPaths.cend(); i != end; i++){
-        const QString path = i.value();
-        if (!path.isEmpty()) map.insert("pokemon_icon_path/" + i.key(), path);
+    for (auto it = this->pokemonIconPaths.constBegin(); it != this->pokemonIconPaths.constEnd(); it++) {
+        const QString path = it.value();
+        if (!path.isEmpty()) map.insert("pokemon_icon_path/" + it.key(), path);
     }
-    for (auto i = this->identifiers.cbegin(), end = this->identifiers.cend(); i != end; i++) {
-        map.insert("ident/"+defaultIdentifiers.value(i.key()).first, i.value());
+    for (auto it = this->globalConstants.constBegin(); it != this->globalConstants.constEnd(); it++) {
+        map.insert("global_constant/" + it.key(), it.value());
+    }
+    map.insert("global_constants_filepaths", this->globalConstantsFilepaths.join(","));
+    for (auto it = this->identifiers.constBegin(); it != this->identifiers.constEnd(); it++) {
+        map.insert("ident/"+defaultIdentifiers.value(it.key()).first, it.value());
     }
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetSize.width()));
