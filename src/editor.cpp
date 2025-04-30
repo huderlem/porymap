@@ -1753,6 +1753,7 @@ EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
     connect(item, &EventPixmapItem::selected, this, &Editor::selectMapEvent);
     connect(item, &EventPixmapItem::posChanged, [this, event] { updateWarpEventWarning(event); });
     connect(item, &EventPixmapItem::yChanged, [this, item] { updateEventPixmapItemZValue(item); });
+    updateWarpEventWarning(event);
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;
