@@ -1257,10 +1257,10 @@ bool MainWindow::setProjectUI() {
 
     // Set a version dependent player icon (or user-chosen icon) for the Events tab.
     QIcon eventTabIcon;
-    if (!projectConfig.eventTabIconPath.isEmpty()) {
-        eventTabIcon = QIcon(projectConfig.eventTabIconPath);
+    if (!projectConfig.eventsTabIconPath.isEmpty()) {
+        eventTabIcon = QIcon(project->getExistingFilepath(projectConfig.eventsTabIconPath));
         if (eventTabIcon.isNull()) {
-            logWarn(QString("Failed to load custom Events tab icon '%1'.").arg(projectConfig.eventTabIconPath));
+            logWarn(QString("Failed to load custom Events tab icon '%1'.").arg(projectConfig.eventsTabIconPath));
         }
     }
     if (eventTabIcon.isNull()) {

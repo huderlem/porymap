@@ -67,6 +67,7 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_BGsIcon,           &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_BGsIcon); });
     connect(ui->button_HealLocationsIcon, &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealLocationsIcon); });
     connect(ui->button_PokemonIcon,       &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_PokemonIcon); });
+    connect(ui->button_EventsTabIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_EventsTabIcon); });
 
 
     // Display a warning if a mask value overlaps with another mask in its group.
@@ -112,6 +113,20 @@ void ProjectSettingsEditor::initUi() {
     }
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
+
+    ui->comboBox_EventsTabIcon->addItem("Automatic",         "");
+    ui->comboBox_EventsTabIcon->addItem("Brendan (Emerald)", ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeemerald, 0));
+    ui->comboBox_EventsTabIcon->addItem("Brendan (R/S)",     ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeruby,    0));
+    ui->comboBox_EventsTabIcon->addItem("May (Emerald)",     ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeemerald, 1));
+    ui->comboBox_EventsTabIcon->addItem("May (R/S)",         ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeruby,    1));
+    ui->comboBox_EventsTabIcon->addItem("Red",               ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 0));
+    ui->comboBox_EventsTabIcon->addItem("Green",             ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 1));
+    ui->comboBox_EventsTabIcon->addItem("Custom",            "Custom");
+    connect(ui->comboBox_EventsTabIcon, &NoScrollComboBox::currentIndexChanged, [this](int index) {
+        bool usingCustom = (index == ui->comboBox_EventsTabIcon->findText("Custom"));
+        ui->lineEdit_EventsTabIcon->setVisible(usingCustom);
+        ui->button_EventsTabIcon->setVisible(usingCustom);
+    });
 
     // Validate that the border metatiles text is a comma-separated list of metatile values
     static const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
@@ -520,6 +535,15 @@ void ProjectSettingsEditor::refresh() {
     }
     this->setWarpBehaviorsList(behaviorNames);
 
+    int index = ui->comboBox_EventsTabIcon->findData(projectConfig.eventsTabIconPath);
+    if (index < 0) {
+        index = ui->comboBox_EventsTabIcon->findData("Custom");
+        ui->lineEdit_EventsTabIcon->setText(projectConfig.eventsTabIconPath);
+    } else {
+        ui->lineEdit_EventsTabIcon->setText("");
+    }
+    ui->comboBox_EventsTabIcon->setCurrentIndex(index);
+
     this->refreshing = false; // Allow signals
 }
 
@@ -607,6 +631,16 @@ void ProjectSettingsEditor::save() {
         this->editedPokemonIconPaths.insert(species, ui->lineEdit_PokemonIcon->text());
     for (auto i = this->editedPokemonIconPaths.cbegin(), end = this->editedPokemonIconPaths.cend(); i != end; i++)
         projectConfig.setPokemonIconPath(i.key(), i.value());
+
+    QString eventsTabIconPath;
+    QVariant data = ui->comboBox_EventsTabIcon->currentData();
+    if (data.isValid() && data.canConvert<QString>()) {
+        eventsTabIconPath = data.toString();
+        if (eventsTabIconPath == "Custom") {
+            eventsTabIconPath = ui->lineEdit_EventsTabIcon->text();
+        }
+    }
+    projectConfig.eventsTabIconPath = eventsTabIconPath;
 
     projectConfig.save();
     userConfig.save();

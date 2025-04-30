@@ -894,8 +894,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->eventIconPaths[Event::Group::Heal] = value;
     } else if (key.startsWith("pokemon_icon_path/")) {
         this->pokemonIconPaths.insert(key.mid(QStringLiteral("pokemon_icon_path/").length()), value);
-    } else if (key == "event_tab_icon_path") {
-        this->eventTabIconPath = value;
+    } else if (key == "events_tab_icon_path") {
+        this->eventsTabIconPath = value;
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
@@ -1013,7 +1013,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (auto it = this->identifiers.constBegin(); it != this->identifiers.constEnd(); it++) {
         map.insert("ident/"+defaultIdentifiers.value(it.key()).first, it.value());
     }
-    map.insert("event_tab_icon_path", this->eventTabIconPath);
+    map.insert("events_tab_icon_path", this->eventsTabIconPath);
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetSize.width()));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetSize.height()));

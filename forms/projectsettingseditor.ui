@@ -39,7 +39,7 @@
              <x>0</x>
              <y>0</y>
              <width>570</width>
-             <height>692</height>
+             <height>680</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -94,7 +94,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -164,7 +164,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -248,7 +248,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -1197,23 +1197,62 @@
              <x>0</x>
              <y>0</y>
              <width>570</width>
-             <height>840</height>
+             <height>927</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QGroupBox" name="groupBox_EventsTabIcon">
+              <property name="title">
+               <string>Tab Icon</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_12">
+               <item row="1" column="1">
+                <widget class="QToolButton" name="button_EventsTabIcon">
+                 <property name="visible">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLineEdit" name="lineEdit_EventsTabIcon">
+                 <property name="visible">
+                  <bool>false</bool>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The image file path to use for the icon of the Events tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <widget class="NoScrollComboBox" name="comboBox_EventsTabIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be displayed for the Events tab in the editor. If 'Automatic' is chosen, the icon will be a random player character from the project's base game version. If 'Custom' is chosen an image file path may be specified.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="editable">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
             <item>
              <widget class="QGroupBox" name="groupBox_DefaultIcons">
               <property name="title">
                <string>Default Icons</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_TriggersIcon">
-                 <property name="text">
-                  <string>Triggers</string>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_WarpsIcon">
                  <property name="text">
@@ -1221,23 +1260,31 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="lineEdit_WarpsIcon">
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="lineEdit_BGsIcon">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Warp events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent BG events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="clearButtonEnabled">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
-                <widget class="QLineEdit" name="lineEdit_HealLocationsIcon">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Heal Location events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <item row="4" column="2">
+                <widget class="QToolButton" name="button_HealLocationsIcon">
+                 <property name="text">
+                  <string>...</string>
                  </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_ObjectsIcon">
+                 <property name="text">
+                  <string>Objects</string>
                  </property>
                 </widget>
                </item>
@@ -1245,6 +1292,24 @@
                 <widget class="QLabel" name="label_BGsIcon">
                  <property name="text">
                   <string>BGs</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_TriggersIcon">
+                 <property name="text">
+                  <string>Triggers</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QToolButton" name="button_WarpsIcon">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
                </item>
@@ -1265,10 +1330,56 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_ObjectsIcon">
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEdit_WarpsIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Warp events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="2">
+                <widget class="QToolButton" name="button_BGsIcon">
                  <property name="text">
-                  <string>Objects</string>
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLineEdit" name="lineEdit_HealLocationsIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Heal Location events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QToolButton" name="button_TriggersIcon">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QToolButton" name="button_ObjectsIcon">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
                </item>
@@ -1279,71 +1390,6 @@
                  </property>
                  <property name="clearButtonEnabled">
                   <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="lineEdit_BGsIcon">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent BG events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QToolButton" name="button_ObjectsIcon">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <widget class="QToolButton" name="button_WarpsIcon">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="2">
-                <widget class="QToolButton" name="button_TriggersIcon">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="2">
-                <widget class="QToolButton" name="button_BGsIcon">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="2">
-                <widget class="QToolButton" name="button_HealLocationsIcon">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
                </item>
@@ -1365,7 +1411,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
                  </property>
                 </widget>
@@ -1418,7 +1464,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
                  </property>
                 </widget>
@@ -1628,7 +1674,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>544</width>
-                    <height>338</height>
+                    <height>341</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_ProjectPaths">
@@ -1657,7 +1703,7 @@
                <string>Add Global Constants File...</string>
               </property>
               <property name="icon">
-               <iconset resource="../resources/images.qrc">
+               <iconset>
                 <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
               </property>
              </widget>
@@ -1668,7 +1714,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="../resources/images.qrc">
+               <iconset>
                 <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
               </property>
              </widget>
@@ -1708,7 +1754,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="../resources/images.qrc">
+               <iconset>
                 <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
               </property>
              </widget>
@@ -1745,7 +1791,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>544</width>
-                    <height>421</height>
+                    <height>425</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_Identifiers">
@@ -1774,7 +1820,7 @@
                <string>Add Global Constant...</string>
               </property>
               <property name="icon">
-               <iconset resource="../resources/images.qrc">
+               <iconset>
                 <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
               </property>
              </widget>
@@ -1840,8 +1886,6 @@
    <header location="global">uintspinbox.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../resources/images.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

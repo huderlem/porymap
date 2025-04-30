@@ -335,7 +335,7 @@ public:
         this->filePaths.clear();
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
-        this->eventTabIconPath = QString();
+        this->eventsTabIconPath = QString();
         this->collisionSheetPath = QString();
         this->collisionSheetSize = QSize(2, 16);
         this->playerViewDistance = QMargins(GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER, GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER);
@@ -418,7 +418,7 @@ public:
     uint16_t unusedTileCovered;
     uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
-    QString eventTabIconPath;
+    QString eventsTabIconPath;
     QString collisionSheetPath;
     QSize collisionSheetSize;
     QMargins playerViewDistance;
