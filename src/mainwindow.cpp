@@ -249,7 +249,7 @@ void MainWindow::initCustomUI() {
 
     static const QMap<int, QIcon> mainTabIcons = {
         {MainTab::Map, QIcon(QStringLiteral(":/icons/minimap.ico"))},
-        {MainTab::Events, QIcon(QStringLiteral(":/icons/viewsprites.ico"))},
+        {MainTab::Events, ProjectConfig::getPlayerIcon(BaseGameVersion::pokefirered, 0)}, // Arbitrary default
         {MainTab::Header, QIcon(QStringLiteral(":/icons/application_form_edit.ico"))},
         {MainTab::Connections, QIcon(QStringLiteral(":/icons/connections.ico"))},
         {MainTab::WildPokemon, QIcon(QStringLiteral(":/icons/tall_grass.ico"))},
@@ -1254,6 +1254,21 @@ bool MainWindow::setProjectUI() {
     ui->layoutList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     ui->mapCustomAttributesFrame->table()->setRestrictedKeys(project->getTopLevelMapFields());
+
+    // Set a version dependent player icon (or user-chosen icon) for the Events tab.
+    QIcon eventTabIcon;
+    if (!projectConfig.eventTabIconPath.isEmpty()) {
+        eventTabIcon = QIcon(projectConfig.eventTabIconPath);
+        if (eventTabIcon.isNull()) {
+            logWarn(QString("Failed to load custom Events tab icon '%1'.").arg(projectConfig.eventTabIconPath));
+        }
+    }
+    if (eventTabIcon.isNull()) {
+        // We randomly choose between the available characters for ~flavor~.
+        // For now, this correctly assumes all versions have 2 icons.
+        eventTabIcon = ProjectConfig::getPlayerIcon(projectConfig.baseGameVersion, QRandomGenerator::global()->bounded(0, 2));
+    }
+    ui->mainTabBar->setTabIcon(MainTab::Events, eventTabIcon);
 
     return true;
 }
