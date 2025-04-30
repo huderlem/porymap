@@ -1,6 +1,7 @@
 #include "customattributestable.h"
 #include "parseutil.h"
 #include "noscrollspinbox.h"
+#include "utility.h"
 #include <QHeaderView>
 #include <QScrollBar>
 
@@ -39,8 +40,8 @@ CustomAttributesTable::CustomAttributesTable(QWidget *parent) :
     });
 }
 
-QMap<QString, QJsonValue> CustomAttributesTable::getAttributes() const {
-    QMap<QString, QJsonValue> fields;
+QJsonObject CustomAttributesTable::getAttributes() const {
+    QJsonObject fields;
     for (int row = 0; row < this->rowCount(); row++) {
         auto keyValuePair = this->getAttribute(row);
         if (!keyValuePair.first.isEmpty())
@@ -96,7 +97,7 @@ int CustomAttributesTable::addAttribute(const QString &key, const QJsonValue &va
     keyItem->setFlags(Qt::ItemIsEnabled);
     keyItem->setData(DataRole::JsonType, type); // Record the type for writing to the file
     keyItem->setTextAlignment(Qt::AlignCenter);
-    keyItem->setToolTip(key); // Display name as tool tip in case it's too long to see in the cell
+    keyItem->setToolTip(Util::toHtmlParagraph(key)); // Display name as tool tip in case it's too long to see in the cell
     this->setItem(rowIndex, Column::Key, keyItem);
 
     // Add value to table
@@ -145,10 +146,10 @@ void CustomAttributesTable::addNewAttribute(const QString &key, const QJsonValue
 }
 
 // For programmatically populating the table
-void CustomAttributesTable::setAttributes(const QMap<QString, QJsonValue> &attributes) {
+void CustomAttributesTable::setAttributes(const QJsonObject &attributes) {
     m_keys.clear();
     this->setRowCount(0); // Clear old values
-    for (auto it = attributes.cbegin(); it != attributes.cend(); it++)
+    for (auto it = attributes.constBegin(); it != attributes.constEnd(); it++)
         this->addAttribute(it.key(), it.value());
     this->resizeVertically();
 }

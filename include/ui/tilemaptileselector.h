@@ -149,10 +149,10 @@ public:
     void select(unsigned tileId);
     unsigned selectedTile = 0;
 
-    void selectVFlip(bool hFlip) { this->tile_hFlip = hFlip; }
+    void selectHFlip(bool hFlip) { this->tile_hFlip = hFlip; }
     bool tile_hFlip = false;
 
-    void selectHFlip(bool vFlip) { this->tile_vFlip = vFlip; }
+    void selectVFlip(bool vFlip) { this->tile_vFlip = vFlip; }
     bool tile_vFlip = false;
 
     void selectPalette(int palette) {

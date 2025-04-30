@@ -14,7 +14,7 @@ class Map;
 class Layout;
 class Blockdata;
 class Event;
-class DraggablePixmapItem;
+class EventPixmapItem;
 class Editor;
 
 enum CommandId {

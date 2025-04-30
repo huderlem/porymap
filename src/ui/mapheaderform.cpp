@@ -20,12 +20,11 @@ MapHeaderForm::MapHeaderForm(QWidget *parent)
     connect(ui->comboBox_Weather,     &QComboBox::currentTextChanged, this, &MapHeaderForm::onWeatherChanged);
     connect(ui->comboBox_Type,        &QComboBox::currentTextChanged, this, &MapHeaderForm::onTypeChanged);
     connect(ui->comboBox_BattleScene, &QComboBox::currentTextChanged, this, &MapHeaderForm::onBattleSceneChanged);
-
-    connect(ui->checkBox_RequiresFlash,    &QCheckBox::stateChanged, this, &MapHeaderForm::onRequiresFlashChanged);
-    connect(ui->checkBox_ShowLocationName, &QCheckBox::stateChanged, this, &MapHeaderForm::onShowLocationNameChanged);
-    connect(ui->checkBox_AllowRunning,     &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowRunningChanged);
-    connect(ui->checkBox_AllowBiking,      &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowBikingChanged);
-    connect(ui->checkBox_AllowEscaping,    &QCheckBox::stateChanged, this, &MapHeaderForm::onAllowEscapingChanged);
+    connect(ui->checkBox_RequiresFlash,    &QCheckBox::toggled, this, &MapHeaderForm::onRequiresFlashChanged);
+    connect(ui->checkBox_ShowLocationName, &QCheckBox::toggled, this, &MapHeaderForm::onShowLocationNameChanged);
+    connect(ui->checkBox_AllowRunning,     &QCheckBox::toggled, this, &MapHeaderForm::onAllowRunningChanged);
+    connect(ui->checkBox_AllowBiking,      &QCheckBox::toggled, this, &MapHeaderForm::onAllowBikingChanged);
+    connect(ui->checkBox_AllowEscaping,    &QCheckBox::toggled, this, &MapHeaderForm::onAllowEscapingChanged);
 
     connect(ui->spinBox_FloorNumber, QOverload<int>::of(&QSpinBox::valueChanged), this, &MapHeaderForm::onFloorNumberChanged);
 
@@ -175,18 +174,28 @@ void MapHeaderForm::updateLocationName() {
 }
 
 // Set data in UI
-void MapHeaderForm::setSong(const QString &song) {                 ui->comboBox_Song->setCurrentText(song); }
-void MapHeaderForm::setLocation(const QString &location) {         ui->comboBox_Location->setCurrentText(location); }
-void MapHeaderForm::setLocationName(const QString &locationName) { ui->lineEdit_LocationName->setText(locationName); }
+void MapHeaderForm::setSong(const QString &song) {                 setText(ui->comboBox_Song, song); }
+void MapHeaderForm::setLocation(const QString &location) {         setText(ui->comboBox_Location, location); }
+void MapHeaderForm::setLocationName(const QString &locationName) { setText(ui->lineEdit_LocationName, locationName); }
 void MapHeaderForm::setRequiresFlash(bool requiresFlash) {         ui->checkBox_RequiresFlash->setChecked(requiresFlash); }
-void MapHeaderForm::setWeather(const QString &weather) {           ui->comboBox_Weather->setCurrentText(weather); }
-void MapHeaderForm::setType(const QString &type) {                 ui->comboBox_Type->setCurrentText(type); }
-void MapHeaderForm::setBattleScene(const QString &battleScene) {   ui->comboBox_BattleScene->setCurrentText(battleScene); }
+void MapHeaderForm::setWeather(const QString &weather) {           setText(ui->comboBox_Weather, weather); }
+void MapHeaderForm::setType(const QString &type) {                 setText(ui->comboBox_Type, type); }
+void MapHeaderForm::setBattleScene(const QString &battleScene) {   setText(ui->comboBox_BattleScene, battleScene); }
 void MapHeaderForm::setShowsLocationName(bool showsLocationName) { ui->checkBox_ShowLocationName->setChecked(showsLocationName); }
 void MapHeaderForm::setAllowsRunning(bool allowsRunning) {         ui->checkBox_AllowRunning->setChecked(allowsRunning); }
 void MapHeaderForm::setAllowsBiking(bool allowsBiking) {           ui->checkBox_AllowBiking->setChecked(allowsBiking); }
 void MapHeaderForm::setAllowsEscaping(bool allowsEscaping) {       ui->checkBox_AllowEscaping->setChecked(allowsEscaping); }
 void MapHeaderForm::setFloorNumber(int floorNumber) {              ui->spinBox_FloorNumber->setValue(floorNumber); }
+
+// If we always call setText / setCurrentText the user's cursor may move to the end of the text while they're typing.
+void MapHeaderForm::setText(QComboBox *combo, const QString &text) const {
+    if (combo->currentText() != text)
+        combo->setCurrentText(text);
+}
+void MapHeaderForm::setText(QLineEdit *lineEdit, const QString &text) const {
+    if (lineEdit->text() != text)
+        lineEdit->setText(text);
+}
 
 // Read data from UI
 QString MapHeaderForm::song() const {           return ui->comboBox_Song->currentText(); }
@@ -207,11 +216,11 @@ void MapHeaderForm::onSongUpdated(const QString &song) {               if (m_hea
 void MapHeaderForm::onWeatherChanged(const QString &weather) {         if (m_header) m_header->setWeather(weather); }
 void MapHeaderForm::onTypeChanged(const QString &type) {               if (m_header) m_header->setType(type); }
 void MapHeaderForm::onBattleSceneChanged(const QString &battleScene) { if (m_header) m_header->setBattleScene(battleScene); }
-void MapHeaderForm::onRequiresFlashChanged(int selected) {             if (m_header) m_header->setRequiresFlash(selected == Qt::Checked); }
-void MapHeaderForm::onShowLocationNameChanged(int selected) {          if (m_header) m_header->setShowsLocationName(selected == Qt::Checked); }
-void MapHeaderForm::onAllowRunningChanged(int selected) {              if (m_header) m_header->setAllowsRunning(selected == Qt::Checked); }
-void MapHeaderForm::onAllowBikingChanged(int selected) {               if (m_header) m_header->setAllowsBiking(selected == Qt::Checked); }
-void MapHeaderForm::onAllowEscapingChanged(int selected) {             if (m_header) m_header->setAllowsEscaping(selected == Qt::Checked); }
+void MapHeaderForm::onRequiresFlashChanged(bool enabled) {             if (m_header) m_header->setRequiresFlash(enabled); }
+void MapHeaderForm::onShowLocationNameChanged(bool enabled) {          if (m_header) m_header->setShowsLocationName(enabled); }
+void MapHeaderForm::onAllowRunningChanged(bool enabled) {              if (m_header) m_header->setAllowsRunning(enabled); }
+void MapHeaderForm::onAllowBikingChanged(bool enabled) {               if (m_header) m_header->setAllowsBiking(enabled); }
+void MapHeaderForm::onAllowEscapingChanged(bool enabled) {             if (m_header) m_header->setAllowsEscaping(enabled); }
 void MapHeaderForm::onFloorNumberChanged(int offset) {                 if (m_header) m_header->setFloorNumber(offset); }
 void MapHeaderForm::onLocationChanged(const QString &location) {
     if (m_header) m_header->setLocation(location);

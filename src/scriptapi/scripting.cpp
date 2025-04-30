@@ -268,14 +268,13 @@ void Scripting::cb_LayoutOpened(QString layoutName) {
     instance->invokeCallback(OnLayoutOpened, args);
 }
 
-void Scripting::cb_MapResized(int oldWidth, int oldHeight, int newWidth, int newHeight) {
+void Scripting::cb_MapResized(int oldWidth, int oldHeight, const QMargins &delta) {
     if (!instance) return;
 
     QJSValueList args {
         oldWidth,
         oldHeight,
-        newWidth,
-        newHeight,
+        Scripting::margins(delta),
     };
     instance->invokeCallback(OnMapResized, args);
 }
@@ -353,6 +352,15 @@ QJSValue Scripting::dimensions(int width, int height) {
     QJSValue obj = instance->engine->newObject();
     obj.setProperty("width", width);
     obj.setProperty("height", height);
+    return obj;
+}
+
+QJSValue Scripting::margins(const QMargins &margins) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("left", margins.left());
+    obj.setProperty("right", margins.right());
+    obj.setProperty("top", margins.top());
+    obj.setProperty("bottom", margins.bottom());
     return obj;
 }
 

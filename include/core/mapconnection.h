@@ -5,6 +5,7 @@
 #include <QString>
 #include <QObject>
 #include <QMap>
+#include <QJsonObject>
 
 class Project;
 class Map;
@@ -34,6 +35,9 @@ public:
     int offset() const { return m_offset; }
     void setOffset(int offset, bool mirror = true);
 
+    QJsonObject customData() const { return m_customData; }
+    void setCustomData(const QJsonObject &customData) { m_customData = customData; }
+
     MapConnection* findMirror();
     MapConnection* createMirror();
 
@@ -55,6 +59,7 @@ private:
     QString m_targetMapName;
     QString m_direction;
     int m_offset;
+    QJsonObject m_customData;
 
     void markMapEdited();
     Map* getMap(const QString& mapName) const;

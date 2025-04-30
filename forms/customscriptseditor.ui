@@ -60,7 +60,7 @@
           <item>
            <widget class="QPushButton" name="button_CreateNewScript">
             <property name="toolTip">
-             <string>Create a new Porymap script file with a default template</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create a new Porymap script file with a default template&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Create New Script...</string>
@@ -74,7 +74,7 @@
           <item>
            <widget class="QPushButton" name="button_LoadScript">
             <property name="toolTip">
-             <string>Add an existing script file to the list below</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add an existing script file to the list below&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Load Script...</string>
@@ -88,7 +88,7 @@
           <item>
            <widget class="QPushButton" name="button_RefreshScripts">
             <property name="toolTip">
-             <string>Refresh all loaded scripts to account for any recent edits</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Refresh all loaded scripts to account for any recent edits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Refresh Scripts</string>

@@ -1,6 +1,7 @@
 #include "connectionpixmapitem.h"
 #include "editcommands.h"
 #include "map.h"
+#include "editor.h"
 
 #include <math.h>
 
@@ -9,7 +10,6 @@ ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection)
       connection(connection)
 {
     this->setEditable(true);
-    setFlag(ItemIsFocusable, true);
     this->basePixmap = pixmap();
     updateOrigin();
     render(false);
@@ -31,7 +31,7 @@ void ConnectionPixmapItem::render(bool ignoreCache) {
         this->basePixmap = this->connection->render();
 
     QPixmap pixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
-    this->setZValue(-1);
+    this->setZValue(Editor::ZValue::MapConnectionActive);
 
     // When editing is inactive the current selection is ignored, all connections should appear normal.
     if (this->getEditable()) {
@@ -43,7 +43,7 @@ void ConnectionPixmapItem::render(bool ignoreCache) {
             painter.end();
         } else {
             // Darken the image
-            this->setZValue(-2);
+            this->setZValue(Editor::ZValue::MapConnectionInactive);
             QPainter painter(&pixmap);
             int alpha = static_cast<int>(255 * 0.25);
             painter.fillRect(0, 0, pixmap.width(), pixmap.height(), QColor(0, 0, 0, alpha));
@@ -118,10 +118,6 @@ bool ConnectionPixmapItem::getEditable() {
 }
 
 void ConnectionPixmapItem::setSelected(bool selected) {
-    if (selected && !hasFocus()) {
-        setFocus(Qt::OtherFocusReason);
-    }
-
     if (this->selected == selected)
         return;
     this->selected = selected;
@@ -131,7 +127,7 @@ void ConnectionPixmapItem::setSelected(bool selected) {
 }
 
 void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
-    setFocus(Qt::MouseFocusReason);
+    this->setSelected(true);
 }
 
 void ConnectionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
@@ -141,19 +137,4 @@ void ConnectionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void ConnectionPixmapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) {
     emit connectionItemDoubleClicked(this->connection);
-}
-
-void ConnectionPixmapItem::keyPressEvent(QKeyEvent* event) {
-    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
-        emit deleteRequested(this->connection);
-    } else {
-        QGraphicsPixmapItem::keyPressEvent(event);
-    }
-}
-
-void ConnectionPixmapItem::focusInEvent(QFocusEvent* event) {
-    if (!this->getEditable())
-        return;
-    this->setSelected(true);
-    QGraphicsPixmapItem::focusInEvent(event);
 }

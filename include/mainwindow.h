@@ -52,6 +52,8 @@ public:
     MainWindow(const MainWindow &) = delete;
     MainWindow & operator = (const MainWindow &) = delete;
 
+    void initialize();
+
     // Scripting API
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
@@ -175,9 +177,9 @@ private slots:
     void on_action_Reload_Project_triggered();
     void on_action_Close_Project_triggered();
     void on_action_Save_Project_triggered();
-    void save(bool currentOnly = false);
+    bool save(bool currentOnly = false);
 
-    void openWarpMap(QString map_name, int event_id, Event::Group event_group);
+    void openEventMap(Event *event);
 
     void duplicate();
     void setClipboardData(poryjson::Json::object);
@@ -197,8 +199,7 @@ private slots:
     void onMapLoaded(Map *map);
     void onMapRulerStatusChanged(const QString &);
     void applyUserShortcuts();
-    void markMapEdited();
-    void markSpecificMapEdited(Map*);
+    void markMapEdited(Map*);
     void markLayoutEdited();
 
     void on_actionNew_Tileset_triggered();
@@ -243,13 +244,9 @@ private slots:
     void on_pushButton_AddConnection_clicked();
     void on_button_OpenDiveMap_clicked();
     void on_button_OpenEmergeMap_clicked();
-    void on_comboBox_DiveMap_currentTextChanged(const QString &mapName);
-    void on_comboBox_EmergeMap_currentTextChanged(const QString &mapName);
     void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
     void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();
-    void on_checkBox_smartPaths_stateChanged(int selected);
-    void on_checkBox_ToggleBorder_stateChanged(int selected);
 
     void resetMapViewScale();
 
@@ -260,7 +257,6 @@ private slots:
 
     void eventTabChanged(int index);
 
-    void on_checkBox_MirrorConnections_stateChanged(int selected);
     void on_actionDive_Emerge_Map_triggered();
     void on_actionShow_Events_In_Map_View_triggered();
     void on_groupBox_DiveMapOpacity_toggled(bool on);
@@ -437,6 +433,10 @@ private:
 
     void checkForUpdates(bool requestedByUser);
     void setDivingMapsVisible(bool visible);
+
+    void setSmartPathsEnabled(bool enabled);
+    void setBorderVisibility(bool visible);
+    void setMirrorConnectionsEnabled(bool enabled);
 };
 
 // These are namespaced in a struct to avoid colliding with e.g. class Map.

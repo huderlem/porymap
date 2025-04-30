@@ -5,18 +5,31 @@
 #include "movablerect.h"
 #include "utility.h"
 
-MovableRect::MovableRect(bool *enabled, int width, int height, QRgb color)
-  : QGraphicsRectItem(0, 0, width, height)
+MovableRect::MovableRect(bool *enabled, const QRectF &rect, const QRgb &color)
+  : QGraphicsRectItem(rect),
+    enabled(enabled),
+    baseRect(rect),
+    color(color)
 {
-    this->enabled = enabled;
-    this->color = color;
-    this->setVisible(*enabled);
+    updateVisibility();
 }
 
 /// Center rect on grid position (x, y)
 void MovableRect::updateLocation(int x, int y) {
-    this->setRect((x * 16) - this->rect().width() / 2 + 8, (y * 16) - this->rect().height() / 2 + 8, this->rect().width(), this->rect().height());
-    this->setVisible(*this->enabled);
+    setRect(this->baseRect.x() + (x * 16),
+            this->baseRect.y() + (y * 16),
+            this->baseRect.width(),
+            this->baseRect.height());
+    updateVisibility();
+}
+
+void MovableRect::setActive(bool active) {
+    this->active = active;
+    updateVisibility();
+}
+
+void MovableRect::updateVisibility() {
+    setVisible(*this->enabled && this->active);
 }
 
 /******************************************************************************
@@ -25,9 +38,8 @@ void MovableRect::updateLocation(int x, int y) {
 
 ResizableRect::ResizableRect(QObject *parent, bool *enabled, int width, int height, QRgb color)
   : QObject(parent),
-    MovableRect(enabled, width * 16, height * 16, color)
+    MovableRect(enabled, QRect(0, 0, width * 16, height * 16), color)
 {
-        setZValue(0xFFFFFFFF); // ensure on top of view
         setAcceptHoverEvents(true);
         setFlags(this->flags() | QGraphicsItem::ItemIsMovable);
 }

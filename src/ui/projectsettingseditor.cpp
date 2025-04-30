@@ -3,6 +3,7 @@
 #include "noscrollcombobox.h"
 #include "prefab.h"
 #include "filedialog.h"
+#include "newdefinedialog.h"
 #include "utility.h"
 
 #include <QAbstractButton>
@@ -45,15 +46,17 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
     connect(ui->comboBox_AttributesSize, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updateAttributeLimits);
     connect(ui->comboBox_IconSpecies, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updatePokemonIconPath);
-    connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::stateChanged, [this](int state) {
-        bool customSize = (state == Qt::Checked);
+    connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::toggled, [this](bool enabled) {
         // When switching between the spin boxes or line edit for border metatiles we set
         // the newly-shown UI using the values from the hidden UI.
-        this->setBorderMetatileIds(customSize, this->getBorderMetatileIds(!customSize));
-        this->setBorderMetatilesUi(customSize);
+        this->setBorderMetatileIds(enabled, this->getBorderMetatileIds(!enabled));
+        this->setBorderMetatilesUi(enabled);
     });
     connect(ui->button_AddWarpBehavior,    &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(true); });
     connect(ui->button_RemoveWarpBehavior, &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(false); });
+
+    connect(ui->button_AddGlobalConstantsFile, &QAbstractButton::clicked, this, &ProjectSettingsEditor::addNewGlobalConstantsFilepath);
+    connect(ui->button_AddGlobalConstant,      &QAbstractButton::clicked, this, &ProjectSettingsEditor::addNewGlobalConstant);
 
     // Connect file selection buttons
     connect(ui->button_ChoosePrefabs,     &QAbstractButton::clicked, [this](bool) { this->choosePrefabsFile(); });
@@ -82,8 +85,8 @@ void ProjectSettingsEditor::connectSignals() {
             connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
     }
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
-        connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
-     for (auto radioButton : ui->centralwidget->findChildren<QRadioButton *>())
+        connect(checkBox, &QCheckBox::toggled, this, &ProjectSettingsEditor::markEdited);
+    for (auto radioButton : ui->centralwidget->findChildren<QRadioButton *>())
         connect(radioButton, &QRadioButton::toggled, this, &ProjectSettingsEditor::markEdited);
     for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
         connect(lineEdit, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);
@@ -137,6 +140,12 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_UnusedTileCovered->setMaximum(Tile::maxValue);
     ui->spinBox_UnusedTileSplit->setMaximum(Tile::maxValue);
     ui->spinBox_MaxEvents->setMaximum(INT_MAX);
+    ui->spinBox_MapWidth->setMaximum(INT_MAX);
+    ui->spinBox_MapHeight->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_West->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_North->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_East->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_South->setMaximum(INT_MAX);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -168,7 +177,10 @@ void ProjectSettingsEditor::initUi() {
 bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &identifier, const QString &filepath) {
     if (project && project->disabledSettingsNames.contains(identifier)) {
         widget->setEnabled(false);
-        widget->setToolTip(QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath));
+        QString toolTip = QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath);
+        if (!widget->toolTip().isEmpty())
+            toolTip.prepend(QString("%1\n\n").arg(widget->toolTip()));
+        widget->setToolTip(Util::toHtmlParagraph(toolTip));
         return true;
     }
     return false;
@@ -445,6 +457,7 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_OutputCallback->setChecked(projectConfig.tilesetsHaveCallback);
     ui->checkBox_OutputIsCompressed->setChecked(projectConfig.tilesetsHaveIsCompressed);
     ui->checkBox_DisableWarning->setChecked(porymapConfig.warpBehaviorWarningDisabled);
+    ui->checkBox_PreserveMatchingOnlyData->setChecked(projectConfig.preserveMatchingOnlyData);
 
     // Radio buttons
     if (projectConfig.setTransparentPixelsBlack)
@@ -456,8 +469,10 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
     ui->spinBox_Collision->setValue(projectConfig.defaultCollision);
     ui->spinBox_FillMetatile->setValue(projectConfig.defaultMetatileId);
-    ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetHeight - 1);
-    ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetWidth - 1);
+    ui->spinBox_MapWidth->setValue(projectConfig.defaultMapSize.width());
+    ui->spinBox_MapHeight->setValue(projectConfig.defaultMapSize.height());
+    ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetSize.height() - 1);
+    ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetSize.width() - 1);
     ui->spinBox_BehaviorMask->setValue(projectConfig.metatileBehaviorMask & ui->spinBox_BehaviorMask->maximum());
     ui->spinBox_EncounterTypeMask->setValue(projectConfig.metatileEncounterTypeMask & ui->spinBox_EncounterTypeMask->maximum());
     ui->spinBox_LayerTypeMask->setValue(projectConfig.metatileLayerTypeMask & ui->spinBox_LayerTypeMask->maximum());
@@ -469,6 +484,10 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_UnusedTileCovered->setValue(projectConfig.unusedTileCovered);
     ui->spinBox_UnusedTileSplit->setValue(projectConfig.unusedTileSplit);
     ui->spinBox_MaxEvents->setValue(projectConfig.maxEventsPerGroup);
+    ui->spinBox_PlayerViewDistance_West->setValue(projectConfig.playerViewDistance.left());
+    ui->spinBox_PlayerViewDistance_North->setValue(projectConfig.playerViewDistance.top());
+    ui->spinBox_PlayerViewDistance_East->setValue(projectConfig.playerViewDistance.right());
+    ui->spinBox_PlayerViewDistance_South->setValue(projectConfig.playerViewDistance.bottom());
 
     // Set (and sync) border metatile IDs
     this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
@@ -486,6 +505,12 @@ void ProjectSettingsEditor::refresh() {
         lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomIdentifier(lineEdit->objectName()));
+    for (const auto &path : projectConfig.globalConstantsFilepaths) {
+        addGlobalConstantsFilepath(path);
+    }
+    for (auto it = projectConfig.globalConstants.constBegin(); it != projectConfig.globalConstants.constEnd(); it++) {
+        addGlobalConstant(it.key(), it.value());
+    }
 
     // Set warp behaviors
     QStringList behaviorNames;
@@ -526,13 +551,14 @@ void ProjectSettingsEditor::save() {
     projectConfig.tilesetsHaveIsCompressed = ui->checkBox_OutputIsCompressed->isChecked();
     porymapConfig.warpBehaviorWarningDisabled = ui->checkBox_DisableWarning->isChecked();
     projectConfig.setTransparentPixelsBlack = ui->radioButton_RenderBlack->isChecked();
+    projectConfig.preserveMatchingOnlyData = ui->checkBox_PreserveMatchingOnlyData->isChecked();
 
     // Save spin box settings
     projectConfig.defaultElevation = ui->spinBox_Elevation->value();
     projectConfig.defaultCollision = ui->spinBox_Collision->value();
     projectConfig.defaultMetatileId = ui->spinBox_FillMetatile->value();
-    projectConfig.collisionSheetHeight = ui->spinBox_MaxElevation->value() + 1;
-    projectConfig.collisionSheetWidth = ui->spinBox_MaxCollision->value() + 1;
+    projectConfig.defaultMapSize = QSize(ui->spinBox_MapWidth->value(), ui->spinBox_MapHeight->value());
+    projectConfig.collisionSheetSize = QSize(ui->spinBox_MaxCollision->value() + 1, ui->spinBox_MaxElevation->value() + 1);
     projectConfig.metatileBehaviorMask = ui->spinBox_BehaviorMask->value();
     projectConfig.metatileTerrainTypeMask = ui->spinBox_TerrainTypeMask->value();
     projectConfig.metatileEncounterTypeMask = ui->spinBox_EncounterTypeMask->value();
@@ -544,6 +570,10 @@ void ProjectSettingsEditor::save() {
     projectConfig.unusedTileCovered = ui->spinBox_UnusedTileCovered->value();
     projectConfig.unusedTileSplit = ui->spinBox_UnusedTileSplit->value();
     projectConfig.maxEventsPerGroup = ui->spinBox_MaxEvents->value();
+    projectConfig.playerViewDistance = QMargins(ui->spinBox_PlayerViewDistance_West->value(),
+                                                ui->spinBox_PlayerViewDistance_North->value(),
+                                                ui->spinBox_PlayerViewDistance_East->value(),
+                                                ui->spinBox_PlayerViewDistance_South->value());
 
     // Save line edit settings
     projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();
@@ -557,6 +587,10 @@ void ProjectSettingsEditor::save() {
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         projectConfig.setIdentifier(lineEdit->objectName(), lineEdit->text());
+
+    // Save global constants
+    projectConfig.globalConstantsFilepaths = getGlobalConstantsFilepaths();
+    projectConfig.globalConstants = getGlobalConstants();
 
     // Save warp behaviors
     projectConfig.warpBehaviors.clear();
@@ -602,6 +636,97 @@ void ProjectSettingsEditor::chooseFile(QLineEdit * filepathEdit, const QString &
     if (filepathEdit)
         filepathEdit->setText(this->stripProjectDir(filepath));
     this->hasUnsavedChanges = true;
+}
+
+void ProjectSettingsEditor::addNewGlobalConstantsFilepath() {
+    QString filepath = stripProjectDir(FileDialog::getOpenFileName(this, "Choose Global Constants File"));
+    if (filepath.isEmpty() || getGlobalConstantsFilepaths().contains(filepath))
+        return;
+
+    addGlobalConstantsFilepath(filepath);
+    this->hasUnsavedChanges = true;
+}
+
+void ProjectSettingsEditor::addGlobalConstantsFilepath(const QString &filepath) {
+    auto filepathLabel = new QLabel(filepath, this);
+    filepathLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
+    filepathLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    int newRow = ui->gridLayout_GlobalConstantsFiles->rowCount();
+    ui->gridLayout_GlobalConstantsFiles->addWidget(filepathLabel, newRow, 0);
+
+    auto deleteButton = new QToolButton();
+    deleteButton->setIcon(QIcon(":/icons/delete.ico"));
+    connect(deleteButton, &QAbstractButton::clicked, [this, filepathLabel, deleteButton](bool) {
+        ui->gridLayout_GlobalConstantsFiles->removeWidget(filepathLabel);
+        ui->gridLayout_GlobalConstantsFiles->removeWidget(deleteButton);
+        delete filepathLabel;
+        delete deleteButton;
+        this->hasUnsavedChanges = true;
+    });
+    ui->gridLayout_GlobalConstantsFiles->addWidget(deleteButton, newRow, 1);
+}
+
+QStringList ProjectSettingsEditor::getGlobalConstantsFilepaths() {
+    QStringList paths;
+    for (int row = 1; row < ui->gridLayout_GlobalConstantsFiles->rowCount(); row++) {
+        auto item = ui->gridLayout_GlobalConstantsFiles->itemAtPosition(row, 0);
+        if (!item) continue;
+        auto pathLabel = dynamic_cast<QLabel*>(item->widget());
+        if (!pathLabel) continue;
+        paths.append(pathLabel->text());
+    }
+    return paths;
+}
+
+void ProjectSettingsEditor::addNewGlobalConstant() {
+    auto dialog = new NewDefineDialog(this);
+    connect(dialog, &NewDefineDialog::createdDefine, [this](const QString &name, const QString &expression) {
+        if (!getGlobalConstants().contains(name)) {
+            addGlobalConstant(name, expression);
+            this->hasUnsavedChanges = true;
+        }
+    });
+    dialog->open();
+}
+
+void ProjectSettingsEditor::addGlobalConstant(const QString &name, const QString &expression) {
+    auto nameLabel = new QLabel(name, this);
+    nameLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
+    nameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    auto expressionLineEdit = new QLineEdit(expression, this);
+
+    int newRow = ui->gridLayout_GlobalConstants->rowCount();
+    ui->gridLayout_GlobalConstants->addWidget(nameLabel, newRow, 0);
+    ui->gridLayout_GlobalConstants->addWidget(expressionLineEdit, newRow, 1);
+
+    auto deleteButton = new QToolButton();
+    deleteButton->setIcon(QIcon(":/icons/delete.ico"));
+    connect(deleteButton, &QAbstractButton::clicked, [this, nameLabel, expressionLineEdit, deleteButton](bool) {
+        ui->gridLayout_GlobalConstants->removeWidget(nameLabel);
+        ui->gridLayout_GlobalConstants->removeWidget(expressionLineEdit);
+        ui->gridLayout_GlobalConstants->removeWidget(deleteButton);
+        delete nameLabel;
+        delete expressionLineEdit;
+        delete deleteButton;
+        this->hasUnsavedChanges = true;
+    });
+    ui->gridLayout_GlobalConstants->addWidget(deleteButton, newRow, 2);
+}
+
+QMap<QString,QString> ProjectSettingsEditor::getGlobalConstants() {
+    QMap<QString,QString> constants;
+    for (int row = 1; row < ui->gridLayout_GlobalConstants->rowCount(); row++) {
+        auto nameItem = ui->gridLayout_GlobalConstants->itemAtPosition(row, 0);
+        auto expressionItem = ui->gridLayout_GlobalConstants->itemAtPosition(row, 1);
+        if (!nameItem || !expressionItem) continue;
+        auto nameLabel = dynamic_cast<QLabel*>(nameItem->widget());
+        auto expressionLineEdit = dynamic_cast<QLineEdit*>(expressionItem->widget());
+        if (!nameLabel || !expressionLineEdit) continue;
+        constants.insert(nameLabel->text(), expressionLineEdit->text());
+    }
+    return constants;
 }
 
 // Display relative path if this file is in the project folder

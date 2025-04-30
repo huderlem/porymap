@@ -30,7 +30,7 @@
 #include "mapruler.h"
 #include "encountertablemodel.h"
 
-class DraggablePixmapItem;
+class EventPixmapItem;
 class MetatilesPixmapItem;
 
 class Editor : public QObject
@@ -57,8 +57,8 @@ public:
     GridSettings gridSettings;
 
     void setProject(Project * project);
-    void saveAll();
-    void saveCurrent();
+    bool saveAll();
+    bool saveCurrent();
     void saveEncounterTabData();
 
     void closeProject();
@@ -92,14 +92,16 @@ public:
     void setConnectionsVisibility(bool visible);
     void updateDivingMapsVisibility();
     void renderDivingConnections();
-    void addConnection(MapConnection* connection);
+    void addNewConnection(const QString &mapName, const QString &direction);
+    void replaceConnection(const QString &mapName, const QString &direction);
     void removeConnection(MapConnection* connection);
+    void removeSelectedConnection();
     void addNewWildMonGroup(QWidget *window);
     void deleteWildMonGroup();
     void configureEncounterJSON(QWidget *);
     EncounterTableModel* getCurrentWildMonTable();
-    void updateDiveMap(QString mapName);
-    void updateEmergeMap(QString mapName);
+    bool setDivingMapName(const QString &mapName, const QString &direction);
+    QString getDivingMapName(const QString &direction) const;
     void setSelectedConnection(MapConnection *connection);
 
     void updatePrimaryTileset(QString tilesetLabel, bool forceLoad = false);
@@ -107,7 +109,7 @@ public:
     void toggleBorderVisibility(bool visible, bool enableScriptCallback = true);
     void updateCustomMapAttributes();
 
-    DraggablePixmapItem *addEventPixmapItem(Event *event);
+    EventPixmapItem *addEventPixmapItem(Event *event);
     void removeEventPixmapItem(Event *event);
     bool canAddEvents(const QList<Event*> &events);
     void selectMapEvent(Event *event, bool toggle = false);
@@ -116,12 +118,16 @@ public:
     void duplicateSelectedEvents();
     void redrawAllEvents();
     void redrawEvents(const QList<Event*> &events);
-    void redrawEventPixmapItem(DraggablePixmapItem *item);
+    void redrawEventPixmapItem(EventPixmapItem *item);
+    void updateEventPixmapItemZValue(EventPixmapItem *item);
     qreal getEventOpacity(const Event *event) const;
 
+    void setPlayerViewRect(const QRectF &rect);
     void updateCursorRectPos(int x, int y);
     void setCursorRectVisible(bool visible);
 
+    void onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition);
+    void onEventReleased(Event *event, const QPoint &position);
     void updateWarpEventWarning(Event *event);
     void updateWarpEventWarnings();
 
@@ -172,16 +178,29 @@ public:
     static QList<QList<const QImage*>> collisionIcons;
 
     int eventShiftActionId = 0;
-
-    void eventsView_onMousePress(QMouseEvent *event);
-
-    bool selectingEvent = false;
+    int eventMoveActionId = 0;
 
     void deleteSelectedEvents();
     void shouldReselectEvents();
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
     void setCollisionGraphics();
+
+    enum ZValue {
+        MapBorder = -4,
+        MapConnectionInactive = -3,
+        MapConnectionActive = -2,
+        MapConnectionMask = -1,
+
+        // Event pixmaps set their z value to be their y position on the map.
+        // Their y value is int16_t, so we have enough space to allocate the
+        // full range + 1 for the selected event (which should always be on top).
+        EventMinimum = 1,
+        EventMaximum = EventMinimum + 0x10000,
+
+        Ruler,
+        ResizeLayoutPopup
+    };
 
 public slots:
     void openMapScripts() const;
@@ -199,7 +218,7 @@ private:
 
     EditMode editMode = EditMode::None;
 
-    void save(bool currentOnly);
+    bool save(bool currentOnly);
     void clearMap();
     void clearMetatileSelector();
     void clearMovementPermissionSelector();
@@ -218,8 +237,9 @@ private:
     void removeConnectionPixmap(MapConnection *connection);
     void displayConnection(MapConnection *connection);
     void displayDivingConnection(MapConnection *connection);
-    void setDivingMapName(QString mapName, QString direction);
     void removeDivingMapPixmap(MapConnection *connection);
+    void onDivingMapEditingFinished(NoScrollComboBox* combo, const QString &direction);
+    void updateDivingMapButton(QToolButton* button, const QString &mapName);
     void updateEncounterFields(EncounterFields newFields);
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
@@ -249,11 +269,11 @@ private slots:
 
 signals:
     void eventsChanged();
+    void openEventMap(Event*);
     void openConnectedMap(MapConnection*);
     void wildMonTableOpened(EncounterTableModel*);
     void wildMonTableClosed();
     void wildMonTableEdited();
-    void warpEventDoubleClicked(QString, int, Event::Group);
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
     void tilesetUpdated(QString);

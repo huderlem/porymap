@@ -42,3 +42,14 @@ QString Util::toDefineCase(QString input) {
 QString Util::toHexString(uint32_t value, int minLength) {
     return "0x" + QString("%1").arg(value, minLength, 16, QChar('0')).toUpper();
 }
+
+QString Util::toHtmlParagraph(const QString &text) {
+    return QString("<html><head/><body><p>%1</p></body></html>").arg(text);
+}
+
+Qt::Orientations Util::getOrientation(bool xflip, bool yflip) {
+    Qt::Orientations flags;
+    if (xflip) flags |= Qt::Orientation::Horizontal;
+    if (yflip) flags |= Qt::Orientation::Vertical;
+    return flags;
+}

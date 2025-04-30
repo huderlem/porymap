@@ -73,7 +73,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/customscriptseditor.cpp \
     src/ui/customscriptslistitem.cpp \
     src/ui/divingmappixmapitem.cpp \
-    src/ui/draggablepixmapitem.cpp \
+    src/ui/eventpixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
     src/ui/collisionpixmapitem.cpp \
     src/ui/connectionpixmapitem.cpp \
@@ -104,6 +104,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
     src/ui/movementpermissionsselector.cpp \
+    src/ui/newdefinedialog.cpp \
     src/ui/neweventtoolbutton.cpp \
     src/ui/newlayoutdialog.cpp \
     src/ui/newlayoutform.cpp \
@@ -133,6 +134,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/preferenceeditor.cpp \
     src/ui/regionmappropertiesdialog.cpp \
     src/ui/colorpicker.cpp \
+    src/ui/loadingscreen.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -184,7 +186,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/customscriptseditor.h \
     include/ui/customscriptslistitem.h \
     include/ui/divingmappixmapitem.h \
-    include/ui/draggablepixmapitem.h \
+    include/ui/eventpixmapitem.h \
     include/ui/bordermetatilespixmapitem.h \
     include/ui/collisionpixmapitem.h \
     include/ui/connectionpixmapitem.h \
@@ -216,6 +218,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/metatileselector.h \
     include/ui/movablerect.h \
     include/ui/movementpermissionsselector.h \
+    include/ui/newdefinedialog.h \
     include/ui/neweventtoolbutton.h \
     include/ui/newlayoutdialog.h \
     include/ui/newlayoutform.h \
@@ -223,6 +226,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/newmapgroupdialog.h \
     include/ui/noscrollcombobox.h \
     include/ui/noscrollspinbox.h \
+    include/ui/noscrolltextedit.h \
     include/ui/montabwidget.h \
     include/ui/encountertablemodel.h \
     include/ui/encountertabledelegates.h \
@@ -247,6 +251,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/preferenceeditor.h \
     include/ui/regionmappropertiesdialog.h \
     include/ui/colorpicker.h \
+    include/ui/loadingscreen.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
@@ -266,8 +271,10 @@ FORMS    += forms/mainwindow.ui \
     forms/connectionslistitem.ui \
     forms/customattributesframe.ui \
     forms/gridsettingsdialog.ui \
+    forms/loadingscreen.ui \
     forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
+    forms/newdefinedialog.ui \
     forms/newlayoutdialog.ui \
     forms/newlayoutform.ui \
     forms/newlocationdialog.ui \

@@ -27,6 +27,10 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
     this->ui->setupUi(this);
     this->project = project;
     connect(this->project, &Project::mapSectionIdNamesChanged, this, &RegionMapEditor::setLocations);
+    connect(ui->checkBox_tileHFlip, &QCheckBox::toggled, this, &RegionMapEditor::setTileHFlip);
+    connect(ui->checkBox_tileVFlip, &QCheckBox::toggled, this, &RegionMapEditor::setTileVFlip);
+
+
     this->configFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
     this->initShortcuts();
     this->restoreWindowState();
@@ -108,12 +112,12 @@ void RegionMapEditor::applyUserShortcuts() {
 }
 
 bool RegionMapEditor::loadRegionMapEntries() {
-    this->region_map_entries = this->project->regionMapEntries;
+    this->region_map_entries = this->project->getRegionMapEntries();
     return true;
 }
 
 bool RegionMapEditor::saveRegionMapEntries() {
-    this->project->regionMapEntries = this->region_map_entries;
+    this->project->setRegionMapEntries(this->region_map_entries);
     this->project->saveRegionMapSections();
     return true;
 }
@@ -770,7 +774,10 @@ void RegionMapEditor::displayRegionMapTileSelector() {
 
     this->mapsquare_selector_item = new TilemapTileSelector(this->region_map->pngPath(), this->region_map->tilemapFormat(), this->region_map->palPath());
 
-    this->mapsquare_selector_item->draw();
+    // Initialize with current settings
+    this->mapsquare_selector_item->selectHFlip(ui->checkBox_tileHFlip->isChecked());
+    this->mapsquare_selector_item->selectVFlip(ui->checkBox_tileVFlip->isChecked());
+    this->mapsquare_selector_item->selectPalette(ui->spinBox_tilePalette->value()); // This will also draw the selector
 
     this->scene_region_map_tiles->addItem(this->mapsquare_selector_item);
 
@@ -1030,15 +1037,18 @@ void RegionMapEditor::on_pushButton_RM_Options_delete_clicked() {
 }
 
 void RegionMapEditor::on_spinBox_tilePalette_valueChanged(int value) {
-    this->mapsquare_selector_item->selectPalette(value);
+    if (this->mapsquare_selector_item)
+        this->mapsquare_selector_item->selectPalette(value);
 }
 
-void RegionMapEditor::on_checkBox_tileHFlip_stateChanged(int state) {
-    this->mapsquare_selector_item->selectHFlip(state == Qt::Checked);
+void RegionMapEditor::setTileHFlip(bool enabled) {
+    if (this->mapsquare_selector_item)
+        this->mapsquare_selector_item->selectHFlip(enabled);
 }
 
-void RegionMapEditor::on_checkBox_tileVFlip_stateChanged(int state) {
-    this->mapsquare_selector_item->selectVFlip(state == Qt::Checked);
+void RegionMapEditor::setTileVFlip(bool enabled) {
+    if (this->mapsquare_selector_item)
+        this->mapsquare_selector_item->selectVFlip(enabled);
 }
 
 void RegionMapEditor::on_action_RegionMap_Resize_triggered() {

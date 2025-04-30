@@ -10,6 +10,7 @@
 #include <QPointer>
 
 #include "orderedjson.h"
+#include "parseutil.h"
 
 
 class Project;
@@ -18,7 +19,7 @@ class EventFrame;
 class ObjectFrame;
 class CloneObjectFrame;
 class WarpFrame;
-class DraggablePixmapItem;
+class EventPixmapItem;
 
 class Event;
 class ObjectEvent;
@@ -78,9 +79,13 @@ public:
         None,
     };
 
-    // all event groups except warps have IDs that start at 1
+    // Normally we refer to events using their index in the list of that group's events.
+    // Object events often get referred to with a special "local ID", which is really just the index + 1.
+    // We use this local ID number in the index spinner for object events instead of the actual index.
+    // This distinction is only really important for object and warp events, because these are normally
+    // the only two groups of events that need to be explicitly referred to.
     static int getIndexOffset(Event::Group group) {
-        return (group == Event::Group::Warp) ? 0 : 1;
+        return (group == Event::Group::Object) ? 1 : 0;
     }
 
     static Event::Group typeToGroup(Event::Type type) {
@@ -139,23 +144,22 @@ public:
     Event::Type getEventType() const { return this->eventType; }
 
     virtual OrderedJson::object buildEventJson(Project *project) = 0;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) = 0;
+    virtual bool loadFromJson(QJsonObject json, Project *project) = 0;
 
     virtual void setDefaultValues(Project *project);
 
     virtual QSet<QString> getExpectedFields() = 0;
-    void readCustomAttributes(const QJsonObject &json);
-    void addCustomAttributesTo(OrderedJson::object *obj) const;
-    const QMap<QString, QJsonValue> getCustomAttributes() const { return this->customAttributes; }
-    void setCustomAttributes(const QMap<QString, QJsonValue> newCustomAttributes) { this->customAttributes = newCustomAttributes; }
 
-    virtual void loadPixmap(Project *project);
+    QJsonObject getCustomAttributes() const { return this->customAttributes; }
+    void setCustomAttributes(const QJsonObject &newCustomAttributes) { this->customAttributes = newCustomAttributes; }
+
+    virtual QPixmap loadPixmap(Project *project);
 
     void setPixmap(QPixmap newPixmap) { this->pixmap = newPixmap; }
     QPixmap getPixmap() const { return this->pixmap; }
 
-    void setPixmapItem(DraggablePixmapItem *item);
-    DraggablePixmapItem *getPixmapItem() const { return this->pixmapItem; }
+    void setPixmapItem(EventPixmapItem *item);
+    EventPixmapItem *getPixmapItem() const { return this->pixmapItem; }
 
     void setUsesDefaultPixmap(bool newUsesDefaultPixmap) { this->usesDefaultPixmap = newUsesDefaultPixmap; }
     bool getUsesDefaultPixmap() const { return this->usesDefaultPixmap; }
@@ -191,12 +195,16 @@ protected:
     // When deleting events like this we want to warn the user that the #define may also be deleted.
     QString idName;
 
-    QMap<QString, QJsonValue> customAttributes;
+    QJsonObject customAttributes;
 
     QPixmap pixmap;
-    DraggablePixmapItem *pixmapItem = nullptr;
+    EventPixmapItem *pixmapItem = nullptr;
 
     QPointer<EventFrame> eventFrame;
+
+    static QString readString(QJsonObject *object, const QString &key) { return ParseUtil::jsonToQString(object->take(key)); }
+    static int readInt(QJsonObject *object, const QString &key) { return ParseUtil::jsonToInt(object->take(key)); }
+    static bool readBool(QJsonObject *object, const QString &key) { return ParseUtil::jsonToBool(object->take(key)); }
 };
 
 
@@ -219,13 +227,13 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
     virtual QSet<QString> getExpectedFields() override;
 
-    virtual void loadPixmap(Project *project) override;
+    virtual QPixmap loadPixmap(Project *project) override;
 
     void setGfx(QString newGfx) { this->gfx = newGfx; }
     QString getGfx() const { return this->gfx; }
@@ -286,23 +294,23 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
     virtual QSet<QString> getExpectedFields() override;
 
-    virtual void loadPixmap(Project *project) override;
+    virtual QPixmap loadPixmap(Project *project) override;
 
     void setTargetMap(QString newTargetMap) { this->targetMap = newTargetMap; }
     QString getTargetMap() const { return this->targetMap; }
 
-    void setTargetID(int newTargetID) { this->targetID = newTargetID; }
-    int getTargetID() const { return this->targetID; }
+    void setTargetID(QString newTargetID) { this->targetID = newTargetID; }
+    QString getTargetID() const { return this->targetID; }
 
 private:
     QString targetMap;
-    int targetID = 0;
+    QString targetID;
 };
 
 
@@ -324,7 +332,7 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
@@ -361,7 +369,7 @@ public:
     virtual EventFrame *createEventFrame() override = 0;
 
     virtual OrderedJson::object buildEventJson(Project *project) override = 0;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override = 0;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override = 0;
 
     virtual void setDefaultValues(Project *project) override = 0;
 
@@ -389,7 +397,7 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
@@ -429,7 +437,7 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
@@ -460,7 +468,7 @@ public:
     virtual EventFrame *createEventFrame() override = 0;
 
     virtual OrderedJson::object buildEventJson(Project *project) override = 0;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override = 0;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override = 0;
 
     virtual void setDefaultValues(Project *project) override = 0;
 
@@ -487,7 +495,7 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
@@ -522,7 +530,7 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
@@ -567,7 +575,7 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &json, Project *project) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
@@ -599,11 +607,14 @@ public:
     virtual EventFrame *createEventFrame() override;
 
     virtual OrderedJson::object buildEventJson(Project *project) override;
-    virtual bool loadFromJson(const QJsonObject &, Project *) override;
+    virtual bool loadFromJson(QJsonObject json, Project *project) override;
 
     virtual void setDefaultValues(Project *project) override;
 
     virtual QSet<QString> getExpectedFields() override;
+
+    void setHostMapName(QString newHostMapName) { this->hostMapName = newHostMapName; }
+    QString getHostMapName() const;
 
     void setRespawnMapName(QString newRespawnMapName) { this->respawnMapName = newRespawnMapName; }
     QString getRespawnMapName() const { return this->respawnMapName; }
@@ -614,6 +625,7 @@ public:
 private:
     QString respawnMapName;
     QString respawnNPC;
+    QString hostMapName; // Only needed if the host map fails to load.
 };
 
 

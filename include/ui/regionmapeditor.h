@@ -54,7 +54,7 @@ private:
     Project *project;
 
     RegionMap *region_map = nullptr;
-    tsl::ordered_map<QString, RegionMap *> region_maps;
+    OrderedMap<QString, RegionMap *> region_maps;
 
     QString configFilepath;
 
@@ -95,7 +95,7 @@ private:
     void saveConfig();
     bool loadRegionMapEntries();
     bool saveRegionMapEntries();
-    QMap<QString, MapSectionEntry> region_map_entries;
+    QHash<QString, MapSectionEntry> region_map_entries;
 
     bool buildConfigDialog();
     poryjson::Json configRegionMapDialog();
@@ -121,6 +121,9 @@ private:
     void restoreWindowState();
     void closeEvent(QCloseEvent* event);
 
+    void setTileHFlip(bool enabled);
+    void setTileVFlip(bool enabled);
+
 private slots:
     void on_action_RegionMap_Save_triggered();
     void on_actionSave_All_triggered();
@@ -145,8 +148,6 @@ private slots:
     void on_spinBox_RM_LayoutWidth_valueChanged(int);
     void on_spinBox_RM_LayoutHeight_valueChanged(int);
     void on_spinBox_tilePalette_valueChanged(int);
-    void on_checkBox_tileHFlip_stateChanged(int);
-    void on_checkBox_tileVFlip_stateChanged(int);
     void on_verticalSlider_Zoom_Map_Image_valueChanged(int);
     void on_verticalSlider_Zoom_Image_Tiles_valueChanged(int);
     void onHoveredRegionMapTileChanged(int x, int y);

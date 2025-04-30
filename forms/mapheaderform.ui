@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>407</width>
-    <height>349</height>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -224,7 +224,11 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QLineEdit" name="lineEdit_LocationName"/>
+    <widget class="QLineEdit" name="lineEdit_LocationName">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name that will be displayed in-game for this Location. This name will be shared with any other map that has the same Location.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

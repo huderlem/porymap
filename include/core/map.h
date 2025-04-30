@@ -22,10 +22,6 @@
 #define MAX_BORDER_WIDTH 255
 #define MAX_BORDER_HEIGHT 255
 
-// Number of metatiles to draw out from edge of map. Could allow modification of this in the future.
-// porymap will reflect changes to it, but the value is hard-coded in the projects at the moment
-#define BORDER_DISTANCE 7
-
 class LayoutPixmapItem;
 class CollisionPixmapItem;
 class BorderMetatilesPixmapItem;
@@ -76,6 +72,8 @@ public:
     void resetEvents();
     QList<Event *> getEvents(Event::Group group = Event::Group::None) const;
     Event* getEvent(Event::Group group, int index) const;
+    Event* getEvent(Event::Group group, const QString &idName) const;
+    QStringList getEventIdNames(Event::Group group) const;
     int getNumEvents(Event::Group group = Event::Group::None) const;
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
     QString getScriptsFilePath() const;
@@ -87,6 +85,7 @@ public:
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const { return m_connections; }
+    MapConnection* getConnection(const QString &direction) const;
     void removeConnection(MapConnection *);
     void addConnection(MapConnection *);
     void loadConnection(MapConnection *);
@@ -100,8 +99,8 @@ public:
     bool hasUnsavedChanges() const;
     void pruneEditHistory();
 
-    void setCustomAttributes(const QMap<QString, QJsonValue> &attributes) { m_customAttributes = attributes; }
-    QMap<QString, QJsonValue> customAttributes() const { return m_customAttributes; }
+    void setCustomAttributes(const QJsonObject &attributes) { m_customAttributes = attributes; }
+    QJsonObject customAttributes() const { return m_customAttributes; }
 
 private:
     QString m_name;
@@ -110,7 +109,7 @@ private:
     QString m_sharedScriptsMap = "";
 
     QStringList m_scriptsFileLabels;
-    QMap<QString, QJsonValue> m_customAttributes;
+    QJsonObject m_customAttributes;
 
     MapHeader *m_header = nullptr;
     Layout *m_layout = nullptr;

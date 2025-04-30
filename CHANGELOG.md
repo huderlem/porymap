@@ -21,20 +21,23 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add an input field to the Tileset Editor for editing the full metatile attributes value directly, including unused bits.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
+- Add support for referring to object events and warps with named IDs, rather than referring to them with their index number.
 - Add a setting to specify the tile values to use for the unused metatile layer.
 - Add a setting to specify the maximum number of events in a group. A warning will be shown if too many events are added.
+- Add a setting to customize the size and position of the player view distance.
 - Add `onLayoutOpened` to the scripting API.
+- Add a splash loading screen for project openings.
 
 ### Changed
 - `Change Dimensions` now has an interactive resizing rectangle.
 - Redesigned the new map dialog, including better error checking and a collapsible section for header data.
 - New maps/layouts are no longer saved automatically, and can be fully discarded by closing without saving.
 - Map groups and ``MAPSEC`` names specified when creating a new map will be added automatically if they don't already exist.
+- Custom fields in JSON files that Porymap writes are no longer discarded.
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
 - A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
 - The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
-- The max encounter rate is now read from the project, rather than assuming the default value from RSE.
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
 - The triple-layer metatiles setting can now be set automatically using a project constant.
 - `Export Map Stitch Image` and `Export Map Timelapse Image` now show a preview of the full image/gif, not just the current map.
@@ -49,6 +52,10 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - `Script` dropdowns now autocomplete only with scripts from the current map, rather than every script in the project. The old behavior is available via a new setting.
 - The options for `Encounter Type` and `Terrain Type` in the Tileset Editor are not hardcoded anymore, they're now read from the project.
 - The `symbol_wild_encounters` setting was replaced; this value is now read from the project.
+- The max encounter rate is now read from the project, rather than assuming the default value from RSE.
+- `MAP_OFFSET_W` and `MAP_OFFSET_H` (used to limit the maximum map size) are now read from the project.
+- The rendered area of the map border is now limited to the maximum player view distance (prior to this it included two extra rows on the top and bottom).
+- An error message will now be shown when Porymap is unable to save changes (e.g. if Porymap doesn't have write permissions for your project).
 - A project may now be opened even if it has no maps or map groups. A minimum of one map layout is required.
 - The file extensions that are expected for `.png` and `.pal` data files and the extensions outputted when creating a new tileset can now be customized.
 - Miscellaneous performance improvements, especially for opening projects.
@@ -57,12 +64,18 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix `Add Region Map...` not updating the region map settings file.
 - Fix some crashes on invalid region map tilesets.
 - Improve error reporting for invalid region map editor settings.
+- Fix the region map editor's palette resetting between region maps.
+- Fix the region map editor's h-flip and v-flip settings being swapped.
 - Fix config files being written before the project is opened successfully.
 - Fix the map and other project info still displaying if a new project fails to open.
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
-- Fix selections with multiple Events not always clearing when making a new selection.
+- Fix selections with multiple events not always clearing when making a new selection.
 - Fix the new event button not updating correctly when selecting object events.
 - Fix duplicated `Hidden Item` events not copying the `Requires Itemfinder` field.
+- Fix event sprites disappearing in certain areas outside the map boundaries.
+- Fix deselecting an event still allowing you to drag the event around.
+- Fix events rendering on top of the ruler at very high y values.
+- Fix new map names not appearing in event dropdowns that have already been populated.
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.

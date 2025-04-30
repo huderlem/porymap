@@ -260,9 +260,6 @@
            <bool>false</bool>
           </property>
           <widget class="QWidget" name="tab_Map">
-           <property name="toolTip">
-            <string/>
-           </property>
            <layout class="QGridLayout" name="gridLayout_9">
             <property name="leftMargin">
              <number>0</number>
@@ -350,12 +347,6 @@
                      </property>
                      <property name="autoFillBackground">
                       <bool>false</bool>
-                     </property>
-                     <property name="transformationAnchor">
-                      <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
-                     </property>
-                     <property name="resizeAnchor">
-                      <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
                      </property>
                     </widget>
                    </item>
@@ -2386,7 +2377,7 @@
                   <item row="0" column="7">
                    <widget class="QCheckBox" name="checkBox_MirrorConnections">
                     <property name="toolTip">
-                     <string>If enabled, connections will automatically be updated on the connected map.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the connected Emerge and/or Dive maps will be displayed with an opacity set using the slider.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Mirror to Connecting Maps</string>
@@ -2435,8 +2426,11 @@
                   </item>
                   <item row="1" column="0">
                    <widget class="QToolButton" name="button_OpenDiveMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
-                     <string>Open the selected Dive Map</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open the selected Dive Map&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>...</string>
@@ -2450,7 +2444,7 @@
                   <item row="0" column="4" rowspan="2">
                    <widget class="QGroupBox" name="groupBox_DiveMapOpacity">
                     <property name="toolTip">
-                     <string>If enabled, the connected Emerge and/or Dive maps will be displayed with an opacity set using the slider.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the connected Emerge and/or Dive maps will be displayed with an opacity set using the slider.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="title">
                      <string>Show Emerge/Dive Maps</string>
@@ -2569,8 +2563,11 @@
                   </item>
                   <item row="0" column="0">
                    <widget class="QToolButton" name="button_OpenEmergeMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
-                     <string>Open the selected Emerge Map</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open the selected Emerge Map&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>...</string>
@@ -2589,7 +2586,7 @@
                  <property name="orientation">
                   <enum>Qt::Orientation::Horizontal</enum>
                  </property>
-                 <widget class="QGraphicsView" name="graphicsView_Connections">
+                 <widget class="ConnectionsView" name="graphicsView_Connections">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -2863,6 +2860,7 @@
     <addaction name="menuOpen_Recent_Project"/>
     <addaction name="action_Reload_Project"/>
     <addaction name="action_Close_Project"/>
+    <addaction name="separator"/>
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
@@ -2887,8 +2885,10 @@
     <addaction name="actionCursor_Tile_Outline"/>
     <addaction name="actionPlayer_View_Rectangle"/>
     <addaction name="actionBetter_Cursors"/>
+    <addaction name="separator"/>
     <addaction name="actionDive_Emerge_Map"/>
     <addaction name="actionShow_Events_In_Map_View"/>
+    <addaction name="separator"/>
     <addaction name="actionShow_Grid"/>
     <addaction name="actionGrid_Settings"/>
    </widget>
@@ -3074,45 +3074,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
-   </property>
-  </action>
-  <action name="actionSort_by_Location">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/images.qrc">
-     <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
-   </property>
-   <property name="text">
-    <string>Sort by &amp;Location</string>
-   </property>
-  </action>
-  <action name="actionSort_by_Group">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/images.qrc">
-     <normaloff>:/icons/sort_number.ico</normaloff>:/icons/sort_number.ico</iconset>
-   </property>
-   <property name="text">
-    <string>Sort by &amp;Group</string>
-   </property>
-   <property name="toolTip">
-    <string>Sort by Group</string>
-   </property>
-  </action>
-  <action name="actionSort_by_Layout">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/images.qrc">
-     <normaloff>:/icons/sort_map.ico</normaloff>:/icons/sort_map.ico</iconset>
-   </property>
-   <property name="text">
-    <string>Sort by &amp;Layout</string>
    </property>
   </action>
   <action name="actionAbout_Porymap">
@@ -3310,8 +3271,13 @@
   </customwidget>
   <customwidget>
    <class>MapView</class>
-   <extends>QWidget</extends>
+   <extends>QGraphicsView</extends>
    <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ConnectionsView</class>
+   <extends>QGraphicsView</extends>
+   <header>graphicsview.h</header>
   </customwidget>
   <customwidget>
    <class>MapTree</class>
@@ -3321,7 +3287,7 @@
   <customwidget>
    <class>NoScrollGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>mapview.h</header>
+   <header>graphicsview.h</header>
   </customwidget>
   <customwidget>
    <class>MapListToolBar</class>

@@ -1,5 +1,5 @@
 #include "editor.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "imageproviders.h"
 #include "log.h"
 #include "connectionslistitem.h"
@@ -30,7 +30,6 @@ Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
     this->settings = new Settings();
-    this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, 30 * 8, 20 * 8, qRgb(255, 255, 255));
     this->cursorMapTileRect = new CursorTileRect(&this->settings->cursorTileRectEnabled, qRgb(255, 255, 255));
     this->map_ruler = new MapRuler(4);
     connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
@@ -54,6 +53,19 @@ Editor::Editor(Ui::MainWindow* ui)
     connect(ui->actionOpen_Project_in_Text_Editor, &QAction::triggered, this, &Editor::openProjectInTextEditor);
     connect(ui->checkBox_ToggleGrid, &QCheckBox::toggled, this, &Editor::toggleGrid);
     connect(ui->mapCustomAttributesFrame->table(), &CustomAttributesTable::edited, this, &Editor::updateCustomMapAttributes);
+
+    connect(ui->comboBox_DiveMap, &NoScrollComboBox::editingFinished, [this] {
+        onDivingMapEditingFinished(this->ui->comboBox_DiveMap, "dive");
+    });
+    connect(ui->comboBox_EmergeMap, &NoScrollComboBox::editingFinished, [this] {
+        onDivingMapEditingFinished(this->ui->comboBox_EmergeMap, "emerge");
+    });
+    connect(ui->comboBox_DiveMap, &NoScrollComboBox::currentTextChanged, [this] {
+        updateDivingMapButton(this->ui->button_OpenDiveMap, this->ui->comboBox_DiveMap->currentText());
+    });
+    connect(ui->comboBox_EmergeMap, &NoScrollComboBox::currentTextChanged, [this] {
+        updateDivingMapButton(this->ui->button_OpenEmergeMap, this->ui->comboBox_EmergeMap->currentText());
+    });
 }
 
 Editor::~Editor()
@@ -68,30 +80,33 @@ Editor::~Editor()
     closeProject();
 }
 
-void Editor::saveCurrent() {
-    save(true);
+bool Editor::saveCurrent() {
+    return save(true);
 }
 
-void Editor::saveAll() {
-    save(false);
+bool Editor::saveAll() {
+    return save(false);
 }
 
-void Editor::save(bool currentOnly) {
+bool Editor::save(bool currentOnly) {
     if (!this->project)
-        return;
+        return true;
 
     saveEncounterTabData();
 
+    bool success = true;
     if (currentOnly) {
         if (this->map) {
-            this->project->saveMap(this->map);
+            success = this->project->saveMap(this->map);
         } else if (this->layout) {
-            this->project->saveLayout(this->layout);
+            success = this->project->saveLayout(this->layout);
         }
-        this->project->saveGlobalData();
+        if (!this->project->saveGlobalData())
+            success = false;
     } else {
-        this->project->saveAll();
+        success = this->project->saveAll();
     }
+    return success;
 }
 
 void Editor::setProject(Project * project) {
@@ -155,6 +170,7 @@ void Editor::setEditMode(EditMode editMode) {
     }
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(editingLayout);
+    this->playerViewRect->setActive(editingLayout);
     this->editGroup.setActiveStack(editStack);
     setMapEditingButtonsEnabled(editingLayout);
 
@@ -296,8 +312,8 @@ void Editor::addNewWildMonGroup(QWidget *window) {
         form.addRow(new QLabel(monField.name), fieldCheckbox);
     }
     // Reading from ui here so not saving to disk before user.
-    connect(copyCheckbox, &QCheckBox::stateChanged, [=](int state){
-        if (state == Qt::Checked) {
+    connect(copyCheckbox, &QCheckBox::toggled, [=](bool checked){
+        if (checked) {
             int fieldIndex = 0;
             MonTabWidget *monWidget = static_cast<MonTabWidget *>(stack->widget(stack->currentIndex()));
             for (EncounterField monField : project->wildMonFields) {
@@ -305,7 +321,7 @@ void Editor::addNewWildMonGroup(QWidget *window) {
                 fieldCheckboxes[fieldIndex]->setEnabled(false);
                 fieldIndex++;
             }
-        } else if (state == Qt::Unchecked) {
+        } else {
             int fieldIndex = 0;
             for (EncounterField monField : project->wildMonFields) {
                 fieldCheckboxes[fieldIndex]->setEnabled(true);
@@ -596,7 +612,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
         if (newNameDialog.exec() == QDialog::Accepted) {
             QString newFieldName = newNameEdit->text();
             QVector<int> newFieldRates(1, 100);
-            tempFields.append({newFieldName, newFieldRates, {}});
+            tempFields.append({newFieldName, newFieldRates, {}, {}});
             fieldChoices->addItem(newFieldName);
             fieldChoices->setCurrentIndex(fieldChoices->count() - 1);
         }
@@ -675,7 +691,7 @@ void Editor::saveEncounterTabData() {
 
     if (!stack->count()) return;
 
-    tsl::ordered_map<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName()];
+    OrderedMap<QString, WildPokemonHeader> &encounterMap = project->wildMonData[map->constantName()];
 
     for (int groupIndex = 0; groupIndex < stack->count(); groupIndex++) {
         MonTabWidget *tabWidget = static_cast<MonTabWidget *>(stack->widget(groupIndex));
@@ -805,21 +821,39 @@ void Editor::displayConnection(MapConnection *connection) {
     }
 }
 
-void Editor::addConnection(MapConnection *connection) {
-    if (!connection)
+void Editor::addNewConnection(const QString &mapName, const QString &direction) {
+    if (!this->map)
         return;
+
+    MapConnection *connection = new MapConnection(mapName, direction);
 
     // Mark this connection to be selected once its display elements have been created.
     // It's possible this is a Dive/Emerge connection, but that's ok (no selection will occur).
-    connection_to_select = connection;
+    this->connection_to_select = connection;
 
     this->map->commit(new MapConnectionAdd(this->map, connection));
 }
 
+void Editor::replaceConnection(const QString &mapName, const QString &direction) {
+    if (!this->map)
+        return;
+
+    MapConnection *connection = this->map->getConnection(direction);
+    if (!connection || connection->targetMapName() == mapName)
+        return;
+
+    this->map->commit(new MapConnectionChangeMap(connection, mapName));
+}
+
 void Editor::removeConnection(MapConnection *connection) {
-    if (!connection)
+    if (!this->map || !connection)
         return;
     this->map->commit(new MapConnectionRemove(this->map, connection));
+}
+
+void Editor::removeSelectedConnection() {
+    if (selected_connection_item)
+        removeConnection(selected_connection_item->connection);
 }
 
 void Editor::removeConnectionPixmap(MapConnection *connection) {
@@ -914,21 +948,18 @@ void Editor::removeDivingMapPixmap(MapConnection *connection) {
     updateDivingMapsVisibility();
 }
 
-void Editor::updateDiveMap(QString mapName) {
-    setDivingMapName(mapName, "dive");
-}
+bool Editor::setDivingMapName(const QString &mapName, const QString &direction) {
+    if (!mapName.isEmpty() && !this->project->mapNames.contains(mapName))
+        return false;
+    if (!MapConnection::isDiving(direction))
+        return false;
 
-void Editor::updateEmergeMap(QString mapName) {
-    setDivingMapName(mapName, "emerge");
-}
-
-void Editor::setDivingMapName(QString mapName, QString direction) {
     auto pixmapItem = diving_map_items.value(direction);
     MapConnection *connection = pixmapItem ? pixmapItem->connection() : nullptr;
 
     if (connection) {
         if (mapName == connection->targetMapName())
-            return; // No change
+            return true; // No change
 
         // Update existing connection
         if (mapName.isEmpty()) {
@@ -938,8 +969,25 @@ void Editor::setDivingMapName(QString mapName, QString direction) {
         }
     } else if (!mapName.isEmpty()) {
         // Create new connection
-        addConnection(new MapConnection(mapName, direction));
+        addNewConnection(mapName, direction);
     }
+    return true;
+}
+
+QString Editor::getDivingMapName(const QString &direction) const {
+    auto pixmapItem = diving_map_items.value(direction);
+    return (pixmapItem && pixmapItem->connection()) ? pixmapItem->connection()->targetMapName() : QString();
+}
+
+void Editor::onDivingMapEditingFinished(NoScrollComboBox *combo, const QString &direction) {
+    if (!setDivingMapName(combo->currentText(), direction)) {
+        // If user input was invalid, restore the combo to the previously-valid text.
+        combo->setCurrentText(getDivingMapName(direction));
+    }
+}
+
+void Editor::updateDivingMapButton(QToolButton* button, const QString &mapName) {
+    if (this->project) button->setDisabled(!this->project->mapNames.contains(mapName));
 }
 
 void Editor::updateDivingMapsVisibility() {
@@ -1059,6 +1107,14 @@ void Editor::scaleMapView(int s) {
     QTransform transform = QTransform::fromScale(scaleFactor, scaleFactor);
     ui->graphicsView_Map->setTransform(transform);
     ui->graphicsView_Connections->setTransform(transform);
+}
+
+void Editor::setPlayerViewRect(const QRectF &rect) {
+    delete this->playerViewRect;
+    this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, rect, qRgb(255, 255, 255));
+    this->playerViewRect->setActive(getEditingLayout());
+    if (ui->graphicsView_Map->scene())
+        ui->graphicsView_Map->scene()->update();
 }
 
 void Editor::updateCursorRectPos(int x, int y) {
@@ -1289,7 +1345,6 @@ void Editor::setStraightPathCursorMode(QGraphicsSceneMouseEvent *event) {
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
-    // TODO: add event tab event painting tool buttons stuff here
     if (!item->getEditsEnabled()) {
         return;
     }
@@ -1363,8 +1418,11 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 if (event && event->getPixmapItem())
                     event->getPixmapItem()->moveTo(pos);
             }
-        } else if (eventEditAction == EditAction::Select) {
-            // do nothing here, at least for now
+        } else if (eventEditAction == EditAction::Select && event->type() == QEvent::GraphicsSceneMousePress) {
+            if (!(event->modifiers() & Qt::ControlModifier) && this->selectedEvents.length() > 1) {
+                // User is clearing group selection by clicking on the background
+                selectMapEvent(this->selectedEvents.first());
+            }
         } else if (eventEditAction == EditAction::Shift) {
             static QPoint selection_origin;
 
@@ -1482,7 +1540,7 @@ bool Editor::displayLayout() {
         scene->installEventFilter(filter);
         connect(filter, &MapSceneEventFilter::wheelZoom, this, &Editor::onWheelZoom);
         scene->installEventFilter(this->map_ruler);
-        this->map_ruler->setZValue(1000);
+        this->map_ruler->setZValue(ZValue::Ruler);
         scene->addItem(this->map_ruler);
     }
 
@@ -1560,14 +1618,8 @@ void Editor::displayMapMetatiles() {
     map_item->draw(true);
     scene->addItem(map_item);
 
-    int tw = 16;
-    int th = 16;
-    scene->setSceneRect(
-        -BORDER_DISTANCE * tw,
-        -BORDER_DISTANCE * th,
-        map_item->pixmap().width() + BORDER_DISTANCE * 2 * tw,
-        map_item->pixmap().height() + BORDER_DISTANCE * 2 * th
-    );
+    // Scene rect is the map plus a margin that gives enough space to scroll and see the edge of the player view rectangle.
+    scene->setSceneRect(this->layout->getVisibleRect() + QMargins(3,3,3,3));
 }
 
 void Editor::clearMapMovementPermissions() {
@@ -1673,9 +1725,6 @@ void Editor::clearMapEvents() {
         if (events_group->scene()) {
             events_group->scene()->removeItem(events_group);
         }
-        // events_group does not own its children, the childrens' parent
-        // is set to the group's parent (and our group has no parent).
-        qDeleteAll(events_group->childItems());
         delete events_group;
         events_group = nullptr;
     }
@@ -1695,9 +1744,16 @@ void Editor::displayMapEvents() {
     events_group->setHandlesChildEvents(false);
 }
 
-DraggablePixmapItem *Editor::addEventPixmapItem(Event *event) {
+EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
     this->project->loadEventPixmap(event);
-    auto item = new DraggablePixmapItem(event, this);
+    auto item = new EventPixmapItem(event);
+    connect(item, &EventPixmapItem::doubleClicked, this, &Editor::openEventMap);
+    connect(item, &EventPixmapItem::dragged, this, &Editor::onEventDragged);
+    connect(item, &EventPixmapItem::released, this, &Editor::onEventReleased);
+    connect(item, &EventPixmapItem::selected, this, &Editor::selectMapEvent);
+    connect(item, &EventPixmapItem::posChanged, [this, event] { updateWarpEventWarning(event); });
+    connect(item, &EventPixmapItem::yChanged, [this, item] { updateEventPixmapItemZValue(item); });
+    updateWarpEventWarning(event);
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;
@@ -1722,8 +1778,6 @@ void Editor::clearMapConnections() {
     }
     connection_items.clear();
 
-    const QSignalBlocker blocker1(ui->comboBox_DiveMap);
-    const QSignalBlocker blocker2(ui->comboBox_EmergeMap);
     ui->comboBox_DiveMap->setCurrentText("");
     ui->comboBox_EmergeMap->setCurrentText("");
 
@@ -1760,24 +1814,20 @@ void Editor::clearConnectionMask() {
     }
 }
 
-// Hides connected map tiles that cannot be seen from the current map (beyond BORDER_DISTANCE).
+// Hides connected map tiles that cannot be seen from the current map
 void Editor::maskNonVisibleConnectionTiles() {
     clearConnectionMask();
 
     QPainterPath mask;
     mask.addRect(scene->itemsBoundingRect().toRect());
-    mask.addRect(
-        -BORDER_DISTANCE * 16,
-        -BORDER_DISTANCE * 16,
-        (layout->getWidth() + BORDER_DISTANCE * 2) * 16,
-        (layout->getHeight() + BORDER_DISTANCE * 2) * 16
-    );
+    mask.addRect(layout->getVisibleRect());
 
     // Mask the tiles with the current theme's background color.
     QPen pen(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
     QBrush brush(ui->graphicsView_Map->palette().color(QPalette::Active, QPalette::Base));
 
     connection_mask = scene->addPath(mask, pen, brush);
+    connection_mask->setZValue(ZValue::MapConnectionMask);
 }
 
 void Editor::clearMapBorder() {
@@ -1793,17 +1843,14 @@ void Editor::clearMapBorder() {
 void Editor::displayMapBorder() {
     clearMapBorder();
 
-    int borderWidth = this->layout->getBorderWidth();
-    int borderHeight = this->layout->getBorderHeight();
-    int borderHorzDist = this->layout->getBorderDrawWidth();
-    int borderVertDist = this->layout->getBorderDrawHeight();
     QPixmap pixmap = this->layout->renderBorder();
-    for (int y = -borderVertDist; y < this->layout->getHeight() + borderVertDist; y += borderHeight)
-    for (int x = -borderHorzDist; x < this->layout->getWidth() + borderHorzDist; x += borderWidth) {
+    const QMargins borderMargins = layout->getBorderMargins();
+    for (int y = -borderMargins.top(); y < this->layout->getHeight() + borderMargins.bottom(); y += this->layout->getBorderHeight())
+    for (int x = -borderMargins.left(); x < this->layout->getWidth() + borderMargins.right(); x += this->layout->getBorderWidth()) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
         item->setX(x * 16);
         item->setY(y * 16);
-        item->setZValue(-3);
+        item->setZValue(ZValue::MapBorder);
         scene->addItem(item);
         borderItems.append(item);
     }
@@ -1973,32 +2020,59 @@ qreal Editor::getEventOpacity(const Event *event) const {
     return event->getUsesDefaultPixmap() ? 0.7 : 1.0;
 }
 
-void Editor::redrawEventPixmapItem(DraggablePixmapItem *item) {
-    if (item && item->event && !item->event->getPixmap().isNull()) {
-        item->setOpacity(getEventOpacity(item->event));
-        project->loadEventPixmap(item->event, true);
-        item->setPixmap(item->event->getPixmap());
-        item->setShapeMode(porymapConfig.eventSelectionShapeMode);
+void Editor::redrawEventPixmapItem(EventPixmapItem *item) {
+    if (!item) return;
+    Event *event = item->getEvent();
+    if (!event) return;
 
-        if (this->editMode == EditMode::Events) {
-            if (this->selectedEvents.contains(item->event)) {
-                // Draw the selection rectangle
-                QImage image = item->pixmap().toImage();
-                QPainter painter(&image);
-                painter.setPen(QColor(255, 0, 255));
-                painter.drawRect(0, 0, image.width() - 1, image.height() - 1);
-                painter.end();
-                item->setPixmap(QPixmap::fromImage(image));
-            }
-            item->setAcceptedMouseButtons(Qt::AllButtons);
-        } else {
-            // Can't interact with event pixmaps outside of event editing mode.
-            // We could do setEnabled(false), but rather than ignoring the mouse events this
-            // would reject them, which would prevent painting on the map behind the events.
-            item->setAcceptedMouseButtons(Qt::NoButton);
-        }
-        item->updatePosition();
+    if (this->editMode == EditMode::Events) {
+        item->setAcceptedMouseButtons(Qt::AllButtons);
+        item->setSelected(this->selectedEvents.contains(event));
+    } else {
+        // Can't interact with event pixmaps outside of event editing mode.
+        // We could do setEnabled(false), but rather than ignoring the mouse events this
+        // would reject them, which would prevent painting on the map behind the events.
+        item->setAcceptedMouseButtons(Qt::NoButton);
+        item->setSelected(false);
     }
+    updateEventPixmapItemZValue(item);
+    item->setOpacity(getEventOpacity(event));
+    item->setShapeMode(porymapConfig.eventSelectionShapeMode);
+    item->render(project);
+}
+
+void Editor::updateEventPixmapItemZValue(EventPixmapItem *item) {
+    if (!item) return;
+    Event *event = item->getEvent();
+    if (!event) return;
+
+    if (item->isSelected()) {
+        item->setZValue(ZValue::EventMaximum);
+    } else {
+        item->setZValue(event->getY() + ((ZValue::EventMaximum - ZValue::EventMinimum) / 2));
+    }
+}
+
+void Editor::onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition) {
+    if (!this->map || !this->map_item)
+        return;
+
+    this->map_item->hoveredMapMetatileChanged(newPosition);
+
+    // Drag all the other selected events (if any) with it
+    QList<Event*> draggedEvents;
+    if (this->selectedEvents.contains(event)) {
+        draggedEvents = this->selectedEvents;
+    } else {
+        draggedEvents.append(event);
+    }
+
+    QPoint moveDistance = newPosition - oldPosition;
+    this->map->commit(new EventMove(draggedEvents, moveDistance.x(), moveDistance.y(), this->eventMoveActionId));
+}
+
+void Editor::onEventReleased(Event *, const QPoint &) {
+    this->eventMoveActionId++;
 }
 
 // Warp events display a warning if they're not positioned on a metatile with a warp behavior.
@@ -2283,32 +2357,6 @@ bool Editor::startDetachedProcess(const QString &command, const QString &working
     return process.startDetached(pid);
 }
 
-// It doesn't seem to be possible to prevent the mousePress event
-// from triggering both event's DraggablePixmapItem and the background mousePress.
-// Since the DraggablePixmapItem's event fires first, we can set a temp
-// variable "selectingEvent" so that we can detect whether or not the user
-// is clicking on the background instead of an event.
-void Editor::eventsView_onMousePress(QMouseEvent *event) {
-    // make sure we are in event editing mode
-    if (map_item && this->editMode != EditMode::Events) {
-        return;
-    }
-    if (this->eventEditAction == EditAction::Paint && event->buttons() & Qt::RightButton) {
-        this->eventEditAction = EditAction::Select;
-        this->settings->mapCursor = QCursor();
-        this->cursorMapTileRect->setSingleTileMode();
-        this->ui->toolButton_Paint->setChecked(false);
-        this->ui->toolButton_Select->setChecked(true);
-    }
-
-    bool multiSelect = event->modifiers() & Qt::ControlModifier;
-    if (!selectingEvent && !multiSelect && this->selectedEvents.length() > 1) {
-        // User is clearing group selection by clicking on the background
-        this->selectMapEvent(this->selectedEvents.first());
-    }
-    selectingEvent = false;
-}
-
 void Editor::setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation) {
     const QSignalBlocker blocker1(ui->spinBox_SelectedCollision);
     const QSignalBlocker blocker2(ui->spinBox_SelectedElevation);
@@ -2338,8 +2386,8 @@ void Editor::setCollisionGraphics() {
 
     // Users are not required to provide an image that gives an icon for every elevation/collision combination.
     // Instead they tell us how many are provided in their image by specifying the number of columns and rows.
-    const int imgColumns = projectConfig.collisionSheetWidth;
-    const int imgRows = projectConfig.collisionSheetHeight;
+    const int imgColumns = projectConfig.collisionSheetSize.width();
+    const int imgRows = projectConfig.collisionSheetSize.height();
 
     // Create a pixmap for the selector on the Collision tab. If a project was previously opened we'll also need to refresh the selector.
     this->collisionSheetPixmap = QPixmap::fromImage(imgSheet).scaled(MovementPermissionsSelector::CellWidth * imgColumns,

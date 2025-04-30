@@ -71,12 +71,6 @@ private slots:
 
     void on_spinBox_paletteSelector_valueChanged(int arg1);
 
-    void on_checkBox_xFlip_stateChanged(int arg1);
-
-    void on_checkBox_yFlip_stateChanged(int arg1);
-
-    void on_actionSave_Tileset_triggered();
-
     void on_actionImport_Primary_Tiles_triggered();
 
     void on_actionImport_Secondary_Tiles_triggered();
@@ -149,6 +143,8 @@ private:
     void commitTerrainType();
     void commitLayerType();
     void setRawAttributesVisible(bool visible);
+    void setXFlip(bool enabled);
+    void setYFlip(bool enabled);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
@@ -174,6 +170,8 @@ private:
     QGraphicsScene *metatileLayersScene = nullptr;
     bool lockSelection = false;
     QSet<uint16_t> metatileReloadQueue;
+
+    bool save();
 
 signals:
     void tilesetsSaved(QString, QString);

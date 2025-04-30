@@ -42,6 +42,8 @@ public:
     Tileset *tileset_primary = nullptr;
     Tileset *tileset_secondary = nullptr;
 
+    QJsonObject customData;
+
     Blockdata blockdata;
 
     QImage image;
@@ -94,8 +96,8 @@ public:
     int getHeight() const { return height; }
     int getBorderWidth() const { return border_width; }
     int getBorderHeight() const { return border_height; }
-    int getBorderDrawWidth() const;
-    int getBorderDrawHeight() const;
+    QMargins getBorderMargins() const;
+    QRect getVisibleRect() const;
 
     bool isWithinBounds(int x, int y) const;
     bool isWithinBounds(const QRect &rect) const;
@@ -105,8 +107,8 @@ public:
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void setBlockdata(Blockdata blockdata, bool enableScriptCallback = false);
 
-    void adjustDimensions(QMargins margins, bool setNewBlockdata = true);
-    void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
+    void adjustDimensions(const QMargins &margins, bool setNewBlockdata = true);
+    void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
 
     void cacheBlockdata();
@@ -114,8 +116,11 @@ public:
     void clearBorderCache();
     void cacheBorder();
 
-    void setClean();
     bool hasUnsavedChanges() const;
+
+    bool save(const QString &root);
+    bool saveBorder(const QString &root);
+    bool saveBlockdata(const QString &root);
 
     bool layoutBlockChanged(int i, const Blockdata &cache);
 
@@ -141,6 +146,7 @@ public:
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
+    bool writeBlockdata(const QString &path, const Blockdata &blockdata) const;
 
     static int getBorderDrawDistance(int dimension, qreal minimum);
 
