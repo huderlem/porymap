@@ -352,6 +352,8 @@ private:
     void setLayoutOnlyMode(bool layoutOnly);
 
     bool isInvalidProject(Project *project);
+    bool checkProjectSanity(Project *project);
+    bool checkProjectVersion(Project *project);
     bool loadProjectData();
     bool setProjectUI();
     void clearProjectUI();

@@ -79,13 +79,15 @@ bool Project::sanityCheck() {
 // We can use the project's git history (if it has one, and we're able to get it) to make a reasonable guess.
 // We know the hashes of the commits in the base repos that contain breaking changes, so if we find one of these then the project
 // should support at least up to that Porymap major version. If this fails for any reason it returns a version of -1.
-// This has relatively tight timeout windows (500ms for each process, compared to the default 30,000ms). This version check
-// is not important enough to significantly slow down project launch, we'd rather just timeout.
 int Project::getSupportedMajorVersion(QString *errorOut) {
+    // This has relatively tight timeout windows (500ms for each process, compared to the default 30,000ms). This version check
+    // is not important enough to significantly slow down project launch, we'd rather just timeout.
+    const int timeoutLimit = 500;
     const int failureVersion = -1;
-    QString gitPath = QStandardPaths::findExecutable("git");
+    QString gitName = "git";
+    QString gitPath = QStandardPaths::findExecutable(gitName);
     if (gitPath.isEmpty()) {
-        if (errorOut) *errorOut = QStringLiteral("Failed to identify project history: Unable to locate git.");
+        if (errorOut) *errorOut = QString("Unable to locate %1.").arg(gitName);
         return failureVersion;
     }
 
@@ -95,14 +97,14 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
     process.setReadChannel(QProcess::StandardOutput);
     process.setStandardInputFile(QProcess::nullDevice()); // We won't have any writing to do.
 
-    // First we need to know which (if any) known git history this project belongs to.
+    // First we need to know which (if any) known history this project belongs to.
     // We'll get the root commit, then compare it to the known root commits for the base project repos.
     static const QStringList args_getRootCommit = { "rev-list", "--max-parents=0", "HEAD" };
     process.setArguments(args_getRootCommit);
     process.start();
-    if (!process.waitForFinished(500) || process.exitStatus() != QProcess::ExitStatus::NormalExit || process.exitCode() != 0) {
+    if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit || process.exitCode() != 0) {
         if (errorOut) {
-            *errorOut = QStringLiteral("Failed to identify project history");
+            *errorOut = QStringLiteral("Failed to identify commit history");
             if (process.error() != QProcess::UnknownError && !process.errorString().isEmpty()) {
                 errorOut->append(QString(": %1").arg(process.errorString()));
             } else {
@@ -145,8 +147,8 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
         }},
     };
     if (!historyMap.contains(rootCommit)) {
-        // Either this repo does not share history with one of the base repos,
-        // (that's ok, don't report an error) or we got some unexpected result.
+        // Either this repo does not share history with one of the base repos, or we got some unexpected result.
+        if (errorOut) *errorOut = QStringLiteral("Unrecognized commit history");
         return failureVersion;
     }
 
@@ -162,9 +164,9 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
         }
         process.setArguments({ "merge-base", "--is-ancestor", commitHash, "HEAD" });
         process.start();
-        if (!process.waitForFinished(500) || process.exitStatus() != QProcess::ExitStatus::NormalExit) {
+        if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit) {
             if (errorOut) {
-                *errorOut = QStringLiteral("Failed to identify project's supported Porymap version");
+                *errorOut = QStringLiteral("Failed to search commit history");
                 if (process.error() != QProcess::UnknownError && !process.errorString().isEmpty()) {
                     errorOut->append(QString(": %1").arg(process.errorString()));
                 } else {
@@ -180,7 +182,8 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
             return versionNum;
         }
     }
-    return failureVersion;
+    // We recognized the commit history, but it's too old for any version of Porymap to support.
+    return 0;
 }
 
 bool Project::load() {
