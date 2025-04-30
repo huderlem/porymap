@@ -28,8 +28,12 @@ void PorymapLoadingScreen::start() {
         this->ui->labelVersion->setText(AboutPorymap::getVersionString());
         shownVersion = true;
     }
+
     this->frame = 0;
     this->ui->labelPixmap->setPixmap(QPixmap::fromImage(this->splashImage.frame(this->frame)));
+
+    this->ui->labelText->setText("");
+
     this->timer.start(120);
     this->show();
 }

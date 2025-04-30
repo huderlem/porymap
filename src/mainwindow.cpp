@@ -653,8 +653,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
         return false;
     }
 
-    porysplash->start();
-
     const QString openMessage = QString("Opening %1").arg(projectString);
     this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
@@ -663,6 +661,8 @@ bool MainWindow::openProject(QString dir, bool initial) {
     userConfig.load();
     projectConfig.projectDir = dir;
     projectConfig.load();
+
+    porysplash->start();
 
     Scripting::init(this);
 
@@ -730,7 +730,7 @@ bool MainWindow::checkProjectSanity() {
 
     logWarn(QString("The directory '%1' failed the project sanity check.").arg(editor->project->root));
 
-    ErrorMessage msgBox(QStringLiteral("The selected directory appears to be invalid."), this);
+    ErrorMessage msgBox(QStringLiteral("The selected directory appears to be invalid."), porysplash);
     msgBox.setInformativeText(QString("The directory '%1' is missing key files.\n\n"
                                       "Make sure you selected the correct project directory "
                                       "(the one used to make your .gba file, e.g. 'pokeemerald').").arg(editor->project->root));
@@ -750,14 +750,15 @@ void MainWindow::showProjectOpenFailure() {
 
 // Alert the user that one or more maps have been excluded while loading the project.
 void MainWindow::showMapsExcludedAlert(const QStringList &excludedMapNames) {
-    RecentErrorMessage msgBox("", this);
+    auto msgBox = new RecentErrorMessage("", this);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
     if (excludedMapNames.length() == 1) {
-        msgBox.setText(QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first()));
+        msgBox->setText(QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first()));
     } else {
-        msgBox.setText(QStringLiteral("Failed to load the maps listed below. Saving will exclude these maps from your project."));
-        msgBox.setDetailedText(excludedMapNames.join("\n")); // Overwrites error details text, user will need to check the log.
+        msgBox->setText(QStringLiteral("Failed to load the maps listed below. Saving will exclude these maps from your project."));
+        msgBox->setDetailedText(excludedMapNames.join("\n")); // Overwrites error details text, user will need to check the log.
     }
-    msgBox.exec();
+    msgBox->open();
 }
 
 bool MainWindow::isProjectOpen() {
@@ -867,28 +868,28 @@ void MainWindow::showFileWatcherWarning() {
         path.remove(root);
     }
 
-    QuestionMessage msgBox("", this);
+    QPointer msgBox = new QuestionMessage("", this);
     if (modifiedFiles.count() == 1) {
-        msgBox.setText(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(modifiedFiles.first()));
+        msgBox->setText(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(modifiedFiles.first()));
     } else {
-        msgBox.setText(QStringLiteral("Some project files have changed on disk. Would you like to reload the project?"));
-        msgBox.setDetailedText(QStringLiteral("The following files have changed:\n") + modifiedFiles.join("\n"));
+        msgBox->setText(QStringLiteral("Some project files have changed on disk. Would you like to reload the project?"));
+        msgBox->setDetailedText(QStringLiteral("The following files have changed:\n") + modifiedFiles.join("\n"));
     }
+    msgBox->setCheckBox(new QCheckBox("Do not ask again."));
 
-    QCheckBox showAgainCheck("Do not ask again.");
-    msgBox.setCheckBox(&showAgainCheck);
-
-    auto reply = msgBox.exec();
-    if (reply == QMessageBox::Yes) {
-        on_action_Reload_Project_triggered();
-    } else if (reply == QMessageBox::No) {
-        if (showAgainCheck.isChecked()) {
-            porymapConfig.monitorFiles = false;
-            if (this->preferenceEditor)
-                this->preferenceEditor->updateFields();
+    connect(msgBox, &QuestionMessage::accepted, this, &MainWindow::on_action_Reload_Project_triggered);
+    connect(msgBox, &QuestionMessage::finished, [this, msgBox] {
+        if (msgBox) {
+            if (msgBox->checkBox() && msgBox->checkBox()->isChecked()) {
+                porymapConfig.monitorFiles = false;
+                if (this->preferenceEditor)
+                    this->preferenceEditor->updateFields();
+            }
+            msgBox->deleteLater();
         }
-    }
-    showing = false;
+        showing = false;
+    });
+    msgBox->open();
 }
 
 QString MainWindow::getExistingDirectory(QString dir) {
@@ -903,7 +904,8 @@ void MainWindow::on_action_Open_Project_triggered()
 }
 
 void MainWindow::on_action_Reload_Project_triggered() {
-    openProject(editor->project->root);
+    if (this->editor && this->editor->project)
+        openProject(this->editor->project->root);
 }
 
 void MainWindow::on_action_Close_Project_triggered() {
@@ -928,9 +930,10 @@ bool MainWindow::userSetMap(QString map_name) {
     }
 
     if (map_name == editor->project->getDynamicMapName()) {
-        WarningMessage msgBox(QString("Cannot open map '%1'.").arg(map_name), this);
-        msgBox.setInformativeText(QStringLiteral("This map name is a placeholder to indicate that the warp's map will be set programmatically."));
-        msgBox.exec();
+        auto msgBox = new WarningMessage(QString("Cannot open map '%1'.").arg(map_name), this);
+        msgBox->setAttribute(Qt::WA_DeleteOnClose);
+        msgBox->setInformativeText(QStringLiteral("This map name is a placeholder to indicate that the warp's map will be set programmatically."));
+        msgBox->open();
         return false;
     }
 
