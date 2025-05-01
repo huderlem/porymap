@@ -167,7 +167,7 @@ void NewMapDialog::on_lineEdit_Name_textChanged(const QString &text) {
 
     // Changing the map name updates the layout ID field to match.
     if (ui->comboBox_LayoutID->isEnabled()) {
-        ui->comboBox_LayoutID->setCurrentText(Layout::layoutConstantFromName(text));
+        ui->comboBox_LayoutID->setTextItem(Layout::layoutConstantFromName(text));
     }
 }
 

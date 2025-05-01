@@ -28,7 +28,7 @@ QWidget *SpeciesComboDelegate::createEditor(QWidget *parent, const QStyleOptionV
 void SpeciesComboDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const {
     QString species = index.data(Qt::EditRole).toString();
     NoScrollComboBox *combo = static_cast<NoScrollComboBox *>(editor);
-    combo->setCurrentText(species);
+    combo->setTextItem(species);
 }
 
 void SpeciesComboDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {

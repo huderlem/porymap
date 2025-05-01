@@ -1141,8 +1141,8 @@ void MainWindow::displayMapProperties() {
 
     const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
     const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
-    ui->comboBox_PrimaryTileset->setCurrentText(editor->map->layout()->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(editor->map->layout()->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->setTextItem(editor->map->layout()->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setTextItem(editor->map->layout()->tileset_secondary_label);
 
     ui->mapCustomAttributesFrame->table()->setAttributes(editor->map->customAttributes());
 }
@@ -1162,7 +1162,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
 
         // New layout failed to load, restore previous layout
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
-        ui->comboBox_LayoutSelector->setCurrentText(this->editor->map->layout()->id);
+        ui->comboBox_LayoutSelector->setTextItem(this->editor->map->layout()->id);
         return;
     }
     this->editor->map->setLayout(layout);
@@ -1178,7 +1178,7 @@ void MainWindow::onLayoutSelectorEditingFinished() {
     const QString text = ui->comboBox_LayoutSelector->currentText();
     if (!this->editor->project->mapLayouts.contains(text)) {
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
-        ui->comboBox_LayoutSelector->setCurrentText(this->editor->layout->id);
+        ui->comboBox_LayoutSelector->setTextItem(this->editor->layout->id);
     }
 }
 
@@ -2681,7 +2681,7 @@ void MainWindow::openWildMonTable(const QString &mapName, const QString &groupNa
     if (userSetMap(mapName)) {
         // Switch to the correct main tab, wild encounter group, and wild encounter type tab.
         on_mainTabBar_tabBarClicked(MainTab::WildPokemon);
-        ui->comboBox_EncounterGroupLabel->setCurrentText(groupName);
+        ui->comboBox_EncounterGroupLabel->setTextItem(groupName);
         QWidget *w = ui->stackedWidget_WildMons->currentWidget();
         if (w) static_cast<MonTabWidget *>(w)->setCurrentField(fieldName);
     }

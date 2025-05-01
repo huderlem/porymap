@@ -1,7 +1,7 @@
 #include "divingmappixmapitem.h"
 #include "config.h"
 
-DivingMapPixmapItem::DivingMapPixmapItem(MapConnection *connection, QComboBox *combo)
+DivingMapPixmapItem::DivingMapPixmapItem(MapConnection *connection, NoScrollComboBox *combo)
     : QGraphicsPixmapItem(getBasePixmap(connection))
 {
     m_connection = connection;
@@ -38,5 +38,5 @@ void DivingMapPixmapItem::onTargetMapChanged() {
 }
 
 void DivingMapPixmapItem::setComboText(const QString &text) {
-    if (m_combo) m_combo->setCurrentText(text);
+    if (m_combo) m_combo->setTextItem(text);
 }

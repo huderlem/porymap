@@ -657,7 +657,7 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 
 void RegionMapEditor::updateRegionMapLayoutOptions(int index) {
     const QSignalBlocker b_ConnectedMap(ui->comboBox_RM_ConnectedMap);
-    this->ui->comboBox_RM_ConnectedMap->setCurrentText(this->region_map->squareMapSection(index));
+    this->ui->comboBox_RM_ConnectedMap->setTextItem(this->region_map->squareMapSection(index));
 
     this->ui->pushButton_RM_Options_delete->setEnabled(this->region_map->squareHasMap(index));
 
@@ -736,7 +736,7 @@ void RegionMapEditor::updateRegionMapEntryOptions(QString section) {
     this->ui->pushButton_entryActivate->setEnabled(section != this->region_map->default_map_section);
     this->ui->pushButton_entryActivate->setText(enabled ? "Remove" : "Add");
 
-    this->ui->comboBox_RM_Entry_MapSection->setCurrentText(section);
+    this->ui->comboBox_RM_Entry_MapSection->setTextItem(section);
     this->activeEntry = section;
     this->region_map_entries_item->currentSection = section;
     MapSectionEntry entry = enabled ? this->region_map_entries[section] : MapSectionEntry();
@@ -1296,11 +1296,11 @@ void RegionMapEditor::setLocations(const QStringList &locations) {
     auto before = ui->comboBox_RM_ConnectedMap->currentText();
     ui->comboBox_RM_ConnectedMap->clear();
     ui->comboBox_RM_ConnectedMap->addItems(locations);
-    ui->comboBox_RM_ConnectedMap->setCurrentText(before);
+    ui->comboBox_RM_ConnectedMap->setTextItem(before);
 
     const QSignalBlocker b_MapSection(ui->comboBox_RM_Entry_MapSection);
     before = ui->comboBox_RM_Entry_MapSection->currentText();
     ui->comboBox_RM_Entry_MapSection->clear();
     ui->comboBox_RM_Entry_MapSection->addItems(locations);
-    ui->comboBox_RM_Entry_MapSection->setCurrentText(before);
+    ui->comboBox_RM_Entry_MapSection->setTextItem(before);
 }

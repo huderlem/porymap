@@ -181,7 +181,7 @@ void EventFrame::populateDropdown(NoScrollComboBox * combo, const QStringList &i
     const QString savedText = combo->currentText();
     combo->clear();
     combo->addItems(items);
-    combo->setCurrentText(savedText);
+    combo->setTextItem(savedText);
 }
 
 void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * project) {
@@ -419,7 +419,7 @@ void ObjectFrame::initialize() {
     this->spinner_radius_y->setValue(this->object->getRadiusY());
 
     // script
-    this->combo_script->setCurrentText(this->object->getScript());
+    this->combo_script->setTextItem(this->object->getScript());
     if (porymapConfig.textEditorGotoLine.isEmpty())
         this->button_script->hide();
 
@@ -430,7 +430,7 @@ void ObjectFrame::initialize() {
     this->combo_trainer_type->setTextItem(this->object->getTrainerType());
 
     // sight berry
-    this->combo_radius_treeid->setCurrentText(this->object->getSightRadiusBerryTreeID());
+    this->combo_radius_treeid->setTextItem(this->object->getSightRadiusBerryTreeID());
 }
 
 void ObjectFrame::populate(Project *project) {
@@ -515,7 +515,7 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
     connect(this->combo_target_map, &QComboBox::currentTextChanged, [this, project](const QString &mapName) {
         this->clone->setTargetMap(mapName);
         this->clone->getPixmapItem()->render(project);
-        this->combo_sprite->setCurrentText(this->clone->getGfx());
+        this->combo_sprite->setTextItem(this->clone->getGfx());
         this->clone->modify();
         populateIdNameDropdown(this->combo_target_id, project, mapName, Event::Group::Object);
     });
@@ -526,7 +526,7 @@ void CloneObjectFrame::connectSignals(MainWindow *window) {
     connect(this->combo_target_id, &QComboBox::currentTextChanged, [this, project](const QString &text) {
         this->clone->setTargetID(text);
         this->clone->getPixmapItem()->render(project);
-        this->combo_sprite->setCurrentText(this->clone->getGfx());
+        this->combo_sprite->setTextItem(this->clone->getGfx());
         this->clone->modify();
     });
 
@@ -552,10 +552,10 @@ void CloneObjectFrame::initialize() {
     this->line_edit_local_id->setText(this->clone->getIdName());
 
     // sprite
-    this->combo_sprite->setCurrentText(this->clone->getGfx());
+    this->combo_sprite->setTextItem(this->clone->getGfx());
 
     // target id
-    this->combo_target_id->setCurrentText(this->clone->getTargetID());
+    this->combo_target_id->setTextItem(this->clone->getTargetID());
 
     // target map
     this->combo_target_map->setTextItem(this->clone->getTargetMap());
@@ -672,7 +672,7 @@ void WarpFrame::initialize() {
     this->combo_dest_map->setTextItem(this->warp->getDestinationMap());
 
     // dest id
-    this->combo_dest_warp->setCurrentText(this->warp->getDestinationWarpID());
+    this->combo_dest_warp->setTextItem(this->warp->getDestinationWarpID());
 }
 
 void WarpFrame::populate(Project *project) {
@@ -753,13 +753,13 @@ void TriggerFrame::initialize() {
     EventFrame::initialize();
 
     // script
-    this->combo_script->setCurrentText(this->trigger->getScriptLabel());
+    this->combo_script->setTextItem(this->trigger->getScriptLabel());
 
     // var
     this->combo_var->setTextItem(this->trigger->getScriptVar());
 
     // var value
-    this->combo_var_value->setCurrentText(this->trigger->getScriptVarValue());
+    this->combo_var_value->setTextItem(this->trigger->getScriptVarValue());
 }
 
 void TriggerFrame::populate(Project *project) {
@@ -876,7 +876,7 @@ void SignFrame::initialize() {
     this->combo_facing_dir->setTextItem(this->sign->getFacingDirection());
 
     // script
-    this->combo_script->setCurrentText(this->sign->getScriptLabel());
+    this->combo_script->setTextItem(this->sign->getScriptLabel());
 }
 
 void SignFrame::populate(Project *project) {

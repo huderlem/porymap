@@ -106,7 +106,7 @@ void ConnectionsListItem::commitDirection() {
     if (MapConnection::isDiving(direction)) {
         // Diving maps are displayed separately, no support right now for replacing a list item with a diving map.
         // For now just restore the original direction.
-        ui->comboBox_Direction->setCurrentText(this->connection->direction());
+        ui->comboBox_Direction->setTextItem(this->connection->direction());
         return;
     }
 

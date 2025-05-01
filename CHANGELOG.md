@@ -103,6 +103,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix exporting a timelapse sometimes altering the state of the current map's edit history.
 - Stop sliders in the Palette Editor from creating a bunch of edit history when used.
 - Fix scrolling on some containers locking up when the mouse stops over a spin box or combo box.
+- Fix the selection index for some combo boxes differing from their displayed text.
 - Fix some file dialogs returning to an incorrect window when closed.
 - Fix bug where reloading a layout would overwrite all unsaved changes.
 - Fix bug where layout json and blockdata could be saved separately leading to inconsistent data.
