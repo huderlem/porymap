@@ -43,9 +43,13 @@ class ParseUtil
 {
 public:
     ParseUtil();
+
     void setRoot(const QString &dir) { this->root = dir; }
     void setUpdatesSplashScreen(bool updates) { this->updatesSplashScreen = updates; }
+
     static QString readTextFile(const QString &path, QString *error = nullptr);
+    QString loadTextFile(const QString &path, QString *error = nullptr);
+
     bool cacheFile(const QString &path, QString *error = nullptr);
     void clearFileCache() { this->fileCache.clear(); }
     static int textFileLineCount(const QString &path);
@@ -127,7 +131,6 @@ private:
     QHash<QString, int> evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error);
     bool defineNameMatchesFilter(const QString &name, const QSet<QString> &filterList) const;
     bool defineNameMatchesFilter(const QString &name, const QSet<QRegularExpression> &filterList) const;
-    QString loadTextFile(const QString &path, QString *error = nullptr);
     QString pathWithRoot(const QString &path);
 
     static const QRegularExpression re_incScriptLabel;

@@ -308,7 +308,10 @@ private:
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
 
-    void ignoreWatchedFileTemporarily(QString filepath);
+    void watchFile(const QString &filename);
+    void watchFiles(const QStringList &filenames);
+    void ignoreWatchedFileTemporarily(const QString &filepath);
+    void ignoreWatchedFilesTemporarily(const QStringList &filepaths);
     void recordFileChange(const QString &filepath);
     void resetFileCache();
 

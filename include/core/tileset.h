@@ -67,9 +67,9 @@ public:
     bool saveTilesImage();
     bool savePalettes();
 
-    bool appendToHeaders(QString root, QString friendlyName, bool usingAsm);
-    bool appendToGraphics(QString root, QString friendlyName, bool usingAsm);
-    bool appendToMetatiles(QString root, QString friendlyName, bool usingAsm);
+    bool appendToHeaders(const QString &filepath, const QString &friendlyName, bool usingAsm);
+    bool appendToGraphics(const QString &filepath, const QString &friendlyName, bool usingAsm);
+    bool appendToMetatiles(const QString &filepath, const QString &friendlyName, bool usingAsm);
 
     void setTilesImage(const QImage &image);
 
