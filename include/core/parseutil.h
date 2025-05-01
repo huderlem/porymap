@@ -44,6 +44,7 @@ class ParseUtil
 public:
     ParseUtil();
     void setRoot(const QString &dir) { this->root = dir; }
+    void setUpdatesSplashScreen(bool updates) { this->updatesSplashScreen = updates; }
     static QString readTextFile(const QString &path, QString *error = nullptr);
     bool cacheFile(const QString &path, QString *error = nullptr);
     void clearFileCache() { this->fileCache.clear(); }
@@ -105,6 +106,8 @@ private:
     QHash<QString, int> globalDefineValues;
     QHash<QString, QString> globalDefineExpressions;
 
+    bool updatesSplashScreen = false;
+
     int evaluateDefine(const QString &identifier, bool *ok = nullptr);
     int evaluateExpression(const QString &expression);
     QList<Token> tokenizeExpression(QString expression);
@@ -114,6 +117,7 @@ private:
     void recordErrors(const QStringList &errors);
     void logRecordedErrors();
     QString createErrorMessage(const QString &message, const QString &expression);
+    void updateSplashScreen(QString path);
 
     struct ParsedDefines {
         QHash<QString,QString> expressions; // Map of all define names encountered to their expressions

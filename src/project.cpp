@@ -76,6 +76,7 @@ bool Project::sanityCheck() {
 }
 
 bool Project::load() {
+    this->parser.setUpdatesSplashScreen(true);
     resetFileCache();
     this->disabledSettingsNames.clear();
     bool success = readGlobalConstants()
@@ -116,6 +117,7 @@ bool Project::load() {
         initNewMapSettings();
         applyParsedLimits();
     }
+    this->parser.setUpdatesSplashScreen(false);
     return success;
 }
 

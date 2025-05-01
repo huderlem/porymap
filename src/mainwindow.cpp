@@ -657,13 +657,15 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
 
+    porysplash->start();
+
+    porysplash->showLoadingMessage("config");
     userConfig.projectDir = dir;
     userConfig.load();
     projectConfig.projectDir = dir;
     projectConfig.load();
 
-    porysplash->start();
-
+    porysplash->showLoadingMessage("custom scripts");
     Scripting::init(this);
 
     // Create the project
@@ -681,6 +683,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
+    porysplash->showMessage("Verifying project");
     if (!checkProjectSanity()) {
         delete this->editor->project;
         porysplash->stop();
@@ -719,6 +722,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
 }
 
 bool MainWindow::loadProjectData() {
+    porysplash->showLoadingMessage("project");
     bool success = editor->project->load();
     Scripting::populateGlobalObject(this);
     return success;
@@ -745,6 +749,12 @@ bool MainWindow::checkProjectSanity() {
 }
 
 void MainWindow::showProjectOpenFailure() {
+    if (!this->isVisible()){
+        // The main window is not visible during the initial project open; the splash screen is busy providing visual feedback.
+        // If project opening fails we can immediately display the empty main window (which we need anyway to parent messages to).
+        restoreWindowState();
+        show();
+    }
     RecentErrorMessage::show(QStringLiteral("There was an error opening the project."), this);
 }
 
@@ -766,6 +776,8 @@ bool MainWindow::isProjectOpen() {
 }
 
 bool MainWindow::setInitialMap() {
+    porysplash->showMessage("Opening initial map");
+
     const QString recent = userConfig.recentMapOrLayout;
     if (editor->project->mapNames.contains(recent)) {
         // User recently had a map open that still exists.
@@ -1184,6 +1196,8 @@ void MainWindow::onLayoutSelectorEditingFinished() {
 
 // Update the UI using information we've read from the user's project files.
 bool MainWindow::setProjectUI() {
+    porysplash->showLoadingMessage("project UI");
+
     Project *project = editor->project;
 
     this->mapHeaderForm->setProject(project);
