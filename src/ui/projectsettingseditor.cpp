@@ -122,7 +122,7 @@ void ProjectSettingsEditor::initUi() {
     ui->comboBox_EventsTabIcon->addItem("Red",               ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 0));
     ui->comboBox_EventsTabIcon->addItem("Green",             ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 1));
     ui->comboBox_EventsTabIcon->addItem("Custom",            "Custom");
-    connect(ui->comboBox_EventsTabIcon, &NoScrollComboBox::currentIndexChanged, [this](int index) {
+    connect(ui->comboBox_EventsTabIcon, QOverload<int>::of(&NoScrollComboBox::currentIndexChanged), [this](int index) {
         bool usingCustom = (index == ui->comboBox_EventsTabIcon->findText("Custom"));
         ui->lineEdit_EventsTabIcon->setVisible(usingCustom);
         ui->button_EventsTabIcon->setVisible(usingCustom);
