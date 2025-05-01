@@ -2734,6 +2734,9 @@
                   </item>
                   <item>
                    <widget class="NoScrollComboBox" name="comboBox_EncounterGroupLabel">
+                    <property name="editable">
+                     <bool>false</bool>
+                    </property>
                     <property name="sizeAdjustPolicy">
                      <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
                     </property>

@@ -496,6 +496,8 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QVBoxLayout *slotChoiceLayout = new QVBoxLayout;
         if (useGroups) {
             auto groupCombo = new NoScrollComboBox;
+            groupCombo->setEditable(false);
+            groupCombo->setMinimumContentsLength(10);
             connect(groupCombo, QOverload<const QString &>::of(&QComboBox::textActivated), [&tempFields, &currentField, &updateTotal, index](QString newGroupName) {
                 for (EncounterField &field : tempFields) {
                     if (field.name == currentField.name) {
