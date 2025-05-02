@@ -104,6 +104,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/metatileselector.cpp \
     src/ui/movablerect.cpp \
     src/ui/movementpermissionsselector.cpp \
+    src/ui/newdefinedialog.cpp \
     src/ui/neweventtoolbutton.cpp \
     src/ui/newlayoutdialog.cpp \
     src/ui/newlayoutform.cpp \
@@ -133,6 +134,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/preferenceeditor.cpp \
     src/ui/regionmappropertiesdialog.cpp \
     src/ui/colorpicker.cpp \
+    src/ui/loadingscreen.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -216,6 +218,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/metatileselector.h \
     include/ui/movablerect.h \
     include/ui/movementpermissionsselector.h \
+    include/ui/newdefinedialog.h \
     include/ui/neweventtoolbutton.h \
     include/ui/newlayoutdialog.h \
     include/ui/newlayoutform.h \
@@ -248,6 +251,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/preferenceeditor.h \
     include/ui/regionmappropertiesdialog.h \
     include/ui/colorpicker.h \
+    include/ui/loadingscreen.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \
@@ -267,8 +271,10 @@ FORMS    += forms/mainwindow.ui \
     forms/connectionslistitem.ui \
     forms/customattributesframe.ui \
     forms/gridsettingsdialog.ui \
+    forms/loadingscreen.ui \
     forms/mapheaderform.ui \
     forms/maplisttoolbar.ui \
+    forms/newdefinedialog.ui \
     forms/newlayoutdialog.ui \
     forms/newlayoutform.ui \
     forms/newlocationdialog.ui \

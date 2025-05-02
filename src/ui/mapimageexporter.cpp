@@ -101,11 +101,11 @@ void MapImageExporter::setModeSpecificUi() {
     ui->comboBox_MapSelection->clear();
     if (m_map) {
         ui->comboBox_MapSelection->addItems(m_project->mapNames);
-        ui->comboBox_MapSelection->setCurrentText(m_map->name());
+        ui->comboBox_MapSelection->setTextItem(m_map->name());
         ui->label_MapSelection->setText(m_mode == ImageExporterMode::Stitch ? QStringLiteral("Starting Map") : QStringLiteral("Map"));
     } else if (m_layout) {
         ui->comboBox_MapSelection->addItems(m_project->layoutIds);
-        ui->comboBox_MapSelection->setCurrentText(m_layout->id);
+        ui->comboBox_MapSelection->setTextItem(m_layout->id);
         ui->label_MapSelection->setText(QStringLiteral("Layout"));
     }
 
@@ -146,7 +146,7 @@ void MapImageExporter::setLayout(Layout *layout) {
 
 void MapImageExporter::setSelectionText(const QString &text) {
     const QSignalBlocker b(ui->comboBox_MapSelection);
-    ui->comboBox_MapSelection->setCurrentText(text);
+    ui->comboBox_MapSelection->setTextItem(text);
     updateMapSelection();
 }
 
@@ -171,7 +171,7 @@ void MapImageExporter::updateMapSelection() {
 
     // Ensure text in the combo box remains valid
     const QSignalBlocker b(ui->comboBox_MapSelection);
-    ui->comboBox_MapSelection->setCurrentText(m_map ? m_map->name() : m_layout->id);
+    ui->comboBox_MapSelection->setTextItem(m_map ? m_map->name() : m_layout->id);
 
     if (m_map != oldMap && (!m_map || !oldMap)) {
         // Switching to or from layout-only mode

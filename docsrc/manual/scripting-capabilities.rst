@@ -204,7 +204,7 @@ Callbacks
 
    Called when the mouse exits the map.
 
-.. js:function:: onMapResized(oldWidth, oldHeight, newWidth, newHeight)
+.. js:function:: onMapResized(oldWidth, oldHeight, delta)
 
    Called when the dimensions of the map are changed.
 
@@ -212,10 +212,8 @@ Callbacks
    :type oldWidth: number
    :param oldHeight: the height of the map before the change
    :type oldHeight: number
-   :param newWidth: the width of the map after the change
-   :type newWidth: number
-   :param newHeight: the height of the map after the change
-   :type newHeight: number
+   :param delta: the amount the map size changed in each direction. The object's shape is ``{left, right, top, bottom}``
+   :type prevBlock: delta
 
 .. js:function:: onBorderResized(oldWidth, oldHeight, newWidth, newHeight)
 

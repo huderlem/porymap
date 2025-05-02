@@ -29,6 +29,7 @@
 #include "newmapgroupdialog.h"
 #include "newlocationdialog.h"
 #include "message.h"
+#include "loadingscreen.h"
 
 #include <QClipboard>
 #include <QDirIterator>
@@ -75,10 +76,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     cleanupLargeLog();
     logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
+}
 
+void MainWindow::initialize() {
     this->initWindow();
-    if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true))
+    if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true)) {
         on_toolButton_Paint_clicked();
+    }
 
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
     // the warning is a bit annoying, so it is disabled here
@@ -86,6 +90,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if (porymapConfig.checkForUpdates)
         this->checkForUpdates(false);
+
+    this->restoreWindowState();
+    this->show();
 }
 
 MainWindow::~MainWindow()
@@ -142,7 +149,6 @@ void MainWindow::initWindow() {
     this->initMiscHeapObjects();
     this->initMapList();
     this->initShortcuts();
-    this->restoreWindowState();
 
 #ifndef RELEASE_PLATFORM
     ui->actionCheck_for_Updates->setVisible(false);
@@ -153,7 +159,6 @@ void MainWindow::initWindow() {
 #endif
 
     setWindowDisabled(true);
-    show();
 }
 
 void MainWindow::initShortcuts() {
@@ -652,16 +657,20 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
 
+    porysplash->start();
+
+    porysplash->showLoadingMessage("config");
     userConfig.projectDir = dir;
     userConfig.load();
     projectConfig.projectDir = dir;
     projectConfig.load();
 
+    porysplash->showLoadingMessage("custom scripts");
     Scripting::init(this);
 
     // Create the project
     auto project = new Project(editor);
-    project->set_root(dir);
+    project->setRoot(dir);
     connect(project, &Project::fileChanged, this, &MainWindow::showFileWatcherWarning);
     connect(project, &Project::mapLoaded, this, &MainWindow::onMapLoaded);
     connect(project, &Project::mapCreated, this, &MainWindow::onNewMapCreated);
@@ -674,8 +683,10 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
+    porysplash->showMessage("Verifying project");
     if (!checkProjectSanity()) {
         delete this->editor->project;
+        porysplash->stop();
         return false;
     }
 
@@ -685,6 +696,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
         showProjectOpenFailure();
         delete this->editor->project;
         // TODO: Allow changing project settings at this point
+        porysplash->stop();
         return false;
     }
 
@@ -705,10 +717,12 @@ bool MainWindow::openProject(QString dir, bool initial) {
                 editor->layout);
     Scripting::cb_ProjectOpened(dir);
     setWindowDisabled(false);
+    porysplash->stop();
     return true;
 }
 
 bool MainWindow::loadProjectData() {
+    porysplash->showLoadingMessage("project");
     bool success = editor->project->load();
     Scripting::populateGlobalObject(this);
     return success;
@@ -720,7 +734,7 @@ bool MainWindow::checkProjectSanity() {
 
     logWarn(QString("The directory '%1' failed the project sanity check.").arg(editor->project->root));
 
-    ErrorMessage msgBox(QStringLiteral("The selected directory appears to be invalid."), this);
+    ErrorMessage msgBox(QStringLiteral("The selected directory appears to be invalid."), porysplash);
     msgBox.setInformativeText(QString("The directory '%1' is missing key files.\n\n"
                                       "Make sure you selected the correct project directory "
                                       "(the one used to make your .gba file, e.g. 'pokeemerald').").arg(editor->project->root));
@@ -735,19 +749,26 @@ bool MainWindow::checkProjectSanity() {
 }
 
 void MainWindow::showProjectOpenFailure() {
+    if (!this->isVisible()){
+        // The main window is not visible during the initial project open; the splash screen is busy providing visual feedback.
+        // If project opening fails we can immediately display the empty main window (which we need anyway to parent messages to).
+        restoreWindowState();
+        show();
+    }
     RecentErrorMessage::show(QStringLiteral("There was an error opening the project."), this);
 }
 
 // Alert the user that one or more maps have been excluded while loading the project.
 void MainWindow::showMapsExcludedAlert(const QStringList &excludedMapNames) {
-    RecentErrorMessage msgBox("", this);
+    auto msgBox = new RecentErrorMessage("", this);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
     if (excludedMapNames.length() == 1) {
-        msgBox.setText(QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first()));
+        msgBox->setText(QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first()));
     } else {
-        msgBox.setText(QStringLiteral("Failed to load the maps listed below. Saving will exclude these maps from your project."));
-        msgBox.setDetailedText(excludedMapNames.join("\n")); // Overwrites error details text, user will need to check the log.
+        msgBox->setText(QStringLiteral("Failed to load the maps listed below. Saving will exclude these maps from your project."));
+        msgBox->setDetailedText(excludedMapNames.join("\n")); // Overwrites error details text, user will need to check the log.
     }
-    msgBox.exec();
+    msgBox->open();
 }
 
 bool MainWindow::isProjectOpen() {
@@ -755,6 +776,8 @@ bool MainWindow::isProjectOpen() {
 }
 
 bool MainWindow::setInitialMap() {
+    porysplash->showMessage("Opening initial map");
+
     const QString recent = userConfig.recentMapOrLayout;
     if (editor->project->mapNames.contains(recent)) {
         // User recently had a map open that still exists.
@@ -857,28 +880,28 @@ void MainWindow::showFileWatcherWarning() {
         path.remove(root);
     }
 
-    QuestionMessage msgBox("", this);
+    QPointer msgBox = new QuestionMessage("", this);
     if (modifiedFiles.count() == 1) {
-        msgBox.setText(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(modifiedFiles.first()));
+        msgBox->setText(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(modifiedFiles.first()));
     } else {
-        msgBox.setText(QStringLiteral("Some project files have changed on disk. Would you like to reload the project?"));
-        msgBox.setDetailedText(QStringLiteral("The following files have changed:\n") + modifiedFiles.join("\n"));
+        msgBox->setText(QStringLiteral("Some project files have changed on disk. Would you like to reload the project?"));
+        msgBox->setDetailedText(QStringLiteral("The following files have changed:\n") + modifiedFiles.join("\n"));
     }
+    msgBox->setCheckBox(new QCheckBox("Do not ask again."));
 
-    QCheckBox showAgainCheck("Do not ask again.");
-    msgBox.setCheckBox(&showAgainCheck);
-
-    auto reply = msgBox.exec();
-    if (reply == QMessageBox::Yes) {
-        on_action_Reload_Project_triggered();
-    } else if (reply == QMessageBox::No) {
-        if (showAgainCheck.isChecked()) {
-            porymapConfig.monitorFiles = false;
-            if (this->preferenceEditor)
-                this->preferenceEditor->updateFields();
+    connect(msgBox, &QuestionMessage::accepted, this, &MainWindow::on_action_Reload_Project_triggered);
+    connect(msgBox, &QuestionMessage::finished, [this, msgBox] {
+        if (msgBox) {
+            if (msgBox->checkBox() && msgBox->checkBox()->isChecked()) {
+                porymapConfig.monitorFiles = false;
+                if (this->preferenceEditor)
+                    this->preferenceEditor->updateFields();
+            }
+            msgBox->deleteLater();
         }
-    }
-    showing = false;
+        showing = false;
+    });
+    msgBox->open();
 }
 
 QString MainWindow::getExistingDirectory(QString dir) {
@@ -893,7 +916,8 @@ void MainWindow::on_action_Open_Project_triggered()
 }
 
 void MainWindow::on_action_Reload_Project_triggered() {
-    openProject(editor->project->root);
+    if (this->editor && this->editor->project)
+        openProject(this->editor->project->root);
 }
 
 void MainWindow::on_action_Close_Project_triggered() {
@@ -918,9 +942,10 @@ bool MainWindow::userSetMap(QString map_name) {
     }
 
     if (map_name == editor->project->getDynamicMapName()) {
-        WarningMessage msgBox(QString("Cannot open map '%1'.").arg(map_name), this);
-        msgBox.setInformativeText(QStringLiteral("This map name is a placeholder to indicate that the warp's map will be set programmatically."));
-        msgBox.exec();
+        auto msgBox = new WarningMessage(QString("Cannot open map '%1'.").arg(map_name), this);
+        msgBox->setAttribute(Qt::WA_DeleteOnClose);
+        msgBox->setInformativeText(QStringLiteral("This map name is a placeholder to indicate that the warp's map will be set programmatically."));
+        msgBox->open();
         return false;
     }
 
@@ -1128,8 +1153,8 @@ void MainWindow::displayMapProperties() {
 
     const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
     const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
-    ui->comboBox_PrimaryTileset->setCurrentText(editor->map->layout()->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(editor->map->layout()->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->setTextItem(editor->map->layout()->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setTextItem(editor->map->layout()->tileset_secondary_label);
 
     ui->mapCustomAttributesFrame->table()->setAttributes(editor->map->customAttributes());
 }
@@ -1149,7 +1174,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
 
         // New layout failed to load, restore previous layout
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
-        ui->comboBox_LayoutSelector->setCurrentText(this->editor->map->layout()->id);
+        ui->comboBox_LayoutSelector->setTextItem(this->editor->map->layout()->id);
         return;
     }
     this->editor->map->setLayout(layout);
@@ -1165,12 +1190,14 @@ void MainWindow::onLayoutSelectorEditingFinished() {
     const QString text = ui->comboBox_LayoutSelector->currentText();
     if (!this->editor->project->mapLayouts.contains(text)) {
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
-        ui->comboBox_LayoutSelector->setCurrentText(this->editor->layout->id);
+        ui->comboBox_LayoutSelector->setTextItem(this->editor->layout->id);
     }
 }
 
 // Update the UI using information we've read from the user's project files.
 bool MainWindow::setProjectUI() {
+    porysplash->showLoadingMessage("project UI");
+
     Project *project = editor->project;
 
     this->mapHeaderForm->setProject(project);
@@ -1696,6 +1723,13 @@ void MainWindow::duplicate() {
 void MainWindow::copy() {
     auto focused = QApplication::focusWidget();
     if (focused) {
+        // Allow copying text from selectable QLabels.
+        auto label = dynamic_cast<QLabel*>(focused);
+        if (label && !label->selectedText().isEmpty()) {
+            setClipboardData(label->selectedText());
+            return;
+        }
+
         QString objectName = focused->objectName();
         if (objectName == "graphicsView_currentMetatileSelection") {
             // copy the current metatile selection as json data
@@ -1992,7 +2026,7 @@ void MainWindow::on_actionPlayer_View_Rectangle_triggered()
     this->editor->settings->playerViewRectEnabled = enabled;
     if ((this->editor->map_item && this->editor->map_item->has_mouse)
      || (this->editor->collision_item && this->editor->collision_item->has_mouse)) {
-        this->editor->playerViewRect->setVisible(enabled);
+        this->editor->playerViewRect->setVisible(enabled && this->editor->playerViewRect->getActive());
         ui->graphicsView_Map->scene()->update();
     }
 }
@@ -2661,7 +2695,7 @@ void MainWindow::openWildMonTable(const QString &mapName, const QString &groupNa
     if (userSetMap(mapName)) {
         // Switch to the correct main tab, wild encounter group, and wild encounter type tab.
         on_mainTabBar_tabBarClicked(MainTab::WildPokemon);
-        ui->comboBox_EncounterGroupLabel->setCurrentText(groupName);
+        ui->comboBox_EncounterGroupLabel->setTextItem(groupName);
         QWidget *w = ui->stackedWidget_WildMons->currentWidget();
         if (w) static_cast<MonTabWidget *>(w)->setCurrentField(fieldName);
     }

@@ -1582,19 +1582,21 @@
              <height>499</height>
             </rect>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_10">
-            <item>
-             <widget class="QToolButton" name="button_HelpFiles">
-              <property name="text">
-               <string>...</string>
+           <layout class="QGridLayout" name="gridLayout_10" rowstretch="1,2,8">
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
-              <property name="icon">
-               <iconset resource="../resources/images.qrc">
-                <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
               </property>
-             </widget>
+             </spacer>
             </item>
-            <item>
+            <item row="2" column="0" colspan="3">
              <widget class="QWidget" name="widget_ProjectPaths" native="true">
               <layout class="QVBoxLayout" name="verticalLayout_6">
                <property name="spacing">
@@ -1626,7 +1628,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>544</width>
-                    <height>437</height>
+                    <height>338</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_ProjectPaths">
@@ -1645,6 +1647,34 @@
                </item>
               </layout>
              </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="button_AddGlobalConstantsFile">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add additional C files containing #defines or enums. These will be used to resolve unknown symbols during project launch.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Add Global Constants File...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources/images.qrc">
+                <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QToolButton" name="button_HelpFiles">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources/images.qrc">
+                <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="3">
+             <layout class="QGridLayout" name="gridLayout_GlobalConstantsFiles"/>
             </item>
            </layout>
           </widget>
@@ -1671,8 +1701,8 @@
              <height>499</height>
             </rect>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_19">
-            <item>
+           <layout class="QGridLayout" name="gridLayout_11">
+            <item row="0" column="0">
              <widget class="QToolButton" name="button_HelpIdentifiers">
               <property name="text">
                <string>...</string>
@@ -1683,7 +1713,7 @@
               </property>
              </widget>
             </item>
-            <item>
+            <item row="2" column="0" colspan="3">
              <widget class="QWidget" name="widget_Identifiers" native="true">
               <layout class="QVBoxLayout" name="verticalLayout_20">
                <property name="spacing">
@@ -1715,7 +1745,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>544</width>
-                    <height>437</height>
+                    <height>421</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_Identifiers">
@@ -1734,6 +1764,36 @@
                </item>
               </layout>
              </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="button_AddGlobalConstant">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add an additional #define name and expression. This may be used to evaluate other #defines during project launch.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Add Global Constant...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources/images.qrc">
+                <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer_7">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="1" column="0" colspan="3">
+             <layout class="QGridLayout" name="gridLayout_GlobalConstants"/>
             </item>
            </layout>
           </widget>

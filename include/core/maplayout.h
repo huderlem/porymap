@@ -107,8 +107,8 @@ public:
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void setBlockdata(Blockdata blockdata, bool enableScriptCallback = false);
 
-    void adjustDimensions(QMargins margins, bool setNewBlockdata = true);
-    void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
+    void adjustDimensions(const QMargins &margins, bool setNewBlockdata = true);
+    void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
     void setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata = true, bool enableScriptCallback = false);
 
     void cacheBlockdata();

@@ -76,7 +76,7 @@ public:
     int maxEncounterRate;
     bool wildEncountersLoaded;
 
-    void set_root(QString);
+    void setRoot(const QString&);
 
     void clearMaps();
     void clearTilesetCache();
@@ -203,6 +203,7 @@ public:
     bool readEventGraphics();
     bool readFieldmapProperties();
     bool readFieldmapMasks();
+    bool readGlobalConstants();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
     QPixmap getEventPixmap(const QString &gfxName, const QString &movementName);
@@ -307,7 +308,10 @@ private:
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
 
-    void ignoreWatchedFileTemporarily(QString filepath);
+    void watchFile(const QString &filename);
+    void watchFiles(const QStringList &filenames);
+    void ignoreWatchedFileTemporarily(const QString &filepath);
+    void ignoreWatchedFilesTemporarily(const QStringList &filepaths);
     void recordFileChange(const QString &filepath);
     void resetFileCache();
 

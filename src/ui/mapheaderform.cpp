@@ -1,6 +1,5 @@
 #include "mapheaderform.h"
 #include "ui_mapheaderform.h"
-#include "project.h"
 
 MapHeaderForm::MapHeaderForm(QWidget *parent)
     : QWidget(parent)
@@ -94,7 +93,7 @@ void MapHeaderForm::setLocations(const QStringList &locations) {
     const QString before = ui->comboBox_Location->currentText();
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(locations);
-    ui->comboBox_Location->setCurrentText(before);
+    ui->comboBox_Location->setTextItem(before);
 }
 
 // Assign a MapHeader that the form will keep in sync with the UI.
@@ -187,10 +186,10 @@ void MapHeaderForm::setAllowsBiking(bool allowsBiking) {           ui->checkBox_
 void MapHeaderForm::setAllowsEscaping(bool allowsEscaping) {       ui->checkBox_AllowEscaping->setChecked(allowsEscaping); }
 void MapHeaderForm::setFloorNumber(int floorNumber) {              ui->spinBox_FloorNumber->setValue(floorNumber); }
 
-// If we always call setText / setCurrentText the user's cursor may move to the end of the text while they're typing.
-void MapHeaderForm::setText(QComboBox *combo, const QString &text) const {
+// If we always call setText / setTextItem the user's cursor may move to the end of the text while they're typing.
+void MapHeaderForm::setText(NoScrollComboBox *combo, const QString &text) const {
     if (combo->currentText() != text)
-        combo->setCurrentText(text);
+        combo->setTextItem(text);
 }
 void MapHeaderForm::setText(QLineEdit *lineEdit, const QString &text) const {
     if (lineEdit->text() != text)

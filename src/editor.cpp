@@ -170,6 +170,7 @@ void Editor::setEditMode(EditMode editMode) {
     }
     this->cursorMapTileRect->setSingleTileMode();
     this->cursorMapTileRect->setActive(editingLayout);
+    this->playerViewRect->setActive(editingLayout);
     this->editGroup.setActiveStack(editStack);
     setMapEditingButtonsEnabled(editingLayout);
 
@@ -237,7 +238,7 @@ void Editor::displayWildMonTables() {
 
     labelComboStrings.sort();
     labelCombo->addItems(labelComboStrings);
-    labelCombo->setCurrentText(labelCombo->itemText(0));
+    labelCombo->setCurrentIndex(0);
 
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     int labelIndex = 0;
@@ -494,7 +495,9 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QFrame *slotChoiceFrame = new QFrame;
         QVBoxLayout *slotChoiceLayout = new QVBoxLayout;
         if (useGroups) {
-            QComboBox *groupCombo = new QComboBox;
+            auto groupCombo = new NoScrollComboBox;
+            groupCombo->setEditable(false);
+            groupCombo->setMinimumContentsLength(10);
             connect(groupCombo, QOverload<const QString &>::of(&QComboBox::textActivated), [&tempFields, &currentField, &updateTotal, index](QString newGroupName) {
                 for (EncounterField &field : tempFields) {
                     if (field.name == currentField.name) {
@@ -525,7 +528,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
                     break;
                 }
             }
-            groupCombo->setCurrentText(currentGroupName);
+            groupCombo->setTextItem(currentGroupName);
             slotChoiceLayout->addWidget(groupCombo);
         }
         slotChoiceLayout->addWidget(chanceSpinner);
@@ -981,7 +984,7 @@ QString Editor::getDivingMapName(const QString &direction) const {
 void Editor::onDivingMapEditingFinished(NoScrollComboBox *combo, const QString &direction) {
     if (!setDivingMapName(combo->currentText(), direction)) {
         // If user input was invalid, restore the combo to the previously-valid text.
-        combo->setCurrentText(getDivingMapName(direction));
+        combo->setTextItem(getDivingMapName(direction));
     }
 }
 
@@ -1111,6 +1114,7 @@ void Editor::scaleMapView(int s) {
 void Editor::setPlayerViewRect(const QRectF &rect) {
     delete this->playerViewRect;
     this->playerViewRect = new MovableRect(&this->settings->playerViewRectEnabled, rect, qRgb(255, 255, 255));
+    this->playerViewRect->setActive(getEditingLayout());
     if (ui->graphicsView_Map->scene())
         ui->graphicsView_Map->scene()->update();
 }
@@ -1279,8 +1283,8 @@ bool Editor::setLayout(QString layoutId) {
 
     ui->comboBox_PrimaryTileset->blockSignals(true);
     ui->comboBox_SecondaryTileset->blockSignals(true);
-    ui->comboBox_PrimaryTileset->setCurrentText(this->layout->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(this->layout->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->setTextItem(this->layout->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setTextItem(this->layout->tileset_secondary_label);
     ui->comboBox_PrimaryTileset->blockSignals(false);
     ui->comboBox_SecondaryTileset->blockSignals(false);
 
@@ -1751,6 +1755,7 @@ EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
     connect(item, &EventPixmapItem::selected, this, &Editor::selectMapEvent);
     connect(item, &EventPixmapItem::posChanged, [this, event] { updateWarpEventWarning(event); });
     connect(item, &EventPixmapItem::yChanged, [this, item] { updateEventPixmapItemZValue(item); });
+    updateWarpEventWarning(event);
     redrawEventPixmapItem(item);
     this->events_group->addToGroup(item);
     return item;

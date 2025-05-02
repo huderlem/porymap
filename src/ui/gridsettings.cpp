@@ -144,7 +144,7 @@ void GridSettingsDialog::updateInput() {
     ui->colorInput->setColor(m_settings->color.rgb());
 
     const QSignalBlocker b_Style(ui->comboBox_Style);
-    ui->comboBox_Style->setCurrentText(GridSettings::getStyleName(m_settings->style));
+    ui->comboBox_Style->setTextItem(GridSettings::getStyleName(m_settings->style));
 }
 
 void GridSettingsDialog::setWidth(int value) {

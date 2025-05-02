@@ -312,7 +312,7 @@ QBarSet* WildMonChart::createLevelDistributionBarSet(const QString &species, con
             const QSignalBlocker blocker1(ui->groupBox_Species);
             const QSignalBlocker blocker2(ui->comboBox_Species);
             ui->groupBox_Species->setChecked(true);
-            ui->comboBox_Species->setCurrentText(species);
+            ui->comboBox_Species->setTextItem(species);
             refreshLevelDistributionChart();
         });
     }

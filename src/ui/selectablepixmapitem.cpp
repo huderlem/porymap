@@ -92,19 +92,22 @@ QPoint SelectablePixmapItem::getCellPos(QPointF pos)
 
 void SelectablePixmapItem::drawSelection()
 {
-    QPixmap pixmap = this->pixmap();
-    QPainter painter(&pixmap);
     QPoint origin = this->getSelectionStart();
     QPoint dimensions = this->getSelectionDimensions();
+    QRect selectionRect(origin.x() * this->cellWidth, origin.y() * this->cellHeight, dimensions.x() * this->cellWidth, dimensions.y() * this->cellHeight);
 
-    int rectWidth = dimensions.x() * this->cellWidth;
-    int rectHeight = dimensions.y() * this->cellHeight;
+    // If a selection is fully outside the bounds of the selectable area, don't draw anything.
+    // This prevents the border of the selection rectangle potentially being visible on an otherwise invisible selection.
+    QPixmap pixmap = this->pixmap();
+    if (!selectionRect.intersects(pixmap.rect()))
+        return;
 
+    QPainter painter(&pixmap);
     painter.setPen(QColor(0xff, 0xff, 0xff));
-    painter.drawRect(origin.x() * this->cellWidth, origin.y() * this->cellHeight, rectWidth - 1, rectHeight -1);
+    painter.drawRect(selectionRect.x(), selectionRect.y(), selectionRect.width() - 1, selectionRect.height() - 1);
     painter.setPen(QColor(0, 0, 0));
-    painter.drawRect(origin.x() * this->cellWidth - 1, origin.y() * this->cellHeight - 1, rectWidth + 1, rectHeight + 1);
-    painter.drawRect(origin.x() * this->cellWidth + 1, origin.y() * this->cellHeight + 1, rectWidth - 3, rectHeight - 3);
+    painter.drawRect(selectionRect.x() - 1, selectionRect.y() - 1, selectionRect.width() + 1, selectionRect.height() + 1);
+    painter.drawRect(selectionRect.x() + 1, selectionRect.y() + 1, selectionRect.width() - 3, selectionRect.height() - 3);
 
     this->setPixmap(pixmap);
 }

@@ -24,21 +24,21 @@ public:
 class ErrorMessage : public Message {
 public:
     ErrorMessage(const QString &message, QWidget *parent);
-    static int show(const QString &message, QWidget *parent);
+    static void show(const QString &message, QWidget *parent);
 };
 
 // Basic warning message with an 'Ok' button.
 class WarningMessage : public Message {
 public:
     WarningMessage(const QString &message, QWidget *parent);
-    static int show(const QString &message, QWidget *parent);
+    static void show(const QString &message, QWidget *parent);
 };
 
 // Basic informational message with a 'Close' button.
 class InfoMessage : public Message {
 public:
     InfoMessage(const QString &message, QWidget *parent);
-    static int show(const QString &message, QWidget *parent);
+    static void show(const QString &message, QWidget *parent);
 };
 
 // Basic question message with a 'Yes' and 'No' button.
@@ -53,7 +53,7 @@ public:
 class RecentErrorMessage : public ErrorMessage {
 public:
     RecentErrorMessage(const QString &message, QWidget *parent);
-    static int show(const QString &message, QWidget *parent);
+    static void show(const QString &message, QWidget *parent);
 };
 
 

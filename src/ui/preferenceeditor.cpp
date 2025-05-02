@@ -44,7 +44,7 @@ void PreferenceEditor::initFields() {
 }
 
 void PreferenceEditor::updateFields() {
-    themeSelector->setCurrentText(porymapConfig.theme);
+    themeSelector->setTextItem(porymapConfig.theme);
     if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) {
         ui->radioButton_OnSprite->setChecked(true);
     } else if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::BoundingRectShape) {

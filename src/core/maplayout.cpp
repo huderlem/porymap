@@ -189,46 +189,38 @@ void Layout::setBorderBlockData(Blockdata newBlockdata, bool enableScriptCallbac
     }
 }
 
-void Layout::setDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {
+void Layout::setDimensions(int newWidth, int newHeight, bool setNewBlockdata) {
     if (setNewBlockdata) {
         setNewDimensionsBlockdata(newWidth, newHeight);
     }
-
-    int oldWidth = this->width;
-    int oldHeight = this->height;
     this->width = newWidth;
     this->height = newHeight;
-
-    if (enableScriptCallback && (oldWidth != newWidth || oldHeight != newHeight)) {
-        Scripting::cb_MapResized(oldWidth, oldHeight, newWidth, newHeight);
-    }
-
-    emit dimensionsChanged(QSize(getWidth(), getHeight()));
+    emit dimensionsChanged(QSize(this->width, this->height));
 }
 
-void Layout::adjustDimensions(QMargins margins, bool setNewBlockdata) {
-    int newWidth = this->width + margins.left() + margins.right();
-    int newHeight = this->height + margins.top() + margins.bottom();
+void Layout::adjustDimensions(const QMargins &margins, bool setNewBlockdata) {
+    int oldWidth = this->width;
+    int oldHeight = this->height;
+    this->width = oldWidth + margins.left() + margins.right();
+    this->height = oldHeight + margins.top() + margins.bottom();
 
     if (setNewBlockdata) {
         // Fill new blockdata
         Blockdata newBlockdata;
-        for (int y = 0; y < newHeight; y++)
-        for (int x = 0; x < newWidth; x++) {
-            if ((x < margins.left()) || (x >= newWidth - margins.right()) || (y < margins.top()) || (y >= newHeight - margins.bottom())) {
+        for (int y = 0; y < this->height; y++)
+        for (int x = 0; x < this->width; x++) {
+            if ((x < margins.left()) || (x >= this->width - margins.right()) || (y < margins.top()) || (y >= this->height - margins.bottom())) {
                 newBlockdata.append(0);
             } else {
-                int index = (y - margins.top()) * this->width + (x - margins.left());
+                int index = (y - margins.top()) * oldWidth + (x - margins.left());
                 newBlockdata.append(this->blockdata.value(index));
             }
         }
         this->blockdata = newBlockdata;
     }
 
-    this->width = newWidth;
-    this->height = newHeight;
-
-    emit dimensionsChanged(QSize(getWidth(), getHeight()));
+    Scripting::cb_MapResized(oldWidth, oldHeight, margins);
+    emit dimensionsChanged(QSize(this->width, this->height));
 }
 
 void Layout::setBorderDimensions(int newWidth, int newHeight, bool setNewBlockdata, bool enableScriptCallback) {

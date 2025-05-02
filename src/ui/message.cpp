@@ -52,19 +52,22 @@ RecentErrorMessage::RecentErrorMessage(const QString &message, QWidget *parent) 
     setDetailedText(getMostRecentError());
 }
 
-int RecentErrorMessage::show(const QString &message, QWidget *parent) {
-    RecentErrorMessage msgBox(message, parent);
-    return msgBox.exec();
+void RecentErrorMessage::show(const QString &message, QWidget *parent) {
+    auto msgBox = new RecentErrorMessage(message, parent);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->open();
 };
 
-int ErrorMessage::show(const QString &message, QWidget *parent) {
-    ErrorMessage msgBox(message, parent);
-    return msgBox.exec();
+void ErrorMessage::show(const QString &message, QWidget *parent) {
+    auto msgBox = new ErrorMessage(message, parent);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->open();
 };
 
-int WarningMessage::show(const QString &message, QWidget *parent) {
-    WarningMessage msgBox(message, parent);
-    return msgBox.exec();
+void WarningMessage::show(const QString &message, QWidget *parent) {
+    auto msgBox = new WarningMessage(message, parent);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->open();
 };
 
 int QuestionMessage::show(const QString &message, QWidget *parent) {
@@ -72,7 +75,8 @@ int QuestionMessage::show(const QString &message, QWidget *parent) {
     return msgBox.exec();
 };
 
-int InfoMessage::show(const QString &message, QWidget *parent) {
-    InfoMessage msgBox(message, parent);
-    return msgBox.exec();
+void InfoMessage::show(const QString &message, QWidget *parent) {
+    auto msgBox = new InfoMessage(message, parent);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->open();
 };
