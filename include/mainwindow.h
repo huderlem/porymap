@@ -33,6 +33,7 @@
 #include "aboutporymap.h"
 #include "mapheaderform.h"
 #include "newlayoutdialog.h"
+#include "message.h"
 
 
 
@@ -324,6 +325,7 @@ private:
     QPointer<AboutPorymap> aboutWindow = nullptr;
     QPointer<WildMonChart> wildMonChart = nullptr;
     QPointer<WildMonSearch> wildMonSearch = nullptr;
+    QPointer<QuestionMessage> fileWatcherWarning = nullptr;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;

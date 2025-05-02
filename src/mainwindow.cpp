@@ -28,7 +28,6 @@
 #include "newtilesetdialog.h"
 #include "newmapgroupdialog.h"
 #include "newlocationdialog.h"
-#include "message.h"
 #include "loadingscreen.h"
 
 #include <QClipboard>
@@ -893,7 +892,7 @@ void MainWindow::openSubWindow(QWidget * window) {
 }
 
 void MainWindow::showFileWatcherWarning() {
-     if (!porymapConfig.monitorFiles || !isProjectOpen())
+    if (!porymapConfig.monitorFiles || !isProjectOpen())
         return;
 
     // Only show the file watcher warning if Porymap is the currently active application.
@@ -910,10 +909,11 @@ void MainWindow::showFileWatcherWarning() {
 
     // Only allow one of these warnings at a single time.
     // Additional file changes are ignored while the warning is already active. 
-    static bool showing = false;
-    if (showing)
+    if (this->fileWatcherWarning)
         return;
-    showing = true;
+    this->fileWatcherWarning = new QuestionMessage("", this);
+    this->fileWatcherWarning->setAttribute(Qt::WA_DeleteOnClose);
+    this->fileWatcherWarning->setWindowModality(Qt::ApplicationModal);
 
     // Strip project root from filepaths
     const QString root = project->root + "/";
@@ -921,28 +921,21 @@ void MainWindow::showFileWatcherWarning() {
         path.remove(root);
     }
 
-    QPointer msgBox = new QuestionMessage("", this);
     if (modifiedFiles.count() == 1) {
-        msgBox->setText(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(modifiedFiles.first()));
+        this->fileWatcherWarning->setText(QString("The file %1 has changed on disk. Would you like to reload the project?").arg(modifiedFiles.first()));
     } else {
-        msgBox->setText(QStringLiteral("Some project files have changed on disk. Would you like to reload the project?"));
-        msgBox->setDetailedText(QStringLiteral("The following files have changed:\n") + modifiedFiles.join("\n"));
+        this->fileWatcherWarning->setText(QStringLiteral("Some project files have changed on disk. Would you like to reload the project?"));
+        this->fileWatcherWarning->setDetailedText(QStringLiteral("The following files have changed:\n") + modifiedFiles.join("\n"));
     }
-    msgBox->setCheckBox(new QCheckBox("Do not ask again."));
 
-    connect(msgBox, &QuestionMessage::accepted, this, &MainWindow::on_action_Reload_Project_triggered);
-    connect(msgBox, &QuestionMessage::finished, [this, msgBox] {
-        if (msgBox) {
-            if (msgBox->checkBox() && msgBox->checkBox()->isChecked()) {
-                porymapConfig.monitorFiles = false;
-                if (this->preferenceEditor)
-                    this->preferenceEditor->updateFields();
-            }
-            msgBox->deleteLater();
-        }
-        showing = false;
+    this->fileWatcherWarning->setCheckBox(new QCheckBox("Do not ask again."));
+    connect(this->fileWatcherWarning->checkBox(), &QCheckBox::toggled, [this](bool checked) {
+        porymapConfig.monitorFiles = !checked;
+        if (this->preferenceEditor)
+            this->preferenceEditor->updateFields();
     });
-    msgBox->open();
+    connect(this->fileWatcherWarning, &QuestionMessage::accepted, this, &MainWindow::on_action_Reload_Project_triggered);
+    this->fileWatcherWarning->exec();
 }
 
 QString MainWindow::getExistingDirectory(QString dir) {
@@ -2973,13 +2966,17 @@ void MainWindow::onWarpBehaviorWarningClicked() {
         "<br></html></body></p>"
     );
 
-    InfoMessage msgBox(QStringLiteral("Warp Events only function as exits on certain metatiles"), this);
-    auto settingsButton = msgBox.addButton("Open Settings...", QMessageBox::ActionRole);
-    msgBox.setTextFormat(Qt::RichText);
-    msgBox.setInformativeText(informative);
-    msgBox.exec();
-    if (msgBox.clickedButton() == settingsButton)
-        this->openProjectSettingsEditor(ProjectSettingsEditor::eventsTab);
+    QPointer msgBox = new InfoMessage(QStringLiteral("Warp Events only function as exits on certain metatiles"), this);
+    auto settingsButton = msgBox->addButton("Open Settings...", QMessageBox::ActionRole);
+    msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->setTextFormat(Qt::RichText);
+    msgBox->setInformativeText(informative);
+    connect(msgBox, &InfoMessage::finished, [this, msgBox, settingsButton] {
+        if (msgBox && msgBox->clickedButton()  && msgBox->clickedButton() == settingsButton) {
+            openProjectSettingsEditor(ProjectSettingsEditor::eventsTab);
+        }
+    });
+    msgBox->open();
 }
 
 void MainWindow::on_actionCustom_Scripts_triggered() {
@@ -3070,12 +3067,9 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
 }
 
 void MainWindow::on_pushButton_CreatePrefab_clicked() {
-    PrefabCreationDialog dialog(this, this->editor->metatile_selector_item, this->editor->layout);
-    dialog.setWindowTitle("Create Prefab");
-    dialog.setWindowModality(Qt::NonModal);
-    if (dialog.exec() == QDialog::Accepted) {
-        dialog.savePrefab();
-    }
+    auto dialog = new PrefabCreationDialog(this, this->editor->metatile_selector_item, this->editor->layout);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->open();
 }
 
 bool MainWindow::initRegionMapEditor(bool silent) {
@@ -3117,31 +3111,30 @@ void MainWindow::clearOverlay() {
         ui->graphicsView_Map->clearOverlayMap();
 }
 
-// Attempt to close any open sub-windows of the main window, giving each a chance to abort the process.
-// Each of these windows is a widget with WA_DeleteOnClose set, so manually deleting them isn't necessary.
-// Because they're tracked with QPointers nullifying them shouldn't be necessary either, but it seems the
-// delete is happening too late and some of the pointers haven't been cleared by the time we need them to,
-// so we nullify them all here anyway.
 bool MainWindow::closeSupplementaryWindows() {
-    #define SAFE_CLOSE(window) \
-        do { \
-            if ((window) && !(window)->close()) \
-                return false; \
-            window = nullptr; \
-        } while (0);
+    if (this->projectSettingsEditor) {
+        this->projectSettingsEditor->closeQuietly();
+    }
 
-    SAFE_CLOSE(this->tilesetEditor);
-    SAFE_CLOSE(this->regionMapEditor);
-    SAFE_CLOSE(this->mapImageExporter);
-    SAFE_CLOSE(this->shortcutsEditor);
-    SAFE_CLOSE(this->preferenceEditor);
-    SAFE_CLOSE(this->customScriptsEditor);
-    SAFE_CLOSE(this->wildMonChart);
-    SAFE_CLOSE(this->wildMonSearch);
-
-    if (this->projectSettingsEditor) this->projectSettingsEditor->closeQuietly();
-    this->projectSettingsEditor = nullptr;
-
+    // Attempt to close any visible windows (excluding the main window), giving each a chance to abort the process.
+    for (const auto &widget : QApplication::topLevelWidgets()) {
+        if (widget != this && widget->isWindow() && widget->isVisible()) {
+            // Make sure the window is raised and activated before closing in case it has a confirmation prompt.
+            openSubWindow(widget);
+            if (!widget->close()) {
+                QString message = QStringLiteral("Aborted project close");
+                if (widget && !widget->objectName().isEmpty()) {
+                    message.append(QString(": stopped by '%1'").arg(widget->objectName()));
+                }
+                logInfo(message);
+                return false;
+            }
+        }
+    }
+    // We have some QPointers to windows that may have been closed above.
+    // Make sure we force them to update to nullptr now; they may be read
+    // before the next event loop gets a chance to update them.
+    QApplication::sendPostedEvents();
     return true;
 }
 

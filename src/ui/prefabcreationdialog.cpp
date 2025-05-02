@@ -37,6 +37,8 @@ PrefabCreationDialog::PrefabCreationDialog(QWidget *parent, MetatileSelector *me
         }
         pixmapItem->setPixmap(drawMetatileSelection(this->selection, layout));
     });
+
+    connect(this, &PrefabCreationDialog::accepted, this, &PrefabCreationDialog::savePrefab);
 }
 
 PrefabCreationDialog::~PrefabCreationDialog()
