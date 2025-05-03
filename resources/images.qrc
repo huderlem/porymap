@@ -5,6 +5,7 @@
         <file>icons/collapse_all.ico</file>
         <file>icons/cursor.ico</file>
         <file>icons/delete.ico</file>
+        <file>icons/error.ico</file>
         <file>icons/expand_all.ico</file>
         <file>icons/file_add.ico</file>
         <file>icons/file_edit.ico</file>
@@ -20,6 +21,7 @@
         <file>icons/folder_map_opened.ico</file>
         <file>icons/folder_map.ico</file>
         <file>icons/folder.ico</file>
+        <file>icons/information.ico</file>
         <file>icons/lock_edit.ico</file>
         <file>icons/unlock_edit.ico</file>
         <file>icons/help.ico</file>
@@ -45,6 +47,7 @@
         <file>icons/sort_map.ico</file>
         <file>icons/sort_number.ico</file>
         <file>icons/tall_grass.ico</file>
+        <file>icons/warning.ico</file>
         <file>icons/minimap.ico</file>
         <file>icons/viewsprites.ico</file>
         <file>icons/application_form_edit.ico</file>

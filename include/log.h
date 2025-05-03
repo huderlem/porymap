@@ -8,6 +8,7 @@
 #include <QTextStream>
 #include <QString>
 #include <QDebug>
+#include <QStatusBar>
 
 enum LogType {
     LOG_ERROR,
@@ -15,12 +16,14 @@ enum LogType {
     LOG_INFO,
 };
 
-void logInfo(QString message);
-void logWarn(QString message);
-void logError(QString message);
-void log(QString message, LogType type);
+void logInit();
+void logInfo(const QString &message);
+void logWarn(const QString &message);
+void logError(const QString &message);
+void log(const QString &message, LogType type);
 QString getLogPath();
 QString getMostRecentError();
-bool cleanupLargeLog();
+void addLogStatusBar(QStatusBar *statusBar, const QSet<LogType> &types = {});
+bool removeLogStatusBar(QStatusBar *statusBar);
 
 #endif // LOG_H

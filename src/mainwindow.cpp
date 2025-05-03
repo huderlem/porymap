@@ -74,7 +74,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    cleanupLargeLog();
+    logInit();
+    addLogStatusBar(this->statusBar(), {LOG_ERROR, LOG_WARN});
     logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 }
 
@@ -635,7 +636,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
 
     if (!QDir(dir).exists()) {
         const QString errorMsg = QString("Failed to open %1: No such directory").arg(projectString);
-        this->statusBar()->showMessage(errorMsg);
         if (initial) {
             // Graceful startup if recent project directory is missing
             logWarn(errorMsg);
@@ -654,7 +654,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     }
 
     const QString openMessage = QString("Opening %1").arg(projectString);
-    this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
 
     porysplash->start();
@@ -692,7 +691,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
 
     // Load the project
     if (!(loadProjectData() && setProjectUI() && setInitialMap())) {
-        this->statusBar()->showMessage(QString("Failed to open %1").arg(projectString));
         showProjectOpenFailure();
         delete this->editor->project;
         // TODO: Allow changing project settings at this point
@@ -704,7 +702,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->editor->project->saveConfig();
     
     updateWindowTitle();
-    this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
 
     porymapConfig.projectManuallyClosed = false;
     porymapConfig.addRecentProject(dir);
