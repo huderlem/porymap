@@ -1165,7 +1165,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
 
 void Editor::onHoveredMapMetatileCleared() {
     this->setCursorRectVisible(false);
-    if (!map_item->getEditsEnabled()) {
+    if (map_item->getEditsEnabled()) {
         this->ui->statusBar->clearMessage();
     }
     Scripting::cb_BlockHoverCleared();
