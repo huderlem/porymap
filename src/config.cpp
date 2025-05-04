@@ -731,6 +731,32 @@ BaseGameVersion ProjectConfig::stringToBaseGameVersion(const QString &string) {
     return version;
 }
 
+QString ProjectConfig::getPlayerIconPath(BaseGameVersion baseGameVersion, int character) {
+    switch (baseGameVersion) {
+        case BaseGameVersion::pokeemerald: {
+            static const QStringList paths = { QStringLiteral(":/icons/player/brendan_em.ico"),
+                                               QStringLiteral(":/icons/player/may_em.ico"), };
+            return paths.value(character);
+        }
+        case BaseGameVersion::pokefirered: {
+            static const QStringList paths = { QStringLiteral(":/icons/player/red.ico"),
+                                               QStringLiteral(":/icons/player/green.ico"), };
+            return paths.value(character);
+        }
+        case BaseGameVersion::pokeruby:    {
+            static const QStringList paths = { QStringLiteral(":/icons/player/brendan_rs.ico"),
+                                               QStringLiteral(":/icons/player/may_rs.ico"), };
+            return paths.value(character);
+        }
+        default: break;
+    }
+    return QString();
+}
+
+QIcon ProjectConfig::getPlayerIcon(BaseGameVersion baseGameVersion, int character) {
+    return QIcon(getPlayerIconPath(baseGameVersion, character));
+}
+
 ProjectConfig projectConfig;
 
 QString ProjectConfig::getConfigFilepath() {
@@ -868,6 +894,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->eventIconPaths[Event::Group::Heal] = value;
     } else if (key.startsWith("pokemon_icon_path/")) {
         this->pokemonIconPaths.insert(key.mid(QStringLiteral("pokemon_icon_path/").length()), value);
+    } else if (key == "events_tab_icon_path") {
+        this->eventsTabIconPath = value;
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
@@ -987,6 +1015,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     for (auto it = this->identifiers.constBegin(); it != this->identifiers.constEnd(); it++) {
         map.insert("ident/"+defaultIdentifiers.value(it.key()).first, it.value());
     }
+    map.insert("events_tab_icon_path", this->eventsTabIconPath);
     map.insert("collision_sheet_path", this->collisionSheetPath);
     map.insert("collision_sheet_width", QString::number(this->collisionSheetSize.width()));
     map.insert("collision_sheet_height", QString::number(this->collisionSheetSize.height()));
