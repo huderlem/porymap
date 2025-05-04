@@ -50,6 +50,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
 - The prompt to reload the project when a file has changed will now only appear when Porymap is the active application.
 - `Script` dropdowns now autocomplete only with scripts from the current map, rather than every script in the project. The old behavior is available via a new setting.
+- `Script` dropdowns now update automatically if the current map's scripts file is edited.
 - The options for `Encounter Type` and `Terrain Type` in the Tileset Editor are not hardcoded anymore, they're now read from the project.
 - The `symbol_wild_encounters` setting was replaced; this value is now read from the project.
 - The max encounter rate is now read from the project, rather than assuming the default value from RSE.

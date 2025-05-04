@@ -56,9 +56,11 @@ protected:
     bool populated = false;
     bool initialized = false;
     bool connected = false;
+    QPointer<Project> project;
 
     void populateDropdown(NoScrollComboBox * combo, const QStringList &items);
     void populateScriptDropdown(NoScrollComboBox * combo, Project * project);
+    void populateMapNameDropdown(NoScrollComboBox * combo, Project * project);
     void populateIdNameDropdown(NoScrollComboBox * combo, Project * project, const QString &mapName, Event::Group group);
 
 private:

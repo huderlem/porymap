@@ -49,9 +49,14 @@
         <file>icons/tall_grass.ico</file>
         <file>icons/warning.ico</file>
         <file>icons/minimap.ico</file>
-        <file>icons/viewsprites.ico</file>
         <file>icons/application_form_edit.ico</file>
         <file>icons/connections.ico</file>
+        <file>icons/player/brendan_em.ico</file>
+        <file>icons/player/brendan_rs.ico</file>
+        <file>icons/player/green.ico</file>
+        <file>icons/player/may_em.ico</file>
+        <file>icons/player/may_rs.ico</file>
+        <file>icons/player/red.ico</file>
         <file>icons/ui/dark/checkbox_checked_disabled.png</file>
         <file>icons/ui/dark/checkbox_checked_disabled@2x.png</file>
         <file>icons/ui/dark/checkbox_checked.png</file>

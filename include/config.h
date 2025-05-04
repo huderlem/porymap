@@ -335,6 +335,7 @@ public:
         this->filePaths.clear();
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
+        this->eventsTabIconPath = QString();
         this->collisionSheetPath = QString();
         this->collisionSheetSize = QSize(2, 16);
         this->playerViewDistance = QMargins(GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER, GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER);
@@ -345,6 +346,7 @@ public:
         this->unusedTileCovered = 0x0000;
         this->unusedTileSplit = 0x0000;
         this->maxEventsPerGroup = 255;
+        this->forcedMajorVersion = 0;
         this->globalConstantsFilepaths.clear();
         this->globalConstants.clear();
         this->identifiers.clear();
@@ -354,6 +356,9 @@ public:
     static const QMap<ProjectFilePath, QPair<QString, QString>> defaultPaths;
     static const QStringList versionStrings;
     static BaseGameVersion stringToBaseGameVersion(const QString &string);
+
+    static QString getPlayerIconPath(BaseGameVersion baseGameVersion, int character);
+    static QIcon getPlayerIcon(BaseGameVersion baseGameVersion, int character);
 
     void reset(BaseGameVersion baseGameVersion);
     void setFilePath(ProjectFilePath pathId, const QString &path);
@@ -414,11 +419,13 @@ public:
     uint16_t unusedTileCovered;
     uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
+    QString eventsTabIconPath;
     QString collisionSheetPath;
     QSize collisionSheetSize;
     QMargins playerViewDistance;
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
+    int forcedMajorVersion;
     QStringList globalConstantsFilepaths;
     QMap<QString,QString> globalConstants;
 

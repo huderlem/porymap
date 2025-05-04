@@ -13,6 +13,7 @@
 #include <QPixmap>
 #include <QObject>
 #include <QGraphicsPixmapItem>
+#include <QFileSystemWatcher>
 #include <math.h>
 
 #define DEFAULT_BORDER_WIDTH 2
@@ -56,7 +57,7 @@ public:
     MapHeader* header() const { return m_header; }
 
     void setSharedEventsMap(const QString &sharedEventsMap) { m_sharedEventsMap = sharedEventsMap; }
-    void setSharedScriptsMap(const QString &sharedScriptsMap) { m_sharedScriptsMap = sharedScriptsMap; }
+    void setSharedScriptsMap(const QString &sharedScriptsMap);
 
     QString sharedEventsMap() const { return m_sharedEventsMap; }
     QString sharedScriptsMap() const { return m_sharedScriptsMap; }
@@ -75,13 +76,14 @@ public:
     Event* getEvent(Event::Group group, const QString &idName) const;
     QStringList getEventIdNames(Event::Group group) const;
     int getNumEvents(Event::Group group = Event::Group::None) const;
-    QStringList getScriptLabels(Event::Group group = Event::Group::None);
-    QString getScriptsFilePath() const;
-    void openScript(QString label);
     void removeEvent(Event *);
     void addEvent(Event *);
     int getIndexOfEvent(Event *) const;
     bool hasEvent(Event *) const;
+
+    QStringList getScriptLabels(Event::Group group = Event::Group::None);
+    QString getScriptsFilePath() const;
+    void openScript(const QString &label);
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const { return m_connections; }
@@ -108,7 +110,7 @@ private:
     QString m_sharedEventsMap = "";
     QString m_sharedScriptsMap = "";
 
-    QStringList m_scriptsFileLabels;
+    QStringList m_scriptLabels;
     QJsonObject m_customAttributes;
 
     MapHeader *m_header = nullptr;
@@ -131,10 +133,14 @@ private:
     QList<MapConnection*> m_connections;
     QSet<MapConnection*> m_ownedConnections;
 
-    QUndoStack *m_editHistory = nullptr;
+    QPointer<QUndoStack> m_editHistory;
+    QPointer<QFileSystemWatcher> m_scriptFileWatcher;
+
+    void invalidateScripts();
 
 signals:
     void modified();
+    void scriptsModified();
     void mapDimensionsChanged(const QSize &size);
     void openScriptRequested(QString label);
     void connectionAdded(MapConnection*);
