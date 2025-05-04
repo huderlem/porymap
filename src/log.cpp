@@ -5,6 +5,7 @@
 #include <QSysInfo>
 #include <QLabel>
 #include <QPointer>
+#include <QTimer>
 
 namespace Log {
     static QString mostRecentError;
@@ -16,9 +17,10 @@ namespace Log {
         QPointer<QStatusBar> statusBar;
         QPointer<QLabel> message;
         QPointer<QLabel> icon;
-        QSet<LogType> types;
+        QSet<LogType> acceptedTypes;
     };
     static QList<Display> displays;
+    static QTimer displayClearTimer;
 };
 
 // Enabling this does not seem to be simple to color console output
@@ -65,7 +67,7 @@ QString colorizeMessage(const QString &message, LogType type) {
     return colorized;
 }
 
-void addLogStatusBar(QStatusBar *statusBar, const QSet<LogType> &types) {
+void addLogStatusBar(QStatusBar *statusBar, const QSet<LogType> &acceptedTypes) {
     if (!statusBar) return;
 
     static const QSet<LogType> allTypes = {LOG_ERROR, LOG_WARN, LOG_INFO};
@@ -74,7 +76,7 @@ void addLogStatusBar(QStatusBar *statusBar, const QSet<LogType> &types) {
         .statusBar = statusBar,
         .message = new QLabel(statusBar),
         .icon = new QLabel(statusBar),
-        .types = types.isEmpty() ? allTypes : types,
+        .acceptedTypes = acceptedTypes.isEmpty() ? allTypes : acceptedTypes,
     };
     statusBar->addWidget(display.icon);
     statusBar->addWidget(display.message);
@@ -117,11 +119,21 @@ void updateLogDisplays(const QString &message, LogType type) {
             continue;
         }
         // Update the display, but only if it accepts this message type.
-        if (display.types.contains(type)) {
+        if (display.acceptedTypes.contains(type)) {
             display.icon->setPixmap(icons.value(type));
             display.statusBar->clearMessage();
             display.message->setText(message);
         }
+    }
+
+    // Auto-hide status bar messages after a set period of time
+    Log::displayClearTimer.start(5000);
+}
+
+void clearLogDisplays() {
+    for (const auto &display : Log::displays) {
+        display.icon->setPixmap(QPixmap());
+        display.message->setText(QString());
     }
 }
 
@@ -172,6 +184,10 @@ void logInit() {
     Log::file.setFileName(Log::path);
     Log::file.open(QIODevice::WriteOnly | QIODevice::Append);
     Log::textStream.setDevice(&Log::file);
+
+    QObject::connect(&Log::displayClearTimer, &QTimer::timeout, [=] {
+        clearLogDisplays();
+    });
 
     if (cleanupLargeLog()) {
         logWarn(QString("Previous log file %1 was cleared due to being over 20MB in size.").arg(Log::path));
