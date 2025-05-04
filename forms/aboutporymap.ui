@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
+    <width>388</width>
     <height>121</height>
    </rect>
   </property>
@@ -52,6 +52,9 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::TextInteractionFlag::TextSelectableByMouse</set>
      </property>
     </widget>
    </item>

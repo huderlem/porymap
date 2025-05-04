@@ -114,7 +114,7 @@ QString Event::typeToString(Event::Type type) {
 }
 
 QPixmap Event::loadPixmap(Project *project) {
-    this->pixmap = project->getEventPixmap(this->getEventGroup());
+    this->pixmap = project ? project->getEventPixmap(this->getEventGroup()) : QPixmap();
     this->usesDefaultPixmap = true;
     return this->pixmap;
 }
@@ -226,7 +226,7 @@ QSet<QString> ObjectEvent::getExpectedFields() {
 }
 
 QPixmap ObjectEvent::loadPixmap(Project *project) {
-    this->pixmap = project->getEventPixmap(this->gfx, this->movement);
+    this->pixmap = project ? project->getEventPixmap(this->gfx, this->movement) : QPixmap();
     if (!this->pixmap.isNull()) {
         this->usesDefaultPixmap = false;
         return this->pixmap;
@@ -316,7 +316,7 @@ QSet<QString> CloneObjectEvent::getExpectedFields() {
 
 QPixmap CloneObjectEvent::loadPixmap(Project *project) {
     // Try to get the targeted object to clone
-    Map *clonedMap = project->loadMap(this->targetMap);
+    Map *clonedMap = project ? project->loadMap(this->targetMap) : nullptr;
     Event *clonedEvent = clonedMap ? clonedMap->getEvent(Event::Group::Object, this->targetID) : nullptr;
 
     if (clonedEvent && clonedEvent->getEventType() == Event::Type::Object) {
@@ -324,10 +324,13 @@ QPixmap CloneObjectEvent::loadPixmap(Project *project) {
         ObjectEvent *clonedObject = dynamic_cast<ObjectEvent *>(clonedEvent);
         this->gfx = clonedObject->getGfx();
         this->movement = clonedObject->getMovement();
-    } else {
+    } else if (project) {
         // Invalid object specified, use default graphics data (as would be shown in-game)
         this->gfx = project->gfxDefines.key(0, "0");
         this->movement = project->movementTypes.value(0, "0");
+    } else {
+        this->gfx = "0";
+        this->movement = "0";
     }
     return ObjectEvent::loadPixmap(project);
 }

@@ -657,13 +657,15 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
 
+    porysplash->start();
+
+    porysplash->showLoadingMessage("config");
     userConfig.projectDir = dir;
     userConfig.load();
     projectConfig.projectDir = dir;
     projectConfig.load();
 
-    porysplash->start();
-
+    porysplash->showLoadingMessage("custom scripts");
     Scripting::init(this);
 
     // Create the project
@@ -681,6 +683,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
+    porysplash->showMessage("Verifying project");
     if (isInvalidProject(this->editor->project)) {
         delete this->editor->project;
         porysplash->stop();
@@ -719,6 +722,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
 }
 
 bool MainWindow::loadProjectData() {
+    porysplash->showLoadingMessage("project");
     bool success = editor->project->load();
     Scripting::populateGlobalObject(this);
     return success;
@@ -786,6 +790,12 @@ bool MainWindow::checkProjectVersion(Project *project) {
 }
 
 void MainWindow::showProjectOpenFailure() {
+    if (!this->isVisible()){
+        // The main window is not visible during the initial project open; the splash screen is busy providing visual feedback.
+        // If project opening fails we can immediately display the empty main window (which we need anyway to parent messages to).
+        restoreWindowState();
+        show();
+    }
     RecentErrorMessage::show(QStringLiteral("There was an error opening the project."), this);
 }
 
@@ -807,6 +817,8 @@ bool MainWindow::isProjectOpen() {
 }
 
 bool MainWindow::setInitialMap() {
+    porysplash->showMessage("Opening initial map");
+
     const QString recent = userConfig.recentMapOrLayout;
     if (editor->project->mapNames.contains(recent)) {
         // User recently had a map open that still exists.
@@ -1182,8 +1194,8 @@ void MainWindow::displayMapProperties() {
 
     const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
     const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
-    ui->comboBox_PrimaryTileset->setCurrentText(editor->map->layout()->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(editor->map->layout()->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->setTextItem(editor->map->layout()->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setTextItem(editor->map->layout()->tileset_secondary_label);
 
     ui->mapCustomAttributesFrame->table()->setAttributes(editor->map->customAttributes());
 }
@@ -1203,7 +1215,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
 
         // New layout failed to load, restore previous layout
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
-        ui->comboBox_LayoutSelector->setCurrentText(this->editor->map->layout()->id);
+        ui->comboBox_LayoutSelector->setTextItem(this->editor->map->layout()->id);
         return;
     }
     this->editor->map->setLayout(layout);
@@ -1219,12 +1231,14 @@ void MainWindow::onLayoutSelectorEditingFinished() {
     const QString text = ui->comboBox_LayoutSelector->currentText();
     if (!this->editor->project->mapLayouts.contains(text)) {
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
-        ui->comboBox_LayoutSelector->setCurrentText(this->editor->layout->id);
+        ui->comboBox_LayoutSelector->setTextItem(this->editor->layout->id);
     }
 }
 
 // Update the UI using information we've read from the user's project files.
 bool MainWindow::setProjectUI() {
+    porysplash->showLoadingMessage("project UI");
+
     Project *project = editor->project;
 
     this->mapHeaderForm->setProject(project);
@@ -2722,7 +2736,7 @@ void MainWindow::openWildMonTable(const QString &mapName, const QString &groupNa
     if (userSetMap(mapName)) {
         // Switch to the correct main tab, wild encounter group, and wild encounter type tab.
         on_mainTabBar_tabBarClicked(MainTab::WildPokemon);
-        ui->comboBox_EncounterGroupLabel->setCurrentText(groupName);
+        ui->comboBox_EncounterGroupLabel->setTextItem(groupName);
         QWidget *w = ui->stackedWidget_WildMons->currentWidget();
         if (w) static_cast<MonTabWidget *>(w)->setCurrentField(fieldName);
     }

@@ -249,12 +249,10 @@ QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset 
     return paletteTable;
 }
 
-bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm) {
-    QString headersFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm)
-                                                 : projectConfig.getFilePath(ProjectFilePath::tilesets_headers));
-    QFile file(headersFile);
+bool Tileset::appendToHeaders(const QString &filepath, const QString &friendlyName, bool usingAsm) {
+    QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        logError(QString("Could not write to file \"%1\"").arg(headersFile));
+        logError(QString("Could not write to file \"%1\"").arg(filepath));
         return false;
     }
     QString isSecondaryStr = this->is_secondary ? "TRUE" : "FALSE";
@@ -294,12 +292,10 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
     return true;
 }
 
-bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm) {
-    QString graphicsFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_graphics_asm)
-                                                  : projectConfig.getFilePath(ProjectFilePath::tilesets_graphics));
-    QFile file(graphicsFile);
+bool Tileset::appendToGraphics(const QString &filepath, const QString &friendlyName, bool usingAsm) {
+    QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        logError(QString("Could not write to file \"%1\"").arg(graphicsFile));
+        logError(QString("Could not write to file \"%1\"").arg(filepath));
         return false;
     }
 
@@ -332,12 +328,10 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
     return true;
 }
 
-bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAsm) {
-    QString metatileFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles_asm)
-                                                  : projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
-    QFile file(metatileFile);
+bool Tileset::appendToMetatiles(const QString &filepath, const QString &friendlyName, bool usingAsm) {
+    QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        logError(QString("Could not write to file \"%1\"").arg(metatileFile));
+        logError(QString("Could not write to file \"%1\"").arg(filepath));
         return false;
     }
 

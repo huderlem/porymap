@@ -238,7 +238,7 @@ void Editor::displayWildMonTables() {
 
     labelComboStrings.sort();
     labelCombo->addItems(labelComboStrings);
-    labelCombo->setCurrentText(labelCombo->itemText(0));
+    labelCombo->setCurrentIndex(0);
 
     QStackedWidget *stack = ui->stackedWidget_WildMons;
     int labelIndex = 0;
@@ -495,7 +495,9 @@ void Editor::configureEncounterJSON(QWidget *window) {
         QFrame *slotChoiceFrame = new QFrame;
         QVBoxLayout *slotChoiceLayout = new QVBoxLayout;
         if (useGroups) {
-            QComboBox *groupCombo = new QComboBox;
+            auto groupCombo = new NoScrollComboBox;
+            groupCombo->setEditable(false);
+            groupCombo->setMinimumContentsLength(10);
             connect(groupCombo, QOverload<const QString &>::of(&QComboBox::textActivated), [&tempFields, &currentField, &updateTotal, index](QString newGroupName) {
                 for (EncounterField &field : tempFields) {
                     if (field.name == currentField.name) {
@@ -526,7 +528,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
                     break;
                 }
             }
-            groupCombo->setCurrentText(currentGroupName);
+            groupCombo->setTextItem(currentGroupName);
             slotChoiceLayout->addWidget(groupCombo);
         }
         slotChoiceLayout->addWidget(chanceSpinner);
@@ -982,7 +984,7 @@ QString Editor::getDivingMapName(const QString &direction) const {
 void Editor::onDivingMapEditingFinished(NoScrollComboBox *combo, const QString &direction) {
     if (!setDivingMapName(combo->currentText(), direction)) {
         // If user input was invalid, restore the combo to the previously-valid text.
-        combo->setCurrentText(getDivingMapName(direction));
+        combo->setTextItem(getDivingMapName(direction));
     }
 }
 
@@ -1163,7 +1165,7 @@ void Editor::onHoveredMapMetatileChanged(const QPoint &pos) {
 
 void Editor::onHoveredMapMetatileCleared() {
     this->setCursorRectVisible(false);
-    if (!map_item->getEditsEnabled()) {
+    if (map_item->getEditsEnabled()) {
         this->ui->statusBar->clearMessage();
     }
     Scripting::cb_BlockHoverCleared();
@@ -1281,8 +1283,8 @@ bool Editor::setLayout(QString layoutId) {
 
     ui->comboBox_PrimaryTileset->blockSignals(true);
     ui->comboBox_SecondaryTileset->blockSignals(true);
-    ui->comboBox_PrimaryTileset->setCurrentText(this->layout->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setCurrentText(this->layout->tileset_secondary_label);
+    ui->comboBox_PrimaryTileset->setTextItem(this->layout->tileset_primary_label);
+    ui->comboBox_SecondaryTileset->setTextItem(this->layout->tileset_secondary_label);
     ui->comboBox_PrimaryTileset->blockSignals(false);
     ui->comboBox_SecondaryTileset->blockSignals(false);
 

@@ -18,8 +18,10 @@ public:
     explicit PorymapLoadingScreen(QWidget *parent = nullptr);
     ~PorymapLoadingScreen();
 
-    void setPixmap(QPixmap pixmap);
-    void showMessage(QString text);
+    void setPixmap(const QPixmap &pixmap);
+    void showMessage(const QString &text);
+    void showMessage(const QString &prefix, const QString &text);
+    void showLoadingMessage(const QString &text);
 
     void start();
     void stop ();

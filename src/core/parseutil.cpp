@@ -56,9 +56,17 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
     return QString("%1:%2:%3: %4").arg(this->file).arg(lineNum).arg(colNum).arg(message);
 }
 
+void ParseUtil::updateSplashScreen(QString path) {
+    if (!this->updatesSplashScreen)
+        return;
+
+    if (path.startsWith(this->root)) {
+        path.remove(0, this->root.length());
+    }
+    porysplash->showLoadingMessage(path);
+}
+
 QString ParseUtil::readTextFile(const QString &path, QString *error) {
-    // splash screen message
-    porysplash->showMessage(path);
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         if (error) *error = file.errorString();
@@ -80,6 +88,8 @@ QString ParseUtil::readTextFile(const QString &path, QString *error) {
 // Note that this doesn't insert any parsed files into the file cache, and we don't
 // want it to (we read a lot of files only once, storing them all is a waste of memory).
 QString ParseUtil::loadTextFile(const QString &path, QString *error) {
+    updateSplashScreen(path);
+
     auto it = this->fileCache.constFind(path);
     if (it != this->fileCache.constEnd()) {
         // Load text file from cache
@@ -89,6 +99,8 @@ QString ParseUtil::loadTextFile(const QString &path, QString *error) {
 }
 
 bool ParseUtil::cacheFile(const QString &path, QString *error) {
+    updateSplashScreen(path);
+
     this->fileCache.insert(path, readTextFile(pathWithRoot(path), error));
     return !error || error->isEmpty();
 }
@@ -732,6 +744,8 @@ QStringList ParseUtil::getLabelValues(const QList<QStringList> &list, const QStr
 }
 
 bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath, QString *error) {
+    updateSplashScreen(filepath);
+
     QFile file(pathWithRoot(filepath));
     if (!file.open(QIODevice::ReadOnly)) {
         if (error) *error = file.errorString();
