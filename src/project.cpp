@@ -75,6 +75,117 @@ bool Project::sanityCheck() {
     return false;
 }
 
+// Porymap projects have no standardized way for Porymap to determine whether they're compatible as of the latest breaking changes.
+// We can use the project's git history (if it has one, and we're able to get it) to make a reasonable guess.
+// We know the hashes of the commits in the base repos that contain breaking changes, so if we find one of these then the project
+// should support at least up to that Porymap major version. If this fails for any reason it returns a version of -1.
+int Project::getSupportedMajorVersion(QString *errorOut) {
+    // This has relatively tight timeout windows (500ms for each process, compared to the default 30,000ms). This version check
+    // is not important enough to significantly slow down project launch, we'd rather just timeout.
+    const int timeoutLimit = 500;
+    const int failureVersion = -1;
+    QString gitName = "git";
+    QString gitPath = QStandardPaths::findExecutable(gitName);
+    if (gitPath.isEmpty()) {
+        if (errorOut) *errorOut = QString("Unable to locate %1.").arg(gitName);
+        return failureVersion;
+    }
+
+    QProcess process;
+    process.setWorkingDirectory(this->root);
+    process.setProgram(gitPath);
+    process.setReadChannel(QProcess::StandardOutput);
+    process.setStandardInputFile(QProcess::nullDevice()); // We won't have any writing to do.
+
+    // First we need to know which (if any) known history this project belongs to.
+    // We'll get the root commit, then compare it to the known root commits for the base project repos.
+    static const QStringList args_getRootCommit = { "rev-list", "--max-parents=0", "HEAD" };
+    process.setArguments(args_getRootCommit);
+    process.start();
+    if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit || process.exitCode() != 0) {
+        if (errorOut) {
+            *errorOut = QStringLiteral("Failed to identify commit history");
+            if (process.error() != QProcess::UnknownError && !process.errorString().isEmpty()) {
+                errorOut->append(QString(": %1").arg(process.errorString()));
+            } else {
+                process.setReadChannel(QProcess::StandardError);
+                QString error = QString(process.readLine()).remove('\n');
+                if (!error.isEmpty()) errorOut->append(QString(": %1").arg(error));
+            }
+        }
+        return failureVersion;
+    }
+    const QString rootCommit = QString(process.readLine()).remove('\n');
+
+    // The keys in this map are the hashes of the root commits for each of the 3 base repos.
+    // The values are a list of pairs, where the first element is a major version number, and the
+    // second element is the hash of the earliest commit that supports that major version.
+    static const QMap<QString, QList<QPair<int, QString>>> historyMap = {
+        // pokeemerald
+        {"33b799c967fd63d04afe82eecc4892f3e45781b3", {
+            {6, "07c897ad48c36b178093bde8ca360823127d812b"}, // TODO: Update to merge commit for pokeemerald's porymap-6 branch
+            {5, "c76beed98990a57c84d3930190fd194abfedf7e8"},
+            {4, "cb5b8da77b9ba6837fcc8c5163bedc5008b12c2c"},
+            {3, "204c431993dad29661a9ff47326787cd0cf381e6"},
+            {2, "cdae0c1444bed98e652c87dc3e3edcecacfef8be"},
+            {1, ""}
+        }},
+        // pokefirered
+        {"670fef77ac4d9116d5fdc28c0da40622919a062b", {
+            {6, "7722e7a92ca5fa69925dcef82f6c89c35ec48171"}, // TODO: Update to merge commit for pokefirered's porymap-6 branch
+            {5, "52591dcee42933d64f60c59276fc13c3bb89c47b"},
+            {4, "200c82e01a94dbe535e6ed8768d8afad4444d4d2"},
+        }},
+        // pokeruby
+        {"1362b60f3467f0894d55e82f3294980b6373021d", {
+            {6, "bc5aeaa64ecad03aa4ab9e1000ba94916276c936"}, // TODO: Update to merge commit for pokeruby's porymap-6 branch
+            {5, "d99cb43736dd1d4ee4820f838cb259d773d8bf25"},
+            {4, "f302fcc134bf354c3655e3423be68fd7a99cb396"},
+            {3, "b4f4d2c0f03462dcdf3492aad27890294600eb2e"},
+            {2, "0e8ccfc4fd3544001f4c25fafd401f7558bdefba"},
+            {1, ""}
+        }},
+    };
+    if (!historyMap.contains(rootCommit)) {
+        // Either this repo does not share history with one of the base repos, or we got some unexpected result.
+        if (errorOut) *errorOut = QStringLiteral("Unrecognized commit history");
+        return failureVersion;
+    }
+
+    // We now know which base repo that the user's repo shares history with.
+    // Next we check to see if it contains the changes required to support particular major versions of Porymap.
+    // We'll start with the most recent major version and work backwards.
+    for (const auto &pair : historyMap.value(rootCommit)) {
+        int versionNum = pair.first;
+        QString commitHash = pair.second;
+        if (commitHash.isEmpty()) {
+            // An empty commit hash means 'consider any point in the history a supported version'
+            return versionNum;
+        }
+        process.setArguments({ "merge-base", "--is-ancestor", commitHash, "HEAD" });
+        process.start();
+        if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit) {
+            if (errorOut) {
+                *errorOut = QStringLiteral("Failed to search commit history");
+                if (process.error() != QProcess::UnknownError && !process.errorString().isEmpty()) {
+                    errorOut->append(QString(": %1").arg(process.errorString()));
+                } else {
+                    process.setReadChannel(QProcess::StandardError);
+                    QString error = QString(process.readLine()).remove('\n');
+                    if (!error.isEmpty()) errorOut->append(QString(": %1").arg(error));
+                }
+            }
+            return failureVersion;
+        }
+        if (process.exitCode() == 0) {
+            // Identified a supported major version
+            return versionNum;
+        }
+    }
+    // We recognized the commit history, but it's too old for any version of Porymap to support.
+    return 0;
+}
+
 bool Project::load() {
     this->parser.setUpdatesSplashScreen(true);
     resetFileCache();
