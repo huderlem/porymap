@@ -1192,11 +1192,6 @@ void MainWindow::displayMapProperties() {
     ui->frame_HeaderData->setEnabled(true);
     this->mapHeaderForm->setHeader(editor->map->header());
 
-    const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
-    const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
-    ui->comboBox_PrimaryTileset->setTextItem(editor->map->layout()->tileset_primary_label);
-    ui->comboBox_SecondaryTileset->setTextItem(editor->map->layout()->tileset_secondary_label);
-
     ui->mapCustomAttributesFrame->table()->setAttributes(editor->map->customAttributes());
 }
 
