@@ -75,7 +75,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     logInit();
-    addLogStatusBar(this->statusBar(), {LOG_ERROR, LOG_WARN});
     logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 }
 
@@ -144,6 +143,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
 
 void MainWindow::initWindow() {
     porymapConfig.load();
+    this->initLogStatusBar();
     this->initCustomUI();
     this->initExtraSignals();
     this->initEditor();
@@ -237,6 +237,14 @@ void MainWindow::applyUserShortcuts() {
     for (auto *shortcut : findChildren<Shortcut *>())
         if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
+}
+
+void MainWindow::initLogStatusBar() {
+    removeLogStatusBar(this->statusBar());
+    QSet logTypes = QSet(porymapConfig.statusBarLogTypes.begin(), porymapConfig.statusBarLogTypes.end());
+    if (!logTypes.isEmpty()) {
+        addLogStatusBar(this->statusBar(), logTypes);
+    }
 }
 
 void MainWindow::initCustomUI() {
@@ -2921,6 +2929,7 @@ void MainWindow::on_actionPreferences_triggered() {
         connect(preferenceEditor, &PreferenceEditor::themeChanged, this, &MainWindow::setTheme);
         connect(preferenceEditor, &PreferenceEditor::themeChanged, editor, &Editor::maskNonVisibleConnectionTiles);
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::initLogStatusBar);
         // Changes to porymapConfig.loadAllEventScripts or porymapConfig.eventSelectionShapeMode
         // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, editor, &Editor::updateEvents);

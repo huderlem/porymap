@@ -398,6 +398,7 @@ private:
     void updateWindowTitle();
 
     void initWindow();
+    void initLogStatusBar();
     void initCustomUI();
     void initExtraSignals();
     void initEditor();

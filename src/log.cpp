@@ -110,6 +110,7 @@ void updateLogDisplays(const QString &message, LogType type) {
         {LogType::LOG_ERROR, QPixmap(QStringLiteral(":/icons/error.ico"))},
     };
 
+    bool startTimer = false;
     auto it = QMutableListIterator(Log::displays);
     while (it.hasNext()) {
         auto display = it.next();
@@ -123,11 +124,12 @@ void updateLogDisplays(const QString &message, LogType type) {
             display.icon->setPixmap(icons.value(type));
             display.statusBar->clearMessage();
             display.message->setText(message);
+            startTimer = true;
         }
     }
 
     // Auto-hide status bar messages after a set period of time
-    Log::displayClearTimer.start(5000);
+    if (startTimer) Log::displayClearTimer.start(5000);
 }
 
 void clearLogDisplays() {
