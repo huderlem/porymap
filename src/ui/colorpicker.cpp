@@ -43,11 +43,11 @@ ColorPicker::~ColorPicker()
 void ColorPicker::hover(const QPoint &pos) {
     QScreen *screen = QGuiApplication::screenAt(pos);
     if (!screen) {
+        // Try the screen the color picker is on, or the primary screen.
         const QWindow *window = windowHandle();
-        if (window) screen = window->screen();
+        screen = (window && window->screen()) ? window->screen() : QGuiApplication::primaryScreen();
+        if (!screen) return;
     }
-    if (!screen)
-        return;
 
     // 15 X 15 box with 8x magnification = 120px square)
     QPixmap grab = screen->grabWindow(0, pos.x() - zoom_box_dimensions / 2, pos.y() - zoom_box_dimensions / 2, zoom_box_dimensions, zoom_box_dimensions);

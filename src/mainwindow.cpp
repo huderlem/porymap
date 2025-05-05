@@ -602,17 +602,29 @@ void MainWindow::loadUserSettings() {
 void MainWindow::restoreWindowState() {
     QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
     const QByteArray mainWindowGeometry = geometry.value("main_window_geometry");
-    if (mainWindowGeometry.isEmpty()) {
-        // If there's no saved geometry for the main window (i.e., first show) then we show it maximized.
-        // This simplifies the problem of picking a good window size depending on the screen.
-        setWindowState(Qt::WindowMaximized | Qt::WindowActive);
-    } else {
+    if (!mainWindowGeometry.isEmpty()) {
         logInfo("Restoring main window geometry from previous session.");
         restoreGeometry(mainWindowGeometry);
         restoreState(geometry.value("main_window_state"));
         ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
         ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
         ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
+    }
+
+    // Resize the window if it exceeds the available screen size.
+    auto screen = windowHandle() ? windowHandle()->screen() : QGuiApplication::primaryScreen();
+    if (!screen) return;
+    const QRect screenGeometry = screen->availableGeometry();
+    if (this->width() > screenGeometry.width() || this->height() > screenGeometry.height()) {
+        auto pixelRatio = screen->devicePixelRatio();
+        logInfo(QString("Resizing main window. Dimensions of %1x%2 exceed available screen size of %3x%4")
+                        .arg(qRound(this->width() * pixelRatio))
+                        .arg(qRound(this->height() * pixelRatio))
+                        .arg(qRound(screenGeometry.width() * pixelRatio))
+                        .arg(qRound(screenGeometry.height() * pixelRatio)));
+        resize(qMin(this->width(), screenGeometry.width()),
+               qMin(this->height(), screenGeometry.height()));
+        move(screenGeometry.center() - this->rect().center());
     }
 }
 
