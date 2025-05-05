@@ -19,6 +19,8 @@ public:
     uint16_t rawValue() const;
 
     static int getIndexInTileset(int);
+
+    static const uint16_t maxValue;
 };
 
 inline bool operator==(const Tile &a, const Tile &b) {

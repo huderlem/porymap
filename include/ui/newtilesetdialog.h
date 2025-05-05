@@ -2,7 +2,10 @@
 #define NEWTILESETDIALOG_H
 
 #include <QDialog>
-#include "project.h"
+#include <QAbstractButton>
+
+class Project;
+class Tileset;
 
 namespace Ui {
 class NewTilesetDialog;
@@ -15,20 +18,20 @@ class NewTilesetDialog : public QDialog
 public:
     explicit NewTilesetDialog(Project *project, QWidget *parent = nullptr);
     ~NewTilesetDialog();
-    QString path;
-    QString fullSymbolName;
-    QString friendlyName;
-    bool isSecondary;
-    bool checkerboardFill;
 
-private slots:
-    void NameOrSecondaryChanged();
-    void SecondaryChanged();
-    void FillChanged();
+    virtual void accept() override;
+
+signals:
+    void applied(Tileset *tileset);
 
 private:
     Ui::NewTilesetDialog *ui;
     Project *project = nullptr;
+    const QString symbolPrefix;
+
+    bool validateName(bool allowEmpty = false);
+    void onNameChanged(const QString &name);
+    void dialogButtonClicked(QAbstractButton *button);
 };
 
 #endif // NEWTILESETDIALOG_H

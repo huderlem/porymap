@@ -96,6 +96,7 @@ namespace fex
             case Type::kValuePair:
                 return pair_.first + " = " + pair_.second->ToString() + "\n";
             }
+            return "";
         }
 
         static ArrayValue Empty()

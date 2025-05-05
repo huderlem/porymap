@@ -9,31 +9,20 @@ class NewEventToolButton : public QToolButton
     Q_OBJECT
 public:
     explicit NewEventToolButton(QWidget *parent = nullptr);
-    Event::Type getSelectedEventType();
-    QAction *newObjectAction;
-    QAction *newCloneObjectAction;
-    QAction *newWarpAction;
-    QAction *newHealLocationAction;
-    QAction *newTriggerAction;
-    QAction *newWeatherTriggerAction;
-    QAction *newSignAction;
-    QAction *newHiddenItemAction;
-    QAction *newSecretBaseAction;
-public slots:
-    void newObject();
-    void newCloneObject();
-    void newWarp();
-    void newHealLocation();
-    void newTrigger();
-    void newWeatherTrigger();
-    void newSign();
-    void newHiddenItem();
-    void newSecretBase();
+
+    Event::Type getSelectedEventType() const { return this->selectedEventType; }
+    bool selectEventType(Event::Type type);
+    void setEventTypeVisible(Event::Type type, bool visible);
+
 signals:
     void newEventAdded(Event::Type);
+
 private:
+    QMap<Event::Type,QAction*> typeToAction;
     Event::Type selectedEventType;
-    void init();
+    QMenu* menu;
+
+    void addEventType(Event::Type type);
 };
 
 #endif // NEWEVENTTOOLBUTTON_H

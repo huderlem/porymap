@@ -5,13 +5,17 @@
 #include "graphicsview.h"
 #include "overlay.h"
 
-class MapView : public GraphicsView
+class Editor;
+
+class MapView : public QGraphicsView
 {
     Q_OBJECT
 
 public:
-    MapView() : GraphicsView() {}
-    MapView(QWidget *parent) : GraphicsView(parent) {}
+    MapView() : QGraphicsView() {}
+    MapView(QWidget *parent) : QGraphicsView(parent) {}
+
+    Editor *editor;
 
     Overlay * getOverlay(int layer);
     void clearOverlayMap();
@@ -70,10 +74,14 @@ public:
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
 
+protected:
+    virtual void drawForeground(QPainter *painter, const QRectF &rect) override;
+    virtual void keyPressEvent(QKeyEvent*) override;
+    virtual void moveEvent(QMoveEvent *event) override;
 private:
     QMap<int, Overlay*> overlayMap;
-protected:
-    void drawForeground(QPainter *painter, const QRectF &rect);
+
+    void updateScene();
 };
 
 #endif // GRAPHICSVIEW_H

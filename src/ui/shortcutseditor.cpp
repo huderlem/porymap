@@ -2,6 +2,7 @@
 #include "ui_shortcutseditor.h"
 #include "config.h"
 #include "multikeyedit.h"
+#include "message.h"
 #include "log.h"
 
 #include <QGroupBox>
@@ -46,6 +47,15 @@ void ShortcutsEditor::setShortcutableObjects(const QObjectList &shortcutableObje
 void ShortcutsEditor::saveShortcuts() {
     QMultiMap<const QObject *, QKeySequence> objects_keySequences;
     for (auto it = multiKeyEdits_objects.cbegin(); it != multiKeyEdits_objects.cend(); ++it) {
+        if (!it.value()) {
+            // Some shortcuts cannot be saved. Pointers in the object map can become null if they are
+            // deleted externally while the shortcuts editor is open. Ideally we should try to restore
+            // the original object so the shortcut can be saved. Alternatively this could generally be
+            // prevented by making the shortcuts editor modal. For now, saving these shortcuts is skipped,
+            // and we warn the user that this happened.
+            ErrorMessage::show(QStringLiteral("Some shortcuts failed to save. Please close the Shortcuts Editor and retry."), this);
+            return;
+        }
         if (it.key()->keySequences().isEmpty())
             objects_keySequences.insert(it.value(), QKeySequence());
         for (auto keySequence : it.key()->keySequences())
@@ -60,6 +70,7 @@ void ShortcutsEditor::saveShortcuts() {
 // Restores default shortcuts but doesn't save until Apply or OK is clicked.
 void ShortcutsEditor::resetShortcuts() {
     for (auto it = multiKeyEdits_objects.begin(); it != multiKeyEdits_objects.end(); ++it) {
+        if (!it.value()) continue;
         it.key()->blockSignals(true);
         const auto defaults = shortcutsConfig.defaultShortcuts(it.value());
         it.key()->setKeySequences(defaults);
@@ -90,6 +101,7 @@ bool ShortcutsEditor::stringPropertyIsNotEmpty(const QObject *object, const char
 
 void ShortcutsEditor::populateMainContainer() {
     for (auto object : labels_objects) {
+        if (!object) continue;
         const auto shortcutContext = getShortcutContext(object);
         if (!contexts_layouts.contains(shortcutContext))
             addNewContextGroup(shortcutContext);
@@ -158,7 +170,7 @@ void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyE
             .arg(duplicateKeySequence.toString()).arg(siblingLabel);
 
     const auto result = QMessageBox::question(
-            this, "porymap", message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+            this, QApplication::applicationName(), message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
     if (result == QMessageBox::Yes)
         removeKeySequence(duplicateKeySequence, sibling);

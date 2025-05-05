@@ -5,6 +5,7 @@
 #include "selectablepixmapitem.h"
 #include "paletteutil.h"
 #include "imageproviders.h"
+#include "utility.h"
 
 #include <memory>
 using std::shared_ptr;
@@ -66,7 +67,7 @@ public:
     }
 
     virtual QString info() const {
-        return QString("Tile: 0x") + QString("%1  ").arg(this->id(), 4, 16, QChar('0')).toUpper();
+        return QString("Tile: %1  ").arg(Util::toHexString(this->id(), 4));
     }
 };
 
@@ -148,10 +149,10 @@ public:
     void select(unsigned tileId);
     unsigned selectedTile = 0;
 
-    void selectVFlip(bool hFlip) { this->tile_hFlip = hFlip; }
+    void selectHFlip(bool hFlip) { this->tile_hFlip = hFlip; }
     bool tile_hFlip = false;
 
-    void selectHFlip(bool vFlip) { this->tile_vFlip = vFlip; }
+    void selectVFlip(bool vFlip) { this->tile_vFlip = vFlip; }
     bool tile_vFlip = false;
 
     void selectPalette(int palette) {

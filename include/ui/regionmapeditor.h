@@ -54,10 +54,9 @@ private:
     Project *project;
 
     RegionMap *region_map = nullptr;
-    tsl::ordered_map<QString, RegionMap *> region_maps;
+    OrderedMap<QString, RegionMap *> region_maps;
 
     QString configFilepath;
-    QString mapSectionFilepath;
 
     poryjson::Json rmConfigJson;
 
@@ -96,7 +95,7 @@ private:
     void saveConfig();
     bool loadRegionMapEntries();
     bool saveRegionMapEntries();
-    tsl::ordered_map<QString, MapSectionEntry> region_map_entries;
+    QHash<QString, MapSectionEntry> region_map_entries;
 
     bool buildConfigDialog();
     poryjson::Json configRegionMapDialog();
@@ -117,9 +116,13 @@ private:
     void displayRegionMapEntryOptions();
     void updateRegionMapEntryOptions(QString);
     void setRegionMap(RegionMap *map);
+    void setLocations(const QStringList &locations);
 
     void restoreWindowState();
     void closeEvent(QCloseEvent* event);
+
+    void setTileHFlip(bool enabled);
+    void setTileVFlip(bool enabled);
 
 private slots:
     void on_action_RegionMap_Save_triggered();
@@ -134,7 +137,7 @@ private slots:
     void on_tabWidget_Region_Map_currentChanged(int);
     void on_pushButton_RM_Options_delete_clicked();
     void on_comboBox_RM_ConnectedMap_textActivated(const QString &);
-    void on_comboBox_RM_Entry_MapSection_textActivated(const QString &);
+    void on_comboBox_RM_Entry_MapSection_currentTextChanged(const QString &);
     void on_comboBox_regionSelector_textActivated(const QString &);
     void on_comboBox_layoutLayer_textActivated(const QString &);
     void on_spinBox_RM_Entry_x_valueChanged(int);
@@ -145,11 +148,8 @@ private slots:
     void on_spinBox_RM_LayoutWidth_valueChanged(int);
     void on_spinBox_RM_LayoutHeight_valueChanged(int);
     void on_spinBox_tilePalette_valueChanged(int);
-    void on_checkBox_tileHFlip_stateChanged(int);
-    void on_checkBox_tileVFlip_stateChanged(int);
     void on_verticalSlider_Zoom_Map_Image_valueChanged(int);
     void on_verticalSlider_Zoom_Image_Tiles_valueChanged(int);
-    void on_lineEdit_RM_MapName_textEdited(const QString &);
     void onHoveredRegionMapTileChanged(int x, int y);
     void onHoveredRegionMapTileCleared();
     void mouseEvent_region_map(QGraphicsSceneMouseEvent *event, RegionMapPixmapItem *item);

@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <QString>
 
 namespace fex
 {
@@ -89,9 +90,7 @@ namespace fex
         Lexer() = default;
         ~Lexer() = default;
 
-        std::vector<Token> LexFile(const std::string &path);
-        std::vector<Token> LexString(const std::string &data);
-        void LexFileDumpTokens(const std::string &path, const std::string &out);
+        std::vector<Token> LexFile(const QString &path);
 
     private:
         std::vector<Token> Lex();

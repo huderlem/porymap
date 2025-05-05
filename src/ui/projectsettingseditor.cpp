@@ -3,6 +3,8 @@
 #include "noscrollcombobox.h"
 #include "prefab.h"
 #include "filedialog.h"
+#include "newdefinedialog.h"
+#include "utility.h"
 
 #include <QAbstractButton>
 #include <QFormLayout>
@@ -19,7 +21,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) 
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
     project(project),
-    baseDir(projectConfig.projectDir + QDir::separator())
+    baseDir(projectConfig.projectDir + "/")
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -37,20 +39,24 @@ ProjectSettingsEditor::~ProjectSettingsEditor()
 }
 
 void ProjectSettingsEditor::connectSignals() {
+    connect(ui->button_HelpFiles, &QAbstractButton::clicked, this, &ProjectSettingsEditor::openFilesHelp);
+    connect(ui->button_HelpIdentifiers, &QAbstractButton::clicked, this, &ProjectSettingsEditor::openIdentifiersHelp);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &ProjectSettingsEditor::dialogButtonClicked);
     connect(ui->button_ImportDefaultPrefabs, &QAbstractButton::clicked, this, &ProjectSettingsEditor::importDefaultPrefabsClicked);
     connect(ui->comboBox_BaseGameVersion, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::promptRestoreDefaults);
     connect(ui->comboBox_AttributesSize, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updateAttributeLimits);
     connect(ui->comboBox_IconSpecies, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::updatePokemonIconPath);
-    connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::stateChanged, [this](int state) {
-        bool customSize = (state == Qt::Checked);
+    connect(ui->checkBox_EnableCustomBorderSize, &QCheckBox::toggled, [this](bool enabled) {
         // When switching between the spin boxes or line edit for border metatiles we set
         // the newly-shown UI using the values from the hidden UI.
-        this->setBorderMetatileIds(customSize, this->getBorderMetatileIds(!customSize));
-        this->setBorderMetatilesUi(customSize);
+        this->setBorderMetatileIds(enabled, this->getBorderMetatileIds(!enabled));
+        this->setBorderMetatilesUi(enabled);
     });
     connect(ui->button_AddWarpBehavior,    &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(true); });
     connect(ui->button_RemoveWarpBehavior, &QAbstractButton::clicked, [this](bool) { this->updateWarpBehaviorsList(false); });
+
+    connect(ui->button_AddGlobalConstantsFile, &QAbstractButton::clicked, this, &ProjectSettingsEditor::addNewGlobalConstantsFilepath);
+    connect(ui->button_AddGlobalConstant,      &QAbstractButton::clicked, this, &ProjectSettingsEditor::addNewGlobalConstant);
 
     // Connect file selection buttons
     connect(ui->button_ChoosePrefabs,     &QAbstractButton::clicked, [this](bool) { this->choosePrefabsFile(); });
@@ -59,8 +65,9 @@ void ProjectSettingsEditor::connectSignals() {
     connect(ui->button_WarpsIcon,         &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_WarpsIcon); });
     connect(ui->button_TriggersIcon,      &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_TriggersIcon); });
     connect(ui->button_BGsIcon,           &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_BGsIcon); });
-    connect(ui->button_HealspotsIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealspotsIcon); });
+    connect(ui->button_HealLocationsIcon, &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_HealLocationsIcon); });
     connect(ui->button_PokemonIcon,       &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_PokemonIcon); });
+    connect(ui->button_EventsTabIcon,     &QAbstractButton::clicked, [this](bool) { this->chooseImageFile(ui->lineEdit_EventsTabIcon); });
 
 
     // Display a warning if a mask value overlaps with another mask in its group.
@@ -79,7 +86,9 @@ void ProjectSettingsEditor::connectSignals() {
             connect(combo, &QComboBox::currentTextChanged, this, &ProjectSettingsEditor::markEdited);
     }
     for (auto checkBox : ui->centralwidget->findChildren<QCheckBox *>())
-        connect(checkBox, &QCheckBox::stateChanged, this, &ProjectSettingsEditor::markEdited);
+        connect(checkBox, &QCheckBox::toggled, this, &ProjectSettingsEditor::markEdited);
+    for (auto radioButton : ui->centralwidget->findChildren<QRadioButton *>())
+        connect(radioButton, &QRadioButton::toggled, this, &ProjectSettingsEditor::markEdited);
     for (auto lineEdit : ui->centralwidget->findChildren<QLineEdit *>())
         connect(lineEdit, &QLineEdit::textEdited, this, &ProjectSettingsEditor::markEdited);
     for (auto spinBox : ui->centralwidget->findChildren<NoScrollSpinBox *>())
@@ -99,24 +108,33 @@ void ProjectSettingsEditor::initUi() {
     if (project) {
         ui->comboBox_DefaultPrimaryTileset->addItems(project->primaryTilesetLabels);
         ui->comboBox_DefaultSecondaryTileset->addItems(project->secondaryTilesetLabels);
-        ui->comboBox_IconSpecies->addItems(project->speciesToIconPath.keys());
+        ui->comboBox_IconSpecies->addItems(project->speciesNames);
         ui->comboBox_WarpBehaviors->addItems(project->metatileBehaviorMap.keys());
     }
     ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
 
+    ui->comboBox_EventsTabIcon->addItem("Automatic",         "");
+    ui->comboBox_EventsTabIcon->addItem("Brendan (Emerald)", ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeemerald, 0));
+    ui->comboBox_EventsTabIcon->addItem("Brendan (R/S)",     ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeruby,    0));
+    ui->comboBox_EventsTabIcon->addItem("May (Emerald)",     ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeemerald, 1));
+    ui->comboBox_EventsTabIcon->addItem("May (R/S)",         ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeruby,    1));
+    ui->comboBox_EventsTabIcon->addItem("Red",               ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 0));
+    ui->comboBox_EventsTabIcon->addItem("Green",             ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 1));
+    ui->comboBox_EventsTabIcon->addItem("Custom",            "Custom");
+    connect(ui->comboBox_EventsTabIcon, QOverload<int>::of(&NoScrollComboBox::currentIndexChanged), [this](int index) {
+        bool usingCustom = (index == ui->comboBox_EventsTabIcon->findText("Custom"));
+        ui->lineEdit_EventsTabIcon->setVisible(usingCustom);
+        ui->button_EventsTabIcon->setVisible(usingCustom);
+    });
+
     // Validate that the border metatiles text is a comma-separated list of metatile values
     static const QString regex_Hex = "(0[xX])?[A-Fa-f0-9]+";
     static const QRegularExpression expression_HexList(QString("^(%1,)*%1$").arg(regex_Hex)); // Comma-separated list of hex values
-    QRegularExpressionValidator *validator_HexList = new QRegularExpressionValidator(expression_HexList);
+    QRegularExpressionValidator *validator_HexList = new QRegularExpressionValidator(expression_HexList, this);
     ui->lineEdit_BorderMetatiles->setValidator(validator_HexList);
     this->setBorderMetatilesUi(projectConfig.useCustomBorderSize);
 
-    // Validate that the text added to the warp behavior list could be a valid define
-    // (we don't care whether it actually is a metatile behavior define)
-    static const QRegularExpression expression_Word("^[A-Za-z0-9_]*$");
-    QRegularExpressionValidator *validator_Word = new QRegularExpressionValidator(expression_Word);
-    ui->comboBox_WarpBehaviors->setValidator(validator_Word);
     ui->textEdit_WarpBehaviors->setTextColor(Qt::gray);
 
     // Set spin box limits
@@ -133,6 +151,16 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_MetatileIdMask->setMaximum(Block::maxValue);
     ui->spinBox_CollisionMask->setMaximum(Block::maxValue);
     ui->spinBox_ElevationMask->setMaximum(Block::maxValue);
+    ui->spinBox_UnusedTileNormal->setMaximum(Tile::maxValue);
+    ui->spinBox_UnusedTileCovered->setMaximum(Tile::maxValue);
+    ui->spinBox_UnusedTileSplit->setMaximum(Tile::maxValue);
+    ui->spinBox_MaxEvents->setMaximum(INT_MAX);
+    ui->spinBox_MapWidth->setMaximum(INT_MAX);
+    ui->spinBox_MapHeight->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_West->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_North->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_East->setMaximum(INT_MAX);
+    ui->spinBox_PlayerViewDistance_South->setMaximum(INT_MAX);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -164,7 +192,10 @@ void ProjectSettingsEditor::initUi() {
 bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString &identifier, const QString &filepath) {
     if (project && project->disabledSettingsNames.contains(identifier)) {
         widget->setEnabled(false);
-        widget->setToolTip(QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath));
+        QString toolTip = QString("This value has been set using '%1' in %2").arg(identifier).arg(filepath);
+        if (!widget->toolTip().isEmpty())
+            toolTip.prepend(QString("%1\n\n").arg(widget->toolTip()));
+        widget->setToolTip(Util::toHtmlParagraph(toolTip));
         return true;
     }
     return false;
@@ -274,11 +305,11 @@ void ProjectSettingsEditor::updatePokemonIconPath(const QString &newSpecies) {
     if (!project) return;
 
     // If user was editing a path for a valid species, record filepath text before we wipe it.
-    if (!this->prevIconSpecies.isEmpty() && this->project->speciesToIconPath.contains(this->prevIconSpecies))
+    if (!this->prevIconSpecies.isEmpty() && this->project->speciesNames.contains(this->prevIconSpecies))
         this->editedPokemonIconPaths[this->prevIconSpecies] = ui->lineEdit_PokemonIcon->text();
 
     QString editedPath = this->editedPokemonIconPaths.value(newSpecies);
-    QString defaultPath = this->project->speciesToIconPath.value(newSpecies);
+    QString defaultPath = this->project->getDefaultSpeciesIconPath(newSpecies);
 
     ui->lineEdit_PokemonIcon->setText(this->stripProjectDir(editedPath));
     ui->lineEdit_PokemonIcon->setPlaceholderText(this->stripProjectDir(defaultPath));
@@ -291,7 +322,7 @@ QStringList ProjectSettingsEditor::getWarpBehaviorsList() {
 
 void ProjectSettingsEditor::setWarpBehaviorsList(QStringList list) {
     list.removeDuplicates();
-    list.sort();
+    Util::numericalModeSort(list);
     ui->textEdit_WarpBehaviors->setText(list.join("\n"));
 }
 
@@ -384,16 +415,18 @@ QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath)
     QString path;
     if (defaultFilepath.endsWith("/")){
         // Default filepath is a folder, choose a new folder
-        path = FileDialog::getExistingDirectory(this, "Choose Project File Folder", startDir) + QDir::separator();
+        path = FileDialog::getExistingDirectory(this, "Choose Project File Folder", startDir) + "/";
     } else{
         // Default filepath is not a folder, choose a new file
         path = FileDialog::getOpenFileName(this, "Choose Project File", startDir);
     }
+    if (path.isEmpty())
+        return path;
 
     if (!path.startsWith(this->baseDir)){
         // Most of Porymap's file-parsing code for project files will assume that filepaths
         // are relative to the root project folder, so we enforce that here.
-        QMessageBox::warning(this, "Failed to set custom filepath",
+        QMessageBox::warning(this, QApplication::applicationName(),
                            QString("Custom filepaths must be inside the root project folder '%1'").arg(this->baseDir));
         return QString();
     }
@@ -439,13 +472,22 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_OutputCallback->setChecked(projectConfig.tilesetsHaveCallback);
     ui->checkBox_OutputIsCompressed->setChecked(projectConfig.tilesetsHaveIsCompressed);
     ui->checkBox_DisableWarning->setChecked(porymapConfig.warpBehaviorWarningDisabled);
+    ui->checkBox_PreserveMatchingOnlyData->setChecked(projectConfig.preserveMatchingOnlyData);
+
+    // Radio buttons
+    if (projectConfig.setTransparentPixelsBlack)
+        ui->radioButton_RenderBlack->setChecked(true);
+    else
+        ui->radioButton_RenderFirstPalColor->setChecked(true);
 
     // Set spin box values
     ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
     ui->spinBox_Collision->setValue(projectConfig.defaultCollision);
     ui->spinBox_FillMetatile->setValue(projectConfig.defaultMetatileId);
-    ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetHeight - 1);
-    ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetWidth - 1);
+    ui->spinBox_MapWidth->setValue(projectConfig.defaultMapSize.width());
+    ui->spinBox_MapHeight->setValue(projectConfig.defaultMapSize.height());
+    ui->spinBox_MaxElevation->setValue(projectConfig.collisionSheetSize.height() - 1);
+    ui->spinBox_MaxCollision->setValue(projectConfig.collisionSheetSize.width() - 1);
     ui->spinBox_BehaviorMask->setValue(projectConfig.metatileBehaviorMask & ui->spinBox_BehaviorMask->maximum());
     ui->spinBox_EncounterTypeMask->setValue(projectConfig.metatileEncounterTypeMask & ui->spinBox_EncounterTypeMask->maximum());
     ui->spinBox_LayerTypeMask->setValue(projectConfig.metatileLayerTypeMask & ui->spinBox_LayerTypeMask->maximum());
@@ -453,6 +495,14 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_MetatileIdMask->setValue(projectConfig.blockMetatileIdMask & ui->spinBox_MetatileIdMask->maximum());
     ui->spinBox_CollisionMask->setValue(projectConfig.blockCollisionMask & ui->spinBox_CollisionMask->maximum());
     ui->spinBox_ElevationMask->setValue(projectConfig.blockElevationMask & ui->spinBox_ElevationMask->maximum());
+    ui->spinBox_UnusedTileNormal->setValue(projectConfig.unusedTileNormal);
+    ui->spinBox_UnusedTileCovered->setValue(projectConfig.unusedTileCovered);
+    ui->spinBox_UnusedTileSplit->setValue(projectConfig.unusedTileSplit);
+    ui->spinBox_MaxEvents->setValue(projectConfig.maxEventsPerGroup);
+    ui->spinBox_PlayerViewDistance_West->setValue(projectConfig.playerViewDistance.left());
+    ui->spinBox_PlayerViewDistance_North->setValue(projectConfig.playerViewDistance.top());
+    ui->spinBox_PlayerViewDistance_East->setValue(projectConfig.playerViewDistance.right());
+    ui->spinBox_PlayerViewDistance_South->setValue(projectConfig.playerViewDistance.bottom());
 
     // Set (and sync) border metatile IDs
     this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
@@ -465,19 +515,34 @@ void ProjectSettingsEditor::refresh() {
     ui->lineEdit_WarpsIcon->setText(projectConfig.getEventIconPath(Event::Group::Warp));
     ui->lineEdit_TriggersIcon->setText(projectConfig.getEventIconPath(Event::Group::Coord));
     ui->lineEdit_BGsIcon->setText(projectConfig.getEventIconPath(Event::Group::Bg));
-    ui->lineEdit_HealspotsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
+    ui->lineEdit_HealLocationsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomIdentifier(lineEdit->objectName()));
+    for (const auto &path : projectConfig.globalConstantsFilepaths) {
+        addGlobalConstantsFilepath(path);
+    }
+    for (auto it = projectConfig.globalConstants.constBegin(); it != projectConfig.globalConstants.constEnd(); it++) {
+        addGlobalConstant(it.key(), it.value());
+    }
 
     // Set warp behaviors
     QStringList behaviorNames;
-    for (auto value : projectConfig.warpBehaviors) {
+    for (const auto &value : projectConfig.warpBehaviors) {
         if (project->metatileBehaviorMapInverse.contains(value))
             behaviorNames.append(project->metatileBehaviorMapInverse.value(value));
     }
     this->setWarpBehaviorsList(behaviorNames);
+
+    int index = ui->comboBox_EventsTabIcon->findData(projectConfig.eventsTabIconPath);
+    if (index < 0) {
+        index = ui->comboBox_EventsTabIcon->findData("Custom");
+        ui->lineEdit_EventsTabIcon->setText(projectConfig.eventsTabIconPath);
+    } else {
+        ui->lineEdit_EventsTabIcon->setText("");
+    }
+    ui->comboBox_EventsTabIcon->setCurrentIndex(index);
 
     this->refreshing = false; // Allow signals
 }
@@ -509,13 +574,15 @@ void ProjectSettingsEditor::save() {
     projectConfig.tilesetsHaveCallback = ui->checkBox_OutputCallback->isChecked();
     projectConfig.tilesetsHaveIsCompressed = ui->checkBox_OutputIsCompressed->isChecked();
     porymapConfig.warpBehaviorWarningDisabled = ui->checkBox_DisableWarning->isChecked();
+    projectConfig.setTransparentPixelsBlack = ui->radioButton_RenderBlack->isChecked();
+    projectConfig.preserveMatchingOnlyData = ui->checkBox_PreserveMatchingOnlyData->isChecked();
 
     // Save spin box settings
     projectConfig.defaultElevation = ui->spinBox_Elevation->value();
     projectConfig.defaultCollision = ui->spinBox_Collision->value();
     projectConfig.defaultMetatileId = ui->spinBox_FillMetatile->value();
-    projectConfig.collisionSheetHeight = ui->spinBox_MaxElevation->value() + 1;
-    projectConfig.collisionSheetWidth = ui->spinBox_MaxCollision->value() + 1;
+    projectConfig.defaultMapSize = QSize(ui->spinBox_MapWidth->value(), ui->spinBox_MapHeight->value());
+    projectConfig.collisionSheetSize = QSize(ui->spinBox_MaxCollision->value() + 1, ui->spinBox_MaxElevation->value() + 1);
     projectConfig.metatileBehaviorMask = ui->spinBox_BehaviorMask->value();
     projectConfig.metatileTerrainTypeMask = ui->spinBox_TerrainTypeMask->value();
     projectConfig.metatileEncounterTypeMask = ui->spinBox_EncounterTypeMask->value();
@@ -523,6 +590,14 @@ void ProjectSettingsEditor::save() {
     projectConfig.blockMetatileIdMask = ui->spinBox_MetatileIdMask->value();
     projectConfig.blockCollisionMask = ui->spinBox_CollisionMask->value();
     projectConfig.blockElevationMask = ui->spinBox_ElevationMask->value();
+    projectConfig.unusedTileNormal = ui->spinBox_UnusedTileNormal->value();
+    projectConfig.unusedTileCovered = ui->spinBox_UnusedTileCovered->value();
+    projectConfig.unusedTileSplit = ui->spinBox_UnusedTileSplit->value();
+    projectConfig.maxEventsPerGroup = ui->spinBox_MaxEvents->value();
+    projectConfig.playerViewDistance = QMargins(ui->spinBox_PlayerViewDistance_West->value(),
+                                                ui->spinBox_PlayerViewDistance_North->value(),
+                                                ui->spinBox_PlayerViewDistance_East->value(),
+                                                ui->spinBox_PlayerViewDistance_South->value());
 
     // Save line edit settings
     projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();
@@ -531,27 +606,41 @@ void ProjectSettingsEditor::save() {
     projectConfig.setEventIconPath(Event::Group::Warp, ui->lineEdit_WarpsIcon->text());
     projectConfig.setEventIconPath(Event::Group::Coord, ui->lineEdit_TriggersIcon->text());
     projectConfig.setEventIconPath(Event::Group::Bg, ui->lineEdit_BGsIcon->text());
-    projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealspotsIcon->text());
+    projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealLocationsIcon->text());
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
         projectConfig.setIdentifier(lineEdit->objectName(), lineEdit->text());
 
+    // Save global constants
+    projectConfig.globalConstantsFilepaths = getGlobalConstantsFilepaths();
+    projectConfig.globalConstants = getGlobalConstants();
+
     // Save warp behaviors
     projectConfig.warpBehaviors.clear();
-    QStringList behaviorNames = this->getWarpBehaviorsList();
+    const QStringList behaviorNames = this->getWarpBehaviorsList();
     for (auto name : behaviorNames)
-        projectConfig.warpBehaviors.insert(project->metatileBehaviorMap.value(name));
+        projectConfig.warpBehaviors.append(project->metatileBehaviorMap.value(name));
 
     // Save border metatile IDs
     projectConfig.newMapBorderMetatileIds = this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked());
 
     // Save pokemon icon paths
     const QString species = ui->comboBox_IconSpecies->currentText();
-    if (this->project->speciesToIconPath.contains(species))
+    if (this->project->speciesNames.contains(species))
         this->editedPokemonIconPaths.insert(species, ui->lineEdit_PokemonIcon->text());
     for (auto i = this->editedPokemonIconPaths.cbegin(), end = this->editedPokemonIconPaths.cend(); i != end; i++)
         projectConfig.setPokemonIconPath(i.key(), i.value());
+
+    QString eventsTabIconPath;
+    QVariant data = ui->comboBox_EventsTabIcon->currentData();
+    if (data.isValid() && data.canConvert<QString>()) {
+        eventsTabIconPath = data.toString();
+        if (eventsTabIconPath == "Custom") {
+            eventsTabIconPath = ui->lineEdit_EventsTabIcon->text();
+        }
+    }
+    projectConfig.eventsTabIconPath = eventsTabIconPath;
 
     projectConfig.save();
     userConfig.save();
@@ -581,6 +670,97 @@ void ProjectSettingsEditor::chooseFile(QLineEdit * filepathEdit, const QString &
     if (filepathEdit)
         filepathEdit->setText(this->stripProjectDir(filepath));
     this->hasUnsavedChanges = true;
+}
+
+void ProjectSettingsEditor::addNewGlobalConstantsFilepath() {
+    QString filepath = stripProjectDir(FileDialog::getOpenFileName(this, "Choose Global Constants File"));
+    if (filepath.isEmpty() || getGlobalConstantsFilepaths().contains(filepath))
+        return;
+
+    addGlobalConstantsFilepath(filepath);
+    this->hasUnsavedChanges = true;
+}
+
+void ProjectSettingsEditor::addGlobalConstantsFilepath(const QString &filepath) {
+    auto filepathLabel = new QLabel(filepath, this);
+    filepathLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
+    filepathLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    int newRow = ui->gridLayout_GlobalConstantsFiles->rowCount();
+    ui->gridLayout_GlobalConstantsFiles->addWidget(filepathLabel, newRow, 0);
+
+    auto deleteButton = new QToolButton();
+    deleteButton->setIcon(QIcon(":/icons/delete.ico"));
+    connect(deleteButton, &QAbstractButton::clicked, [this, filepathLabel, deleteButton](bool) {
+        ui->gridLayout_GlobalConstantsFiles->removeWidget(filepathLabel);
+        ui->gridLayout_GlobalConstantsFiles->removeWidget(deleteButton);
+        delete filepathLabel;
+        delete deleteButton;
+        this->hasUnsavedChanges = true;
+    });
+    ui->gridLayout_GlobalConstantsFiles->addWidget(deleteButton, newRow, 1);
+}
+
+QStringList ProjectSettingsEditor::getGlobalConstantsFilepaths() {
+    QStringList paths;
+    for (int row = 1; row < ui->gridLayout_GlobalConstantsFiles->rowCount(); row++) {
+        auto item = ui->gridLayout_GlobalConstantsFiles->itemAtPosition(row, 0);
+        if (!item) continue;
+        auto pathLabel = dynamic_cast<QLabel*>(item->widget());
+        if (!pathLabel) continue;
+        paths.append(pathLabel->text());
+    }
+    return paths;
+}
+
+void ProjectSettingsEditor::addNewGlobalConstant() {
+    auto dialog = new NewDefineDialog(this);
+    connect(dialog, &NewDefineDialog::createdDefine, [this](const QString &name, const QString &expression) {
+        if (!getGlobalConstants().contains(name)) {
+            addGlobalConstant(name, expression);
+            this->hasUnsavedChanges = true;
+        }
+    });
+    dialog->open();
+}
+
+void ProjectSettingsEditor::addGlobalConstant(const QString &name, const QString &expression) {
+    auto nameLabel = new QLabel(name, this);
+    nameLabel->setFrameStyle(QFrame::Panel | QFrame::Raised);
+    nameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    auto expressionLineEdit = new QLineEdit(expression, this);
+
+    int newRow = ui->gridLayout_GlobalConstants->rowCount();
+    ui->gridLayout_GlobalConstants->addWidget(nameLabel, newRow, 0);
+    ui->gridLayout_GlobalConstants->addWidget(expressionLineEdit, newRow, 1);
+
+    auto deleteButton = new QToolButton();
+    deleteButton->setIcon(QIcon(":/icons/delete.ico"));
+    connect(deleteButton, &QAbstractButton::clicked, [this, nameLabel, expressionLineEdit, deleteButton](bool) {
+        ui->gridLayout_GlobalConstants->removeWidget(nameLabel);
+        ui->gridLayout_GlobalConstants->removeWidget(expressionLineEdit);
+        ui->gridLayout_GlobalConstants->removeWidget(deleteButton);
+        delete nameLabel;
+        delete expressionLineEdit;
+        delete deleteButton;
+        this->hasUnsavedChanges = true;
+    });
+    ui->gridLayout_GlobalConstants->addWidget(deleteButton, newRow, 2);
+}
+
+QMap<QString,QString> ProjectSettingsEditor::getGlobalConstants() {
+    QMap<QString,QString> constants;
+    for (int row = 1; row < ui->gridLayout_GlobalConstants->rowCount(); row++) {
+        auto nameItem = ui->gridLayout_GlobalConstants->itemAtPosition(row, 0);
+        auto expressionItem = ui->gridLayout_GlobalConstants->itemAtPosition(row, 1);
+        if (!nameItem || !expressionItem) continue;
+        auto nameLabel = dynamic_cast<QLabel*>(nameItem->widget());
+        auto expressionLineEdit = dynamic_cast<QLineEdit*>(expressionItem->widget());
+        if (!nameLabel || !expressionLineEdit) continue;
+        constants.insert(nameLabel->text(), expressionLineEdit->text());
+    }
+    return constants;
 }
 
 // Display relative path if this file is in the project folder
@@ -656,6 +836,16 @@ void ProjectSettingsEditor::dialogButtonClicked(QAbstractButton *button) {
         // "Restore Defaults" button
         this->promptRestoreDefaults();
     }
+}
+
+void ProjectSettingsEditor::openFilesHelp() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/project-files.html#files");
+    QDesktopServices::openUrl(url);
+}
+
+void ProjectSettingsEditor::openIdentifiersHelp() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/project-files.html#identifiers");
+    QDesktopServices::openUrl(url);
 }
 
 // Close event triggered by a project reload. User doesn't need any prompts, just close the window.

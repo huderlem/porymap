@@ -13,6 +13,11 @@ export function onMapOpened(mapName) {
 
 }
 
+// Called when a layout is opened, either by selecting a new map/layout in the map list or swapping the layout for the current map.
+export function onLayoutOpened(layoutName) {
+
+}
+
 // Called when a block is changed on the map. For example, this is called when a user paints a new tile or changes the collision property of a block.
 export function onBlockChanged(x, y, prevBlock, newBlock) {
 
@@ -34,7 +39,7 @@ export function onBlockHoverCleared() {
 }
 
 // Called when the dimensions of the map are changed.
-export function onMapResized(oldWidth, oldHeight, newWidth, newHeight) {
+export function onMapResized(oldWidth, oldHeight, delta) {
 
 }
 

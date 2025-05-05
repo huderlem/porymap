@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/add.ico</file>
+        <file>icons/chart_bar.ico</file>
         <file>icons/collapse_all.ico</file>
         <file>icons/cursor.ico</file>
         <file>icons/delete.ico</file>
@@ -10,18 +11,25 @@
         <file>icons/file_put.ico</file>
         <file>icons/fill_color_cursor.ico</file>
         <file>icons/fill_color.ico</file>
+        <file>icons/folder_add.ico</file>
         <file>icons/folder_closed_map.ico</file>
         <file>icons/folder_closed.ico</file>
+        <file>icons/folder_eye_closed.ico</file>
+        <file>icons/folder_eye_open.ico</file>
         <file>icons/folder_map_edited.ico</file>
         <file>icons/folder_map_opened.ico</file>
         <file>icons/folder_map.ico</file>
         <file>icons/folder.ico</file>
+        <file>icons/lock_edit.ico</file>
+        <file>icons/unlock_edit.ico</file>
         <file>icons/help.ico</file>
         <file>icons/link_broken.ico</file>
         <file>icons/link.ico</file>
+        <file>icons/magnifier.ico</file>
         <file>icons/map_edited.ico</file>
         <file>icons/map_opened.ico</file>
         <file>icons/map.ico</file>
+        <file>icons/map_grayed.ico</file>
         <file>icons/move.ico</file>
         <file>icons/pencil_cursor.ico</file>
         <file>icons/pencil.ico</file>
@@ -37,36 +45,61 @@
         <file>icons/sort_map.ico</file>
         <file>icons/sort_number.ico</file>
         <file>icons/tall_grass.ico</file>
-        <file>icons/viewsprites.ico</file>
-        <file>icons/ui/dark_checkbox_checked_disabled.png</file>
-        <file>icons/ui/dark_checkbox_checked_disabled@2x.png</file>
-        <file>icons/ui/dark_checkbox_checked.png</file>
-        <file>icons/ui/dark_checkbox_checked@2x.png</file>
-        <file>icons/ui/dark_checkbox_unchecked_disabled.png</file>
-        <file>icons/ui/dark_checkbox_unchecked_disabled@2x.png</file>
-        <file>icons/ui/dark_checkbox_unchecked.png</file>
-        <file>icons/ui/dark_checkbox_unchecked@2x.png</file>
-        <file>icons/ui/dark_branch_closed.png</file>
-        <file>icons/ui/dark_branch_open.png</file>
-        <file>icons/ui/dark_branch_end.png</file>
-        <file>icons/ui/dark_branch_more.png</file>
-        <file>icons/ui/midnight_checkbox_checked_disabled.png</file>
-        <file>icons/ui/midnight_checkbox_checked_disabled@2x.png</file>
-        <file>icons/ui/midnight_checkbox_checked.png</file>
-        <file>icons/ui/midnight_checkbox_checked@2x.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked_disabled.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked_disabled@2x.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked.png</file>
-        <file>icons/ui/midnight_checkbox_unchecked@2x.png</file>
-        <file>icons/ui/midnight_branch_closed.png</file>
-        <file>icons/ui/midnight_branch_open.png</file>
-        <file>icons/ui/midnight_branch_end.png</file>
-        <file>icons/ui/midnight_branch_more.png</file>
+        <file>icons/minimap.ico</file>
+        <file>icons/application_form_edit.ico</file>
+        <file>icons/connections.ico</file>
+        <file>icons/player/brendan_em.ico</file>
+        <file>icons/player/brendan_rs.ico</file>
+        <file>icons/player/green.ico</file>
+        <file>icons/player/may_em.ico</file>
+        <file>icons/player/may_rs.ico</file>
+        <file>icons/player/red.ico</file>
+        <file>icons/ui/dark/checkbox_checked_disabled.png</file>
+        <file>icons/ui/dark/checkbox_checked_disabled@2x.png</file>
+        <file>icons/ui/dark/checkbox_checked.png</file>
+        <file>icons/ui/dark/checkbox_checked@2x.png</file>
+        <file>icons/ui/dark/checkbox_unchecked_disabled.png</file>
+        <file>icons/ui/dark/checkbox_unchecked_disabled@2x.png</file>
+        <file>icons/ui/dark/checkbox_unchecked.png</file>
+        <file>icons/ui/dark/checkbox_unchecked@2x.png</file>
+        <file>icons/ui/dark/branch_closed.png</file>
+        <file>icons/ui/dark/branch_open.png</file>
+        <file>icons/ui/dark/branch_end.png</file>
+        <file>icons/ui/dark/branch_more.png</file>
+        <file>icons/ui/dark/radio_checked_disabled.png</file>
+        <file>icons/ui/dark/radio_checked_disabled@2x.png</file>
+        <file>icons/ui/dark/radio_checked.png</file>
+        <file>icons/ui/dark/radio_checked@2x.png</file>
+        <file>icons/ui/dark/radio_unchecked_disabled.png</file>
+        <file>icons/ui/dark/radio_unchecked_disabled@2x.png</file>
+        <file>icons/ui/dark/radio_unchecked.png</file>
+        <file>icons/ui/dark/radio_unchecked@2x.png</file>
+        <file>icons/ui/midnight/checkbox_checked_disabled.png</file>
+        <file>icons/ui/midnight/checkbox_checked_disabled@2x.png</file>
+        <file>icons/ui/midnight/checkbox_checked.png</file>
+        <file>icons/ui/midnight/checkbox_checked@2x.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked_disabled.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked_disabled@2x.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked.png</file>
+        <file>icons/ui/midnight/checkbox_unchecked@2x.png</file>
+        <file>icons/ui/midnight/branch_closed.png</file>
+        <file>icons/ui/midnight/branch_open.png</file>
+        <file>icons/ui/midnight/branch_end.png</file>
+        <file>icons/ui/midnight/branch_more.png</file>
+        <file>icons/ui/midnight/radio_checked_disabled.png</file>
+        <file>icons/ui/midnight/radio_checked_disabled@2x.png</file>
+        <file>icons/ui/midnight/radio_checked.png</file>
+        <file>icons/ui/midnight/radio_checked@2x.png</file>
+        <file>icons/ui/midnight/radio_unchecked_disabled.png</file>
+        <file>icons/ui/midnight/radio_unchecked_disabled@2x.png</file>
+        <file>icons/ui/midnight/radio_unchecked.png</file>
+        <file>icons/ui/midnight/radio_unchecked@2x.png</file>
         <file>images/blank_tileset.png</file>
         <file>images/collisions.png</file>
         <file>images/collisions_unknown.png</file>
         <file>images/Entities_16x16.png</file>
         <file>images/pokemon_icon_placeholder.png</file>
+        <file>images/porysplash.gif</file>
         <file>icons/clipboard.ico</file>
         <file>icons/map_go.ico</file>
     </qresource>

@@ -9,12 +9,13 @@ QPoint MetatileSelector::getSelectionDimensions() {
     return SelectablePixmapItem::getSelectionDimensions();
 }
 
-void MetatileSelector::draw() {
-    if (!this->primaryTileset || !this->secondaryTileset) {
-        this->setPixmap(QPixmap());
-    }
+int MetatileSelector::numPrimaryMetatilesRounded() const {
+    // We round up the number of primary metatiles to keep the tilesets on separate rows.
+    return ceil((double)this->primaryTileset->numMetatiles() / this->numMetatilesWide) * this->numMetatilesWide;
+}
 
-    int primaryLength = this->primaryTileset->numMetatiles();
+void MetatileSelector::updateBasePixmap() {
+    int primaryLength = this->numPrimaryMetatilesRounded();
     int length_ = primaryLength + this->secondaryTileset->numMetatiles();
     int height_ = length_ / this->numMetatilesWide;
     if (length_ % this->numMetatilesWide != 0) {
@@ -28,18 +29,26 @@ void MetatileSelector::draw() {
         if (i >= primaryLength) {
             tile += Project::getNumMetatilesPrimary() - primaryLength;
         }
-        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset, map->metatileLayerOrder, map->metatileLayerOpacity);
+        QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset, layout->metatileLayerOrder, layout->metatileLayerOpacity);
         int map_y = i / this->numMetatilesWide;
         int map_x = i % this->numMetatilesWide;
         QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
         painter.drawImage(metatile_origin, metatile_image);
     }
-
     painter.end();
-    this->setPixmap(QPixmap::fromImage(image));
+    this->basePixmap = QPixmap::fromImage(image);
+}
 
+void MetatileSelector::draw() {
+    if (this->basePixmap.isNull())
+        updateBasePixmap();
+    setPixmap(this->basePixmap);
+    drawSelection();
+}
+
+void MetatileSelector::drawSelection() {
     if (!this->prefabSelection && (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1))) {
-        this->drawSelection();
+        SelectablePixmapItem::drawSelection();
     }
 }
 
@@ -71,7 +80,9 @@ void MetatileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTi
         this->updateExternalSelectedMetatiles();
     else
         this->updateSelectedMetatiles();
-    this->draw();
+
+    updateBasePixmap();
+    draw();
 }
 
 MetatileSelection MetatileSelector::getMetatileSelection() {
@@ -149,7 +160,7 @@ void MetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void MetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = this->getCellPos(event->pos());
-    if (!positionIsValid(pos) || this->cellPos == pos)
+    if (this->cellPos == pos)
         return;
 
     this->cellPos = pos;
@@ -199,10 +210,11 @@ void MetatileSelector::updateExternalSelectedMetatiles() {
 
 uint16_t MetatileSelector::getMetatileId(int x, int y) const {
     int index = y * this->numMetatilesWide + x;
-    if (index < this->primaryTileset->numMetatiles()) {
+    int numPrimary = this->numPrimaryMetatilesRounded();
+    if (index < numPrimary) {
         return static_cast<uint16_t>(index);
     } else {
-        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - this->primaryTileset->numMetatiles());
+        return static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - numPrimary);
     }
 }
 
@@ -215,7 +227,7 @@ QPoint MetatileSelector::getMetatileIdCoords(uint16_t metatileId) {
 
     int index = metatileId < Project::getNumMetatilesPrimary()
                 ? metatileId
-                : metatileId - Project::getNumMetatilesPrimary() + this->primaryTileset->numMetatiles();
+                : metatileId - Project::getNumMetatilesPrimary() + this->numPrimaryMetatilesRounded();
     return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
 }
 
@@ -226,6 +238,6 @@ QPoint MetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metatileId) {
     return pos;
 }
 
-void MetatileSelector::setMap(Map *map) {
-    this->map = map;
+void MetatileSelector::setLayout(Layout *layout) {
+    this->layout = layout;
 }

@@ -11,7 +11,7 @@
 CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::CustomScriptsEditor),
-    baseDir(userConfig.projectDir + QDir::separator())
+    baseDir(userConfig.projectDir + "/")
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -23,6 +23,7 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     for (int i = 0; i < paths.length(); i++)
         this->displayScript(paths.at(i), enabled.at(i));
 
+    connect(ui->button_Help, &QAbstractButton::clicked, this, &CustomScriptsEditor::openManual);
     connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);
     connect(ui->button_LoadScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::loadScript);
     connect(ui->button_RefreshScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::userRefreshScripts);
@@ -104,7 +105,7 @@ void CustomScriptsEditor::displayScript(const QString &filepath, bool enabled) {
     connect(widget->ui->b_Choose, &QAbstractButton::clicked, [this, item](bool) { this->replaceScript(item); });
     connect(widget->ui->b_Edit,   &QAbstractButton::clicked, [this, item](bool) { this->openScript(item); });
     connect(widget->ui->b_Delete, &QAbstractButton::clicked, [this, item](bool) { this->removeScript(item); });
-    connect(widget->ui->checkBox_Enable, &QCheckBox::stateChanged, this, &CustomScriptsEditor::markEdited);
+    connect(widget->ui->checkBox_Enable, &QCheckBox::toggled, this, &CustomScriptsEditor::markEdited);
     connect(widget->ui->lineEdit_filepath, &QLineEdit::textEdited, this, &CustomScriptsEditor::markEdited);
 
     // Per the Qt manual, for performance reasons QListWidget::setItemWidget shouldn't be used with non-static items.
@@ -184,7 +185,7 @@ void CustomScriptsEditor::displayNewScript(QString filepath) {
     // Verify new script path is not already in list
     for (int i = 0; i < ui->list->count(); i++) {
         if (filepath == this->getScriptFilepath(ui->list->item(i), false)) {
-            QMessageBox::information(this, "", QString("The script '%1' is already loaded").arg(filepath));
+            QMessageBox::information(this, QApplication::applicationName(), QString("The script '%1' is already loaded").arg(filepath));
             return;
         }
     }
@@ -218,7 +219,7 @@ void CustomScriptsEditor::openScript(QListWidgetItem * item) {
     const QString path = this->getScriptFilepath(item);
     QFileInfo fileInfo(path);
     if (!fileInfo.exists() || !fileInfo.isFile()){
-        QMessageBox::warning(this, "", QString("Failed to open script '%1'").arg(path));
+        QMessageBox::warning(this, QApplication::applicationName(), QString("Failed to open script '%1'").arg(path));
         return;
     }
     Editor::openInTextEditor(path);
@@ -227,6 +228,11 @@ void CustomScriptsEditor::openScript(QListWidgetItem * item) {
 void CustomScriptsEditor::openSelectedScripts() {
     for (auto item : ui->list->selectedItems())
         this->openScript(item);
+}
+
+void CustomScriptsEditor::openManual() {
+    static const QUrl url("https://huderlem.github.io/porymap/manual/scripting-capabilities.html");
+    QDesktopServices::openUrl(url);
 }
 
 // When the user refreshes the scripts we show a little tooltip as feedback.

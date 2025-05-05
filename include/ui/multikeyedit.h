@@ -37,15 +37,14 @@ signals:
     void customContextMenuRequested(const QPoint &pos);
 
 private:
-    QVector<QKeySequenceEdit *> keySequenceEdit_vec;
-    QList<QKeySequence> keySequence_list;   // Used to track changes
+    QVector<QKeySequenceEdit *> keySequenceEdits;
 
     void addNewKeySequenceEdit();
     void alignKeySequencesLeft();
     void setFocusToLastNonEmptyKeySequenceEdit();
 
 private slots:
-    void onEditingFinished();
+    void onEditingFinished(QKeySequenceEdit *sender);
     void showDefaultContextMenu(QLineEdit *lineEdit, const QPoint &pos);
 };
 

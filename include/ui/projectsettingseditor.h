@@ -36,7 +36,7 @@ private:
     bool projectNeedsReload = false;
     bool refreshing = false;
     const QString baseDir;
-    QHash<QString, QString> editedPokemonIconPaths;
+    QMap<QString, QString> editedPokemonIconPaths;
     QString prevIconSpecies;
 
     void initUi();
@@ -65,6 +65,14 @@ private:
     void updateMaskOverlapWarning(QLabel * warning, QList<UIntSpinBox*> masks);
     QStringList getWarpBehaviorsList();
     void setWarpBehaviorsList(QStringList list);
+    void openFilesHelp();
+    void openIdentifiersHelp();
+    void addNewGlobalConstantsFilepath();
+    void addGlobalConstantsFilepath(const QString &filepath);
+    QStringList getGlobalConstantsFilepaths();
+    void addNewGlobalConstant();
+    void addGlobalConstant(const QString &name, const QString &expression);
+    QMap<QString,QString> getGlobalConstants();
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

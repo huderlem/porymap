@@ -2,26 +2,19 @@
 #include "mapview.h"
 #include "editor.h"
 
-void GraphicsView::mousePressEvent(QMouseEvent *event) {
-    QGraphicsView::mousePressEvent(event);
-    if (editor) {
-        editor->objectsView_onMousePress(event);
-    }
-}
-
-void GraphicsView::mouseMoveEvent(QMouseEvent *event) {
-    QGraphicsView::mouseMoveEvent(event);
-}
-
-void GraphicsView::mouseReleaseEvent(QMouseEvent *event) {
-    QGraphicsView::mouseReleaseEvent(event);
-}
-
-void GraphicsView::moveEvent(QMoveEvent *event) {
+void MapView::moveEvent(QMoveEvent *event) {
     QGraphicsView::moveEvent(event);
     QLabel *label_MapRulerStatus = findChild<QLabel *>("label_MapRulerStatus", Qt::FindDirectChildrenOnly);
     if (label_MapRulerStatus && label_MapRulerStatus->isVisible())
         label_MapRulerStatus->move(mapToGlobal(QPoint(6, 6)));
+}
+
+void MapView::keyPressEvent(QKeyEvent *event) {
+    if (editor && (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)) {
+        editor->deleteSelectedEvents();
+    } else {
+        QGraphicsView::keyPressEvent(event);
+    }
 }
 
 void MapView::drawForeground(QPainter *painter, const QRectF&) {
@@ -38,9 +31,9 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
     // Draw map grid
     if (editor->mapGrid && editor->mapGrid->isVisible()) {
         painter->save();
-        if (editor->map) {
+        if (editor->layout) {
             // We're clipping here to hide parts of the grid that are outside the map.
-            const QRectF mapRect(-0.5, -0.5, editor->map->getWidth() * 16 + 1.5, editor->map->getHeight() * 16 + 1.5);
+            const QRectF mapRect(-0.5, -0.5, editor->layout->getWidth() * 16 + 1.5, editor->layout->getHeight() * 16 + 1.5);
             painter->setClipping(true);
             painter->setClipRect(mapRect);
         }
@@ -70,4 +63,13 @@ Overlay * MapView::getOverlay(int layer) {
         this->overlayMap.insert(layer, overlay);
     }
     return overlay;
+}
+
+void ConnectionsView::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
+        emit pressedDelete();
+        event->accept();
+    } else {
+        QGraphicsView::keyPressEvent(event);
+    }
 }

@@ -1,5 +1,6 @@
 #include "log.h"
 #include "parseutil.h"
+#include "loadingscreen.h"
 
 #include <QRegularExpression>
 #include <QJsonDocument>
@@ -15,28 +16,14 @@ const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|l
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
 
-static const QMap<QString, int> globalDefineValues = {
-    {"FALSE", 0},
-    {"TRUE", 1},
-    {"SCHAR_MIN", SCHAR_MIN},
-    {"SCHAR_MAX", SCHAR_MAX},
-    {"CHAR_MIN", CHAR_MIN},
-    {"CHAR_MAX", CHAR_MAX},
-    {"UCHAR_MAX", UCHAR_MAX},
-    {"SHRT_MIN", SHRT_MIN},
-    {"SHRT_MAX", SHRT_MAX},
-    {"USHRT_MAX", USHRT_MAX},
-    {"INT_MIN", INT_MIN},
-    {"INT_MAX", INT_MAX},
-    {"UINT_MAX", UINT_MAX},
-};
+ParseUtil::ParseUtil() {
+    resetCDefines();
+}
 
-using OrderedJson = poryjson::Json;
-
-ParseUtil::ParseUtil() { }
-
-void ParseUtil::set_root(const QString &dir) {
-    this->root = dir;
+QString ParseUtil::pathWithRoot(const QString &path) {
+    if (this->root.isEmpty()) return path;
+    if (path.startsWith(this->root)) return path;
+    return QString("%1/%2").arg(this->root).arg(path);
 }
 
 void ParseUtil::recordError(const QString &message) {
@@ -69,10 +56,20 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
     return QString("%1:%2:%3: %4").arg(this->file).arg(lineNum).arg(colNum).arg(message);
 }
 
-QString ParseUtil::readTextFile(const QString &path) {
+void ParseUtil::updateSplashScreen(QString path) {
+    if (!this->updatesSplashScreen)
+        return;
+
+    if (path.startsWith(this->root)) {
+        path.remove(0, this->root.length());
+    }
+    porysplash->showLoadingMessage(path);
+}
+
+QString ParseUtil::readTextFile(const QString &path, QString *error) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1': ").arg(path) + file.errorString());
+        if (error) *error = file.errorString();
         return QString();
     }
     QTextStream in(&file);
@@ -87,6 +84,27 @@ QString ParseUtil::readTextFile(const QString &path) {
     return text;
 }
 
+// Load the specified text file, either from the cache or by reading the file.
+// Note that this doesn't insert any parsed files into the file cache, and we don't
+// want it to (we read a lot of files only once, storing them all is a waste of memory).
+QString ParseUtil::loadTextFile(const QString &path, QString *error) {
+    updateSplashScreen(path);
+
+    auto it = this->fileCache.constFind(path);
+    if (it != this->fileCache.constEnd()) {
+        // Load text file from cache
+        return it.value();
+    }
+    return readTextFile(pathWithRoot(path), error);
+}
+
+bool ParseUtil::cacheFile(const QString &path, QString *error) {
+    updateSplashScreen(path);
+
+    this->fileCache.insert(path, readTextFile(pathWithRoot(path), error));
+    return !error || error->isEmpty();
+}
+
 int ParseUtil::textFileLineCount(const QString &path) {
     const QString text = readTextFile(path);
     return text.split('\n').count() + 1;
@@ -95,7 +113,7 @@ int ParseUtil::textFileLineCount(const QString &path) {
 QList<QStringList> ParseUtil::parseAsm(const QString &filename) {
     QList<QStringList> parsed;
 
-    this->text = readTextFile(this->root + '/' + filename);
+    this->text = loadTextFile(filename);
     const QStringList lines = removeLineComments(this->text, "@").split('\n');
     for (const auto &line : lines) {
         const QString trimmedLine = line.trimmed();
@@ -122,28 +140,48 @@ QList<QStringList> ParseUtil::parseAsm(const QString &filename) {
     return parsed;
 }
 
-// 'identifier' is the name of the #define to evaluate, e.g. 'FOO' in '#define FOO (BAR+1)'
-// 'expression' is the text of the #define to evaluate, e.g. '(BAR+1)' in '#define FOO (BAR+1)'
-// 'knownValues' is a pointer to a map of identifier->values for defines that have already been evaluated.
-// 'unevaluatedExpressions' is a pointer to a map of identifier->expressions for defines that have not been evaluated. If this map contains any
-//   identifiers found in 'expression' then this function will be called recursively to evaluate that define first.
-// This function will maintain the passed maps appropriately as new #defines are evaluated.
-int ParseUtil::evaluateDefine(const QString &identifier, const QString &expression, QMap<QString, int> *knownValues, QMap<QString, QString> *unevaluatedExpressions) {
-    if (unevaluatedExpressions->contains(identifier))
-        unevaluatedExpressions->remove(identifier);
+// Try to evaluate the given #define/enum 'identifier' name using the information the parser has.
+// If it recognizes the name as an identifier it's aware of (either from having parsed it or having been told about
+// it using 'loadGlobalCDefines') it will evaluate it if necessary then return the resulting value and set 'ok' to true.
+// Evaluated identifiers are cached, and will only be re-evaluated if the parser encounters a new expression for that identifier.
+// If it doesn't recognize it, 'ok' will be set to false and it will return 0.
+int ParseUtil::evaluateDefine(const QString &identifier, bool *ok) {
+    if (ok) *ok = true;
 
-    if (knownValues->contains(identifier))
-        return knownValues->value(identifier);
+    // Global defines take precedence
+    if (this->globalDefineExpressions.contains(identifier)) {
+        int value = evaluateExpression(this->globalDefineExpressions.take(identifier));
+        this->globalDefineValues.insert(identifier, value);
+        return value;
+    }
+    auto it = this->globalDefineValues.constFind(identifier);
+    if (it != this->globalDefineValues.constEnd()) {
+        return it.value();
+    }
 
-    QList<Token> tokens = tokenizeExpression(expression, knownValues, unevaluatedExpressions);
-    QList<Token> postfixExpression = generatePostfix(tokens);
-    int value = evaluatePostfix(postfixExpression);
+    // Check known expressions before checking known values.
+    // If an identifier is redefined then we'll receive a new expression for it, and we want to make sure we re-evaluate it.
+    if (this->knownDefineExpressions.contains(identifier)) {
+        int value = evaluateExpression(this->knownDefineExpressions.take(identifier));
+        this->knownDefineValues.insert(identifier, value);
+        return value;
+    }
+    it = this->knownDefineValues.constFind(identifier);
+    if (it != this->knownDefineValues.constEnd()) {
+        return it.value();
+    }
 
-    knownValues->insert(identifier, value);
-    return value;
+    if (ok) *ok = false;
+    return 0;
 }
 
-QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int> *knownValues, QMap<QString, QString> *unevaluatedExpressions) {
+int ParseUtil::evaluateExpression(const QString &expression) {
+    QList<Token> tokens = tokenizeExpression(expression);
+    QList<Token> postfixExpression = generatePostfix(tokens);
+    return evaluatePostfix(postfixExpression);
+}
+
+QList<Token> ParseUtil::tokenizeExpression(QString expression) {
     QList<Token> tokens;
 
     static const QStringList tokenTypes = {"hex", "decimal", "identifier", "operator", "leftparen", "rightparen"};
@@ -160,14 +198,14 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression, QMap<QString, int
             QString token = match.captured(tokenType);
             if (!token.isEmpty()) {
                 if (tokenType == "identifier") {
-                    if (unevaluatedExpressions->contains(token)) {
-                        // This expression depends on a define we know of but haven't evaluated. Evaluate it now
-                        evaluateDefine(token, unevaluatedExpressions->value(token), knownValues, unevaluatedExpressions);
-                    }
-                    if (knownValues->contains(token)) {
+                    bool ok;
+                    int tokenValue = evaluateDefine(token, &ok);
+                    if (ok) {
                         // Any errors encountered when this identifier was evaluated should be recorded for this expression as well.
                         recordErrors(this->errorMap.value(token));
-                        QString actualToken = QString("%1").arg(knownValues->value(token));
+
+                        // Replace token with evaluated expression
+                        QString actualToken = QString::number(tokenValue);
                         expression = expression.replace(0, token.length(), actualToken);
                         token = actualToken;
                         tokenType = "decimal";
@@ -297,7 +335,7 @@ QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
         return path;
     }
 
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     QRegularExpression re(QString(
         "\\b%1\\b"
@@ -318,7 +356,7 @@ QMap<QString, QString> ParseUtil::readCIncbinMulti(const QString &filepath) {
     QMap<QString, QString> incbinMap;
 
     this->file = filepath;
-    this->text = readTextFile(this->root + "/" + filepath);
+    this->text = loadTextFile(filepath);
 
     static const QRegularExpression regex("(?<label>[A-Za-z0-9_]+)\\s*\\[?\\s*\\]?\\s*=\\s*INCBIN_[US][0-9][0-9]?\\(\\s*\\\"(?<path>[^\\\\\"]*)\\\"\\s*\\)");
 
@@ -340,7 +378,7 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
         return paths;
     }
 
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     bool found = false;
     QString arrayText;
@@ -370,11 +408,11 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     return paths;
 }
 
-bool ParseUtil::defineNameMatchesFilter(const QString &name, const QStringList &filterList) const {
+bool ParseUtil::defineNameMatchesFilter(const QString &name, const QSet<QString> &filterList) const {
     return filterList.contains(name);
 }
 
-bool ParseUtil::defineNameMatchesFilter(const QString &name, const QList<QRegularExpression> &filterList) const {
+bool ParseUtil::defineNameMatchesFilter(const QString &name, const QSet<QRegularExpression> &filterList) const {
     for (auto filter : filterList) {
         if (filter.match(name).hasMatch())
             return true;
@@ -382,7 +420,7 @@ bool ParseUtil::defineNameMatchesFilter(const QString &name, const QList<QRegula
     return false;
 }
 
-ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const QStringList &filterList, bool useRegex) {
+ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error) {
     ParsedDefines result;
     this->file = filename;
 
@@ -390,13 +428,9 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
         return result;
     }
 
-    QString filepath = this->root + "/" + this->file;
-    this->text = readTextFile(filepath);
-
-    if (this->text.isNull()) {
-        logError(QString("Failed to read C defines file: '%1'").arg(filepath));
+    this->text = loadTextFile(filename, error);
+    if (this->text.isNull())
         return result;
-    }
 
     static const QRegularExpression re_extraChars("(//.*)|(\\/+\\*+[^*]*\\*+\\/+)");
     this->text.replace(re_extraChars, "");
@@ -407,10 +441,10 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
         return result;
 
     // If necessary, construct regular expressions from filter list
-    QList<QRegularExpression> filterList_Regex;
+    QSet<QRegularExpression> filterList_Regex;
     if (useRegex) {
         for (auto filter : filterList) {
-            filterList_Regex.append(QRegularExpression(filter));
+            filterList_Regex.insert(QRegularExpression(filter));
         }
     }
 
@@ -464,23 +498,27 @@ ParseUtil::ParsedDefines ParseUtil::readCDefines(const QString &filename, const 
                 result.filteredNames.append(name);
         }
     }
+    // QHash::insert(const QHash<K, V> &other) was introduced in 5.15.
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    this->knownDefineExpressions.insert(result.expressions);
+#else
+    for (auto it = result.expressions.constBegin(); it != result.expressions.constEnd(); it++) {
+        this->knownDefineExpressions.insert(it.key(), it.value());
+    }
+#endif
     return result;
 }
 
 // Read all the define names and their expressions in the specified file, then evaluate the ones matching the search text (and any they depend on).
-QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QStringList &filterList, bool useRegex) {
-    ParsedDefines defines = readCDefines(filename, filterList, useRegex);
+QHash<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QSet<QString> &filterList, bool useRegex, QString *error) {
+    ParsedDefines defines = readCDefines(filename, filterList, useRegex, error);
 
     // Evaluate defines
-    QMap<QString, int> filteredValues;
-    QMap<QString, int> allValues = globalDefineValues;
+    QHash<QString, int> filteredValues;
     this->errorMap.clear();
     while (!defines.filteredNames.isEmpty()) {
-        const QString name = defines.filteredNames.takeFirst();
-        const QString expression = defines.expressions.take(name);
-        if (expression == " ") continue;
-        this->curDefine = name;
-        filteredValues.insert(name, evaluateDefine(name, expression, &allValues, &defines.expressions));
+        this->curDefine = defines.filteredNames.takeFirst();
+        filteredValues.insert(this->curDefine, evaluateDefine(this->curDefine));
         logRecordedErrors(); // Only log errors for defines that Porymap is looking for
     }
 
@@ -488,20 +526,64 @@ QMap<QString, int> ParseUtil::evaluateCDefines(const QString &filename, const QS
 }
 
 // Find and evaluate a specific set of defines with known names.
-QMap<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QStringList &names) {
-    return evaluateCDefines(filename, names, false);
+QHash<QString, int> ParseUtil::readCDefinesByName(const QString &filename, const QSet<QString> &names, QString *error) {
+    return evaluateCDefines(filename, names, false, error);
 }
 
 // Find and evaluate an unknown list of defines with a known name pattern.
-QMap<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QStringList &regexList) {
-    return evaluateCDefines(filename, regexList, true);
+QHash<QString, int> ParseUtil::readCDefinesByRegex(const QString &filename, const QSet<QString> &regexList, QString *error) {
+    return evaluateCDefines(filename, regexList, true, error);
 }
 
 // Find an unknown list of defines with a known name pattern.
 // Similar to readCDefinesByRegex, but for cases where we only need to show a list of define names.
 // We can skip evaluating any expressions (and by extension skip reporting any errors from this process).
-QStringList ParseUtil::readCDefineNames(const QString &filename, const QStringList &regexList) {
-    return readCDefines(filename, regexList, true).filteredNames;
+QStringList ParseUtil::readCDefineNames(const QString &filename, const QSet<QString> &regexList, QString *error) {
+    return readCDefines(filename, regexList, true, error).filteredNames;
+}
+
+// Find any defines in the specified file and save their expressions.
+// If any of these defines are encountered later by other define parsing functions then they'll be recognized and evaluated.
+void ParseUtil::loadGlobalCDefinesFromFile(const QString &filename, QString *error) {
+    loadGlobalCDefines(readCDefines(filename, {}, false, error).expressions);
+}
+
+void ParseUtil::loadGlobalCDefines(const QHash<QString,QString> &defines) {
+    // QHash::insert(const QHash<K, V> &other) was introduced in 5.15.
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    this->globalDefineExpressions.insert(defines);
+#else
+    for (auto it = defines.constBegin(); it != defines.constEnd(); it++) {
+        this->globalDefineExpressions.insert(it.key(), it.value());
+    }
+#endif
+}
+
+void ParseUtil::loadGlobalCDefines(const QMap<QString,QString> &defines) {
+    for (auto it = defines.constBegin(); it != defines.constEnd(); it++)
+        this->globalDefineExpressions.insert(it.key(), it.value());
+}
+
+void ParseUtil::resetCDefines() {
+    static const QHash<QString, int> defaultDefineValues = {
+        {"FALSE", 0},
+        {"TRUE", 1},
+        {"SCHAR_MIN", SCHAR_MIN},
+        {"SCHAR_MAX", SCHAR_MAX},
+        {"CHAR_MIN", CHAR_MIN},
+        {"CHAR_MAX", CHAR_MAX},
+        {"UCHAR_MAX", UCHAR_MAX},
+        {"SHRT_MIN", SHRT_MIN},
+        {"SHRT_MAX", SHRT_MAX},
+        {"USHRT_MAX", USHRT_MAX},
+        {"INT_MIN", INT_MIN},
+        {"INT_MAX", INT_MAX},
+        {"UINT_MAX", UINT_MAX},
+    };
+    this->globalDefineValues = defaultDefineValues;
+    this->globalDefineExpressions.clear();
+    this->knownDefineValues.clear();
+    this->knownDefineExpressions.clear();
 }
 
 QStringList ParseUtil::readCArray(const QString &filename, const QString &label) {
@@ -512,7 +594,7 @@ QStringList ParseUtil::readCArray(const QString &filename, const QString &label)
     }
 
     this->file = filename;
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
     QRegularExpressionMatch match = re.match(this->text);
@@ -535,7 +617,7 @@ QMap<QString, QStringList> ParseUtil::readCArrayMulti(const QString &filename) {
     QMap<QString, QStringList> map;
 
     this->file = filename;
-    this->text = readTextFile(this->root + "/" + filename);
+    this->text = loadTextFile(filename);
 
     static const QRegularExpression regex(R"((?<label>\b[A-Za-z0-9_]+\b)\s*(\[[^\]]*\])?\s*=\s*\{(?<body>[^\}]*)\})");
 
@@ -560,8 +642,8 @@ QMap<QString, QStringList> ParseUtil::readCArrayMulti(const QString &filename) {
     return map;
 }
 
-QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, const QString &label) {
-    this->text = readTextFile(this->root + "/" + filename);
+QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, const QString &label, QString *error) {
+    this->text = loadTextFile(filename, error);
     QMap<QString, QString> map;
 
     QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
@@ -580,7 +662,7 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     return map;
 }
 
-int ParseUtil::gameStringToInt(QString gameString, bool * ok) {
+int ParseUtil::gameStringToInt(const QString &gameString, bool * ok) {
     if (ok) *ok = true;
     if (QString::compare(gameString, "TRUE", Qt::CaseInsensitive) == 0)
         return 1;
@@ -589,17 +671,17 @@ int ParseUtil::gameStringToInt(QString gameString, bool * ok) {
     return gameString.toInt(ok, 0);
 }
 
-bool ParseUtil::gameStringToBool(QString gameString, bool * ok) {
+bool ParseUtil::gameStringToBool(const QString &gameString, bool * ok) {
     return gameStringToInt(gameString, ok) != 0;
 }
 
-QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> memberMap) {
-    QString filePath = this->root + "/" + filename;
+OrderedMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &filename, const QString &label, const QHash<int, QString> &memberMap) {
+    QString filePath = pathWithRoot(filename);
     auto cParser = fex::Parser();
-    auto tokens = fex::Lexer().LexFile(filePath.toStdString());
-    auto structs = cParser.ParseTopLevelObjects(tokens);
-    QMap<QString, QHash<QString, QString>> structMaps;
-    for (auto it = structs.begin(); it != structs.end(); it++) {
+    auto tokens = fex::Lexer().LexFile(filePath);
+    auto topLevelObjects = cParser.ParseTopLevelObjects(tokens);
+    OrderedMap<QString, QHash<QString, QString>> structs;
+    for (auto it = topLevelObjects.begin(); it != topLevelObjects.end(); it++) {
         QString structLabel = QString::fromStdString(it->first);
         if (structLabel.isEmpty()) continue;
         if (!label.isEmpty() && label != structLabel) continue; // Speed up parsing if only looking for a particular symbol
@@ -617,9 +699,9 @@ QMap<QString, QHash<QString, QString>> ParseUtil::readCStructs(const QString &fi
             }
             i++;
         }
-        structMaps.insert(structLabel, values);
+        structs[structLabel] = values;
     }
-    return structMaps;
+    return structs;
 }
 
 QList<QStringList> ParseUtil::getLabelMacros(const QList<QStringList> &list, const QString &label) {
@@ -661,10 +743,12 @@ QStringList ParseUtil::getLabelValues(const QList<QStringList> &list, const QStr
     return values;
 }
 
-bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath) {
-    QFile file(filepath);
+bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath, QString *error) {
+    updateSplashScreen(filepath);
+
+    QFile file(pathWithRoot(filepath));
     if (!file.open(QIODevice::ReadOnly)) {
-        logError(QString("Error: Could not open %1 for reading").arg(filepath));
+        if (error) *error = file.errorString();
         return false;
     }
 
@@ -673,7 +757,7 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath) {
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &parseError);
     file.close();
     if (parseError.error != QJsonParseError::NoError) {
-        logError(QString("Error: Failed to parse json file %1: %2").arg(filepath).arg(parseError.errorString()));
+        if (error) *error = parseError.errorString();
         return false;
     }
 
@@ -681,23 +765,14 @@ bool ParseUtil::tryParseJsonFile(QJsonDocument *out, const QString &filepath) {
     return true;
 }
 
-bool ParseUtil::tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath) {
-    QString err;
-    QString jsonTxt = readTextFile(filepath);
-    *out = OrderedJson::parse(jsonTxt, err).object_items();
-    if (!err.isEmpty()) {
-        logError(QString("Error: Failed to parse json file %1: %2").arg(filepath).arg(err));
+bool ParseUtil::tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath, QString *error) {
+    QString jsonTxt = loadTextFile(filepath, error);
+    if (error && !error->isEmpty()) {
         return false;
     }
-    return true;
-}
-
-bool ParseUtil::ensureFieldsExist(const QJsonObject &obj, const QList<QString> &fields) {
-    for (QString field : fields) {
-        if (!obj.contains(field)) {
-            logError(QString("JSON object is missing field '%1'.").arg(field));
-            return false;
-        }
+    *out = OrderedJson::parse(jsonTxt, error).object_items();
+    if (error && !error->isEmpty()) {
+        return false;
     }
     return true;
 }
@@ -705,7 +780,7 @@ bool ParseUtil::ensureFieldsExist(const QJsonObject &obj, const QList<QString> &
 // QJsonValues are strictly typed, and so will not attempt any implicit conversions.
 // The below functions are for attempting to convert a JSON value read from the user's
 // project to a QString, int, or bool (whichever Porymap expects).
-QString ParseUtil::jsonToQString(QJsonValue value, bool * ok) {
+QString ParseUtil::jsonToQString(const QJsonValue &value, bool * ok) {
     if (ok) *ok = true;
     switch (value.type())
     {
@@ -718,7 +793,7 @@ QString ParseUtil::jsonToQString(QJsonValue value, bool * ok) {
     return QString();
 }
 
-int ParseUtil::jsonToInt(QJsonValue value, bool * ok) {
+int ParseUtil::jsonToInt(const QJsonValue &value, bool * ok) {
     if (ok) *ok = true;
     switch (value.type())
     {
@@ -731,7 +806,7 @@ int ParseUtil::jsonToInt(QJsonValue value, bool * ok) {
     return 0;
 }
 
-bool ParseUtil::jsonToBool(QJsonValue value, bool * ok) {
+bool ParseUtil::jsonToBool(const QJsonValue &value, bool * ok) {
     if (ok) *ok = true;
     switch (value.type())
     {

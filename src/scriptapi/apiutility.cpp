@@ -201,13 +201,13 @@ QList<QString> ScriptUtility::getCustomScripts() {
 }
 
 QList<int> ScriptUtility::getMetatileLayerOrder() {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return QList<int>();
-    return window->editor->map->metatileLayerOrder;
+    return window->editor->layout->metatileLayerOrder;
 }
 
 void ScriptUtility::setMetatileLayerOrder(QList<int> order) {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return;
 
     const int numLayers = 3;
@@ -226,20 +226,20 @@ void ScriptUtility::setMetatileLayerOrder(QList<int> order) {
     }
     if (invalid) return;
 
-    window->editor->map->metatileLayerOrder = order;
+    window->editor->layout->metatileLayerOrder = order;
     window->refreshAfterPalettePreviewChange();
 }
 
 QList<float> ScriptUtility::getMetatileLayerOpacity() {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return QList<float>();
-    return window->editor->map->metatileLayerOpacity;
+    return window->editor->layout->metatileLayerOpacity;
 }
 
 void ScriptUtility::setMetatileLayerOpacity(QList<float> order) {
-    if (!window || !window->editor || !window->editor->map)
+    if (!window || !window->editor || !window->editor->layout)
         return;
-    window->editor->map->metatileLayerOpacity = order;
+    window->editor->layout->metatileLayerOpacity = order;
     window->refreshAfterPalettePreviewChange();
 }
 
@@ -247,6 +247,27 @@ QList<QString> ScriptUtility::getMapNames() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();
     return window->editor->project->mapNames;
+}
+
+QList<QString> ScriptUtility::getMapConstants() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->mapConstantsToMapNames.keys();
+}
+
+QList<QString> ScriptUtility::getLayoutNames() {
+    QList<QString> names;
+    if (!window || !window->editor || !window->editor->project)
+        return names;
+    for (const auto &layout : window->editor->project->mapLayouts)
+        names.append(layout->name);
+    return names;
+}
+
+QList<QString> ScriptUtility::getLayoutConstants() {
+    if (!window || !window->editor || !window->editor->project)
+        return QList<QString>();
+    return window->editor->project->layoutIds;
 }
 
 QList<QString> ScriptUtility::getTilesetNames() {
@@ -282,7 +303,7 @@ QList<QString> ScriptUtility::getSongNames() {
 QList<QString> ScriptUtility::getLocationNames() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();
-    return window->editor->project->mapSectionNameToValue.keys();
+    return window->editor->project->mapSectionIdNames;
 }
 
 QList<QString> ScriptUtility::getWeatherNames() {

@@ -53,19 +53,41 @@ void MapConnection::markMapEdited() {
 }
 
 Map* MapConnection::getMap(const QString& mapName) const {
-    return project ? project->getMap(mapName) : nullptr;
+    return project ? project->loadMap(mapName) : nullptr;
 }
 
 Map* MapConnection::targetMap() const {
     return getMap(m_targetMapName);
 }
 
-QPixmap MapConnection::getPixmap() {
+QPixmap MapConnection::render() const {
     auto map = targetMap();
     if (!map)
         return QPixmap();
 
-    return map->renderConnection(m_direction, m_parentMap ? m_parentMap->layout : nullptr);
+    return map->renderConnection(m_direction, m_parentMap ? m_parentMap->layout() : nullptr);
+}
+
+// Get the position of the target map relative to its parent map.
+// For right/down connections this is offset by the dimensions of the parent map.
+// For left/up connections this is offset by the dimensions of the target map.
+// If 'clipped' is true, only the rendered dimensions of the target map will be used, rather than its full dimensions.
+QPoint MapConnection::relativePos(bool clipped) const {
+    int x = 0, y = 0;
+    if (m_direction == "right") {
+        if (m_parentMap) x = m_parentMap->getWidth();
+        y = m_offset;
+    } else if (m_direction == "down") {
+        x = m_offset;
+        if (m_parentMap) y = m_parentMap->getHeight();
+    } else if (m_direction == "left") {
+        if (targetMap()) x = !clipped ? -targetMap()->getWidth() : -targetMap()->getConnectionRect(m_direction).width();
+        y = m_offset;
+    } else if (m_direction == "up") {
+        x = m_offset;
+        if (targetMap()) y = !clipped ? -targetMap()->getHeight() : -targetMap()->getConnectionRect(m_direction).height();
+    }
+    return QPoint(x, y);
 }
 
 void MapConnection::setParentMap(Map* map, bool mirror) {
@@ -75,7 +97,7 @@ void MapConnection::setParentMap(Map* map, bool mirror) {
     if (mirror) {
         auto connection = findMirror();
         if (connection)
-            connection->setTargetMapName(map ? map->name : QString(), false);
+            connection->setTargetMapName(map ? map->name() : QString(), false);
     }
 
     if (m_parentMap)
@@ -91,7 +113,7 @@ void MapConnection::setParentMap(Map* map, bool mirror) {
 }
 
 QString MapConnection::parentMapName() const {
-    return m_parentMap ? m_parentMap->name : QString();
+    return m_parentMap ? m_parentMap->name() : QString();
 }
 
 void MapConnection::setTargetMapName(const QString &targetMapName, bool mirror) {

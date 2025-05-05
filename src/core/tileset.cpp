@@ -3,6 +3,8 @@
 #include "project.h"
 #include "log.h"
 #include "config.h"
+#include "imageproviders.h"
+#include "validator.h"
 
 #include <QPainter>
 #include <QImage>
@@ -23,7 +25,7 @@ Tileset::Tileset(const Tileset &other)
       metatileLabels(other.metatileLabels),
       palettes(other.palettes),
       palettePreviews(other.palettePreviews),
-      hasUnsavedTilesImage(false)
+      m_hasUnsavedTilesImage(other.m_hasUnsavedTilesImage)
 {
     for (auto tile : other.tiles) {
         tiles.append(tile.copy());
@@ -81,7 +83,8 @@ void Tileset::addMetatile(Metatile* metatile) {
     m_metatiles.append(metatile);
 }
 
-void Tileset::resizeMetatiles(unsigned int newNumMetatiles) {
+void Tileset::resizeMetatiles(int newNumMetatiles) {
+    if (newNumMetatiles < 0) newNumMetatiles = 0;
     while (m_metatiles.length() > newNumMetatiles) {
         delete m_metatiles.takeLast();
     }
@@ -179,11 +182,11 @@ bool Tileset::setMetatileLabel(int metatileId, QString label, Tileset *primaryTi
     if (!tileset)
         return false;
 
-    static const QRegularExpression expression("[_A-Za-z0-9]*$");
-    QRegularExpressionValidator validator(expression);
-    int pos = 0;
-    if (validator.validate(label, pos) != QValidator::Acceptable)
-        return false;
+    if (!label.isEmpty()) {
+        IdentifierValidator validator;
+        if (!validator.isValid(label))
+            return false;
+    }
 
     tileset->metatileLabels[metatileId] = label;
     return true;
@@ -246,12 +249,10 @@ QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset 
     return paletteTable;
 }
 
-bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm) {
-    QString headersFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_headers_asm)
-                                                 : projectConfig.getFilePath(ProjectFilePath::tilesets_headers));
-    QFile file(headersFile);
+bool Tileset::appendToHeaders(const QString &filepath, const QString &friendlyName, bool usingAsm) {
+    QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        logError(QString("Could not write to file \"%1\"").arg(headersFile));
+        logError(QString("Could not write to file \"%1\"").arg(filepath));
         return false;
     }
     QString isSecondaryStr = this->is_secondary ? "TRUE" : "FALSE";
@@ -291,18 +292,17 @@ bool Tileset::appendToHeaders(QString root, QString friendlyName, bool usingAsm)
     return true;
 }
 
-bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm) {
-    QString graphicsFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_graphics_asm)
-                                                  : projectConfig.getFilePath(ProjectFilePath::tilesets_graphics));
-    QFile file(graphicsFile);
+bool Tileset::appendToGraphics(const QString &filepath, const QString &friendlyName, bool usingAsm) {
+    QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        logError(QString("Could not write to file \"%1\"").arg(graphicsFile));
+        logError(QString("Could not write to file \"%1\"").arg(filepath));
         return false;
     }
 
     const QString tilesetDir = this->getExpectedDir();
-    const QString tilesPath = tilesetDir + "/tiles.4bpp.lz";
+    const QString tilesPath = QString("%1/tiles%2").arg(tilesetDir).arg(projectConfig.getIdentifier(ProjectIdentifier::tiles_output_extension));
     const QString palettesPath = tilesetDir + "/palettes/";
+    const QString palettesExt = projectConfig.getIdentifier(ProjectIdentifier::pals_output_extension);
 
     QString dataString = "\n";
     if (usingAsm) {
@@ -310,7 +310,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
         dataString.append("\t.align 2\n");
         dataString.append(QString("gTilesetPalettes_%1::\n").arg(friendlyName));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
-            dataString.append(QString("\t.incbin \"%1%2.gbapal\"\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')));
+            dataString.append(QString("\t.incbin \"%1%2%3\"\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')).arg(palettesExt));
         dataString.append("\n\t.align 2\n");
         dataString.append(QString("gTilesetTiles_%1::\n").arg(friendlyName));
         dataString.append(QString("\t.incbin \"%1\"\n").arg(tilesPath));
@@ -318,7 +318,7 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
         // Append to C file
         dataString.append(QString("const u16 gTilesetPalettes_%1[][16] =\n{\n").arg(friendlyName));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
-            dataString.append(QString("    INCBIN_U16(\"%1%2.gbapal\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')));
+            dataString.append(QString("    INCBIN_U16(\"%1%2%3\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')).arg(palettesExt));
         dataString.append("};\n");
         dataString.append(QString("\nconst u32 gTilesetTiles_%1[] = INCBIN_U32(\"%2\");\n").arg(friendlyName, tilesPath));
     }
@@ -328,12 +328,10 @@ bool Tileset::appendToGraphics(QString root, QString friendlyName, bool usingAsm
     return true;
 }
 
-bool Tileset::appendToMetatiles(QString root, QString friendlyName, bool usingAsm) {
-    QString metatileFile = root + "/" + (usingAsm ? projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles_asm)
-                                                  : projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
-    QFile file(metatileFile);
+bool Tileset::appendToMetatiles(const QString &filepath, const QString &friendlyName, bool usingAsm) {
+    QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        logError(QString("Could not write to file \"%1\"").arg(metatileFile));
+        logError(QString("Could not write to file \"%1\"").arg(filepath));
         return false;
     }
 
@@ -396,4 +394,199 @@ QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
     map.insert(4 + paddingOffset, "metatiles");
     map.insert(metatileAttrPosition, "metatileAttributes");
     return map;
+}
+
+bool Tileset::loadMetatiles() {
+    clearMetatiles();
+
+    QFile metatiles_file(this->metatiles_path);
+    if (!metatiles_file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+        return false;
+    }
+
+    QByteArray data = metatiles_file.readAll();
+    int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
+    int bytesPerMetatile = 2 * tilesPerMetatile;
+    int num_metatiles = data.length() / bytesPerMetatile;
+    for (int i = 0; i < num_metatiles; i++) {
+        auto metatile = new Metatile;
+        int index = i * bytesPerMetatile;
+        for (int j = 0; j < tilesPerMetatile; j++) {
+            uint16_t tileRaw = static_cast<unsigned char>(data[index++]);
+            tileRaw |= static_cast<unsigned char>(data[index++]) << 8;
+            metatile->tiles.append(Tile(tileRaw));
+        }
+        m_metatiles.append(metatile);
+    }
+    return true;
+}
+
+bool Tileset::saveMetatiles() {
+    QFile metatiles_file(this->metatiles_path);
+    if (!metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+        return false;
+    }
+
+    QByteArray data;
+    int numTiles = projectConfig.getNumTilesInMetatile();
+    for (const auto &metatile : m_metatiles) {
+        for (int i = 0; i < numTiles; i++) {
+            uint16_t tile = metatile->tiles.at(i).rawValue();
+            data.append(static_cast<char>(tile));
+            data.append(static_cast<char>(tile >> 8));
+        }
+    }
+    metatiles_file.write(data);
+    return true;
+}
+
+bool Tileset::loadMetatileAttributes() {
+    QFile attrs_file(this->metatile_attrs_path);
+    if (!attrs_file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+        return false;
+    }
+
+    QByteArray data = attrs_file.readAll();
+    int attrSize = projectConfig.metatileAttributesSize;
+    int numMetatiles = m_metatiles.length();
+    int numMetatileAttrs = data.length() / attrSize;
+    if (numMetatiles != numMetatileAttrs) {
+        logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(numMetatiles).arg(numMetatileAttrs).arg(this->name));
+    }
+
+    for (int i = 0; i < qMin(numMetatiles, numMetatileAttrs); i++) {
+        uint32_t attributes = 0;
+        for (int j = 0; j < attrSize; j++)
+            attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
+        m_metatiles.at(i)->setAttributes(attributes);
+    }
+    return true;
+}
+
+bool Tileset::saveMetatileAttributes() {
+    QFile attrs_file(this->metatile_attrs_path);
+    if (!attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+        return false;
+    }
+
+    QByteArray data;
+    for (const auto &metatile : m_metatiles) {
+        uint32_t attributes = metatile->getAttributes();
+        for (int i = 0; i < projectConfig.metatileAttributesSize; i++)
+            data.append(static_cast<char>(attributes >> (8 * i)));
+    }
+    attrs_file.write(data);
+    return true;
+}
+
+bool Tileset::loadTilesImage(QImage *importedImage) {
+    QImage image;
+    if (importedImage) {
+        image = *importedImage;
+        m_hasUnsavedTilesImage = true;
+    } else if (QFile::exists(this->tilesImagePath)) {
+        // No image provided, load from file path.
+        image = QImage(this->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
+    } else {
+        // Use default image
+        image = QImage(8, 8, QImage::Format_Indexed8);
+    }
+
+    // Validate image contains 16 colors.
+    int colorCount = image.colorCount();
+    if (colorCount > 16) {
+        flattenTo4bppImage(&image);
+    } else if (colorCount < 16) {
+        QVector<QRgb> colorTable = image.colorTable();
+        for (int i = colorTable.length(); i < 16; i++) {
+            colorTable.append(Qt::black);
+        }
+        image.setColorTable(colorTable);
+    }
+
+    QList<QImage> tiles;
+    int w = 8;
+    int h = 8;
+    for (int y = 0; y < image.height(); y += h)
+    for (int x = 0; x < image.width(); x += w) {
+        QImage tile = image.copy(x, y, w, h);
+        tiles.append(tile);
+    }
+    this->tilesImage = image;
+    this->tiles = tiles;
+    return true;
+}
+
+bool Tileset::saveTilesImage() {
+    // Only write the tiles image if it was changed.
+    // Porymap will only ever change an existing tiles image by importing a new one.
+    if (!m_hasUnsavedTilesImage)
+        return true;
+
+    if (!this->tilesImage.save(this->tilesImagePath, "PNG")) {
+        logError(QString("Failed to save tiles image '%1'").arg(this->tilesImagePath));
+        return false;
+    }
+
+    m_hasUnsavedTilesImage = false;
+    return true;
+}
+
+bool Tileset::loadPalettes() {
+    this->palettes.clear();
+    this->palettePreviews.clear();
+
+    for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
+        QList<QRgb> palette;
+        QString path = this->palettePaths.value(i);
+        if (!path.isEmpty()) {
+            bool error = false;
+            palette = PaletteUtil::parse(path, &error);
+            if (error) palette.clear();
+        }
+        if (palette.isEmpty()) {
+            // Either the palette failed to load, or no palette exists.
+            // We expect tilesets to have a certain number of palettes,
+            // so fill this palette with dummy colors.
+            for (int j = 0; j < 16; j++) {
+                palette.append(qRgb(j * 16, j * 16, j * 16));
+            }
+        }
+        this->palettes.append(palette);
+        this->palettePreviews.append(palette);
+    }
+    return true;
+}
+
+bool Tileset::savePalettes() {
+    bool success = true;
+    int numPalettes = qMin(this->palettePaths.length(), this->palettes.length());
+    for (int i = 0; i < numPalettes; i++) {
+        if (!PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, 16))
+            success = false;
+    }
+    return success;
+}
+
+bool Tileset::load() {
+    bool success = true;
+    if (!loadMetatiles()) success = false;
+    if (!loadMetatileAttributes()) success = false;
+    if (!loadTilesImage()) success = false;
+    if (!loadPalettes()) success = false;
+    return success;
+}
+
+// Because metatile labels are global (and handled by the project) we don't save them here.
+bool Tileset::save() {
+    bool success = true;
+    if (!saveMetatiles()) success = false;
+    if (!saveMetatileAttributes()) success = false;
+    if (!saveTilesImage()) success = false;
+    if (!savePalettes()) success = false;
+    return success;
 }

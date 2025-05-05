@@ -11,27 +11,23 @@
 #include <QDateTime>
 #include <QUrl>
 #include <QVersionNumber>
+#include <QGraphicsPixmapItem>
 
 #include "events.h"
+#include "gridsettings.h"
 
-static const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
+extern const QVersionNumber porymapVersion;
 
-// In both versions the default new map border is a generic tree
-#define DEFAULT_BORDER_RSE (QList<uint16_t>{0x1D4, 0x1D5, 0x1DC, 0x1DD})
-#define DEFAULT_BORDER_FRLG (QList<uint16_t>{0x14, 0x15, 0x1C, 0x1D})
+// Distance in pixels from the edge of a GBA screen (240x160) to the center 16x16 pixels.
+#define GBA_H_DIST_TO_CENTER ((240-16)/2)
+#define GBA_V_DIST_TO_CENTER ((160-16)/2)
 
 #define CONFIG_BACKWARDS_COMPATABILITY
-
-enum MapSortOrder {
-    Group   =  0,
-    Area    =  1,
-    Layout  =  2,
-};
 
 class KeyValueConfigBase
 {
 public:
-    void save();
+    bool save();
     void load();
     virtual ~KeyValueConfigBase();
     virtual void reset() = 0;
@@ -41,9 +37,11 @@ protected:
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void init() = 0;
     virtual void setUnreadKeys() = 0;
-    bool getConfigBool(QString key, QString value);
-    int getConfigInteger(QString key, QString value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
-    uint32_t getConfigUint32(QString key, QString value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
+
+    static bool getConfigBool(const QString &key, const QString &value);
+    static int getConfigInteger(const QString &key, const QString &value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
+    static uint32_t getConfigUint32(const QString &key, const QString &value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
+    static QColor getConfigColor(const QString &key, const QString &value, const QColor &defaultValue = Qt::black);
 };
 
 class PorymapConfig: public KeyValueConfigBase
@@ -56,7 +54,9 @@ public:
         this->recentProjects.clear();
         this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
-        this->mapSortOrder = MapSortOrder::Group;
+        this->mapListTab = 0;
+        this->mapListEditGroupsEnabled = false;
+        this->mapListHideEmptyEnabled.clear();
         this->prettyCursors = true;
         this->mirrorConnectingMaps = true;
         this->showDiveEmergeMaps = false;
@@ -74,19 +74,28 @@ public:
         this->showGrid = false;
         this->showTilesetEditorMetatileGrid = false;
         this->showTilesetEditorLayerGrid = true;
+        this->showTilesetEditorDivider = false;
+        this->showTilesetEditorRawAttributes = false;
         this->monitorFiles = true;
         this->tilesetCheckerboardFill = true;
+        this->newMapHeaderSectionExpanded = false;
         this->theme = "default";
         this->wildMonChartTheme = "";
         this->textEditorOpenFolder = "";
         this->textEditorGotoLine = "";
         this->paletteEditorBitDepth = 24;
         this->projectSettingsTab = 0;
+        this->loadAllEventScripts = false;
         this->warpBehaviorWarningDisabled = false;
+        this->eventDeleteWarningDisabled = false;
+        this->eventOverlayEnabled = false;
         this->checkForUpdates = true;
         this->lastUpdateCheckTime = QDateTime();
         this->lastUpdateCheckVersion = porymapVersion;
         this->rateLimitTimes.clear();
+        this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
+        this->shownInGameReloadMessage = false;
+        this->gridSettings = GridSettings();
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -107,7 +116,9 @@ public:
 
     bool reopenOnLaunch;
     bool projectManuallyClosed;
-    MapSortOrder mapSortOrder;
+    int mapListTab;
+    bool mapListEditGroupsEnabled;
+    QMap<int, bool> mapListHideEmptyEnabled;
     bool prettyCursors;
     bool mirrorConnectingMaps;
     bool showDiveEmergeMaps;
@@ -125,20 +136,31 @@ public:
     bool showGrid;
     bool showTilesetEditorMetatileGrid;
     bool showTilesetEditorLayerGrid;
+    bool showTilesetEditorDivider;
+    bool showTilesetEditorRawAttributes;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
+    bool newMapHeaderSectionExpanded;
     QString theme;
     QString wildMonChartTheme;
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
     int paletteEditorBitDepth;
     int projectSettingsTab;
+    bool loadAllEventScripts;
     bool warpBehaviorWarningDisabled;
+    bool eventDeleteWarningDisabled;
+    bool eventOverlayEnabled;
     bool checkForUpdates;
     QDateTime lastUpdateCheckTime;
     QVersionNumber lastUpdateCheckVersion;
     QMap<QUrl, QDateTime> rateLimitTimes;
+    QGraphicsPixmapItem::ShapeMode eventSelectionShapeMode;
     QByteArray wildMonChartGeometry;
+    QByteArray newMapDialogGeometry;
+    QByteArray newLayoutDialogGeometry;
+    bool shownInGameReloadMessage;
+    GridSettings gridSettings;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -148,8 +170,8 @@ protected:
     virtual void setUnreadKeys() override {};
 
 private:
-    QString stringFromByteArray(QByteArray);
-    QByteArray bytesFromString(QString);
+    QString stringFromByteArray(const QByteArray&);
+    QByteArray bytesFromString(const QString&);
 
     QStringList recentProjects;
     QByteArray mainWindowGeometry;
@@ -183,14 +205,9 @@ enum ProjectIdentifier {
     symbol_facing_directions,
     symbol_obj_event_gfx_pointers,
     symbol_pokemon_icon_table,
-    symbol_wild_encounters,
-    symbol_heal_locations_type,
-    symbol_heal_locations,
-    symbol_spawn_points,
-    symbol_spawn_maps,
-    symbol_spawn_npcs,
     symbol_attribute_table,
     symbol_tilesets_prefix,
+    symbol_dynamic_map_name,
     define_obj_event_count,
     define_min_level,
     define_max_level,
@@ -202,6 +219,8 @@ enum ProjectIdentifier {
     define_pals_total,
     define_tiles_per_metatile,
     define_map_size,
+    define_map_offset_width,
+    define_map_offset_height,
     define_mask_metatile,
     define_mask_collision,
     define_mask_elevation,
@@ -213,14 +232,14 @@ enum ProjectIdentifier {
     define_attribute_encounter,
     define_metatile_label_prefix,
     define_heal_locations_prefix,
-    define_spawn_prefix,
+    define_layout_prefix,
     define_map_prefix,
     define_map_dynamic,
     define_map_empty,
     define_map_section_prefix,
     define_map_section_empty,
-    define_map_section_count,
     define_species_prefix,
+    define_species_empty,
     regex_behaviors,
     regex_obj_event_gfx,
     regex_items,
@@ -235,6 +254,12 @@ enum ProjectIdentifier {
     regex_sign_facing_directions,
     regex_trainer_types,
     regex_music,
+    regex_encounter_types,
+    regex_terrain_types,
+    regex_gbapal,
+    regex_bpp,
+    pals_output_extension,
+    tiles_output_extension,
 };
 
 enum ProjectFilePath {
@@ -246,6 +271,7 @@ enum ProjectFilePath {
     json_map_groups,
     json_layouts,
     json_wild_encounters,
+    json_heal_locations,
     json_region_map_entries,
     json_region_porymap_cfg,
     tilesets_headers,
@@ -259,15 +285,12 @@ enum ProjectFilePath {
     data_obj_event_pic_tables,
     data_obj_event_gfx,
     data_pokemon_gfx,
-    data_heal_locations,
     constants_global,
-    constants_map_groups,
     constants_items,
     constants_flags,
     constants_vars,
     constants_weather,
     constants_songs,
-    constants_heal_locations,
     constants_pokemon,
     constants_map_types,
     constants_trainer_types,
@@ -275,7 +298,6 @@ enum ProjectFilePath {
     constants_obj_event_movement,
     constants_obj_events,
     constants_event_bg,
-    constants_region_map_sections,
     constants_metatile_labels,
     constants_metatile_behaviors,
     constants_species,
@@ -302,20 +324,31 @@ public:
         this->defaultMetatileId = 1;
         this->defaultElevation = 3;
         this->defaultCollision = 0;
+        this->defaultMapSize = QSize(20,20);
         this->defaultPrimaryTileset = "gTileset_General";
         this->prefabFilepath = QString();
         this->prefabImportPrompted = false;
         this->tilesetsHaveCallback = true;
         this->tilesetsHaveIsCompressed = true;
+        this->setTransparentPixelsBlack = true;
+        this->preserveMatchingOnlyData = false;
         this->filePaths.clear();
         this->eventIconPaths.clear();
         this->pokemonIconPaths.clear();
+        this->eventsTabIconPath = QString();
         this->collisionSheetPath = QString();
-        this->collisionSheetWidth = 2;
-        this->collisionSheetHeight = 16;
+        this->collisionSheetSize = QSize(2, 16);
+        this->playerViewDistance = QMargins(GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER, GBA_H_DIST_TO_CENTER, GBA_V_DIST_TO_CENTER);
         this->blockMetatileIdMask = 0x03FF;
         this->blockCollisionMask = 0x0C00;
         this->blockElevationMask = 0xF000;
+        this->unusedTileNormal = 0x3014;
+        this->unusedTileCovered = 0x0000;
+        this->unusedTileSplit = 0x0000;
+        this->maxEventsPerGroup = 255;
+        this->forcedMajorVersion = 0;
+        this->globalConstantsFilepaths.clear();
+        this->globalConstants.clear();
         this->identifiers.clear();
         this->readKeys.clear();
     }
@@ -324,13 +357,16 @@ public:
     static const QStringList versionStrings;
     static BaseGameVersion stringToBaseGameVersion(const QString &string);
 
+    static QString getPlayerIconPath(BaseGameVersion baseGameVersion, int character);
+    static QIcon getPlayerIcon(BaseGameVersion baseGameVersion, int character);
+
     void reset(BaseGameVersion baseGameVersion);
     void setFilePath(ProjectFilePath pathId, const QString &path);
     void setFilePath(const QString &pathId, const QString &path);
     QString getCustomFilePath(ProjectFilePath pathId);
     QString getCustomFilePath(const QString &pathId);
     QString getFilePath(ProjectFilePath pathId);
-    void setIdentifier(ProjectIdentifier id, const QString &text);
+    void setIdentifier(ProjectIdentifier id, QString text);
     void setIdentifier(const QString &id, const QString &text);
     QString getCustomIdentifier(ProjectIdentifier id);
     QString getCustomIdentifier(const QString &id);
@@ -343,7 +379,7 @@ public:
     QString getEventIconPath(Event::Group group);
     void setPokemonIconPath(const QString &species, const QString &path);
     QString getPokemonIconPath(const QString &species);
-    QHash<QString, QString> getPokemonIconPaths();
+    QMap<QString, QString> getPokemonIconPaths();
 
     BaseGameVersion baseGameVersion;
     QString projectDir;
@@ -361,6 +397,7 @@ public:
     uint16_t defaultMetatileId;
     uint16_t defaultElevation;
     uint16_t defaultCollision;
+    QSize defaultMapSize;
     QList<uint16_t> newMapBorderMetatileIds;
     QString defaultPrimaryTileset;
     QString defaultSecondaryTileset;
@@ -368,6 +405,8 @@ public:
     bool prefabImportPrompted;
     bool tilesetsHaveCallback;
     bool tilesetsHaveIsCompressed;
+    bool setTransparentPixelsBlack;
+    bool preserveMatchingOnlyData;
     int metatileAttributesSize;
     uint32_t metatileBehaviorMask;
     uint32_t metatileTerrainTypeMask;
@@ -376,11 +415,19 @@ public:
     uint16_t blockMetatileIdMask;
     uint16_t blockCollisionMask;
     uint16_t blockElevationMask;
+    uint16_t unusedTileNormal;
+    uint16_t unusedTileCovered;
+    uint16_t unusedTileSplit;
     bool mapAllowFlagsEnabled;
+    QString eventsTabIconPath;
     QString collisionSheetPath;
-    int collisionSheetWidth;
-    int collisionSheetHeight;
-    QSet<uint32_t> warpBehaviors;
+    QSize collisionSheetSize;
+    QMargins playerViewDistance;
+    QList<uint32_t> warpBehaviors;
+    int maxEventsPerGroup;
+    int forcedMajorVersion;
+    QStringList globalConstantsFilepaths;
+    QMap<QString,QString> globalConstants;
 
 protected:
     virtual QString getConfigFilepath() override;
@@ -394,7 +441,7 @@ private:
     QMap<ProjectIdentifier, QString> identifiers;
     QMap<ProjectFilePath, QString> filePaths;
     QMap<Event::Group, QString> eventIconPaths;
-    QHash<QString, QString> pokemonIconPaths;
+    QMap<QString, QString> pokemonIconPaths;
 };
 
 extern ProjectConfig projectConfig;
@@ -406,7 +453,7 @@ public:
         reset();
     }
     virtual void reset() override {
-        this->recentMap = QString();
+        this->recentMapOrLayout = QString();
         this->useEncounterJson = true;
         this->customScripts.clear();
         this->readKeys.clear();
@@ -418,7 +465,7 @@ public:
     QList<bool> getCustomScriptsEnabled();
 
     QString projectDir;
-    QString recentMap;
+    QString recentMapOrLayout;
     bool useEncounterJson;
 
 protected:

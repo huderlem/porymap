@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1287</width>
-    <height>903</height>
+    <width>1298</width>
+    <height>963</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,9 +30,9 @@
     <item row="0" column="0">
      <widget class="QSplitter" name="splitter_main">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
-      <widget class="QWidget" name="mapListContainer" native="true">
+      <widget class="QTabWidget" name="mapListContainer">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -42,168 +42,162 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>3</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_11">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="leftMargin">
-           <number>3</number>
-          </property>
-          <property name="topMargin">
-           <number>3</number>
-          </property>
-          <property name="bottomMargin">
-           <number>3</number>
-          </property>
-          <item>
-           <widget class="QToolButton" name="toolButton_MapSortOrder">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sort map list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../resources/images.qrc">
-              <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonIconOnly</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-            <property name="arrowType">
-             <enum>Qt::NoArrow</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="toolButton_ExpandAll">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expand all map folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../resources/images.qrc">
-              <normaloff>:/icons/expand_all.ico</normaloff>:/icons/expand_all.ico</iconset>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="toolButton_CollapseAll">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Collapse all map list folders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../resources/images.qrc">
-              <normaloff>:/icons/collapse_all.ico</normaloff>:/icons/collapse_all.ico</iconset>
-            </property>
-            <property name="popupMode">
-             <enum>QToolButton::InstantPopup</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>12</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_filterBox">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="placeholderText">
-             <string>Filter maps...</string>
-            </property>
-            <property name="clearButtonEnabled">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QTreeView" name="mapList">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::SingleSelection</enum>
-          </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectItems</enum>
-          </property>
-          <attribute name="headerVisible">
-           <bool>false</bool>
-          </attribute>
-         </widget>
-        </item>
-       </layout>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="mapListPage_Groups">
+        <attribute name="title">
+         <string>Groups</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="MapListToolBar" name="mapListToolBar_Groups"/>
+         </item>
+         <item>
+          <widget class="MapTree" name="mapList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="mapListPage_Locations">
+        <attribute name="title">
+         <string>Locations</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_Locations">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="MapListToolBar" name="mapListToolBar_Locations"/>
+         </item>
+         <item>
+          <widget class="MapTree" name="locationList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="mapListPage_Layouts">
+        <attribute name="title">
+         <string>Layouts</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_Layouts">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="MapListToolBar" name="mapListToolBar_Layouts"/>
+         </item>
+         <item>
+          <widget class="MapTree" name="layoutList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
       <widget class="QFrame" name="frame_Main">
        <property name="sizePolicy">
@@ -236,7 +230,7 @@
           <item>
            <spacer name="horizontalSpacer_20">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -266,9 +260,6 @@
            <bool>false</bool>
           </property>
           <widget class="QWidget" name="tab_Map">
-           <property name="toolTip">
-            <string/>
-           </property>
            <layout class="QGridLayout" name="gridLayout_9">
             <property name="leftMargin">
              <number>0</number>
@@ -288,7 +279,7 @@
             <item row="0" column="0">
              <widget class="QSplitter" name="splitter_map">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <widget class="QFrame" name="frame_9">
                <property name="sizePolicy">
@@ -298,10 +289,10 @@
                 </sizepolicy>
                </property>
                <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
+                <enum>QFrame::Shape::StyledPanel</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <property name="lineWidth">
                 <number>1</number>
@@ -325,10 +316,10 @@
                 <item row="1" column="0">
                  <widget class="QFrame" name="frame_7">
                   <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                   <enum>QFrame::Shape::StyledPanel</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_2">
                    <property name="leftMargin">
@@ -377,10 +368,10 @@
                    </size>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                   <enum>QFrame::Shape::StyledPanel</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_2">
                    <property name="spacing">
@@ -401,10 +392,10 @@
                    <item>
                     <widget class="QFrame" name="frame_toolButtons">
                      <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
+                      <enum>QFrame::Shape::NoFrame</enum>
                      </property>
                      <property name="frameShadow">
-                      <enum>QFrame::Raised</enum>
+                      <enum>QFrame::Shadow::Raised</enum>
                      </property>
                      <layout class="QHBoxLayout" name="horizontalLayout_17">
                       <property name="spacing">
@@ -585,7 +576,7 @@
                    <item>
                     <spacer name="horizontalSpacer1">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -608,10 +599,10 @@
                 </sizepolicy>
                </property>
                <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
+                <enum>QFrame::Shape::StyledPanel</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
+                <enum>QFrame::Shadow::Raised</enum>
                </property>
                <widget class="QWidget" name="mapView_MetatileCollisionInfo">
                 <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -658,6 +649,9 @@
                      <string>Metatiles</string>
                     </attribute>
                     <layout class="QGridLayout" name="gridLayout_3">
+                     <property name="sizeConstraint">
+                      <enum>QLayout::SizeConstraint::SetNoConstraint</enum>
+                     </property>
                      <property name="leftMargin">
                       <number>3</number>
                      </property>
@@ -685,17 +679,17 @@
                         <number>30</number>
                        </property>
                        <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
+                        <enum>Qt::Orientation::Horizontal</enum>
                        </property>
                       </widget>
                      </item>
-                     <item row="1" column="0">
+                     <item row="2" column="0">
                       <widget class="QFrame" name="frame_Metatiles">
                        <property name="frameShape">
-                        <enum>QFrame::NoFrame</enum>
+                        <enum>QFrame::Shape::NoFrame</enum>
                        </property>
                        <property name="frameShadow">
-                        <enum>QFrame::Plain</enum>
+                        <enum>QFrame::Shadow::Plain</enum>
                        </property>
                        <layout class="QVBoxLayout" name="verticalLayout_16">
                         <property name="leftMargin">
@@ -719,7 +713,7 @@
                            </sizepolicy>
                           </property>
                           <property name="orientation">
-                           <enum>Qt::Vertical</enum>
+                           <enum>Qt::Orientation::Vertical</enum>
                           </property>
                           <widget class="QGroupBox" name="groupBox_BorderMetatiles">
                            <property name="sizePolicy">
@@ -756,10 +750,10 @@
                                </sizepolicy>
                               </property>
                               <property name="frameShape">
-                               <enum>QFrame::NoFrame</enum>
+                               <enum>QFrame::Shape::NoFrame</enum>
                               </property>
                               <property name="frameShadow">
-                               <enum>QFrame::Plain</enum>
+                               <enum>QFrame::Shadow::Plain</enum>
                               </property>
                               <property name="widgetResizable">
                                <bool>true</bool>
@@ -769,7 +763,7 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>423</width>
+                                 <width>424</width>
                                  <height>79</height>
                                 </rect>
                                </property>
@@ -792,7 +786,7 @@
                                 <item>
                                  <spacer name="horizontalSpacer_12">
                                   <property name="orientation">
-                                   <enum>Qt::Horizontal</enum>
+                                   <enum>Qt::Orientation::Horizontal</enum>
                                   </property>
                                   <property name="sizeHint" stdset="0">
                                    <size>
@@ -814,17 +808,17 @@
                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The border is a 2x2 metatile which is repeated outside of the map layout's boundary. Draw on this border area to modify it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                                   </property>
                                   <property name="verticalScrollBarPolicy">
-                                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                                   <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                                   </property>
                                   <property name="horizontalScrollBarPolicy">
-                                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                                   <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                                   </property>
                                  </widget>
                                 </item>
                                 <item>
                                  <spacer name="horizontalSpacer_13">
                                   <property name="orientation">
-                                   <enum>Qt::Horizontal</enum>
+                                   <enum>Qt::Orientation::Horizontal</enum>
                                   </property>
                                   <property name="sizeHint" stdset="0">
                                    <size>
@@ -875,10 +869,10 @@
                                </sizepolicy>
                               </property>
                               <property name="frameShape">
-                               <enum>QFrame::NoFrame</enum>
+                               <enum>QFrame::Shape::NoFrame</enum>
                               </property>
                               <property name="frameShadow">
-                               <enum>QFrame::Plain</enum>
+                               <enum>QFrame::Shadow::Plain</enum>
                               </property>
                               <property name="widgetResizable">
                                <bool>true</bool>
@@ -888,7 +882,7 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>423</width>
+                                 <width>424</width>
                                  <height>79</height>
                                 </rect>
                                </property>
@@ -911,7 +905,7 @@
                                 <item>
                                  <spacer name="horizontalSpacer_16">
                                   <property name="orientation">
-                                   <enum>Qt::Horizontal</enum>
+                                   <enum>Qt::Orientation::Horizontal</enum>
                                   </property>
                                   <property name="sizeHint" stdset="0">
                                    <size>
@@ -936,17 +930,17 @@
                                    </size>
                                   </property>
                                   <property name="verticalScrollBarPolicy">
-                                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                                   <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                                   </property>
                                   <property name="horizontalScrollBarPolicy">
-                                   <enum>Qt::ScrollBarAlwaysOff</enum>
+                                   <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                                   </property>
                                  </widget>
                                 </item>
                                 <item>
                                  <spacer name="horizontalSpacer_17">
                                   <property name="orientation">
-                                   <enum>Qt::Horizontal</enum>
+                                   <enum>Qt::Orientation::Horizontal</enum>
                                   </property>
                                   <property name="sizeHint" stdset="0">
                                    <size>
@@ -970,19 +964,19 @@
                             </sizepolicy>
                            </property>
                            <property name="verticalScrollBarPolicy">
-                            <enum>Qt::ScrollBarAlwaysOn</enum>
+                            <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
                            </property>
                            <property name="horizontalScrollBarPolicy">
-                            <enum>Qt::ScrollBarAsNeeded</enum>
+                            <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
                            </property>
                            <property name="sizeAdjustPolicy">
-                            <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                            <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
                            </property>
                            <property name="widgetResizable">
                             <bool>true</bool>
                            </property>
                            <property name="alignment">
-                            <set>Qt::AlignHCenter|Qt::AlignTop</set>
+                            <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
                            </property>
                            <widget class="QWidget" name="scrollAreaWidgetContents_MetatileSelector">
                             <property name="enabled">
@@ -992,7 +986,7 @@
                              <rect>
                               <x>8</x>
                               <y>0</y>
-                              <width>411</width>
+                              <width>412</width>
                               <height>446</height>
                              </rect>
                             </property>
@@ -1021,7 +1015,7 @@
                              <item row="0" column="0">
                               <spacer name="horizontalSpacer_14">
                                <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
+                                <enum>Qt::Orientation::Horizontal</enum>
                                </property>
                                <property name="sizeHint" stdset="0">
                                 <size>
@@ -1043,20 +1037,20 @@
                                 </sizepolicy>
                                </property>
                                <property name="verticalScrollBarPolicy">
-                                <enum>Qt::ScrollBarAlwaysOff</enum>
+                                <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                                </property>
                                <property name="horizontalScrollBarPolicy">
-                                <enum>Qt::ScrollBarAlwaysOff</enum>
+                                <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                                </property>
                                <property name="sizeAdjustPolicy">
-                                <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                                <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
                                </property>
                               </widget>
                              </item>
                              <item row="0" column="2">
                               <spacer name="horizontalSpacer_15">
                                <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
+                                <enum>Qt::Orientation::Horizontal</enum>
                                </property>
                                <property name="sizeHint" stdset="0">
                                 <size>
@@ -1069,7 +1063,7 @@
                              <item row="1" column="1">
                               <spacer name="verticalSpacer_5">
                                <property name="orientation">
-                                <enum>Qt::Vertical</enum>
+                                <enum>Qt::Orientation::Vertical</enum>
                                </property>
                                <property name="sizeHint" stdset="0">
                                 <size>
@@ -1087,7 +1081,7 @@
                        </layout>
                       </widget>
                      </item>
-                     <item row="0" column="0">
+                     <item row="1" column="0">
                       <widget class="QFrame" name="frame_Tilesets">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1096,23 +1090,23 @@
                         </sizepolicy>
                        </property>
                        <property name="frameShape">
-                        <enum>QFrame::StyledPanel</enum>
+                        <enum>QFrame::Shape::StyledPanel</enum>
                        </property>
                        <property name="frameShadow">
-                        <enum>QFrame::Raised</enum>
+                        <enum>QFrame::Shadow::Raised</enum>
                        </property>
                        <layout class="QFormLayout" name="formLayout">
-                        <item row="0" column="0">
+                        <item row="1" column="0">
                          <widget class="QLabel" name="label_PrimaryTileset">
                           <property name="text">
                            <string>Primary Tileset</string>
                           </property>
                          </widget>
                         </item>
-                        <item row="0" column="1">
+                        <item row="1" column="1">
                          <widget class="NoScrollComboBox" name="comboBox_PrimaryTileset">
                           <property name="focusPolicy">
-                           <enum>Qt::StrongFocus</enum>
+                           <enum>Qt::FocusPolicy::StrongFocus</enum>
                           </property>
                           <property name="toolTip">
                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Primary Tileset&lt;/p&gt;&lt;p&gt;Defines the first 0x200 metatiles available for the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1122,17 +1116,17 @@
                           </property>
                          </widget>
                         </item>
-                        <item row="1" column="0">
+                        <item row="2" column="0">
                          <widget class="QLabel" name="label_SecondaryTileset">
                           <property name="text">
                            <string>Secondary Tileset</string>
                           </property>
                          </widget>
                         </item>
-                        <item row="1" column="1">
+                        <item row="2" column="1">
                          <widget class="NoScrollComboBox" name="comboBox_SecondaryTileset">
                           <property name="focusPolicy">
-                           <enum>Qt::StrongFocus</enum>
+                           <enum>Qt::FocusPolicy::StrongFocus</enum>
                           </property>
                           <property name="toolTip">
                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Secondary Tileset&lt;/p&gt;&lt;p&gt;Defines the second 0x200 metatiles available for the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1141,6 +1135,34 @@
                            <bool>true</bool>
                           </property>
                          </widget>
+                        </item>
+                        <item row="0" column="0">
+                         <widget class="QFrame" name="frame_LayoutSelection">
+                          <property name="frameShape">
+                           <enum>QFrame::Shape::NoFrame</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Shadow::Raised</enum>
+                          </property>
+                          <layout class="QFormLayout" name="formLayout_3">
+                           <property name="topMargin">
+                            <number>2</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>2</number>
+                           </property>
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="label_Layout">
+                             <property name="text">
+                              <string>Layout</string>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="NoScrollComboBox" name="comboBox_LayoutSelector"/>
                         </item>
                        </layout>
                       </widget>
@@ -1162,7 +1184,7 @@
                     </attribute>
                     <layout class="QGridLayout" name="gridLayout_CollisionSelection">
                      <property name="sizeConstraint">
-                      <enum>QLayout::SetDefaultConstraint</enum>
+                      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
                      </property>
                      <property name="leftMargin">
                       <number>3</number>
@@ -1193,8 +1215,8 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>427</width>
-                          <height>594</height>
+                          <width>428</width>
+                          <height>633</height>
                          </rect>
                         </property>
                         <layout class="QGridLayout" name="gridLayout_7">
@@ -1216,7 +1238,7 @@
                          <item row="2" column="0">
                           <spacer name="horizontalSpacer_18">
                            <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
+                            <enum>Qt::Orientation::Horizontal</enum>
                            </property>
                            <property name="sizeHint" stdset="0">
                             <size>
@@ -1241,17 +1263,17 @@
                             </size>
                            </property>
                            <property name="verticalScrollBarPolicy">
-                            <enum>Qt::ScrollBarAlwaysOff</enum>
+                            <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                            </property>
                            <property name="horizontalScrollBarPolicy">
-                            <enum>Qt::ScrollBarAlwaysOff</enum>
+                            <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                            </property>
                           </widget>
                          </item>
                          <item row="2" column="2">
                           <spacer name="horizontalSpacer_19">
                            <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
+                            <enum>Qt::Orientation::Horizontal</enum>
                            </property>
                            <property name="sizeHint" stdset="0">
                             <size>
@@ -1264,7 +1286,7 @@
                          <item row="3" column="1">
                           <spacer name="verticalSpacer_6">
                            <property name="orientation">
-                            <enum>Qt::Vertical</enum>
+                            <enum>Qt::Orientation::Vertical</enum>
                            </property>
                            <property name="sizeHint" stdset="0">
                             <size>
@@ -1290,7 +1312,7 @@
                         <number>30</number>
                        </property>
                        <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
+                        <enum>Qt::Orientation::Horizontal</enum>
                        </property>
                       </widget>
                      </item>
@@ -1306,17 +1328,17 @@
                         <number>50</number>
                        </property>
                        <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
+                        <enum>Qt::Orientation::Horizontal</enum>
                        </property>
                       </widget>
                      </item>
                      <item row="0" column="0" colspan="3">
                       <widget class="QFrame" name="frame_5">
                        <property name="frameShape">
-                        <enum>QFrame::StyledPanel</enum>
+                        <enum>QFrame::Shape::StyledPanel</enum>
                        </property>
                        <property name="frameShadow">
-                        <enum>QFrame::Raised</enum>
+                        <enum>QFrame::Shadow::Raised</enum>
                        </property>
                        <layout class="QGridLayout" name="gridLayout_8">
                         <item row="0" column="1">
@@ -1342,7 +1364,7 @@
                         <item row="0" column="2">
                          <spacer name="horizontalSpacer_4">
                           <property name="orientation">
-                           <enum>Qt::Horizontal</enum>
+                           <enum>Qt::Orientation::Horizontal</enum>
                           </property>
                           <property name="sizeHint" stdset="0">
                            <size>
@@ -1403,7 +1425,7 @@
                         <item>
                          <widget class="QScrollArea" name="scrollArea">
                           <property name="frameShape">
-                           <enum>QFrame::NoFrame</enum>
+                           <enum>QFrame::Shape::NoFrame</enum>
                           </property>
                           <property name="widgetResizable">
                            <bool>true</bool>
@@ -1413,8 +1435,8 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>382</width>
-                             <height>699</height>
+                             <width>383</width>
+                             <height>744</height>
                             </rect>
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -1436,10 +1458,10 @@
                                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;No prefabs have been created for the currently-used tilesets. Create some by using the button above!&lt;/p&gt;&lt;p&gt;Prefabs are &amp;quot;prefabricated&amp;quot; metatile selections that are used for easy selecting of complicated map structures. For example, a useful prefab could be a building or tree formation, which would otherwise be annoying to paint with the regular metatile picker.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                               </property>
                               <property name="textFormat">
-                               <enum>Qt::RichText</enum>
+                               <enum>Qt::TextFormat::RichText</enum>
                               </property>
                               <property name="alignment">
-                               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                               <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                               </property>
                               <property name="wordWrap">
                                <bool>true</bool>
@@ -1459,7 +1481,7 @@
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="mapView_ObjectInfo">
+               <widget class="QWidget" name="mapView_EventInfo">
                 <layout class="QGridLayout" name="gridLayout">
                  <property name="leftMargin">
                   <number>1</number>
@@ -1474,7 +1496,7 @@
                   <number>1</number>
                  </property>
                  <item row="0" column="0">
-                  <widget class="QFrame" name="frame_Objects">
+                  <widget class="QFrame" name="frame_Events">
                    <property name="enabled">
                     <bool>true</bool>
                    </property>
@@ -1512,10 +1534,10 @@
                        </size>
                       </property>
                       <property name="frameShape">
-                       <enum>QFrame::NoFrame</enum>
+                       <enum>QFrame::Shape::NoFrame</enum>
                       </property>
                       <property name="frameShadow">
-                       <enum>QFrame::Raised</enum>
+                       <enum>QFrame::Shadow::Raised</enum>
                       </property>
                       <property name="lineWidth">
                        <number>0</number>
@@ -1552,12 +1574,12 @@
                            <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
                          </property>
                          <property name="toolButtonStyle">
-                          <enum>Qt::ToolButtonTextBesideIcon</enum>
+                          <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
                          </property>
                         </widget>
                        </item>
                        <item>
-                        <widget class="QToolButton" name="toolButton_deleteObject">
+                        <widget class="QToolButton" name="toolButton_deleteEvent">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
                            <horstretch>0</horstretch>
@@ -1575,7 +1597,7 @@
                            <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
                          </property>
                          <property name="toolButtonStyle">
-                          <enum>Qt::ToolButtonTextBesideIcon</enum>
+                          <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
                          </property>
                          <property name="autoRaise">
                           <bool>false</bool>
@@ -1585,7 +1607,7 @@
                        <item>
                         <spacer name="horizontalSpacer_3">
                          <property name="orientation">
-                          <enum>Qt::Horizontal</enum>
+                          <enum>Qt::Orientation::Horizontal</enum>
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
@@ -1620,7 +1642,7 @@
                        <string>There are no events on the current map.</string>
                       </property>
                       <property name="alignment">
-                       <set>Qt::AlignCenter</set>
+                       <set>Qt::AlignmentFlag::AlignCenter</set>
                       </property>
                      </widget>
                     </item>
@@ -1686,7 +1708,7 @@
                           <item>
                            <spacer name="horizontalSpacer_Objects">
                             <property name="orientation">
-                             <enum>Qt::Horizontal</enum>
+                             <enum>Qt::Orientation::Horizontal</enum>
                             </property>
                             <property name="sizeHint" stdset="0">
                              <size>
@@ -1701,13 +1723,13 @@
                         <item>
                          <widget class="QScrollArea" name="scrollArea_Objects">
                           <property name="frameShape">
-                           <enum>QFrame::NoFrame</enum>
+                           <enum>QFrame::Shape::NoFrame</enum>
                           </property>
                           <property name="widgetResizable">
                            <bool>true</bool>
                           </property>
                           <property name="alignment">
-                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                           </property>
                           <widget class="QWidget" name="scrollAreaWidgetContents_Objects">
                            <property name="geometry">
@@ -1715,7 +1737,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1780,7 +1802,7 @@
                           <item>
                            <spacer name="horizontalSpacer_Warps">
                             <property name="orientation">
-                             <enum>Qt::Horizontal</enum>
+                             <enum>Qt::Orientation::Horizontal</enum>
                             </property>
                             <property name="sizeHint" stdset="0">
                              <size>
@@ -1795,13 +1817,13 @@
                         <item>
                          <widget class="QScrollArea" name="scrollArea_Warps">
                           <property name="frameShape">
-                           <enum>QFrame::NoFrame</enum>
+                           <enum>QFrame::Shape::NoFrame</enum>
                           </property>
                           <property name="widgetResizable">
                            <bool>true</bool>
                           </property>
                           <property name="alignment">
-                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                           </property>
                           <widget class="QWidget" name="scrollAreaWidgetContents_Warps">
                            <property name="geometry">
@@ -1809,7 +1831,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1874,7 +1896,7 @@
                           <item>
                            <spacer name="horizontalSpacer_Triggers">
                             <property name="orientation">
-                             <enum>Qt::Horizontal</enum>
+                             <enum>Qt::Orientation::Horizontal</enum>
                             </property>
                             <property name="sizeHint" stdset="0">
                              <size>
@@ -1889,13 +1911,13 @@
                         <item>
                          <widget class="QScrollArea" name="scrollArea_Triggers">
                           <property name="frameShape">
-                           <enum>QFrame::NoFrame</enum>
+                           <enum>QFrame::Shape::NoFrame</enum>
                           </property>
                           <property name="widgetResizable">
                            <bool>true</bool>
                           </property>
                           <property name="alignment">
-                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                           </property>
                           <widget class="QWidget" name="scrollAreaWidgetContents_Triggers">
                            <property name="geometry">
@@ -1903,7 +1925,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -1974,7 +1996,7 @@
                           <item>
                            <spacer name="horizontalSpacer_BGs">
                             <property name="orientation">
-                             <enum>Qt::Horizontal</enum>
+                             <enum>Qt::Orientation::Horizontal</enum>
                             </property>
                             <property name="sizeHint" stdset="0">
                              <size>
@@ -1989,13 +2011,13 @@
                         <item>
                          <widget class="QScrollArea" name="scrollArea_BGs">
                           <property name="frameShape">
-                           <enum>QFrame::NoFrame</enum>
+                           <enum>QFrame::Shape::NoFrame</enum>
                           </property>
                           <property name="widgetResizable">
                            <bool>true</bool>
                           </property>
                           <property name="alignment">
-                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                           </property>
                           <widget class="QWidget" name="scrollAreaWidgetContents_BGs">
                            <property name="geometry">
@@ -2003,7 +2025,7 @@
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2017,9 +2039,9 @@
                         </item>
                        </layout>
                       </widget>
-                      <widget class="QWidget" name="tab_Healspots">
+                      <widget class="QWidget" name="tab_HealLocations">
                        <attribute name="title">
-                        <string>Healspots</string>
+                        <string>Heal Locations</string>
                        </attribute>
                        <layout class="QVBoxLayout" name="verticalLayout_9">
                         <property name="leftMargin">
@@ -2066,9 +2088,9 @@
                            </widget>
                           </item>
                           <item>
-                           <spacer name="horizontalSpacer_Healspots">
+                           <spacer name="horizontalSpacer_HealLocations">
                             <property name="orientation">
-                             <enum>Qt::Horizontal</enum>
+                             <enum>Qt::Orientation::Horizontal</enum>
                             </property>
                             <property name="sizeHint" stdset="0">
                              <size>
@@ -2081,23 +2103,23 @@
                          </layout>
                         </item>
                         <item>
-                         <widget class="QScrollArea" name="scrollArea_Healspots">
+                         <widget class="QScrollArea" name="scrollArea_HealLocations">
                           <property name="frameShape">
-                           <enum>QFrame::NoFrame</enum>
+                           <enum>QFrame::Shape::NoFrame</enum>
                           </property>
                           <property name="widgetResizable">
                            <bool>true</bool>
                           </property>
                           <property name="alignment">
-                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                           </property>
-                          <widget class="QWidget" name="scrollAreaWidgetContents_Healspots">
+                          <widget class="QWidget" name="scrollAreaWidgetContents_HealLocations">
                            <property name="geometry">
                             <rect>
                              <x>0</x>
                              <y>0</y>
                              <width>100</width>
-                             <height>30</height>
+                             <height>16</height>
                             </rect>
                            </property>
                            <property name="sizePolicy">
@@ -2137,13 +2159,13 @@
                            </sizepolicy>
                           </property>
                           <property name="frameShape">
-                           <enum>QFrame::NoFrame</enum>
+                           <enum>QFrame::Shape::NoFrame</enum>
                           </property>
                           <property name="widgetResizable">
                            <bool>true</bool>
                           </property>
                           <property name="alignment">
-                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
                           </property>
                           <widget class="QWidget" name="scrollAreaWidgetContents_Multiple">
                            <property name="geometry">
@@ -2195,7 +2217,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QFrame" name="frame_3">
+             <widget class="QFrame" name="frame_HeaderData">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -2206,322 +2228,82 @@
                </sizepolicy>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
-              <layout class="QFormLayout" name="formLayout_2">
-               <property name="fieldGrowthPolicy">
-                <enum>QFormLayout::FieldsStayAtSizeHint</enum>
-               </property>
-               <property name="verticalSpacing">
-                <number>12</number>
-               </property>
+              <layout class="QVBoxLayout" name="layout_HeaderData">
                <property name="bottomMargin">
                 <number>9</number>
                </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_3">
-                 <property name="text">
-                  <string>Song</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="NoScrollComboBox" name="comboBox_Song">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default background music for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_4">
-                 <property name="text">
-                  <string>Location</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="NoScrollComboBox" name="comboBox_Location">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The section of the region map which the map is grouped under. This also determines the name of the map that is display when the player enters it.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_5">
-                 <property name="text">
-                  <string>Requires Flash</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QCheckBox" name="checkBox_Visibility">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not the map is dark and requires Flash to illuminate.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_6">
-                 <property name="text">
-                  <string>Weather</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="NoScrollComboBox" name="comboBox_Weather">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default weather for this map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_7">
-                 <property name="text">
-                  <string>Type</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="NoScrollComboBox" name="comboBox_Type">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The map type is a general attribute, which is used for many different things. For example. it determines whether biking or running is allowed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="label_9">
-                 <property name="text">
-                  <string>Battle scene</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="NoScrollComboBox" name="comboBox_BattleScene">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determines the type of battle scene graphics to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="editable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
-                <widget class="QLabel" name="label_8">
-                 <property name="text">
-                  <string>Show Location Name</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="1">
-                <widget class="QCheckBox" name="checkBox_ShowLocation">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to display the location name when the player enters the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0">
-                <widget class="QLabel" name="label_AllowRunning">
-                 <property name="text">
-                  <string>Allow Running</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="1">
-                <widget class="QCheckBox" name="checkBox_AllowRunning">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Running Shoes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="0">
-                <widget class="QLabel" name="label_AllowBiking">
-                 <property name="text">
-                  <string>Allow Biking</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="1">
-                <widget class="QCheckBox" name="checkBox_AllowBiking">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use a Bike&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="label_AllowEscaping">
-                 <property name="text">
-                  <string>Allow Dig &amp; Escape Rope</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="1">
-                <widget class="QCheckBox" name="checkBox_AllowEscaping">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the player to use Dig or Escape Rope&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="0">
-                <widget class="QLabel" name="label_FloorNumber">
-                 <property name="text">
-                  <string>Floor Number</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="11" column="1">
-                <widget class="QSpinBox" name="spinBox_FloorNumber">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Floor number to be used for maps with elevators.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="minimum">
-                  <number>-128</number>
-                 </property>
-                 <property name="maximum">
-                  <number>127</number>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="frame_keyValue">
+             <widget class="QScrollArea" name="scrollArea_CustomAttributes">
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Plain</enum>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_10">
-               <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="text">
-                  <string>Custom Fields</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QFrame" name="frame">
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_8">
-                  <property name="leftMargin">
-                   <number>0</number>
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents_CustomAttributes">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>1011</width>
+                 <height>806</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_21">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="CustomAttributesFrame" name="mapCustomAttributesFrame">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
                   </property>
-                  <property name="topMargin">
-                   <number>0</number>
+                  <property name="frameShape">
+                   <enum>QFrame::Shape::StyledPanel</enum>
                   </property>
-                  <property name="rightMargin">
-                   <number>0</number>
+                  <property name="frameShadow">
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Orientation::Vertical</enum>
                   </property>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_AddCustomHeaderField">
-                    <property name="text">
-                     <string>Add</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_DeleteCustomHeaderField">
-                    <property name="text">
-                     <string>Delete</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="horizontalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QTableWidget" name="tableWidget_CustomHeaderFields">
-                 <property name="toolTip">
-                  <string>Custom fields will be added to the map.json file for the current map.</string>
-                 </property>
-                 <attribute name="horizontalHeaderVisible">
-                  <bool>false</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderCascadingSectionResizes">
-                  <bool>false</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderHighlightSections">
-                  <bool>true</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-                  <bool>false</bool>
-                 </attribute>
-                 <attribute name="horizontalHeaderStretchLastSection">
-                  <bool>true</bool>
-                 </attribute>
-                 <attribute name="verticalHeaderVisible">
-                  <bool>false</bool>
-                 </attribute>
-                 <column>
-                  <property name="text">
-                   <string>Type</string>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>1</width>
+                    <height>767</height>
+                   </size>
                   </property>
-                 </column>
-                 <column>
-                  <property name="text">
-                   <string>Key</string>
-                  </property>
-                 </column>
-                 <column>
-                  <property name="text">
-                   <string>Value</string>
-                  </property>
-                 </column>
-                </widget>
-               </item>
-              </layout>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
@@ -2549,10 +2331,10 @@
                </sizepolicy>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_18">
                <item>
@@ -2564,10 +2346,10 @@
                   </sizepolicy>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::Shape::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
+                  <enum>QFrame::Shadow::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_10">
                   <property name="leftMargin">
@@ -2595,7 +2377,7 @@
                   <item row="0" column="7">
                    <widget class="QCheckBox" name="checkBox_MirrorConnections">
                     <property name="toolTip">
-                     <string>If enabled, connections will automatically be updated on the connected map.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the connected Emerge and/or Dive maps will be displayed with an opacity set using the slider.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Mirror to Connecting Maps</string>
@@ -2632,7 +2414,7 @@
                   <item row="0" column="6">
                    <spacer name="horizontalSpacer_6">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -2644,8 +2426,11 @@
                   </item>
                   <item row="1" column="0">
                    <widget class="QToolButton" name="button_OpenDiveMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
-                     <string>Open the selected Dive Map</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open the selected Dive Map&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>...</string>
@@ -2659,7 +2444,7 @@
                   <item row="0" column="4" rowspan="2">
                    <widget class="QGroupBox" name="groupBox_DiveMapOpacity">
                     <property name="toolTip">
-                     <string>If enabled, the connected Emerge and/or Dive maps will be displayed with an opacity set using the slider.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the connected Emerge and/or Dive maps will be displayed with an opacity set using the slider.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="title">
                      <string>Show Emerge/Dive Maps</string>
@@ -2717,7 +2502,7 @@
                             <number>30</number>
                            </property>
                            <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
+                            <enum>Qt::Orientation::Horizontal</enum>
                            </property>
                           </widget>
                          </item>
@@ -2733,7 +2518,7 @@
                             <number>30</number>
                            </property>
                            <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
+                            <enum>Qt::Orientation::Horizontal</enum>
                            </property>
                           </widget>
                          </item>
@@ -2765,7 +2550,7 @@
                             <number>30</number>
                            </property>
                            <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
+                            <enum>Qt::Orientation::Horizontal</enum>
                            </property>
                           </widget>
                          </item>
@@ -2778,8 +2563,11 @@
                   </item>
                   <item row="0" column="0">
                    <widget class="QToolButton" name="button_OpenEmergeMap">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="toolTip">
-                     <string>Open the selected Emerge Map</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open the selected Emerge Map&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>...</string>
@@ -2796,9 +2584,9 @@
                <item>
                 <widget class="QSplitter" name="splitter_Connections">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
-                 <widget class="QGraphicsView" name="graphicsView_Connections">
+                 <widget class="ConnectionsView" name="graphicsView_Connections">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -2812,22 +2600,22 @@
                    <bool>false</bool>
                   </property>
                   <property name="verticalScrollBarPolicy">
-                   <enum>Qt::ScrollBarAsNeeded</enum>
+                   <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
                   </property>
                   <property name="horizontalScrollBarPolicy">
-                   <enum>Qt::ScrollBarAsNeeded</enum>
+                   <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
                   </property>
                   <property name="sizeAdjustPolicy">
-                   <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                   <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
                   </property>
                   <property name="dragMode">
-                   <enum>QGraphicsView::NoDrag</enum>
+                   <enum>QGraphicsView::DragMode::NoDrag</enum>
                   </property>
                   <property name="transformationAnchor">
-                   <enum>QGraphicsView::AnchorUnderMouse</enum>
+                   <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
                   </property>
                   <property name="resizeAnchor">
-                   <enum>QGraphicsView::AnchorUnderMouse</enum>
+                   <enum>QGraphicsView::ViewportAnchor::AnchorUnderMouse</enum>
                   </property>
                  </widget>
                  <widget class="QFrame" name="frame_EditConnectionsPanel">
@@ -2838,10 +2626,10 @@
                    </size>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                   <enum>QFrame::Shape::StyledPanel</enum>
                   </property>
                   <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
+                   <enum>QFrame::Shadow::Raised</enum>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_17">
                    <item>
@@ -2858,10 +2646,10 @@
                    <item>
                     <widget class="QScrollArea" name="scrollArea_ConnectionsList">
                      <property name="frameShape">
-                      <enum>QFrame::NoFrame</enum>
+                      <enum>QFrame::Shape::NoFrame</enum>
                      </property>
                      <property name="horizontalScrollBarPolicy">
-                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                      <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                      </property>
                      <property name="widgetResizable">
                       <bool>true</bool>
@@ -2871,8 +2659,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>365</width>
-                        <height>651</height>
+                        <width>204</width>
+                        <height>16</height>
                        </rect>
                       </property>
                       <layout class="QVBoxLayout" name="layout_ConnectionsList">
@@ -2894,7 +2682,7 @@
                        <item>
                         <spacer name="verticalSpacer">
                          <property name="orientation">
-                          <enum>Qt::Vertical</enum>
+                          <enum>Qt::Orientation::Vertical</enum>
                          </property>
                          <property name="sizeHint" stdset="0">
                           <size>
@@ -2922,19 +2710,19 @@
             <item>
              <widget class="QFrame" name="frame_WildMonInfo">
               <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
                 <widget class="QFrame" name="frame_2">
                  <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
+                  <enum>QFrame::Shape::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Shadow::Plain</enum>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <item>
@@ -2945,9 +2733,12 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_EncounterGroupLabel">
+                   <widget class="NoScrollComboBox" name="comboBox_EncounterGroupLabel">
+                    <property name="editable">
+                     <bool>false</bool>
+                    </property>
                     <property name="sizeAdjustPolicy">
-                     <enum>QComboBox::AdjustToContents</enum>
+                     <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
                     </property>
                    </widget>
                   </item>
@@ -2988,7 +2779,7 @@
                   <item>
                    <spacer name="horizontalSpacer_9">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -3003,12 +2794,27 @@
                     <property name="text">
                      <string>Summary Chart...</string>
                     </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/chart_bar.ico</normaloff>:/icons/chart_bar.ico</iconset>
+                    </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QPushButton" name="pushButton_ConfigureEncountersJSON">
                     <property name="text">
                      <string>Configure JSON...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="toolButton_WildMonSearch">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="../resources/images.qrc">
+                      <normaloff>:/icons/magnifier.ico</normaloff>:/icons/magnifier.ico</iconset>
                     </property>
                    </widget>
                   </item>
@@ -3040,8 +2846,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1287</width>
-     <height>22</height>
+     <width>1298</width>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -3057,6 +2863,7 @@
     <addaction name="menuOpen_Recent_Project"/>
     <addaction name="action_Reload_Project"/>
     <addaction name="action_Close_Project"/>
+    <addaction name="separator"/>
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
@@ -3081,7 +2888,10 @@
     <addaction name="actionCursor_Tile_Outline"/>
     <addaction name="actionPlayer_View_Rectangle"/>
     <addaction name="actionBetter_Cursors"/>
+    <addaction name="separator"/>
     <addaction name="actionDive_Emerge_Map"/>
+    <addaction name="actionShow_Events_In_Map_View"/>
+    <addaction name="separator"/>
     <addaction name="actionShow_Grid"/>
     <addaction name="actionGrid_Settings"/>
    </widget>
@@ -3097,7 +2907,10 @@
     <addaction name="actionMap_Shift"/>
     <addaction name="separator"/>
     <addaction name="action_NewMap"/>
+    <addaction name="action_NewLayout"/>
     <addaction name="actionNew_Tileset"/>
+    <addaction name="actionDuplicate_Current_Map_Layout"/>
+    <addaction name="separator"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
     <addaction name="separator"/>
@@ -3266,45 +3079,6 @@
     <string>Ctrl+T</string>
    </property>
   </action>
-  <action name="actionSort_by_Area">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/images.qrc">
-     <normaloff>:/icons/sort_alphabet.ico</normaloff>:/icons/sort_alphabet.ico</iconset>
-   </property>
-   <property name="text">
-    <string>Sort by &amp;Area</string>
-   </property>
-  </action>
-  <action name="actionSort_by_Group">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/images.qrc">
-     <normaloff>:/icons/sort_number.ico</normaloff>:/icons/sort_number.ico</iconset>
-   </property>
-   <property name="text">
-    <string>Sort by &amp;Group</string>
-   </property>
-   <property name="toolTip">
-    <string>Sort by Group</string>
-   </property>
-  </action>
-  <action name="actionSort_by_Layout">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/images.qrc">
-     <normaloff>:/icons/sort_map.ico</normaloff>:/icons/sort_map.ico</iconset>
-   </property>
-   <property name="text">
-    <string>Sort by &amp;Layout</string>
-   </property>
-  </action>
   <action name="actionAbout_Porymap">
    <property name="text">
     <string>About Porymap...</string>
@@ -3412,7 +3186,7 @@
     <string>Check for Updates...</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::ApplicationSpecificRole</enum>
+    <enum>QAction::MenuRole::ApplicationSpecificRole</enum>
    </property>
   </action>
   <action name="action_Close_Project">
@@ -3434,6 +3208,17 @@
     <string>Show Dive/Emerge Map</string>
    </property>
   </action>
+  <action name="actionShow_Events_In_Map_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show Events in Map View</string>
+   </property>
+  </action>
   <action name="actionShow_Grid">
    <property name="checkable">
     <bool>true</bool>
@@ -3451,6 +3236,16 @@
   <action name="actionGrid_Settings">
    <property name="text">
     <string>Grid Settings...</string>
+   </property>
+  </action>
+  <action name="action_NewLayout">
+   <property name="text">
+    <string>New Layout...</string>
+   </property>
+  </action>
+  <action name="actionDuplicate_Current_Map_Layout">
+   <property name="text">
+    <string>Duplicate Current Map/Layout...</string>
    </property>
   </action>
  </widget>
@@ -3479,13 +3274,35 @@
   </customwidget>
   <customwidget>
    <class>MapView</class>
-   <extends>QWidget</extends>
+   <extends>QGraphicsView</extends>
    <header>mapview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ConnectionsView</class>
+   <extends>QGraphicsView</extends>
+   <header>graphicsview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MapTree</class>
+   <extends>QTreeView</extends>
+   <header>maplistmodels.h</header>
   </customwidget>
   <customwidget>
    <class>NoScrollGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>mapview.h</header>
+   <header>graphicsview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MapListToolBar</class>
+   <extends>QFrame</extends>
+   <header>maplisttoolbar.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CustomAttributesFrame</class>
+   <extends>QFrame</extends>
+   <header>customattributesframe.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

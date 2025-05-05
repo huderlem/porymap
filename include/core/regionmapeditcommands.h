@@ -64,9 +64,9 @@ private:
 
 
 /// Edit Layout Dimensions
-class ResizeLayout : public QUndoCommand {
+class ResizeRMLayout : public QUndoCommand {
 public:
-    ResizeLayout(RegionMap *map, int oldWidth, int oldHeight, int newWidth, int newHeight,
+    ResizeRMLayout(RegionMap *map, int oldWidth, int oldHeight, int newWidth, int newHeight,
         QMap<QString, QList<LayoutSquare>> oldLayouts, QMap<QString, QList<LayoutSquare>> newLayouts, QUndoCommand *parent = nullptr);
 
     void undo() override;
@@ -153,7 +153,7 @@ private:
 /// ClearEntries
 class ClearEntries : public QUndoCommand {
 public:
-    ClearEntries(RegionMap *map, tsl::ordered_map<QString, MapSectionEntry>, QUndoCommand *parent = nullptr);
+    ClearEntries(RegionMap *map, QHash<QString, MapSectionEntry>, QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
@@ -163,7 +163,7 @@ public:
 
 private:
     RegionMap *map;
-    tsl::ordered_map<QString, MapSectionEntry> entries;
+    QHash<QString, MapSectionEntry> entries;
 };
 
 #endif // REGIONMAPEDITCOMMANDS_H

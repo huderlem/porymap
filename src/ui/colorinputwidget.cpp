@@ -1,15 +1,9 @@
 #include "colorinputwidget.h"
 #include "ui_colorinputwidget.h"
 #include "colorpicker.h"
+#include "validator.h"
 
 #include <cmath>
-
-class HexCodeValidator : public QValidator {
-    virtual QValidator::State validate(QString &input, int &) const override {
-        input = input.toUpper();
-        return QValidator::Acceptable;
-    }
-};
 
 static inline int rgb5(int rgb) { return round(static_cast<double>(rgb * 31) / 255.0); }
 static inline int rgb8(int rgb) { return round(rgb * 255. / 31.); }
@@ -43,8 +37,8 @@ void ColorInputWidget::init() {
     connect(ui->spinBox_Green, QOverload<int>::of(&QSpinBox::valueChanged), this, &ColorInputWidget::setRgbFromSpinners);
     connect(ui->spinBox_Blue,  QOverload<int>::of(&QSpinBox::valueChanged), this, &ColorInputWidget::setRgbFromSpinners);
 
-    static const HexCodeValidator hexValidator;
-    ui->lineEdit_Hex->setValidator(&hexValidator);
+    static const UppercaseValidator uppercaseValidator;
+    ui->lineEdit_Hex->setValidator(&uppercaseValidator);
     connect(ui->lineEdit_Hex, &QLineEdit::textEdited, this, &ColorInputWidget::setRgbFromHexString);
 
     // We have separate signals for when color input editing finishes.

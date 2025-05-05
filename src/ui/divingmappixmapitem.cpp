@@ -1,7 +1,7 @@
 #include "divingmappixmapitem.h"
 #include "config.h"
 
-DivingMapPixmapItem::DivingMapPixmapItem(MapConnection *connection, QComboBox *combo)
+DivingMapPixmapItem::DivingMapPixmapItem(MapConnection *connection, NoScrollComboBox *combo)
     : QGraphicsPixmapItem(getBasePixmap(connection))
 {
     m_connection = connection;
@@ -25,7 +25,7 @@ QPixmap DivingMapPixmapItem::getBasePixmap(MapConnection* connection) {
         return QPixmap(); // Save some rendering time if it won't be displayed
     if (connection->targetMapName() == connection->parentMapName())
         return QPixmap(); // If the map is connected to itself then rendering is pointless.
-    return connection->getPixmap();
+    return connection->render();
 }
 
 void DivingMapPixmapItem::updatePixmap() {
@@ -38,9 +38,5 @@ void DivingMapPixmapItem::onTargetMapChanged() {
 }
 
 void DivingMapPixmapItem::setComboText(const QString &text) {
-    if (!m_combo)
-        return;
-
-    const QSignalBlocker blocker(m_combo);
-    m_combo->setCurrentText(text);
+    if (m_combo) m_combo->setTextItem(text);
 }

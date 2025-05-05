@@ -2,6 +2,8 @@
 #include "log.h"
 #include "shortcut.h"
 #include "map.h"
+#include "validator.h"
+#include "utility.h"
 #include <QDir>
 #include <QFile>
 #include <QFormLayout>
@@ -16,7 +18,13 @@
 #include <QAction>
 #include <QAbstractButton>
 
-const QSet<uint32_t> defaultWarpBehaviors_RSE = {
+const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
+
+// In both versions the default new map border is a generic tree
+const QList<uint16_t> defaultBorder_RSE = {0x1D4, 0x1D5, 0x1DC, 0x1DD};
+const QList<uint16_t> defaultBorder_FRLG = {0x14, 0x15, 0x1C, 0x1D};
+
+const QList<uint32_t> defaultWarpBehaviors_RSE = {
     0x0E, // MB_MOSSDEEP_GYM_WARP
     0x0F, // MB_MT_PYRE_HOLE
     0x1B, // MB_STAIRS_OUTSIDE_ABANDONED_SHIP
@@ -47,7 +55,7 @@ const QSet<uint32_t> defaultWarpBehaviors_RSE = {
     0x9D, // MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN
 };
 
-const QSet<uint32_t> defaultWarpBehaviors_FRLG = {
+const QList<uint32_t> defaultWarpBehaviors_FRLG = {
     0x60, // MB_CAVE_DOOR
     0x61, // MB_LADDER
     0x62, // MB_EAST_ARROW_WARP
@@ -67,20 +75,14 @@ const QSet<uint32_t> defaultWarpBehaviors_FRLG = {
     0x71, // MB_UNION_ROOM_WARP
 };
 
-// TODO: symbol_wild_encounters should ultimately be removed from the table below. We can determine this name when we read the project.
 const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIdentifiers = {
     // Symbols
     {ProjectIdentifier::symbol_facing_directions,      {"symbol_facing_directions",      "gInitialMovementTypeFacingDirections"}},
     {ProjectIdentifier::symbol_obj_event_gfx_pointers, {"symbol_obj_event_gfx_pointers", "gObjectEventGraphicsInfoPointers"}},
     {ProjectIdentifier::symbol_pokemon_icon_table,     {"symbol_pokemon_icon_table",     "gMonIconTable"}},
-    {ProjectIdentifier::symbol_wild_encounters,        {"symbol_wild_encounters",        "gWildMonHeaders"}},
-    {ProjectIdentifier::symbol_heal_locations_type,    {"symbol_heal_locations_type",    "struct HealLocation"}},
-    {ProjectIdentifier::symbol_heal_locations,         {"symbol_heal_locations",         "sHealLocations"}},
-    {ProjectIdentifier::symbol_spawn_points,           {"symbol_spawn_points",           "sSpawnPoints"}},
-    {ProjectIdentifier::symbol_spawn_maps,             {"symbol_spawn_maps",             "u16 sWhiteoutRespawnHealCenterMapIdxs"}},
-    {ProjectIdentifier::symbol_spawn_npcs,             {"symbol_spawn_npcs",             "u8 sWhiteoutRespawnHealerNpcIds"}},
     {ProjectIdentifier::symbol_attribute_table,        {"symbol_attribute_table",        "sMetatileAttrMasks"}},
     {ProjectIdentifier::symbol_tilesets_prefix,        {"symbol_tilesets_prefix",        "gTileset_"}},
+    {ProjectIdentifier::symbol_dynamic_map_name,       {"symbol_dynamic_map_name",       "Dynamic"}},
     // Defines
     {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
     {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
@@ -93,6 +95,8 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_pals_total,             {"define_pals_total",             "NUM_PALS_TOTAL"}},
     {ProjectIdentifier::define_tiles_per_metatile,     {"define_tiles_per_metatile",     "NUM_TILES_PER_METATILE"}},
     {ProjectIdentifier::define_map_size,               {"define_map_size",               "MAX_MAP_DATA_SIZE"}},
+    {ProjectIdentifier::define_map_offset_width,       {"define_map_offset_width",       "MAP_OFFSET_W"}},
+    {ProjectIdentifier::define_map_offset_height,      {"define_map_offset_height",      "MAP_OFFSET_H"}},
     {ProjectIdentifier::define_mask_metatile,          {"define_mask_metatile",          "MAPGRID_METATILE_ID_MASK"}},
     {ProjectIdentifier::define_mask_collision,         {"define_mask_collision",         "MAPGRID_COLLISION_MASK"}},
     {ProjectIdentifier::define_mask_elevation,         {"define_mask_elevation",         "MAPGRID_ELEVATION_MASK"}},
@@ -104,14 +108,14 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_attribute_encounter,    {"define_attribute_encounter",    "METATILE_ATTRIBUTE_ENCOUNTER_TYPE"}},
     {ProjectIdentifier::define_metatile_label_prefix,  {"define_metatile_label_prefix",  "METATILE_"}},
     {ProjectIdentifier::define_heal_locations_prefix,  {"define_heal_locations_prefix",  "HEAL_LOCATION_"}},
-    {ProjectIdentifier::define_spawn_prefix,           {"define_spawn_prefix",           "SPAWN_"}},
+    {ProjectIdentifier::define_layout_prefix,          {"define_layout_prefix",          "LAYOUT_"}},
     {ProjectIdentifier::define_map_prefix,             {"define_map_prefix",             "MAP_"}},
     {ProjectIdentifier::define_map_dynamic,            {"define_map_dynamic",            "DYNAMIC"}},
     {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "UNDEFINED"}},
     {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
     {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
-    {ProjectIdentifier::define_map_section_count,      {"define_map_section_count",      "COUNT"}},
     {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
+    {ProjectIdentifier::define_species_empty,          {"define_species_empty",          "NONE"}},
     // Regex
     {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
     {ProjectIdentifier::regex_obj_event_gfx,           {"regex_obj_event_gfx",           "\\bOBJ_EVENT_GFX_"}},
@@ -127,6 +131,13 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
     {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
     {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
+    {ProjectIdentifier::regex_encounter_types,         {"regex_encounter_types",         "\\bTILE_ENCOUNTER_"}},
+    {ProjectIdentifier::regex_terrain_types,           {"regex_terrain_types",           "\\bTILE_TERRAIN_"}},
+    {ProjectIdentifier::regex_gbapal,                  {"regex_gbapal",                  "\\.gbapal(\\.[\\w]+)?$"}},
+    {ProjectIdentifier::regex_bpp,                     {"regex_bpp",                     "\\.[\\d]+bpp(\\.[\\w]+)?$"}},
+    // Other
+    {ProjectIdentifier::pals_output_extension,         {"pals_output_extension",         ".gbapal"}},
+    {ProjectIdentifier::tiles_output_extension,        {"tiles_output_extension",        ".4bpp.lz"}},
 };
 
 const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths = {
@@ -138,6 +149,7 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::json_map_groups,                  { "json_map_groups",                 "data/maps/map_groups.json"}},
     {ProjectFilePath::json_layouts,                     { "json_layouts",                    "data/layouts/layouts.json"}},
     {ProjectFilePath::json_wild_encounters,             { "json_wild_encounters",            "src/data/wild_encounters.json"}},
+    {ProjectFilePath::json_heal_locations,              { "json_heal_locations",             "src/data/heal_locations.json"}},
     {ProjectFilePath::json_region_map_entries,          { "json_region_map_entries",         "src/data/region_map/region_map_sections.json"}},
     {ProjectFilePath::json_region_porymap_cfg,          { "json_region_porymap_cfg",         "src/data/region_map/porymap_config.json"}},
     {ProjectFilePath::tilesets_headers,                 { "tilesets_headers",                "src/data/tilesets/headers.h"}},
@@ -151,15 +163,12 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::data_obj_event_pic_tables,        { "data_obj_event_pic_tables",       "src/data/object_events/object_event_pic_tables.h"}},
     {ProjectFilePath::data_obj_event_gfx,               { "data_obj_event_gfx",              "src/data/object_events/object_event_graphics.h"}},
     {ProjectFilePath::data_pokemon_gfx,                 { "data_pokemon_gfx",                "src/data/graphics/pokemon.h"}},
-    {ProjectFilePath::data_heal_locations,              { "data_heal_locations",             "src/data/heal_locations.h"}},
     {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
-    {ProjectFilePath::constants_map_groups,             { "constants_map_groups",            "include/constants/map_groups.h"}},
     {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
     {ProjectFilePath::constants_flags,                  { "constants_flags",                 "include/constants/flags.h"}},
     {ProjectFilePath::constants_vars,                   { "constants_vars",                  "include/constants/vars.h"}},
     {ProjectFilePath::constants_weather,                { "constants_weather",               "include/constants/weather.h"}},
     {ProjectFilePath::constants_songs,                  { "constants_songs",                 "include/constants/songs.h"}},
-    {ProjectFilePath::constants_heal_locations,         { "constants_heal_locations",        "include/constants/heal_locations.h"}},
     {ProjectFilePath::constants_pokemon,                { "constants_pokemon",               "include/constants/pokemon.h"}},
     {ProjectFilePath::constants_map_types,              { "constants_map_types",             "include/constants/map_types.h"}},
     {ProjectFilePath::constants_trainer_types,          { "constants_trainer_types",         "include/constants/trainer_types.h"}},
@@ -167,7 +176,6 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::constants_obj_event_movement,     { "constants_obj_event_movement",    "include/constants/event_object_movement.h"}},
     {ProjectFilePath::constants_obj_events,             { "constants_obj_events",            "include/constants/event_objects.h"}},
     {ProjectFilePath::constants_event_bg,               { "constants_event_bg",              "include/constants/event_bg.h"}},
-    {ProjectFilePath::constants_region_map_sections,    { "constants_region_map_sections",   "include/constants/region_map_sections.h"}},
     {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
     {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
     {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},
@@ -226,14 +234,14 @@ void KeyValueConfigBase::load() {
             continue;
         }
 
-        this->parseConfigKeyValue(match.captured("key").trimmed().toLower(), match.captured("value").trimmed());
+        this->parseConfigKeyValue(match.captured("key").trimmed(), match.captured("value").trimmed());
     }
     this->setUnreadKeys();
 
     file.close();
 }
 
-void KeyValueConfigBase::save() {
+bool KeyValueConfigBase::save() {
     QString text = "";
     QMap<QString, QString> map = this->getKeyValueMap();
     for (QMap<QString, QString>::iterator it = map.begin(); it != map.end(); it++) {
@@ -241,15 +249,17 @@ void KeyValueConfigBase::save() {
     }
 
     QFile file(this->getConfigFilepath());
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(text.toUtf8());
-        file.close();
-    } else {
+    if (!file.open(QIODevice::WriteOnly)) {
         logError(QString("Could not open config file '%1' for writing: ").arg(this->getConfigFilepath()) + file.errorString());
+        return false;
     }
+
+    file.write(text.toUtf8());
+    file.close();
+    return true;
 }
 
-bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
+bool KeyValueConfigBase::getConfigBool(const QString &key, const QString &value) {
     bool ok;
     int result = value.toInt(&ok, 0);
     if (!ok || (result != 0 && result != 1)) {
@@ -258,37 +268,34 @@ bool KeyValueConfigBase::getConfigBool(QString key, QString value) {
     return (result != 0);
 }
 
-int KeyValueConfigBase::getConfigInteger(QString key, QString value, int min, int max, int defaultValue) {
+int KeyValueConfigBase::getConfigInteger(const QString &key, const QString &value, int min, int max, int defaultValue) {
     bool ok;
     int result = value.toInt(&ok, 0);
     if (!ok) {
-        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
-        return defaultValue;
+        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
+        result = defaultValue;
     }
     return qMin(max, qMax(min, result));
 }
 
-uint32_t KeyValueConfigBase::getConfigUint32(QString key, QString value, uint32_t min, uint32_t max, uint32_t defaultValue) {
+uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &value, uint32_t min, uint32_t max, uint32_t defaultValue) {
     bool ok;
     uint32_t result = value.toUInt(&ok, 0);
     if (!ok) {
-        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer.").arg(key).arg(value));
-        return defaultValue;
+        logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
+        result = defaultValue;
     }
     return qMin(max, qMax(min, result));
 }
 
-const QMap<MapSortOrder, QString> mapSortOrderMap = {
-    {MapSortOrder::Group, "group"},
-    {MapSortOrder::Layout, "layout"},
-    {MapSortOrder::Area, "area"},
-};
-
-const QMap<QString, MapSortOrder> mapSortOrderReverseMap = {
-    {"group", MapSortOrder::Group},
-    {"layout", MapSortOrder::Layout},
-    {"area", MapSortOrder::Area},
-};
+QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &value, const QColor &defaultValue) {
+    QColor color = QColor("#" + value);
+    if (!color.isValid()) {
+        logWarn(QString("Invalid config value for %1: '%2'. Must be a color in the format 'RRGGBB'. Using default value '%3'.").arg(key).arg(value).arg(defaultValue.name()));
+        color = defaultValue;
+    }
+    return color;
+}
 
 PorymapConfig porymapConfig;
 
@@ -314,14 +321,18 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->reopenOnLaunch = getConfigBool(key, value);
     } else if (key == "pretty_cursors") {
         this->prettyCursors = getConfigBool(key, value);
-    } else if (key == "map_sort_order") {
-        QString sortOrder = value.toLower();
-        if (mapSortOrderReverseMap.contains(sortOrder)) {
-            this->mapSortOrder = mapSortOrderReverseMap.value(sortOrder);
-        } else {
-            this->mapSortOrder = MapSortOrder::Group;
-            logWarn(QString("Invalid config value for map_sort_order: '%1'. Must be 'group', 'area', or 'layout'.").arg(value));
+    } else if (key == "map_list_tab") {
+        this->mapListTab = getConfigInteger(key, value, 0, 2, 0);
+    } else if (key == "map_list_edit_groups_enabled") {
+        this->mapListEditGroupsEnabled = getConfigBool(key, value);
+    } else if (key.startsWith("map_list_hide_empty_enabled/")) {
+        bool ok;
+        int tab = key.mid(QStringLiteral("map_list_hide_empty_enabled/").length()).toInt(&ok, 0);
+        if (!ok) {
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+            return;
         }
+        this->mapListHideEmptyEnabled.insert(tab, getConfigBool(key, value));
     } else if (key == "main_window_geometry") {
         this->mainWindowGeometry = bytesFromString(value);
     } else if (key == "main_window_state") {
@@ -368,6 +379,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->customScriptsEditorState = bytesFromString(value);
     } else if (key == "wild_mon_chart_geometry") {
         this->wildMonChartGeometry = bytesFromString(value);
+    } else if (key == "new_map_dialog_geometry") {
+        this->newMapDialogGeometry = bytesFromString(value);
+    } else if (key == "new_layout_dialog_geometry") {
+        this->newLayoutDialogGeometry = bytesFromString(value);
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "collision_zoom") {
@@ -388,10 +403,16 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showTilesetEditorMetatileGrid = getConfigBool(key, value);
     } else if (key == "show_tileset_editor_layer_grid") {
         this->showTilesetEditorLayerGrid = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_divider") {
+        this->showTilesetEditorDivider = getConfigBool(key, value);
+    } else if (key == "show_tileset_editor_raw_attributes") {
+        this->showTilesetEditorRawAttributes = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
         this->tilesetCheckerboardFill = getConfigBool(key, value);
+    } else if (key == "new_map_header_section_expanded") {
+        this->newMapHeaderSectionExpanded = getConfigBool(key, value);
     } else if (key == "theme") {
         this->theme = value;
     } else if (key == "wild_mon_chart_theme") {
@@ -407,8 +428,14 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "project_settings_tab") {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
+    } else if (key == "load_all_event_scripts") {
+        this->loadAllEventScripts = getConfigBool(key, value);
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
+    } else if (key == "event_delete_warning_disabled") {
+        this->eventDeleteWarningDisabled = getConfigBool(key, value);
+    } else if (key == "event_overlay_enabled") {
+        this->eventOverlayEnabled = getConfigBool(key, value);
     } else if (key == "check_for_updates") {
         this->checkForUpdates = getConfigBool(key, value);
     } else if (key == "last_update_check_time") {
@@ -427,6 +454,28 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         if (match.hasMatch()) {
             this->rateLimitTimes.insert(match.captured("url"), QDateTime::fromString(value).toLocalTime());
         }
+    } else if (key == "event_selection_shape_mode") {
+        if (value == "mask") {
+            this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
+        } else if (value == "bounding_rect") {
+            this->eventSelectionShapeMode = QGraphicsPixmapItem::BoundingRectShape;
+        } else {
+            logWarn(QString("Invalid config value for %1: '%2'. Must be 'mask' or 'bounding_rect'.").arg(key).arg(value));
+        }
+    } else if (key == "shown_in_game_reload_message") {
+        this->shownInGameReloadMessage = getConfigBool(key, value);
+    } else if (key == "grid_width") {
+        this->gridSettings.width = getConfigUint32(key, value);
+    } else if (key == "grid_height") {
+        this->gridSettings.height = getConfigUint32(key, value);
+    } else if (key == "grid_x") {
+        this->gridSettings.offsetX = getConfigInteger(key, value, 0, 999);
+    } else if (key == "grid_y") {
+        this->gridSettings.offsetY = getConfigInteger(key, value, 0, 999);
+    } else if (key == "grid_style") {
+        this->gridSettings.style = GridSettings::getStyleFromName(value);
+    } else if (key == "grid_color") {
+        this->gridSettings.color = getConfigColor(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -438,7 +487,11 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("project_manually_closed", this->projectManuallyClosed ? "1" : "0");
     map.insert("reopen_on_launch", this->reopenOnLaunch ? "1" : "0");
     map.insert("pretty_cursors", this->prettyCursors ? "1" : "0");
-    map.insert("map_sort_order", mapSortOrderMap.value(this->mapSortOrder));
+    map.insert("map_list_tab", QString::number(this->mapListTab));
+    map.insert("map_list_edit_groups_enabled", this->mapListEditGroupsEnabled ? "1" : "0");
+    for (auto i = this->mapListHideEmptyEnabled.constBegin(); i != this->mapListHideEmptyEnabled.constEnd(); i++) {
+        map.insert(QStringLiteral("map_list_hide_empty_enabled/") + QString::number(i.key()), i.value() ? "1" : "0");
+    }
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));
@@ -456,6 +509,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("custom_scripts_editor_geometry", stringFromByteArray(this->customScriptsEditorGeometry));
     map.insert("custom_scripts_editor_state", stringFromByteArray(this->customScriptsEditorState));
     map.insert("wild_mon_chart_geometry", stringFromByteArray(this->wildMonChartGeometry));
+    map.insert("new_map_dialog_geometry", stringFromByteArray(this->newMapDialogGeometry));
+    map.insert("new_layout_dialog_geometry", stringFromByteArray(this->newLayoutDialogGeometry));
     map.insert("mirror_connecting_maps", this->mirrorConnectingMaps ? "1" : "0");
     map.insert("show_dive_emerge_maps", this->showDiveEmergeMaps ? "1" : "0");
     map.insert("dive_emerge_map_opacity", QString::number(this->diveEmergeMapOpacity));
@@ -472,15 +527,21 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_grid", this->showGrid ? "1" : "0");
     map.insert("show_tileset_editor_metatile_grid", this->showTilesetEditorMetatileGrid ? "1" : "0");
     map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
+    map.insert("show_tileset_editor_divider", this->showTilesetEditorDivider ? "1" : "0");
+    map.insert("show_tileset_editor_raw_attributes", this->showTilesetEditorRawAttributes ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
+    map.insert("new_map_header_section_expanded", this->newMapHeaderSectionExpanded ? "1" : "0");
     map.insert("theme", this->theme);
     map.insert("wild_mon_chart_theme", this->wildMonChartTheme);
     map.insert("text_editor_open_directory", this->textEditorOpenFolder);
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
+    map.insert("load_all_event_scripts", QString::number(this->loadAllEventScripts));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
+    map.insert("event_delete_warning_disabled", QString::number(this->eventDeleteWarningDisabled));
+    map.insert("event_overlay_enabled", QString::number(this->eventOverlayEnabled));
     map.insert("check_for_updates", QString::number(this->checkForUpdates));
     map.insert("last_update_check_time", this->lastUpdateCheckTime.toUTC().toString());
     map.insert("last_update_check_version", this->lastUpdateCheckVersion.toString());
@@ -490,22 +551,30 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
         if (!time.isNull() && time > QDateTime::currentDateTime())
             map.insert("rate_limit_time/" + i.key().toString(), time.toUTC().toString());
     }
+    map.insert("event_selection_shape_mode", (this->eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) ? "mask" : "bounding_rect");
+    map.insert("shown_in_game_reload_message", this->shownInGameReloadMessage ? "1" : "0");
+    map.insert("grid_width", QString::number(this->gridSettings.width));
+    map.insert("grid_height", QString::number(this->gridSettings.height));
+    map.insert("grid_x", QString::number(this->gridSettings.offsetX));
+    map.insert("grid_y", QString::number(this->gridSettings.offsetY));
+    map.insert("grid_style", GridSettings::getStyleName(this->gridSettings.style));
+    map.insert("grid_color", this->gridSettings.color.name().remove("#")); // Our text config treats '#' as the start of a comment.
     
     return map;
 }
 
-QString PorymapConfig::stringFromByteArray(QByteArray bytearray) {
+QString PorymapConfig::stringFromByteArray(const QByteArray &bytearray) {
     QString ret;
-    for (auto ch : bytearray) {
+    for (const auto &ch : bytearray) {
         ret += QString::number(static_cast<int>(ch)) + ":";
     }
     return ret;
 }
 
-QByteArray PorymapConfig::bytesFromString(QString in) {
+QByteArray PorymapConfig::bytesFromString(const QString &in) {
     QByteArray ba;
-    QStringList split = in.split(":");
-    for (auto ch : split) {
+    QStringList split = in.split(":", Qt::SkipEmptyParts);
+    for (const auto &ch : split) {
         ba.append(static_cast<char>(ch.toInt()));
     }
     return ba;
@@ -662,6 +731,32 @@ BaseGameVersion ProjectConfig::stringToBaseGameVersion(const QString &string) {
     return version;
 }
 
+QString ProjectConfig::getPlayerIconPath(BaseGameVersion baseGameVersion, int character) {
+    switch (baseGameVersion) {
+        case BaseGameVersion::pokeemerald: {
+            static const QStringList paths = { QStringLiteral(":/icons/player/brendan_em.ico"),
+                                               QStringLiteral(":/icons/player/may_em.ico"), };
+            return paths.value(character);
+        }
+        case BaseGameVersion::pokefirered: {
+            static const QStringList paths = { QStringLiteral(":/icons/player/red.ico"),
+                                               QStringLiteral(":/icons/player/green.ico"), };
+            return paths.value(character);
+        }
+        case BaseGameVersion::pokeruby:    {
+            static const QStringList paths = { QStringLiteral(":/icons/player/brendan_rs.ico"),
+                                               QStringLiteral(":/icons/player/may_rs.ico"), };
+            return paths.value(character);
+        }
+        default: break;
+    }
+    return QString();
+}
+
+QIcon ProjectConfig::getPlayerIcon(BaseGameVersion baseGameVersion, int character) {
+    return QIcon(getPlayerIconPath(baseGameVersion, character));
+}
+
 ProjectConfig projectConfig;
 
 QString ProjectConfig::getConfigFilepath() {
@@ -705,6 +800,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->defaultElevation = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "default_collision") {
         this->defaultCollision = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "default_map_width") {
+        this->defaultMapSize.setWidth(getConfigInteger(key, value, 1));
+    } else if (key == "default_map_height") {
+        this->defaultMapSize.setHeight(getConfigInteger(key, value, 1));
     } else if (key == "new_map_border_metatiles") {
         this->newMapBorderMetatileIds.clear();
         QList<QString> metatileIds = value.split(",");
@@ -737,30 +836,40 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->blockCollisionMask = getConfigUint32(key, value, 0, Block::maxValue);
     } else if (key == "block_elevation_mask") {
         this->blockElevationMask = getConfigUint32(key, value, 0, Block::maxValue);
+    } else if (key == "unused_tile_normal") {
+        this->unusedTileNormal = getConfigUint32(key, value, 0, Tile::maxValue);
+    } else if (key == "unused_tile_covered") {
+        this->unusedTileCovered = getConfigUint32(key, value, 0, Tile::maxValue);
+    } else if (key == "unused_tile_split") {
+        this->unusedTileSplit = getConfigUint32(key, value, 0, Tile::maxValue);
     } else if (key == "enable_map_allow_flags") {
         this->mapAllowFlagsEnabled = getConfigBool(key, value);
 #ifdef CONFIG_BACKWARDS_COMPATABILITY
-    } else if (key == "recent_map") {
-        userConfig.recentMap = value;
+    } else if (key == "recent_map_or_layout") {
+        userConfig.recentMapOrLayout = value;
     } else if (key == "use_encounter_json") {
         userConfig.useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
         userConfig.parseCustomScripts(value);
 #endif
     } else if (key.startsWith("path/")) {
-        auto k = reverseDefaultPaths(key.mid(5));
+        auto k = reverseDefaultPaths(key.mid(QStringLiteral("path/").length()));
         if (k != static_cast<ProjectFilePath>(-1)) {
             this->setFilePath(k, value);
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
     } else if (key.startsWith("ident/")) {
-        auto identifierId = reverseDefaultIdentifier(key.mid(6));
+        auto identifierId = reverseDefaultIdentifier(key.mid(QStringLiteral("ident/").length()));
         if (identifierId != static_cast<ProjectIdentifier>(-1)) {
             this->setIdentifier(identifierId, value);
         } else {
             logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
         }
+    } else if (key.startsWith("global_constant/")) {
+        this->globalConstants.insert(key.mid(QStringLiteral("global_constant/").length()), value);
+    } else if (key == "global_constants_filepaths") {
+        this->globalConstantsFilepaths = value.split(",", Qt::SkipEmptyParts);
     } else if (key == "prefabs_filepath") {
         this->prefabFilepath = value;
     } else if (key == "prefabs_import_prompted") {
@@ -769,6 +878,10 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
+    } else if (key == "set_transparent_pixels_black") {
+        this->setTransparentPixelsBlack = getConfigBool(key, value);
+    } else if (key == "preserve_matching_only_data") {
+        this->preserveMatchingOnlyData = getConfigBool(key, value);
     } else if (key == "event_icon_path_object") {
         this->eventIconPaths[Event::Group::Object] = value;
     } else if (key == "event_icon_path_warp") {
@@ -780,19 +893,33 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "event_icon_path_heal") {
         this->eventIconPaths[Event::Group::Heal] = value;
     } else if (key.startsWith("pokemon_icon_path/")) {
-        this->pokemonIconPaths.insert(key.mid(18).toUpper(), value);
+        this->pokemonIconPaths.insert(key.mid(QStringLiteral("pokemon_icon_path/").length()), value);
+    } else if (key == "events_tab_icon_path") {
+        this->eventsTabIconPath = value;
     } else if (key == "collision_sheet_path") {
         this->collisionSheetPath = value;
     } else if (key == "collision_sheet_width") {
-        this->collisionSheetWidth = getConfigUint32(key, value, 1, Block::maxValue);
+        this->collisionSheetSize.setWidth(getConfigInteger(key, value, 1, Block::maxValue));
     } else if (key == "collision_sheet_height") {
-        this->collisionSheetHeight = getConfigUint32(key, value, 1, Block::maxValue);
+        this->collisionSheetSize.setHeight(getConfigInteger(key, value, 1, Block::maxValue));
+    } else if (key == "player_view_north") {
+        this->playerViewDistance.setTop(getConfigInteger(key, value, 0, INT_MAX, GBA_V_DIST_TO_CENTER));
+    } else if (key == "player_view_south") {
+        this->playerViewDistance.setBottom(getConfigInteger(key, value, 0, INT_MAX, GBA_V_DIST_TO_CENTER));
+    } else if (key == "player_view_west") {
+        this->playerViewDistance.setLeft(getConfigInteger(key, value, 0, INT_MAX, GBA_H_DIST_TO_CENTER));
+    } else if (key == "player_view_east") {
+        this->playerViewDistance.setRight(getConfigInteger(key, value, 0, INT_MAX, GBA_H_DIST_TO_CENTER));
     } else if (key == "warp_behaviors") {
         this->warpBehaviors.clear();
         value.remove(" ");
-        QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
+        const QStringList behaviorList = value.split(",", Qt::SkipEmptyParts);
         for (auto s : behaviorList)
-            this->warpBehaviors.insert(getConfigUint32(key, s));
+            this->warpBehaviors.append(getConfigUint32(key, s));
+    } else if (key == "max_events_per_group") {
+        this->maxEventsPerGroup = getConfigInteger(key, value, 1, INT_MAX, 255);
+    } else if (key == "forced_major_version") {
+        this->forcedMajorVersion = getConfigInteger(key, value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -818,7 +945,7 @@ void ProjectConfig::setUnreadKeys() {
     if (!readKeys.contains("enable_event_clone_object")) this->eventCloneObjectEnabled = isPokefirered;
     if (!readKeys.contains("enable_floor_number")) this->floorNumberEnabled = isPokefirered;
     if (!readKeys.contains("create_map_text_file")) this->createMapTextFileEnabled = (this->baseGameVersion != BaseGameVersion::pokeemerald);
-    if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? DEFAULT_BORDER_FRLG : DEFAULT_BORDER_RSE;
+    if (!readKeys.contains("new_map_border_metatiles")) this->newMapBorderMetatileIds = isPokefirered ? defaultBorder_FRLG : defaultBorder_RSE;
     if (!readKeys.contains("default_secondary_tileset")) this->defaultSecondaryTileset = isPokefirered ? "gTileset_PalletTown" : "gTileset_Petalburg";
     if (!readKeys.contains("metatile_attributes_size")) this->metatileAttributesSize = Metatile::getDefaultAttributesSize(this->baseGameVersion);
     if (!readKeys.contains("metatile_behavior_mask")) this->metatileBehaviorMask = Metatile::getDefaultAttributesMask(this->baseGameVersion, Metatile::Attr::Behavior);
@@ -846,6 +973,8 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("default_metatile", Metatile::getMetatileIdString(this->defaultMetatileId));
     map.insert("default_elevation", QString::number(this->defaultElevation));
     map.insert("default_collision", QString::number(this->defaultCollision));
+    map.insert("default_map_width", QString::number(this->defaultMapSize.width()));
+    map.insert("default_map_height", QString::number(this->defaultMapSize.height()));
     map.insert("new_map_border_metatiles", Metatile::getMetatileIdStrings(this->newMapBorderMetatileIds));
     map.insert("default_primary_tileset", this->defaultPrimaryTileset);
     map.insert("default_secondary_tileset", this->defaultSecondaryTileset);
@@ -856,34 +985,50 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     }
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
+    map.insert("set_transparent_pixels_black", QString::number(this->setTransparentPixelsBlack));
+    map.insert("preserve_matching_only_data", QString::number(this->preserveMatchingOnlyData));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
-    map.insert("metatile_behavior_mask", "0x" + QString::number(this->metatileBehaviorMask, 16).toUpper());
-    map.insert("metatile_terrain_type_mask", "0x" + QString::number(this->metatileTerrainTypeMask, 16).toUpper());
-    map.insert("metatile_encounter_type_mask", "0x" + QString::number(this->metatileEncounterTypeMask, 16).toUpper());
-    map.insert("metatile_layer_type_mask", "0x" + QString::number(this->metatileLayerTypeMask, 16).toUpper());
-    map.insert("block_metatile_id_mask", "0x" + QString::number(this->blockMetatileIdMask, 16).toUpper());
-    map.insert("block_collision_mask", "0x" + QString::number(this->blockCollisionMask, 16).toUpper());
-    map.insert("block_elevation_mask", "0x" + QString::number(this->blockElevationMask, 16).toUpper());
+    map.insert("metatile_behavior_mask", Util::toHexString(this->metatileBehaviorMask));
+    map.insert("metatile_terrain_type_mask", Util::toHexString(this->metatileTerrainTypeMask));
+    map.insert("metatile_encounter_type_mask", Util::toHexString(this->metatileEncounterTypeMask));
+    map.insert("metatile_layer_type_mask", Util::toHexString(this->metatileLayerTypeMask));
+    map.insert("block_metatile_id_mask", Util::toHexString(this->blockMetatileIdMask));
+    map.insert("block_collision_mask", Util::toHexString(this->blockCollisionMask));
+    map.insert("block_elevation_mask", Util::toHexString(this->blockElevationMask));
+    map.insert("unused_tile_normal", Util::toHexString(this->unusedTileNormal));
+    map.insert("unused_tile_covered", Util::toHexString(this->unusedTileCovered));
+    map.insert("unused_tile_split", Util::toHexString(this->unusedTileSplit));
     map.insert("enable_map_allow_flags", QString::number(this->mapAllowFlagsEnabled));
     map.insert("event_icon_path_object", this->eventIconPaths[Event::Group::Object]);
     map.insert("event_icon_path_warp", this->eventIconPaths[Event::Group::Warp]);
     map.insert("event_icon_path_coord", this->eventIconPaths[Event::Group::Coord]);
     map.insert("event_icon_path_bg", this->eventIconPaths[Event::Group::Bg]);
     map.insert("event_icon_path_heal", this->eventIconPaths[Event::Group::Heal]);
-    for (auto i = this->pokemonIconPaths.cbegin(), end = this->pokemonIconPaths.cend(); i != end; i++){
-        const QString path = i.value();
-        if (!path.isEmpty()) map.insert("pokemon_icon_path/" + i.key(), path);
+    for (auto it = this->pokemonIconPaths.constBegin(); it != this->pokemonIconPaths.constEnd(); it++) {
+        const QString path = it.value();
+        if (!path.isEmpty()) map.insert("pokemon_icon_path/" + it.key(), path);
     }
-    for (auto i = this->identifiers.cbegin(), end = this->identifiers.cend(); i != end; i++) {
-        map.insert("ident/"+defaultIdentifiers.value(i.key()).first, i.value());
+    for (auto it = this->globalConstants.constBegin(); it != this->globalConstants.constEnd(); it++) {
+        map.insert("global_constant/" + it.key(), it.value());
     }
+    map.insert("global_constants_filepaths", this->globalConstantsFilepaths.join(","));
+    for (auto it = this->identifiers.constBegin(); it != this->identifiers.constEnd(); it++) {
+        map.insert("ident/"+defaultIdentifiers.value(it.key()).first, it.value());
+    }
+    map.insert("events_tab_icon_path", this->eventsTabIconPath);
     map.insert("collision_sheet_path", this->collisionSheetPath);
-    map.insert("collision_sheet_width", QString::number(this->collisionSheetWidth));
-    map.insert("collision_sheet_height", QString::number(this->collisionSheetHeight));
+    map.insert("collision_sheet_width", QString::number(this->collisionSheetSize.width()));
+    map.insert("collision_sheet_height", QString::number(this->collisionSheetSize.height()));
+    map.insert("player_view_north", QString::number(this->playerViewDistance.top()));
+    map.insert("player_view_south", QString::number(this->playerViewDistance.bottom()));
+    map.insert("player_view_west", QString::number(this->playerViewDistance.left()));
+    map.insert("player_view_east", QString::number(this->playerViewDistance.right()));
     QStringList warpBehaviorStrs;
-    for (auto value : this->warpBehaviors)
+    for (const auto &value : this->warpBehaviors)
         warpBehaviorStrs.append("0x" + QString("%1").arg(value, 2, 16, QChar('0')).toUpper());
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
+    map.insert("max_events_per_group", QString::number(this->maxEventsPerGroup));
+    map.insert("forced_major_version", QString::number(this->forcedMajorVersion));
 
     return map;
 }
@@ -937,7 +1082,7 @@ void ProjectConfig::setFilePath(const QString &pathId, const QString &path) {
 }
 
 QString ProjectConfig::getCustomFilePath(ProjectFilePath pathId) {
-    return this->filePaths.value(pathId);
+    return QDir::cleanPath(this->filePaths.value(pathId));
 }
 
 QString ProjectConfig::getCustomFilePath(const QString &pathId) {
@@ -945,27 +1090,40 @@ QString ProjectConfig::getCustomFilePath(const QString &pathId) {
 }
 
 QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
-    const QString customPath = this->getCustomFilePath(pathId);
+    QString customPath = this->getCustomFilePath(pathId);
     if (!customPath.isEmpty()) {
         // A custom filepath has been specified. If the file/folder exists, use that.
-        const QString absCustomPath = this->projectDir + QDir::separator() + customPath;
-        if (QFileInfo::exists(absCustomPath)) {
+        const QString baseDir = this->projectDir + "/";
+        if (customPath.startsWith(baseDir)) {
+            customPath.remove(0, baseDir.length());
+        }
+        if (QFileInfo::exists(QDir::cleanPath(baseDir + customPath))) {
             return customPath;
         } else {
-            logError(QString("Custom project filepath '%1' not found. Using default.").arg(absCustomPath));
+            logError(QString("Custom project filepath '%1' not found. Using default.").arg(customPath));
         }
     }
     return defaultPaths.contains(pathId) ? defaultPaths[pathId].second : QString();
 
 }
 
-void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString &text) {
-    if (!defaultIdentifiers.contains(id)) return;
-    QString copy(text);
-    if (copy.isEmpty()) {
+void ProjectConfig::setIdentifier(ProjectIdentifier id, QString text) {
+    if (!defaultIdentifiers.contains(id))
+        return;
+
+    if (text.isEmpty()) {
         this->identifiers.remove(id);
     } else {
-        this->identifiers[id] = copy;
+        const QString idName = defaultIdentifiers.value(id).first;
+        if (idName.startsWith("define_") || idName.startsWith("symbol_")) {
+            // Validate the input for the identifier, depending on the type.
+            IdentifierValidator validator;
+            if (!validator.isValid(text)) {
+                logError(QString("The name '%1' for project identifier '%2' is invalid. It must only contain word characters, and cannot start with a digit.").arg(text).arg(idName));
+                return;
+            }
+        }
+        this->identifiers[id] = text;
     }
 }
 
@@ -1023,7 +1181,7 @@ QString ProjectConfig::getPokemonIconPath(const QString &species) {
     return this->pokemonIconPaths.value(species);
 }
 
-QHash<QString, QString> ProjectConfig::getPokemonIconPaths() {
+QMap<QString, QString> ProjectConfig::getPokemonIconPaths() {
     return this->pokemonIconPaths;
 }
 
@@ -1035,8 +1193,8 @@ QString UserConfig::getConfigFilepath() {
 }
 
 void UserConfig::parseConfigKeyValue(QString key, QString value) {
-    if (key == "recent_map") {
-        this->recentMap = value;
+    if (key == "recent_map_or_layout") {
+        this->recentMapOrLayout = value;
     } else if (key == "use_encounter_json") {
         this->useEncounterJson = getConfigBool(key, value);
     } else if (key == "custom_scripts") {
@@ -1052,7 +1210,7 @@ void UserConfig::setUnreadKeys() {
 
 QMap<QString, QString> UserConfig::getKeyValueMap() {
     QMap<QString, QString> map;
-    map.insert("recent_map", this->recentMap);
+    map.insert("recent_map_or_layout", this->recentMapOrLayout);
     map.insert("use_encounter_json", QString::number(this->useEncounterJson));
     map.insert("custom_scripts", this->outputCustomScripts());
     return map;

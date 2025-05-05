@@ -90,7 +90,7 @@ bool EditLayout::mergeWith(const QUndoCommand *command) {
 
 ///
 
-ResizeLayout::ResizeLayout(RegionMap *map, int oldWidth, int oldHeight, int newWidth, int newHeight,
+ResizeRMLayout::ResizeRMLayout(RegionMap *map, int oldWidth, int oldHeight, int newWidth, int newHeight,
         QMap<QString, QList<LayoutSquare>> oldLayouts, QMap<QString, QList<LayoutSquare>> newLayouts, QUndoCommand *parent)
     : QUndoCommand(parent) {
     setText("Change Layout Dimensions");
@@ -104,7 +104,7 @@ ResizeLayout::ResizeLayout(RegionMap *map, int oldWidth, int oldHeight, int newW
     this->newLayouts = newLayouts;
 }
 
-void ResizeLayout::redo() {
+void ResizeRMLayout::redo() {
     QUndoCommand::redo();
 
     if (!map) return;
@@ -113,7 +113,7 @@ void ResizeLayout::redo() {
     map->setAllLayouts(this->newLayouts);
 }
 
-void ResizeLayout::undo() {
+void ResizeRMLayout::undo() {
     if (!map) return;
 
     map->setLayoutDimensions(oldWidth, oldHeight, false);
@@ -122,8 +122,8 @@ void ResizeLayout::undo() {
     QUndoCommand::undo();
 }
 
-bool ResizeLayout::mergeWith(const QUndoCommand *command) {
-    const ResizeLayout *other = static_cast<const ResizeLayout *>(command);
+bool ResizeRMLayout::mergeWith(const QUndoCommand *command) {
+    const ResizeRMLayout *other = static_cast<const ResizeRMLayout *>(command);
 
     if (this->map != other->map)
         return false;
@@ -260,7 +260,7 @@ void ResizeTilemap::undo() {
 
 ///
 
-ClearEntries::ClearEntries(RegionMap *map, tsl::ordered_map<QString, MapSectionEntry> entries, QUndoCommand *parent)
+ClearEntries::ClearEntries(RegionMap *map, QHash<QString, MapSectionEntry> entries, QUndoCommand *parent)
     : QUndoCommand(parent) {
     setText("Clear Entries");
 

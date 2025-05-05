@@ -44,12 +44,19 @@ void PreferenceEditor::initFields() {
 }
 
 void PreferenceEditor::updateFields() {
-    themeSelector->setCurrentText(porymapConfig.theme);
+    themeSelector->setTextItem(porymapConfig.theme);
+    if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) {
+        ui->radioButton_OnSprite->setChecked(true);
+    } else if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::BoundingRectShape) {
+        ui->radioButton_WithinRect->setChecked(true);
+    }
     ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.textEditorOpenFolder);
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.textEditorGotoLine);
     ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.monitorFiles);
     ui->checkBox_OpenRecentProject->setChecked(porymapConfig.reopenOnLaunch);
     ui->checkBox_CheckForUpdates->setChecked(porymapConfig.checkForUpdates);
+    ui->checkBox_DisableEventWarning->setChecked(porymapConfig.eventDeleteWarningDisabled);
+    ui->checkBox_AutocompleteAllScripts->setChecked(porymapConfig.loadAllEventScripts);
 }
 
 void PreferenceEditor::saveFields() {
@@ -58,12 +65,18 @@ void PreferenceEditor::saveFields() {
         porymapConfig.theme = theme;
         emit themeChanged(theme);
     }
-
+    bool loadAllEventScripts = ui->checkBox_AutocompleteAllScripts->isChecked();
+    if (loadAllEventScripts != porymapConfig.loadAllEventScripts) {
+        porymapConfig.loadAllEventScripts = loadAllEventScripts;
+        emit scriptSettingsChanged(loadAllEventScripts);
+    }
+    porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
     porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();
     porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();
     porymapConfig.reopenOnLaunch = ui->checkBox_OpenRecentProject->isChecked();
     porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
+    porymapConfig.eventDeleteWarningDisabled = ui->checkBox_DisableEventWarning->isChecked();
     porymapConfig.save();
 
     emit preferencesSaved();

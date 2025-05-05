@@ -1,29 +1,37 @@
 #include "connectionpixmapitem.h"
 #include "editcommands.h"
 #include "map.h"
+#include "editor.h"
 
 #include <math.h>
 
-ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, int x, int y)
-    : QGraphicsPixmapItem(connection->getPixmap()),
+ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection)
+    : QGraphicsPixmapItem(connection->render()),
       connection(connection)
 {
     this->setEditable(true);
     this->basePixmap = pixmap();
-    this->setOrigin(x, y);
+    updateOrigin();
+    render(false);
+
+    // If the connection changes externally we want to update the pixmap to reflect the change.
+    connect(connection, &MapConnection::offsetChanged, this, &ConnectionPixmapItem::updatePos);
+    connect(connection, &MapConnection::directionChanged, this, &ConnectionPixmapItem::refresh);
+    connect(connection, &MapConnection::targetMapNameChanged, this, &ConnectionPixmapItem::refresh);
 }
 
-ConnectionPixmapItem::ConnectionPixmapItem(MapConnection* connection, QPoint pos)
-    : ConnectionPixmapItem(connection, pos.x(), pos.y())
-{}
+void ConnectionPixmapItem::refresh() {
+    updateOrigin();
+    render(true);
+}
 
 // Render additional visual effects on top of the base map image.
 void ConnectionPixmapItem::render(bool ignoreCache) {
     if (ignoreCache)
-        this->basePixmap = this->connection->getPixmap();
+        this->basePixmap = this->connection->render();
 
     QPixmap pixmap = this->basePixmap.copy(0, 0, this->basePixmap.width(), this->basePixmap.height());
-    this->setZValue(-1);
+    this->setZValue(Editor::ZValue::MapConnectionActive);
 
     // When editing is inactive the current selection is ignored, all connections should appear normal.
     if (this->getEditable()) {
@@ -35,7 +43,7 @@ void ConnectionPixmapItem::render(bool ignoreCache) {
             painter.end();
         } else {
             // Darken the image
-            this->setZValue(-2);
+            this->setZValue(Editor::ZValue::MapConnectionInactive);
             QPainter painter(&pixmap);
             int alpha = static_cast<int>(255 * 0.25);
             painter.fillRect(0, 0, pixmap.width(), pixmap.height(), QColor(0, 0, 0, alpha));
@@ -55,17 +63,17 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
         int newOffset = this->connection->offset();
 
         // Restrict movement to the metatile grid and perpendicular to the connection direction.
-        if (MapConnection::isVertical(this->connection->direction())) {
+        if (this->connection->isVertical()) {
             x = (round(newPos.x() / this->mWidth) * this->mWidth) - this->originX;
             newOffset = x / this->mWidth;
-        } else if (MapConnection::isHorizontal(this->connection->direction())) {
+        } else if (this->connection->isHorizontal()) {
             y = (round(newPos.y() / this->mHeight) * this->mHeight) - this->originY;
             newOffset = y / this->mHeight;
         }
 
         // This is convoluted because of how our edit history works; this would otherwise just be 'this->connection->setOffset(newOffset);'
         if (this->connection->parentMap() && newOffset != this->connection->offset())
-            this->connection->parentMap()->editHistory.push(new MapConnectionMove(this->connection, newOffset, this->actionId));
+            this->connection->parentMap()->commit(new MapConnectionMove(this->connection, newOffset, this->actionId));
 
         return QPointF(x, y);
     }
@@ -76,28 +84,28 @@ QVariant ConnectionPixmapItem::itemChange(GraphicsItemChange change, const QVari
 
 // If connection->offset changed externally we call this to correct our position.
 void ConnectionPixmapItem::updatePos() {
-    const QSignalBlocker blocker(this);
-
     qreal x = this->originX;
     qreal y = this->originY;
 
-    if (MapConnection::isVertical(this->connection->direction())) {
+    if (this->connection->isVertical()) {
         x += this->connection->offset() * this->mWidth;
-    } else if (MapConnection::isHorizontal(this->connection->direction())) {
+    } else if (this->connection->isHorizontal()) {
         y += this->connection->offset() * this->mHeight;
     }
 
     this->setPos(x, y);
+    emit positionChanged(x, y);
 }
 
-// Set the pixmap's external origin point, i.e. the pixmap's position when connection->offset == 0
-void ConnectionPixmapItem::setOrigin(int x, int y) {
-    this->originX = x;
-    this->originY = y;
+void ConnectionPixmapItem::updateOrigin() {
+    if (this->connection->isVertical()) {
+        this->originX = 0;
+        this->originY = this->connection->relativePos(true).y() * this->mHeight;
+    } else if (this->connection->isHorizontal()) {
+        this->originX = this->connection->relativePos(true).x() * this->mWidth;
+        this->originY = 0;
+    }
     updatePos();
-}
-void ConnectionPixmapItem::setOrigin(QPoint pos) {
-    this->setOrigin(pos.x(), pos.y());
 }
 
 void ConnectionPixmapItem::setEditable(bool editable) {
@@ -113,13 +121,12 @@ void ConnectionPixmapItem::setSelected(bool selected) {
     if (this->selected == selected)
         return;
     this->selected = selected;
+
     this->render();
     emit selectionChanged(selected);
 }
 
 void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
-    if (!this->getEditable())
-        return;
     this->setSelected(true);
 }
 

@@ -1,4 +1,5 @@
 #include "noscrollcombobox.h"
+#include "utility.h"
 
 #include <QCompleter>
 #include <QLineEdit>
@@ -22,6 +23,11 @@ NoScrollComboBox::NoScrollComboBox(QWidget *parent)
     static const QRegularExpression re("[^\\s]*");
     QValidator *validator = new QRegularExpressionValidator(re, this);
     this->setValidator(validator);
+
+    // QComboBox (as of writing) has no 'editing finished' signal to capture
+    // changes made either through the text edit or the drop-down.
+    connect(this, QOverload<int>::of(&QComboBox::activated), this, &NoScrollComboBox::editingFinished);
+    connect(this->lineEdit(), &QLineEdit::editingFinished, this, &NoScrollComboBox::editingFinished);
 }
 
 // On macOS QComboBox::setEditable and QComboBox::setLineEdit will override our changes to the focus policy, so we enforce it here.
@@ -82,7 +88,7 @@ void NoScrollComboBox::setNumberItem(int value)
 
 void NoScrollComboBox::setHexItem(uint32_t value)
 {
-    this->setItem(this->findData(value), "0x" + QString::number(value, 16).toUpper());
+    this->setItem(this->findData(value), Util::toHexString(value));
 }
 
 void NoScrollComboBox::setClearButtonEnabled(bool enabled) {

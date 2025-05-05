@@ -93,7 +93,11 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
 
     // take a tile from the tileset
     QImage img = tilesetImage.copy(pos.x() * 8, pos.y() * 8, 8, 8);
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
+    img.flip(Util::getOrientation(tile->hFlip(), tile->vFlip()));
+#else
     img = img.mirrored(tile->hFlip(), tile->vFlip());
+#endif
     return img;
 }
 

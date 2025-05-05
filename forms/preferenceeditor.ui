@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>522</width>
-    <height>493</height>
+    <width>530</width>
+    <height>432</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,205 +19,302 @@
      <number>9</number>
     </property>
     <item>
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Miscellaneous</string>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QCheckBox" name="checkBox_MonitorProjectFiles">
-         <property name="toolTip">
-          <string>If checked, a prompt to reload your project will appear if relevant project files are edited</string>
-         </property>
-         <property name="text">
-          <string>Monitor project files</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_OpenRecentProject">
-         <property name="toolTip">
-          <string>If checked, Porymap will automatically open your most recently opened project on startup</string>
-         </property>
-         <property name="text">
-          <string>Open recent project on launch</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_CheckForUpdates">
-         <property name="toolTip">
-          <string>If checked, Porymap will automatically alert you on startup if a new release is available</string>
-         </property>
-         <property name="text">
-          <string>Automatically check for updates</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_Themes">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="title">
-       <string>Application Theme</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_TextEditor">
-      <property name="title">
-       <string>Preferred Text Editor</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item row="2" column="0">
-        <widget class="QScrollArea" name="scrollArea_TextEditor">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents_TextEditor">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>492</width>
-            <height>327</height>
-           </rect>
+      <widget class="QWidget" name="tab_General">
+       <attribute name="title">
+        <string>General</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <property name="leftMargin">
+         <number>12</number>
+        </property>
+        <property name="rightMargin">
+         <number>12</number>
+        </property>
+        <property name="bottomMargin">
+         <number>12</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="checkBox_MonitorProjectFiles">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, a prompt to reload your project will appear if relevant project files are edited&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <property name="sizeConstraint">
-            <enum>QLayout::SetMinimumSize</enum>
-           </property>
-           <item row="6" column="0" colspan="2">
-            <widget class="QLabel" name="label_TextEditorGotoLineHelp">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this command is set a button will appear next to the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Script&lt;/span&gt; combo-box in the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Events&lt;/span&gt; tab which executes this command.&lt;span style=&quot; font-weight:600;&quot;&gt; %F&lt;/span&gt; will be substituted with the file path of the script and &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; will be substituted with the line number of the script in that file. &lt;span style=&quot; font-weight:600;&quot;&gt;%F &lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;must&lt;/span&gt; be given if &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; is given. If &lt;span style=&quot; font-weight:600;&quot;&gt;%F&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; given then the script's file path will be added to the end of the command. If the script can't be found then the current map's scripts file is opened.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_TextEditorGotoLine">
-             <property name="text">
-              <string>Goto Line Command</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_TextEditorOpenFolder">
+          <property name="text">
+           <string>Monitor project files</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_OpenRecentProject">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, Porymap will automatically open your most recently opened project on startup&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Open recent project on launch</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_CheckForUpdates">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, Porymap will automatically alert you on startup if a new release is available&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Automatically check for updates</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_Themes">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Application Theme</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_Events">
+       <attribute name="title">
+        <string>Events</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="leftMargin">
+         <number>12</number>
+        </property>
+        <property name="rightMargin">
+         <number>12</number>
+        </property>
+        <property name="bottomMargin">
+         <number>12</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="checkBox_DisableEventWarning">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, no warning will be shown when deleting an event that has an associated #define that may also be deleted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Disable warning when deleting events with IDs</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_AutocompleteAllScripts">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the list of suggestions when typing in an Event's Script field will include all global script labels in the project. Enabling this setting will make Porymap's startup slower.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Autocomplete Script labels using all possible scripts</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_EventSelectionMode">
+          <property name="title">
+           <string>Selection Mode</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_EventSelectionMode">
+           <item>
+            <widget class="QRadioButton" name="radioButton_OnSprite">
              <property name="toolTip">
-              <string>The shell command for your preferred text editor (possibly an absolute path if the program doesn't exist in your PATH).</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, an event can be selected by clicking directly on the opaque pixels of its sprite. This may be preferable when events are overlapping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <property name="placeholderText">
-              <string>e.g. code %D</string>
-             </property>
-             <property name="clearButtonEnabled">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QLabel" name="label_TextEditorOpenFolderHelp">
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the command that is executed when clicking &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Open Project in Text Editor&lt;/span&gt; in the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Tools&lt;/span&gt; menu. &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; will be substituted with the project's root directory. If &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; specified then the project directory will be added to the end of the command.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+              <string>Select by clicking on sprite</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_TextEditorOpenFolder">
-             <property name="text">
-              <string>Open Directory Command</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <widget class="QLineEdit" name="lineEdit_TextEditorGotoLine">
+           <item>
+            <widget class="QRadioButton" name="radioButton_WithinRect">
              <property name="toolTip">
-              <string>The shell command for your preferred text editor to open a file to a specific line number (possibly an absolute path if the program doesn't exist in your PATH).</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, an event can be selected by clicking anywhere within its sprite dimensions. This may be preferable for events with small or mostly transparent sprites.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <property name="placeholderText">
-              <string>e.g. code --goto %F:%L</string>
-             </property>
-             <property name="clearButtonEnabled">
-              <bool>true</bool>
+             <property name="text">
+              <string>Select by clicking within bounding rectangle</string>
              </property>
             </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>15</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="7" column="0" colspan="2">
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
            </item>
           </layout>
          </widget>
-        </widget>
-       </item>
-      </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Text Editor</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="leftMargin">
+         <number>12</number>
+        </property>
+        <property name="rightMargin">
+         <number>12</number>
+        </property>
+        <property name="bottomMargin">
+         <number>12</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="scrollArea_TextEditor">
+          <property name="frameShape">
+           <enum>QFrame::Shape::NoFrame</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_TextEditor">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>476</width>
+             <height>343</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <property name="sizeConstraint">
+             <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+            </property>
+            <item row="6" column="0" colspan="2">
+             <widget class="QLabel" name="label_TextEditorGotoLineHelp">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When this command is set a button will appear next to the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Script&lt;/span&gt; combo-box in the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Events&lt;/span&gt; tab which executes this command.&lt;span style=&quot; font-weight:600;&quot;&gt; %F&lt;/span&gt; will be substituted with the file path of the script and &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; will be substituted with the line number of the script in that file. &lt;span style=&quot; font-weight:600;&quot;&gt;%F &lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;must&lt;/span&gt; be given if &lt;span style=&quot; font-weight:600;&quot;&gt;%L&lt;/span&gt; is given. If &lt;span style=&quot; font-weight:600;&quot;&gt;%F&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; given then the script's file path will be added to the end of the command. If the script can't be found then the current map's scripts file is opened.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_TextEditorGotoLine">
+              <property name="text">
+               <string>Goto Line Command</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEdit_TextEditorOpenFolder">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The shell command for your preferred text editor (possibly an absolute path if the program doesn't exist in your PATH).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="placeholderText">
+               <string>e.g. code %D</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QLabel" name="label_TextEditorOpenFolderHelp">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the command that is executed when clicking &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Open Project in Text Editor&lt;/span&gt; in the &lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Tools&lt;/span&gt; menu. &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; will be substituted with the project's root directory. If &lt;span style=&quot; font-weight:600;&quot;&gt;%D&lt;/span&gt; is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; specified then the project directory will be added to the end of the command.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_TextEditorOpenFolder">
+              <property name="text">
+               <string>Open Directory Command</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="lineEdit_TextEditorGotoLine">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The shell command for your preferred text editor to open a file to a specific line number (possibly an absolute path if the program doesn't exist in your PATH).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="placeholderText">
+               <string>e.g. code --goto %F:%L</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>15</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="7" column="0" colspan="2">
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item>
      <widget class="QDialogButtonBox" name="buttonBox">
       <property name="standardButtons">
-       <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       <set>QDialogButtonBox::StandardButton::Apply|QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
       </property>
      </widget>
     </item>

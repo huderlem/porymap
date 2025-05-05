@@ -12,6 +12,7 @@ const QMap<CallbackType, QString> callbackFunctions = {
     {OnBlockHoverChanged, "onBlockHoverChanged"},
     {OnBlockHoverCleared, "onBlockHoverCleared"},
     {OnMapOpened, "onMapOpened"},
+    {OnLayoutOpened, "onLayoutOpened"},
     {OnMapResized, "onMapResized"},
     {OnBorderResized, "onBorderResized"},
     {OnMapShifted, "onMapShifted"},
@@ -258,14 +259,22 @@ void Scripting::cb_MapOpened(QString mapName) {
     instance->invokeCallback(OnMapOpened, args);
 }
 
-void Scripting::cb_MapResized(int oldWidth, int oldHeight, int newWidth, int newHeight) {
+void Scripting::cb_LayoutOpened(QString layoutName) {
+    if (!instance) return;
+
+    QJSValueList args {
+        layoutName,
+    };
+    instance->invokeCallback(OnLayoutOpened, args);
+}
+
+void Scripting::cb_MapResized(int oldWidth, int oldHeight, const QMargins &delta) {
     if (!instance) return;
 
     QJSValueList args {
         oldWidth,
         oldHeight,
-        newWidth,
-        newHeight,
+        Scripting::margins(delta),
     };
     instance->invokeCallback(OnMapResized, args);
 }
@@ -343,6 +352,15 @@ QJSValue Scripting::dimensions(int width, int height) {
     QJSValue obj = instance->engine->newObject();
     obj.setProperty("width", width);
     obj.setProperty("height", height);
+    return obj;
+}
+
+QJSValue Scripting::margins(const QMargins &margins) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("left", margins.left());
+    obj.setProperty("right", margins.right());
+    obj.setProperty("top", margins.top());
+    obj.setProperty("bottom", margins.bottom());
     return obj;
 }
 

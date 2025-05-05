@@ -8,9 +8,7 @@
 
 
 MultiKeyEdit::MultiKeyEdit(QWidget *parent, int fieldCount) :
-    QWidget(parent),
-    keySequenceEdit_vec(QVector<QKeySequenceEdit *>()),
-    keySequence_list(QList<QKeySequence>())
+    QWidget(parent)
 {
     setLayout(new QHBoxLayout(this));
     layout()->setContentsMargins(0, 0, 0, 0);
@@ -48,36 +46,36 @@ bool MultiKeyEdit::eventFilter(QObject *watched, QEvent *event) {
 }
 
 int MultiKeyEdit::fieldCount() const {
-    return keySequenceEdit_vec.count();
+    return this->keySequenceEdits.count();
 }
 
 void MultiKeyEdit::setFieldCount(int count) {
     if (count < 1)
         count = 1;
 
-    while (keySequenceEdit_vec.count() < count)
+    while (this->keySequenceEdits.count() < count)
         addNewKeySequenceEdit();
 
-    while (keySequenceEdit_vec.count() > count)
-        delete keySequenceEdit_vec.takeLast();
+    while (this->keySequenceEdits.count() > count)
+        delete this->keySequenceEdits.takeLast();
 
     alignKeySequencesLeft();
 }
 
 QList<QKeySequence> MultiKeyEdit::keySequences() const {
     QList<QKeySequence> current_keySequences;
-    for (auto *kse : keySequenceEdit_vec)
+    for (auto *kse : this->keySequenceEdits)
         if (!kse->keySequence().isEmpty())
             current_keySequences.append(kse->keySequence());
     return current_keySequences;
 }
 
 bool MultiKeyEdit::removeOne(const QKeySequence &keySequence) {
-    for (auto *keySequenceEdit : keySequenceEdit_vec) {
+    for (auto *keySequenceEdit : this->keySequenceEdits) {
         if (keySequenceEdit->keySequence() == keySequence) {
-            keySequence_list.removeOne(keySequence);
             keySequenceEdit->clear();
             alignKeySequencesLeft();
+            setFocusToLastNonEmptyKeySequenceEdit();
             return true;
         }
     }
@@ -108,29 +106,28 @@ void MultiKeyEdit::setClearButtonEnabled(bool enable) {
 }
 
 void MultiKeyEdit::clear() {
-    for (auto *keySequenceEdit : keySequenceEdit_vec)
+    for (auto *keySequenceEdit : this->keySequenceEdits)
         keySequenceEdit->clear();
-    keySequence_list.clear();
 }
 
 void MultiKeyEdit::setKeySequences(const QList<QKeySequence> &keySequences) {
     clear();
-    keySequence_list = keySequences;
-    int minCount = qMin(keySequenceEdit_vec.count(), keySequence_list.count());
+    int minCount = qMin(this->keySequenceEdits.count(), keySequences.count());
     for (int i = 0; i < minCount; ++i)
-        keySequenceEdit_vec[i]->setKeySequence(keySequence_list[i]);
+        this->keySequenceEdits[i]->setKeySequence(keySequences.at(i));
 }
 
 void MultiKeyEdit::addKeySequence(const QKeySequence &keySequence) {
-    keySequenceEdit_vec.last()->setKeySequence(keySequence);
+    this->keySequenceEdits.last()->setKeySequence(keySequence);
     alignKeySequencesLeft();
 }
 
 void MultiKeyEdit::addNewKeySequenceEdit() {
     auto *keySequenceEdit = new QKeySequenceEdit(this);
     keySequenceEdit->installEventFilter(this);
-    connect(keySequenceEdit, &QKeySequenceEdit::editingFinished,
-            this, &MultiKeyEdit::onEditingFinished);
+    connect(keySequenceEdit, &QKeySequenceEdit::editingFinished, [this, keySequenceEdit] {
+        onEditingFinished(keySequenceEdit);
+    });
     connect(keySequenceEdit, &QKeySequenceEdit::keySequenceChanged,
             this, &MultiKeyEdit::keySequenceChanged);
 
@@ -149,7 +146,7 @@ void MultiKeyEdit::addNewKeySequenceEdit() {
     }
 
     layout()->addWidget(keySequenceEdit);
-    keySequenceEdit_vec.append(keySequenceEdit);
+    this->keySequenceEdits.append(keySequenceEdit);
 }
 
 // Shift all key sequences left if there are any empty QKeySequenceEdit's.
@@ -160,7 +157,7 @@ void MultiKeyEdit::alignKeySequencesLeft() {
 }
 
 void MultiKeyEdit::setFocusToLastNonEmptyKeySequenceEdit() {
-    for (auto it = keySequenceEdit_vec.rbegin(); it != keySequenceEdit_vec.rend(); ++it) {
+    for (auto it = this->keySequenceEdits.rbegin(); it != this->keySequenceEdits.rend(); ++it) {
         if (!(*it)->keySequence().isEmpty()) {
             (*it)->setFocus();
             return;
@@ -168,12 +165,19 @@ void MultiKeyEdit::setFocusToLastNonEmptyKeySequenceEdit() {
     }
 }
 
-void MultiKeyEdit::onEditingFinished() {
-    auto *keySequenceEdit = qobject_cast<QKeySequenceEdit *>(sender());
-    if (keySequenceEdit && keySequence_list.contains(keySequenceEdit->keySequence()))
-        removeOne(keySequenceEdit->keySequence());
+void MultiKeyEdit::onEditingFinished(QKeySequenceEdit *sender) {
+    if (!sender) return;
+
     alignKeySequencesLeft();
-    setFocusToLastNonEmptyKeySequenceEdit();
+
+    // Remove duplicate key sequences, if any
+    if (!sender->keySequence().isEmpty()) {
+        for (const auto &edit : this->keySequenceEdits) {
+            if (edit != sender && edit->keySequence() == sender->keySequence()) {
+                removeOne(edit->keySequence());
+            }
+        }
+    }
 
     emit editingFinished();
 }

@@ -8,50 +8,121 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 
 ## [Unreleased]
 ### Added
-- Redesigned the Connections tab, adding a number of new features including the option to open or display diving maps and a list UI for easier edit access.
+- Redesigned the map list, adding new features including opening/editing layouts with no associated map, editing the names of map groups, rearranging maps and map groups, and hiding empty folders.
+- Add a drop-down for changing the layout of the currently opened map.
+- Add an option to duplicate maps/layouts.
+- Redesigned the Connections tab, adding new features including the option to open or display diving maps and a list UI for easier edit access.
 - Add a `Close Project` option
-- Add charts to the `Wild Pokémon` tab that show species and level distributions.
+- Add a search button to the `Wild Pokémon` tab that shows the encounter data for a species across all maps.
+- Add charts to the `Wild Pokémon` tab that show species and level distributions for the current map.
 - Add options for customizing the map grid under `View -> Grid Settings`.
+- Add an option to display Event sprites while editing the map.
+- Add an option to display a dividing line between tilesets in the Tileset Editor.
+- Add an input field to the Tileset Editor for editing the full metatile attributes value directly, including unused bits.
 - An alert will be displayed when attempting to open a seemingly invalid project.
 - Add support for defining project values with `enum` where `#define` was expected.
+- Add support for referring to object events and warps with named IDs, rather than referring to them with their index number.
+- Add a setting to specify the tile values to use for the unused metatile layer.
+- Add a setting to specify the maximum number of events in a group. A warning will be shown if too many events are added.
+- Add a setting to customize the size and position of the player view distance.
+- Add `onLayoutOpened` to the scripting API.
+- Add a splash loading screen for project openings.
 
 ### Changed
+- `Change Dimensions` now has an interactive resizing rectangle.
+- Redesigned the new map dialog, including better error checking and a collapsible section for header data.
+- New maps/layouts are no longer saved automatically, and can be fully discarded by closing without saving.
+- Map groups and ``MAPSEC`` names specified when creating a new map will be added automatically if they don't already exist.
+- Custom fields in JSON files that Porymap writes are no longer discarded.
 - Edits to map connections now have Undo/Redo and can be viewed in exported timelapses.
 - Changes to the "Mirror to Connecting Maps" setting will now be saved between sessions.
 - A notice will be displayed when attempting to open the "Dynamic" map, rather than nothing happening.
 - The base game version is now auto-detected if the project name contains only one of "emerald", "firered/leafgreen", or "ruby/sapphire".
-- The max encounter rate is now read from the project, rather than assuming the default value from RSE.
 - It's now possible to cancel quitting if there are unsaved changes in sub-windows.
 - The triple-layer metatiles setting can now be set automatically using a project constant.
-- `Export Map Stitch Image` now shows a preview of the full image, not just the current map.
+- `Export Map Stitch Image` and `Export Map Timelapse Image` now show a preview of the full image/gif, not just the current map.
+- `Custom Attributes` tables now display numbers using spin boxes. The `type` column was removed, because `value`'s type is now obvious.
+- Unrecognized map names in Event or Connections data will no longer be overwritten.
+- It's now possible to click on an event's sprite even if a different event's rectangle is overlapping it. The old selection behavior is available via a new setting.
+- Reduced diff noise when saving maps.
+- Map names and ``MAP_NAME`` constants are no longer required to match.
+- Porymap will no longer overwrite ``include/constants/map_groups.h`` or ``include/constants/layouts.h``.
+- Primary/secondary metatile images are now kept on separate rows, rather than blending together if the primary size is not divisible by 8.
+- The prompt to reload the project when a file has changed will now only appear when Porymap is the active application.
+- `Script` dropdowns now autocomplete only with scripts from the current map, rather than every script in the project. The old behavior is available via a new setting.
+- `Script` dropdowns now update automatically if the current map's scripts file is edited.
+- The options for `Encounter Type` and `Terrain Type` in the Tileset Editor are not hardcoded anymore, they're now read from the project.
+- The `symbol_wild_encounters` setting was replaced; this value is now read from the project.
+- The max encounter rate is now read from the project, rather than assuming the default value from RSE.
+- `MAP_OFFSET_W` and `MAP_OFFSET_H` (used to limit the maximum map size) are now read from the project.
+- The rendered area of the map border is now limited to the maximum player view distance (prior to this it included two extra rows on the top and bottom).
+- An error message will now be shown when Porymap is unable to save changes (e.g. if Porymap doesn't have write permissions for your project).
+- A project may now be opened even if it has no maps or map groups. A minimum of one map layout is required.
+- The file extensions that are expected for `.png` and `.pal` data files and the extensions outputted when creating a new tileset can now be customized.
+- Miscellaneous performance improvements, especially for opening projects.
 
 ### Fixed
 - Fix `Add Region Map...` not updating the region map settings file.
 - Fix some crashes on invalid region map tilesets.
 - Improve error reporting for invalid region map editor settings.
+- Fix the region map editor's palette resetting between region maps.
+- Fix the region map editor's h-flip and v-flip settings being swapped.
 - Fix config files being written before the project is opened successfully.
 - Fix the map and other project info still displaying if a new project fails to open.
 - Fix unsaved changes being ignored when quitting (such as with Cmd+Q on macOS).
-- Fix selections with multiple Events not always clearing when making a new selection.
+- Fix selections with multiple events not always clearing when making a new selection.
+- Fix the new event button not updating correctly when selecting object events.
+- Fix duplicated `Hidden Item` events not copying the `Requires Itemfinder` field.
+- Fix event sprites disappearing in certain areas outside the map boundaries.
+- Fix deselecting an event still allowing you to drag the event around.
+- Fix events rendering on top of the ruler at very high y values.
+- Fix new map names not appearing in event dropdowns that have already been populated.
 - Fix `About porymap` opening a new window each time it's activated.
 - Fix the `Edit History` window not raising to the front when reactivated.
 - New maps are now always inserted in map dropdowns at the correct position, rather than at the bottom of the list until the project is reloaded.
+- Fix species on the wild pokémon tab retaining icons from previously-opened projects.
 - Fix invalid species names clearing from wild pokémon data when revisited.
-- Fix editing wild pokémon data not marking the map as edited.
+- Fix editing wild pokémon data not marking the map as unsaved.
+- Fix editing an event's `Custom Attributes` not marking the map as unsaved.
 - Fix changes to map connections not marking connected maps as unsaved.
 - Fix numerous issues related to connecting a map to itself.
 - Fix incorrect map connections getting selected when opening a map by double-clicking a map connection.
 - Fix a visual issue when quickly dragging map connections around.
 - Fix map connections rendering incorrectly if their direction name was unknown.
 - Fix map connections rendering incorrectly if their dimensions were smaller than the border draw distance.
+- Fix metatile/collision selection images skewing off-center after opening a map from the Connections tab.
 - Fix the map list filter retaining text between project open/close.
 - Fix the map list mishandling value gaps when sorting by Area.
 - Fix a freeze on startup if project values are defined with mismatched parentheses.
 - Fix stitched map images sometimes rendering garbage
 - Fix the `Reset` button on `Export Map Timelapse Image` not resetting the Timelapse settings.
+- Fix events in exported map stitch images being occluded by neighboring maps.
+- Fix the map connections in exported map images coming from the map currently open in the editor, rather than the map shown in the export window.
+- Fix crash when exporting a map stitch image if a map fails to load.
+- Fix possible crash when exporting a timelapse that has events edit history.
+- Fix exported timelapses excluding pasted events and certain map size changes.
+- Fix exporting a timelapse sometimes altering the state of the current map's edit history.
 - Stop sliders in the Palette Editor from creating a bunch of edit history when used.
 - Fix scrolling on some containers locking up when the mouse stops over a spin box or combo box.
+- Fix the selection index for some combo boxes differing from their displayed text.
 - Fix some file dialogs returning to an incorrect window when closed.
+- Fix bug where reloading a layout would overwrite all unsaved changes.
+- Fix bug where layout json and blockdata could be saved separately leading to inconsistent data.
+- Fix crash when saving tilesets with fewer palettes than the maximum.
+- Fix projects not opening on Windows if the project filepath contains certain characters.
+- Fix custom project filepaths not converting Windows file separators.
+- Fix exported tile images containing garbage pixels after the end of the tiles.
+- Fix fully transparent pixels rendering with the incorrect color.
+- Fix the values for some config fields shuffling their order every save.
+- Fix `key`s in `Custom Attributes` disappearing if given an empty name or the name of an existing field.
+- Fix some problems with tileset detection when importing maps from AdvanceMap.
+- Fix certain input fields allowing invalid identifiers, like names starting with numbers.
+- Fix crash in the Shortcuts Editor when applying changes after closing certain windows.
+- Fix the Shortcuts Editor clearing shortcuts after selecting them.
+- Fix `Display Metatile Usage Counts` sometimes changing the counts after repeated use.
+- The Metatile / Tile usage counts in the Tileset Editor now update to reflect changes.
+- Fix regression that stopped the map zoom from centering on the cursor.
+- Fix `Open Map Scripts` not working on maps with a `shared_scripts_map` field.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

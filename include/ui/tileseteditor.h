@@ -8,7 +8,9 @@
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
-#include "map.h"
+
+class NoScrollComboBox;
+class Layout;
 
 namespace Ui {
 class TilesetEditor;
@@ -39,10 +41,10 @@ class TilesetEditor : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit TilesetEditor(Project*, Map*, QWidget *parent = nullptr);
+    explicit TilesetEditor(Project *project, Layout *layout, QWidget *parent = nullptr);
     ~TilesetEditor();
-    void update(Map *map, QString primaryTilsetLabel, QString secondaryTilesetLabel);
-    void updateMap(Map *map);
+    void update(Layout *layout, QString primaryTilsetLabel, QString secondaryTilesetLabel);
+    void updateLayout(Layout *layout);
     void updateTilesets(QString primaryTilsetLabel, QString secondaryTilesetLabel);
     bool selectMetatile(uint16_t metatileId);
     uint16_t getSelectedMetatileId();
@@ -56,6 +58,7 @@ public slots:
     void onSelectedMetatileChanged(uint16_t);
 
 private slots:
+    void onWindowActivated();
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
     void onHoveredTileChanged(uint16_t);
@@ -67,12 +70,6 @@ private slots:
     void onPaletteEditorChangedPalette(int);
 
     void on_spinBox_paletteSelector_valueChanged(int arg1);
-
-    void on_checkBox_xFlip_stateChanged(int arg1);
-
-    void on_checkBox_yFlip_stateChanged(int arg1);
-
-    void on_actionSave_Tileset_triggered();
 
     void on_actionImport_Primary_Tiles_triggered();
 
@@ -87,20 +84,12 @@ private slots:
     void on_actionShow_UnusedTiles_toggled(bool checked);
     void on_actionMetatile_Grid_triggered(bool checked);
     void on_actionLayer_Grid_triggered(bool checked);
+    void on_actionShow_Tileset_Divider_triggered(bool checked);
 
     void on_actionUndo_triggered();
-
     void on_actionRedo_triggered();
 
-    void on_comboBox_metatileBehaviors_currentTextChanged(const QString &arg1);
-
     void on_lineEdit_metatileLabel_editingFinished();
-
-    void on_comboBox_layerType_activated(int arg1);
-
-    void on_comboBox_encounterType_activated(int arg1);
-
-    void on_comboBox_terrainType_activated(int arg1);
 
     void on_actionExport_Primary_Tiles_Image_triggered();
     void on_actionExport_Secondary_Tiles_Image_triggered();
@@ -119,9 +108,7 @@ private slots:
     void on_horizontalSlider_TilesZoom_valueChanged(int value);
 
 private:
-    void initUi();
-    void setAttributesUi();
-    void setMetatileLabelValidator();
+    void initAttributesUi();
     void initMetatileSelector();
     void initTileSelector();
     void initSelectedTileItem();
@@ -147,6 +134,17 @@ private:
     bool replaceMetatile(uint16_t metatileId, const Metatile * src, QString label);
     void commitMetatileChange(Metatile * prevMetatile);
     void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
+    uint32_t attributeNameToValue(Metatile::Attr attribute, const QString &text, bool *ok);
+    void commitAttributeFromComboBox(Metatile::Attr attribute, NoScrollComboBox *combo);
+    void onRawAttributesEdited();
+    void refreshMetatileAttributes();
+    void commitMetatileBehavior();
+    void commitEncounterType();
+    void commitTerrainType();
+    void commitLayerType();
+    void setRawAttributesVisible(bool visible);
+    void setXFlip(bool enabled);
+    void setYFlip(bool enabled);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
@@ -155,7 +153,7 @@ private:
     MetatileLayersItem *metatileLayersItem = nullptr;
     PaletteEditor *paletteEditor = nullptr;
     Project *project = nullptr;
-    Map *map = nullptr;
+    Layout *layout = nullptr;
     Metatile *metatile = nullptr;
     Metatile *copiedMetatile = nullptr;
     QString copiedMetatileLabel;
@@ -172,6 +170,8 @@ private:
     QGraphicsScene *metatileLayersScene = nullptr;
     bool lockSelection = false;
     QSet<uint16_t> metatileReloadQueue;
+
+    bool save();
 
 signals:
     void tilesetsSaved(QString, QString);

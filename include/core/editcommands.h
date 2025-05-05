@@ -8,12 +8,13 @@
 #include <QUndoCommand>
 #include <QList>
 #include <QPointer>
+#include <QMargins>
 
-class MapPixmapItem;
 class Map;
+class Layout;
 class Blockdata;
 class Event;
-class DraggablePixmapItem;
+class EventPixmapItem;
 class Editor;
 
 enum CommandId {
@@ -24,9 +25,9 @@ enum CommandId {
     ID_PaintCollision,
     ID_BucketFillCollision,
     ID_MagicFillCollision,
-    ID_ResizeMap,
+    ID_ResizeLayout,
     ID_PaintBorder,
-    ID_ScriptEditMap,
+    ID_ScriptEditLayout,
     ID_EventMove,
     ID_EventShift,
     ID_EventCreate,
@@ -46,11 +47,18 @@ enum CommandId {
 #define IDMask_EventType_Trigger (1 << 11)
 #define IDMask_EventType_Heal    (1 << 12)
 
+#define IDMask_ConnectionDirection_Up     (1 << 8)
+#define IDMask_ConnectionDirection_Down   (1 << 9)
+#define IDMask_ConnectionDirection_Left   (1 << 10)
+#define IDMask_ConnectionDirection_Right  (1 << 11)
+#define IDMask_ConnectionDirection_Dive   (1 << 12)
+#define IDMask_ConnectionDirection_Emerge (1 << 13)
+
 /// Implements a command to commit metatile paint actions
 /// onto the map using the pencil tool.
 class PaintMetatile : public QUndoCommand {
 public:
-    PaintMetatile(Map *map,
+    PaintMetatile(Layout *layout,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr);
 
@@ -61,7 +69,7 @@ public:
     int id() const override { return CommandId::ID_PaintMetatile; }
 
 private:
-    Map *map;
+    Layout *layout;
 
     Blockdata newMetatiles;
     Blockdata oldMetatiles;
@@ -75,10 +83,10 @@ private:
 /// on the metatile collision and elevation.
 class PaintCollision : public PaintMetatile {
 public:
-    PaintCollision(Map *map,
+    PaintCollision(Layout *layout,
         const Blockdata &oldCollision, const Blockdata &newCollision,
         unsigned actionId, QUndoCommand *parent = nullptr)
-    : PaintMetatile(map, oldCollision, newCollision, actionId, parent) {
+    : PaintMetatile(layout, oldCollision, newCollision, actionId, parent) {
         setText("Paint Collision");
     }
 
@@ -90,7 +98,7 @@ public:
 /// Implements a command to commit paint actions on the map border.
 class PaintBorder : public QUndoCommand {
 public:
-    PaintBorder(Map *map,
+    PaintBorder(Layout *layout,
         const Blockdata &oldBorder, const Blockdata &newBorder,
         unsigned actionId, QUndoCommand *parent = nullptr);
 
@@ -101,7 +109,7 @@ public:
     int id() const override { return CommandId::ID_PaintBorder; }
 
 private:
-    Map *map;
+    Layout *layout;
 
     Blockdata newBorder;
     Blockdata oldBorder;
@@ -115,10 +123,10 @@ private:
 /// with the bucket tool onto the map.
 class BucketFillMetatile : public PaintMetatile {
 public:
-    BucketFillMetatile(Map *map,
+    BucketFillMetatile(Layout *layout,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr)
-      : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
+      : PaintMetatile(layout, oldMetatiles, newMetatiles, actionId, parent) {
         setText("Bucket Fill Metatiles");
     }
 
@@ -131,10 +139,10 @@ public:
 /// on the metatile collision and elevation.
 class BucketFillCollision : public PaintCollision {
 public:
-    BucketFillCollision(Map *map,
+    BucketFillCollision(Layout *layout,
         const Blockdata &oldCollision, const Blockdata &newCollision,
         QUndoCommand *parent = nullptr)
-      : PaintCollision(map, oldCollision, newCollision, -1, parent) {
+      : PaintCollision(layout, oldCollision, newCollision, -1, parent) {
         setText("Flood Fill Collision");
     }
 
@@ -148,10 +156,10 @@ public:
 /// with the bucket or paint tool onto the map.
 class MagicFillMetatile : public PaintMetatile {
 public:
-    MagicFillMetatile(Map *map,
+    MagicFillMetatile(Layout *layout,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr)
-      : PaintMetatile(map, oldMetatiles, newMetatiles, actionId, parent) {
+      : PaintMetatile(layout, oldMetatiles, newMetatiles, actionId, parent) {
         setText("Magic Fill Metatiles");
     }
 
@@ -163,10 +171,10 @@ public:
 /// Implements a command to commit magic fill collision actions.
 class MagicFillCollision : public PaintCollision {
 public:
-    MagicFillCollision(Map *map,
+    MagicFillCollision(Layout *layout,
         const Blockdata &oldCollision, const Blockdata &newCollision,
         QUndoCommand *parent = nullptr)
-    : PaintCollision(map, oldCollision, newCollision, -1, parent) {
+    : PaintCollision(layout, oldCollision, newCollision, -1, parent) {
         setText("Magic Fill Collision");
     }
 
@@ -179,7 +187,7 @@ public:
 /// Implements a command to commit metatile shift actions.
 class ShiftMetatiles : public QUndoCommand {
 public:
-    ShiftMetatiles(Map *map,
+    ShiftMetatiles(Layout *layout,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         unsigned actionId, QUndoCommand *parent = nullptr);
 
@@ -190,7 +198,7 @@ public:
     int id() const override { return CommandId::ID_ShiftMetatiles; }
 
 private:
-    Map *map;
+    Layout *layout= nullptr;
 
     Blockdata newMetatiles;
     Blockdata oldMetatiles;
@@ -201,9 +209,9 @@ private:
 
 
 /// Implements a command to commit a map or border resize action.
-class ResizeMap : public QUndoCommand {
+class ResizeLayout : public QUndoCommand {
 public:
-    ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
+    ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QMargins newLayoutMargins,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
         const Blockdata &oldBorder, const Blockdata &newBorder,
@@ -213,15 +221,14 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_ResizeMap; }
+    int id() const override { return CommandId::ID_ResizeLayout; }
 
 private:
-    Map *map;
+    Layout *layout = nullptr;
 
-    int oldMapWidth;
-    int oldMapHeight;
-    int newMapWidth;
-    int newMapHeight;
+    int oldLayoutWidth;
+    int oldLayoutHeight;
+    QMargins newLayoutMargins;
 
     int oldBorderWidth;
     int oldBorderHeight;
@@ -351,10 +358,10 @@ public:
 
 /// Implements a command to commit map edits from the scripting API.
 /// The scripting api can edit map/border blocks and dimensions.
-class ScriptEditMap : public QUndoCommand {
+class ScriptEditLayout : public QUndoCommand {
 public:
-    ScriptEditMap(Map *map,
-        QSize oldMapDimensions, QSize newMapDimensions,
+    ScriptEditLayout(Layout *layout,
+        QSize oldLayoutDimensions, QSize newLayoutDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
         const Blockdata &oldBorder, const Blockdata &newBorder,
@@ -364,10 +371,10 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *) override { return false; }
-    int id() const override { return CommandId::ID_ScriptEditMap; }
+    int id() const override { return CommandId::ID_ScriptEditLayout; }
 
 private:
-    Map *map;
+    Layout *layout = nullptr;
 
     Blockdata newMetatiles;
     Blockdata oldMetatiles;
@@ -375,10 +382,10 @@ private:
     Blockdata newBorder;
     Blockdata oldBorder;
 
-    int oldMapWidth;
-    int oldMapHeight;
-    int newMapWidth;
-    int newMapHeight;
+    int oldLayoutWidth;
+    int oldLayoutHeight;
+    int newLayoutWidth;
+    int newLayoutHeight;
 
     int oldBorderWidth;
     int oldBorderHeight;
@@ -400,7 +407,7 @@ public:
     void redo() override;
 
     bool mergeWith(const QUndoCommand *command) override;
-    int id() const override { return CommandId::ID_MapConnectionMove; }
+    int id() const override;
 
 private:
     MapConnection *connection;
@@ -421,7 +428,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionChangeDirection; }
+    int id() const override;
 
 private:
     QPointer<MapConnection> connection;
@@ -443,7 +450,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionChangeMap; }
+    int id() const override;
 
 private:
     QPointer<MapConnection> connection;
@@ -465,7 +472,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionAdd; }
+    int id() const override;
 
 private:
     Map *map = nullptr;
@@ -485,7 +492,7 @@ public:
     void undo() override;
     void redo() override;
 
-    int id() const override { return CommandId::ID_MapConnectionRemove; }
+    int id() const override;
 
 private:
     Map *map = nullptr;

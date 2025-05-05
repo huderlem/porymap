@@ -1,12 +1,11 @@
 #include "editcommands.h"
-#include "mappixmapitem.h"
-#include "draggablepixmapitem.h"
+#include "eventpixmapitem.h"
 #include "bordermetatilespixmapitem.h"
 #include "editor.h"
 
 #include <QDebug>
 
-int getEventTypeMask(QList<Event *> events) {
+int getEventTypeMask(const QList<Event *> &events) {
     int eventTypeMask = 0;
     for (auto event : events) {
         Event::Group groupType = event->getEventGroup();
@@ -25,17 +24,37 @@ int getEventTypeMask(QList<Event *> events) {
     return eventTypeMask;
 }
 
-void renderMapBlocks(Map *map, bool ignoreCache = false) {
-    map->mapItem->draw(ignoreCache);
-    map->collisionItem->draw(ignoreCache);
+int getConnectionDirectionMask(const QList<QString> &directions) {
+    int mask = 0;
+    for (auto direction : directions) {
+        if (direction == "up") {
+            mask |= IDMask_ConnectionDirection_Up;
+        } else if (direction == "down") {
+            mask |= IDMask_ConnectionDirection_Down;
+        } else if (direction == "left") {
+            mask |= IDMask_ConnectionDirection_Left;
+        } else if (direction == "right") {
+            mask |= IDMask_ConnectionDirection_Right;
+        } else if (direction == "dive") {
+            mask |= IDMask_ConnectionDirection_Dive;
+        } else if (direction == "emerge") {
+            mask |= IDMask_ConnectionDirection_Emerge;
+        }
+    }
+    return mask;
 }
 
-PaintMetatile::PaintMetatile(Map *map,
+void renderBlocks(Layout *layout, bool ignoreCache = false) {
+    layout->layoutItem->draw(ignoreCache);
+    layout->collisionItem->draw(ignoreCache);
+}
+
+PaintMetatile::PaintMetatile(Layout *layout,
     const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Paint Metatiles");
 
-    this->map = map;
+    this->layout = layout;
     this->oldMetatiles = oldMetatiles;
     this->newMetatiles = newMetatiles;
 
@@ -45,23 +64,23 @@ PaintMetatile::PaintMetatile(Map *map,
 void PaintMetatile::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!layout) return;
 
-    map->setBlockdata(newMetatiles, true);
+    layout->setBlockdata(newMetatiles, true);
 
-    map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
+    layout->lastCommitBlocks.blocks = layout->blockdata;
 
-    renderMapBlocks(map);
+    renderBlocks(layout);
 }
 
 void PaintMetatile::undo() {
-    if (!map) return;
+    if (!layout) return;
 
-    map->setBlockdata(oldMetatiles, true);
+    layout->setBlockdata(oldMetatiles, true);
 
-    map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
+    layout->lastCommitBlocks.blocks = layout->blockdata;
 
-    renderMapBlocks(map);
+    renderBlocks(layout);
 
     QUndoCommand::undo();
 }
@@ -69,7 +88,7 @@ void PaintMetatile::undo() {
 bool PaintMetatile::mergeWith(const QUndoCommand *command) {
     const PaintMetatile *other = static_cast<const PaintMetatile *>(command);
 
-    if (map != other->map)
+    if (layout != other->layout)
         return false;
 
     if (actionId != other->actionId)
@@ -84,12 +103,12 @@ bool PaintMetatile::mergeWith(const QUndoCommand *command) {
     ************************************************************************
  ******************************************************************************/
 
-PaintBorder::PaintBorder(Map *map,
+PaintBorder::PaintBorder(Layout *layout,
     const Blockdata &oldBorder, const Blockdata &newBorder,
     unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Paint Border");
 
-    this->map = map;
+    this->layout = layout;
     this->oldBorder = oldBorder;
     this->newBorder = newBorder;
 
@@ -99,23 +118,23 @@ PaintBorder::PaintBorder(Map *map,
 void PaintBorder::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!layout) return;
 
-    map->setBorderBlockData(newBorder, true);
+    layout->setBorderBlockData(newBorder, true);
 
-    map->layout->lastCommitBlocks.border = map->layout->border;
+    layout->lastCommitBlocks.border = layout->border;
 
-    map->borderItem->draw();
+    layout->borderItem->draw();
 }
 
 void PaintBorder::undo() {
-    if (!map) return;
+    if (!layout) return;
 
-    map->setBorderBlockData(oldBorder, true);
+    layout->setBorderBlockData(oldBorder, true);
 
-    map->layout->lastCommitBlocks.border = map->layout->border;
+    layout->lastCommitBlocks.border = layout->border;
 
-    map->borderItem->draw();
+    layout->borderItem->draw();
 
     QUndoCommand::undo();
 }
@@ -124,12 +143,12 @@ void PaintBorder::undo() {
     ************************************************************************
  ******************************************************************************/
 
-ShiftMetatiles::ShiftMetatiles(Map *map,
+ShiftMetatiles::ShiftMetatiles(Layout *layout,
     const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     unsigned actionId, QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Shift Metatiles");
 
-    this->map = map;
+    this->layout = layout;
     this->oldMetatiles = oldMetatiles;
     this->newMetatiles = newMetatiles;
 
@@ -139,23 +158,23 @@ ShiftMetatiles::ShiftMetatiles(Map *map,
 void ShiftMetatiles::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!layout) return;
 
-    map->setBlockdata(newMetatiles, true);
+    layout->setBlockdata(newMetatiles, true);
 
-    map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
+    layout->lastCommitBlocks.blocks = layout->blockdata;
 
-    renderMapBlocks(map, true);
+    renderBlocks(layout, true);
 }
 
 void ShiftMetatiles::undo() {
-    if (!map) return;
+    if (!layout) return;
 
-    map->setBlockdata(oldMetatiles, true);
+    layout->setBlockdata(oldMetatiles, true);
 
-    map->layout->lastCommitBlocks.blocks = map->layout->blockdata;
+    layout->lastCommitBlocks.blocks = layout->blockdata;
 
-    renderMapBlocks(map, true);
+    renderBlocks(layout, true);
 
     QUndoCommand::undo();
 }
@@ -163,7 +182,7 @@ void ShiftMetatiles::undo() {
 bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
     const ShiftMetatiles *other = static_cast<const ShiftMetatiles *>(command);
 
-    if (this->map != other->map)
+    if (this->layout != other->layout)
         return false;
 
     if (actionId != other->actionId)
@@ -178,20 +197,19 @@ bool ShiftMetatiles::mergeWith(const QUndoCommand *command) {
     ************************************************************************
  ******************************************************************************/
 
-ResizeMap::ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
+ResizeLayout::ResizeLayout(Layout *layout, QSize oldLayoutDimensions, QMargins newLayoutMargins,
     const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
     QSize oldBorderDimensions, QSize newBorderDimensions,
     const Blockdata &oldBorder, const Blockdata &newBorder,
     QUndoCommand *parent) : QUndoCommand(parent) {
     setText("Resize Map");
 
-    this->map = map;
+    this->layout = layout;
 
-    this->oldMapWidth = oldMapDimensions.width();
-    this->oldMapHeight = oldMapDimensions.height();
+    this->oldLayoutWidth = oldLayoutDimensions.width();
+    this->oldLayoutHeight = oldLayoutDimensions.height();
 
-    this->newMapWidth = newMapDimensions.width();
-    this->newMapHeight = newMapDimensions.height();
+    this->newLayoutMargins = newLayoutMargins;
 
     this->oldMetatiles = oldMetatiles;
     this->newMetatiles = newMetatiles;
@@ -206,36 +224,40 @@ ResizeMap::ResizeMap(Map *map, QSize oldMapDimensions, QSize newMapDimensions,
     this->newBorder = newBorder;
 }
 
-void ResizeMap::redo() {
+void ResizeLayout::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!layout) return;
 
-    map->layout->blockdata = newMetatiles;
-    map->setDimensions(newMapWidth, newMapHeight, false, true);
+    layout->border = newBorder;
+    layout->setBorderDimensions(newBorderWidth, newBorderHeight, false, true);
 
-    map->layout->border = newBorder;
-    map->setBorderDimensions(newBorderWidth, newBorderHeight, false, true);
+    layout->width = oldLayoutWidth;
+    layout->height = oldLayoutHeight;
+    layout->adjustDimensions(this->newLayoutMargins);
+    layout->blockdata = newMetatiles;
 
-    map->layout->lastCommitBlocks.mapDimensions = QSize(map->getWidth(), map->getHeight());
-    map->layout->lastCommitBlocks.borderDimensions = QSize(map->getBorderWidth(), map->getBorderHeight());
+    layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
+    layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
 
-    map->mapNeedsRedrawing();
+    emit layout->needsRedrawing();
 }
 
-void ResizeMap::undo() {
-    if (!map) return;
+void ResizeLayout::undo() {
+    if (!layout) return;
 
-    map->layout->blockdata = oldMetatiles;
-    map->setDimensions(oldMapWidth, oldMapHeight, false, true);
+    layout->border = oldBorder;
+    layout->setBorderDimensions(oldBorderWidth, oldBorderHeight, false, true);
 
-    map->layout->border = oldBorder;
-    map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false, true);
+    layout->width = oldLayoutWidth + newLayoutMargins.left() + newLayoutMargins.right();
+    layout->height = oldLayoutHeight + newLayoutMargins.top() + newLayoutMargins.bottom();
+    layout->adjustDimensions(-this->newLayoutMargins);
+    layout->blockdata = oldMetatiles;
 
-    map->layout->lastCommitBlocks.mapDimensions = QSize(map->getWidth(), map->getHeight());
-    map->layout->lastCommitBlocks.borderDimensions = QSize(map->getBorderWidth(), map->getBorderHeight());
+    layout->lastCommitBlocks.layoutDimensions = QSize(layout->getWidth(), layout->getHeight());
+    layout->lastCommitBlocks.borderDimensions = QSize(layout->getBorderWidth(), layout->getBorderHeight());
 
-    map->mapNeedsRedrawing();
+    emit layout->needsRedrawing();
 
     QUndoCommand::undo();
 }
@@ -325,23 +347,13 @@ void EventCreate::redo() {
     QUndoCommand::redo();
 
     map->addEvent(event);
-
-    editor->project->setEventPixmap(event);
-    editor->addMapEvent(event);
-
-    // select this event
-    editor->selected_events->clear();
-    editor->selectMapEvent(event->getPixmapItem());
+    editor->addEventPixmapItem(event);
+    editor->selectMapEvent(event);
 }
 
 void EventCreate::undo() {
     map->removeEvent(event);
-
-    if (editor->scene->items().contains(event->getPixmapItem())) {
-        editor->scene->removeItem(event->getPixmapItem());
-    }
-    editor->selected_events->removeOne(event->getPixmapItem());
-
+    editor->removeEventPixmapItem(event);
     editor->shouldReselectEvents();
 
     QUndoCommand::undo();
@@ -376,31 +388,22 @@ void EventDelete::redo() {
 
     for (Event *event : selectedEvents) {
         map->removeEvent(event);
-
-        if (editor->scene->items().contains(event->getPixmapItem())) {
-            editor->scene->removeItem(event->getPixmapItem());
-        }
-        editor->selected_events->removeOne(event->getPixmapItem());
+        editor->removeEventPixmapItem(event);
     }
 
-    editor->selected_events->clear();
+    editor->selectedEvents.clear();
     if (nextSelectedEvent)
-        editor->selected_events->append(nextSelectedEvent->getPixmapItem());
+        editor->selectedEvents.append(nextSelectedEvent);
     editor->shouldReselectEvents();
 }
 
 void EventDelete::undo() {
     for (Event *event : selectedEvents) {
         map->addEvent(event);
-        editor->project->setEventPixmap(event);
-        editor->addMapEvent(event);
+        editor->addEventPixmapItem(event);
     }
 
-    // select these events
-    editor->selected_events->clear();
-    for (Event *event : selectedEvents) {
-        editor->selected_events->append(event->getPixmapItem());
-    }
+    editor->selectedEvents = selectedEvents;
     editor->shouldReselectEvents();
 
     QUndoCommand::undo();
@@ -434,26 +437,17 @@ void EventDuplicate::redo() {
 
     for (Event *event : selectedEvents) {
         map->addEvent(event);
-        editor->project->setEventPixmap(event);
-        editor->addMapEvent(event);
+        editor->addEventPixmapItem(event);
     }
 
-    // select these events
-    editor->selected_events->clear();
-    for (Event *event : selectedEvents) {
-        editor->selected_events->append(event->getPixmapItem());
-    }
+    editor->selectedEvents = selectedEvents;
     editor->shouldReselectEvents();
 }
 
 void EventDuplicate::undo() {
     for (Event *event : selectedEvents) {
         map->removeEvent(event);
-
-        if (editor->scene->items().contains(event->getPixmapItem())) {
-            editor->scene->removeItem(event->getPixmapItem());
-        }
-        editor->selected_events->removeOne(event->getPixmapItem());
+        editor->removeEventPixmapItem(event);
     }
 
     editor->shouldReselectEvents();
@@ -487,23 +481,23 @@ int EventPaste::id() const {
     ************************************************************************
  ******************************************************************************/
 
-ScriptEditMap::ScriptEditMap(Map *map,
-        QSize oldMapDimensions, QSize newMapDimensions,
+ScriptEditLayout::ScriptEditLayout(Layout *layout,
+        QSize oldLayoutDimensions, QSize newLayoutDimensions,
         const Blockdata &oldMetatiles, const Blockdata &newMetatiles,
         QSize oldBorderDimensions, QSize newBorderDimensions,
         const Blockdata &oldBorder, const Blockdata &newBorder,
         QUndoCommand *parent) : QUndoCommand(parent) {
-    setText("Script Edit Map");
+    setText("Script Edit Layout");
 
-    this->map = map;
+    this->layout = layout;
 
     this->newMetatiles = newMetatiles;
     this->oldMetatiles = oldMetatiles;
 
-    this->oldMapWidth = oldMapDimensions.width();
-    this->oldMapHeight = oldMapDimensions.height();
-    this->newMapWidth = newMapDimensions.width();
-    this->newMapHeight = newMapDimensions.height();
+    this->oldLayoutWidth = oldLayoutDimensions.width();
+    this->oldLayoutHeight = oldLayoutDimensions.height();
+    this->newLayoutWidth = newLayoutDimensions.width();
+    this->newLayoutHeight = newLayoutDimensions.height();
 
     this->oldBorder = oldBorder;
     this->newBorder = newBorder;
@@ -514,58 +508,58 @@ ScriptEditMap::ScriptEditMap(Map *map,
     this->newBorderHeight = newBorderDimensions.height();
 }
 
-void ScriptEditMap::redo() {
+void ScriptEditLayout::redo() {
     QUndoCommand::redo();
 
-    if (!map) return;
+    if (!layout) return;
 
-    if (newMapWidth != map->getWidth() || newMapHeight != map->getHeight()) {
-        map->layout->blockdata = newMetatiles;
-        map->setDimensions(newMapWidth, newMapHeight, false);
+    if (newLayoutWidth != layout->getWidth() || newLayoutHeight != layout->getHeight()) {
+        layout->blockdata = newMetatiles;
+        layout->setDimensions(newLayoutWidth, newLayoutHeight, false);
     } else {
-        map->setBlockdata(newMetatiles);
+        layout->setBlockdata(newMetatiles);
     }
 
-    if (newBorderWidth != map->getBorderWidth() || newBorderHeight != map->getBorderHeight()) {
-        map->layout->border = newBorder;
-        map->setBorderDimensions(newBorderWidth, newBorderHeight, false);
+    if (newBorderWidth != layout->getBorderWidth() || newBorderHeight != layout->getBorderHeight()) {
+        layout->border = newBorder;
+        layout->setBorderDimensions(newBorderWidth, newBorderHeight, false);
     } else {
-        map->setBorderBlockData(newBorder);
+        layout->setBorderBlockData(newBorder);
     }
 
-    map->layout->lastCommitBlocks.blocks = newMetatiles;
-    map->layout->lastCommitBlocks.mapDimensions = QSize(newMapWidth, newMapHeight);
-    map->layout->lastCommitBlocks.border = newBorder;
-    map->layout->lastCommitBlocks.borderDimensions = QSize(newBorderWidth, newBorderHeight);
+    layout->lastCommitBlocks.blocks = newMetatiles;
+    layout->lastCommitBlocks.layoutDimensions = QSize(newLayoutWidth, newLayoutHeight);
+    layout->lastCommitBlocks.border = newBorder;
+    layout->lastCommitBlocks.borderDimensions = QSize(newBorderWidth, newBorderHeight);
 
-    renderMapBlocks(map);
-    map->borderItem->draw();
+    renderBlocks(layout, true);
+    layout->borderItem->draw();
 }
 
-void ScriptEditMap::undo() {
-    if (!map) return;
+void ScriptEditLayout::undo() {
+    if (!layout) return;
 
-    if (oldMapWidth != map->getWidth() || oldMapHeight != map->getHeight()) {
-        map->layout->blockdata = oldMetatiles;
-        map->setDimensions(oldMapWidth, oldMapHeight, false);
+    if (oldLayoutWidth != layout->getWidth() || oldLayoutHeight != layout->getHeight()) {
+        layout->blockdata = oldMetatiles;
+        layout->setDimensions(oldLayoutWidth, oldLayoutHeight, false);
     } else {
-        map->setBlockdata(oldMetatiles);
+        layout->setBlockdata(oldMetatiles);
     }
 
-    if (oldBorderWidth != map->getBorderWidth() || oldBorderHeight != map->getBorderHeight()) {
-        map->layout->border = oldBorder;
-        map->setBorderDimensions(oldBorderWidth, oldBorderHeight, false);
+    if (oldBorderWidth != layout->getBorderWidth() || oldBorderHeight != layout->getBorderHeight()) {
+        layout->border = oldBorder;
+        layout->setBorderDimensions(oldBorderWidth, oldBorderHeight, false);
     } else {
-        map->setBorderBlockData(oldBorder);
+        layout->setBorderBlockData(oldBorder);
     }
 
-    map->layout->lastCommitBlocks.blocks = oldMetatiles;
-    map->layout->lastCommitBlocks.mapDimensions = QSize(oldMapWidth, oldMapHeight);
-    map->layout->lastCommitBlocks.border = oldBorder;
-    map->layout->lastCommitBlocks.borderDimensions = QSize(oldBorderWidth, oldBorderHeight);
+    layout->lastCommitBlocks.blocks = oldMetatiles;
+    layout->lastCommitBlocks.layoutDimensions = QSize(oldLayoutWidth, oldLayoutHeight);
+    layout->lastCommitBlocks.border = oldBorder;
+    layout->lastCommitBlocks.borderDimensions = QSize(oldBorderWidth, oldBorderHeight);
 
-    renderMapBlocks(map);
-    map->borderItem->draw();
+    renderBlocks(layout, true);
+    layout->borderItem->draw();
 
     QUndoCommand::undo();
 }
@@ -613,6 +607,10 @@ bool MapConnectionMove::mergeWith(const QUndoCommand *command) {
     return true;
 }
 
+int MapConnectionMove::id() const {
+    return CommandId::ID_MapConnectionMove | getConnectionDirectionMask({this->connection->direction()});
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -655,6 +653,10 @@ void MapConnectionChangeDirection::undo() {
     QUndoCommand::undo();
 }
 
+int MapConnectionChangeDirection::id() const {
+    return CommandId::ID_MapConnectionChangeDirection | getConnectionDirectionMask({this->oldDirection, this->newDirection});
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -688,6 +690,10 @@ void MapConnectionChangeMap::undo() {
         this->connection->setOffset(this->oldOffset, this->mirrored);
     }
     QUndoCommand::undo();
+}
+
+int MapConnectionChangeMap::id() const {
+    return CommandId::ID_MapConnectionChangeMap | getConnectionDirectionMask({this->connection->direction()});
 }
 
 /******************************************************************************
@@ -734,6 +740,10 @@ void MapConnectionAdd::undo() {
     QUndoCommand::undo();
 }
 
+int MapConnectionAdd::id() const {
+    return CommandId::ID_MapConnectionAdd | getConnectionDirectionMask({this->connection->direction()});
+}
+
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
@@ -770,4 +780,8 @@ void MapConnectionRemove::undo() {
         this->mirrorMap->addConnection(this->mirror);
 
     QUndoCommand::undo();
+}
+
+int MapConnectionRemove::id() const {
+    return CommandId::ID_MapConnectionRemove | getConnectionDirectionMask({this->connection->direction()});
 }

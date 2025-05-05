@@ -3,34 +3,43 @@
 #define GUARD_WILDMONINFO_H
 
 #include <QtWidgets>
-#include "orderedmap.h"
+#include "orderedjson.h"
 
-struct WildPokemon {
-    int minLevel = 5;
-    int maxLevel = 5;
-    QString species = "SPECIES_NONE";
+class WildPokemon {
+public:
+    WildPokemon();
+    WildPokemon(int minLevel, int maxLevel, const QString &species);
+
+    int minLevel;
+    int maxLevel;
+    QString species;
+    OrderedJson::object customData;
 };
 
 struct WildMonInfo {
     bool active = false;
     int encounterRate = 0;
     QVector<WildPokemon> wildPokemon;
+    OrderedJson::object customData;
 };
 
 struct WildPokemonHeader {
-    tsl::ordered_map<QString, WildMonInfo> wildMons;
+    OrderedMap<QString, WildMonInfo> wildMons;
+    OrderedJson::object customData;
 };
 
 struct EncounterField {
     QString name; // Ex: "fishing_mons"
     QVector<int> encounterRates;
-    tsl::ordered_map<QString, QVector<int>> groups; // Ex: "good_rod", {2, 3, 4}
+    OrderedMap<QString, QVector<int>> groups; // Ex: "good_rod", {2, 3, 4}
+    OrderedJson::object customData;
 };
 
 typedef QVector<EncounterField> EncounterFields;
 
 void setDefaultEncounterRate(QString fieldName, int rate);
-WildMonInfo getDefaultMonInfo(EncounterField field);
+WildMonInfo getDefaultMonInfo(const EncounterField &field);
+QVector<double> getWildEncounterPercentages(const EncounterField &field);
 void combineEncounters(WildMonInfo &to, WildMonInfo from);
 
 #endif // GUARD_WILDMONINFO_H

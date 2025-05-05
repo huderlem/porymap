@@ -14,7 +14,7 @@ class EncounterTableModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    EncounterTableModel(WildMonInfo monInfo, EncounterFields allFields, int fieldIndex, QObject *parent = nullptr);
+    EncounterTableModel(const WildMonInfo &monInfo, const EncounterField &field, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -28,22 +28,17 @@ public:
         Slot, Group, Species, MinLevel, MaxLevel, EncounterChance, SlotRatio, EncounterRate, Count
     };
 
-    WildMonInfo encounterData() const { return this->monInfo; }
-    EncounterField encounterField() const { return this->encounterFields.at(this->fieldIndex); }
-    QList<double> percentages() const { return this->slotPercentages; }
-    void resize(int rows, int cols);
+    WildMonInfo encounterData() const { return m_monInfo; }
+    EncounterField encounterField() const { return m_encounterField; }
+    QVector<double> percentages() const { return m_slotPercentages; }
 
 private:
-    WildMonInfo monInfo;
-    EncounterFields encounterFields;
-    int fieldIndex;
-
-    int numRows = 0;
-    int numCols = 0;
-
-    QVector<int> slotRatios;
-    QList<QString> groupNames;
-    QList<double> slotPercentages;
+    int m_numRows = 0;
+    int m_numCols = 0;
+    WildMonInfo m_monInfo;
+    EncounterField m_encounterField;
+    QMap<int,QString> m_groupNames;
+    QVector<double> m_slotPercentages;
 
 signals:
     void edited();

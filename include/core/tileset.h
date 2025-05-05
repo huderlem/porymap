@@ -38,8 +38,6 @@ public:
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
-    bool hasUnsavedTilesImage;
-
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
@@ -56,9 +54,24 @@ public:
     static QHash<int, QString> getHeaderMemberMap(bool usingAsm);
     static QString getExpectedDir(QString tilesetName, bool isSecondary);
     QString getExpectedDir();
-    bool appendToHeaders(QString root, QString friendlyName, bool usingAsm);
-    bool appendToGraphics(QString root, QString friendlyName, bool usingAsm);
-    bool appendToMetatiles(QString root, QString friendlyName, bool usingAsm);
+
+    bool load();
+    bool loadMetatiles();
+    bool loadMetatileAttributes();
+    bool loadTilesImage(QImage *importedImage = nullptr);
+    bool loadPalettes();
+
+    bool save();
+    bool saveMetatileAttributes();
+    bool saveMetatiles();
+    bool saveTilesImage();
+    bool savePalettes();
+
+    bool appendToHeaders(const QString &filepath, const QString &friendlyName, bool usingAsm);
+    bool appendToGraphics(const QString &filepath, const QString &friendlyName, bool usingAsm);
+    bool appendToMetatiles(const QString &filepath, const QString &friendlyName, bool usingAsm);
+
+    void setTilesImage(const QImage &image);
 
     void setMetatiles(const QList<Metatile*> &metatiles);
     void addMetatile(Metatile* metatile);
@@ -67,11 +80,12 @@ public:
     Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
 
     void clearMetatiles();
-    void resizeMetatiles(unsigned int newNumMetatiles);
+    void resizeMetatiles(int newNumMetatiles);
     int numMetatiles() const { return m_metatiles.length(); }
 
 private:
     QList<Metatile*> m_metatiles;
+    bool m_hasUnsavedTilesImage = false;
 };
 
 #endif // TILESET_H

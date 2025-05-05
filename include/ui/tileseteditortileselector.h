@@ -33,6 +33,7 @@ public:
 
     QVector<uint16_t> usedTiles;
     bool showUnused = false;
+    bool showDivider = false;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);
@@ -61,6 +62,7 @@ private:
     QPoint getTileCoords(uint16_t);
     QList<QRgb> getCurPaletteTable();
     QList<Tile> buildSelectedTiles(int, int, QList<Tile>);
+    QImage buildImage(int tileIdStart, int numTiles);
 
     void drawUnused();
 

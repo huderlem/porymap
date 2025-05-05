@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>817</width>
-    <height>535</height>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,11 +25,14 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="focusPolicy">
+      <enum>Qt::FocusPolicy::ClickFocus</enum>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout_Options">
       <item>
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
-         <widget class="QLabel" name="label_2">
+         <widget class="QLabel" name="label_MapSelection">
           <property name="text">
            <string>Map</string>
           </property>
@@ -37,6 +40,9 @@
         </item>
         <item row="0" column="1">
          <widget class="NoScrollComboBox" name="comboBox_MapSelection">
+          <property name="insertPolicy">
+           <enum>QComboBox::InsertPolicy::NoInsert</enum>
+          </property>
           <property name="sizeAdjustPolicy">
            <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
           </property>
@@ -163,7 +169,7 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QCheckBox" name="checkBox_Elevation">
+            <widget class="QCheckBox" name="checkBox_Collision">
              <property name="text">
               <string>Collision</string>
              </property>
@@ -188,7 +194,10 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_7">
          <item row="2" column="1">
-          <widget class="QSpinBox" name="spinBox_TimelapseDelay">
+          <widget class="NoScrollSpinBox" name="spinBox_TimelapseDelay">
+           <property name="focusPolicy">
+            <enum>Qt::FocusPolicy::StrongFocus</enum>
+           </property>
            <property name="specialValueText">
             <string/>
            </property>
@@ -214,7 +223,10 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QSpinBox" name="spinBox_FrameSkip">
+          <widget class="NoScrollSpinBox" name="spinBox_FrameSkip">
+           <property name="focusPolicy">
+            <enum>Qt::FocusPolicy::StrongFocus</enum>
+           </property>
            <property name="suffix">
             <string/>
            </property>
@@ -250,9 +262,22 @@
        </spacer>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox_ActualSize">
+       <widget class="QCheckBox" name="checkBox_DisablePreviewUpdates">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the image in the preview window will not be recreated when the settings are changed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
-         <string>Preview actual size</string>
+         <string>Disable preview updates</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBox_DisablePreviewScaling">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the image shown in the preview window will not scale to fit into the available space. The aspect ratio of the image will never change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Disable preview scaling</string>
         </property>
        </widget>
       </item>
@@ -262,6 +287,9 @@
          <widget class="QPushButton" name="pushButton_Reset">
           <property name="text">
            <string>Reset</string>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -283,12 +311,18 @@
           <property name="text">
            <string>Cancel</string>
           </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_Save">
           <property name="text">
            <string>Save</string>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -323,8 +357,14 @@
       </property>
       <item row="0" column="0">
        <widget class="QScrollArea" name="scrollArea_Preview">
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
+        </property>
         <property name="widgetResizable">
          <bool>true</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
         <widget class="QWidget" name="scrollAreaWidgetContents">
          <property name="geometry">
@@ -332,7 +372,7 @@
            <x>0</x>
            <y>0</y>
            <width>469</width>
-           <height>464</height>
+           <height>485</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="gridLayout">
@@ -397,6 +437,11 @@
    <class>NoScrollComboBox</class>
    <extends>QComboBox</extends>
    <header>noscrollcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>noscrollspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

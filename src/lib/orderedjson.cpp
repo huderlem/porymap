@@ -116,6 +116,10 @@ static void dump(const QString &value, QString &out, int *indent, bool isKey = f
 static void dump(const Json::array &values, QString &out, int *indent) {
     bool first = true;
     if (!out.endsWith(": ")) out += QString(*indent * 2, ' ');
+    if (values.empty()) {
+        out += "[]";
+        return;
+    }
     out += "[\n";
     *indent += 1;
     for (const auto &value : values) {
@@ -307,32 +311,25 @@ const Json & JsonArray::operator[] (int i) const {
     else return m_value[i];
 }
 
-const Json Json::fromQJsonValue(QJsonValue value) {
+Json Json::fromQJsonValue(const QJsonValue &value) {
     switch (value.type())
     {
     case QJsonValue::String: return value.toString();
     case QJsonValue::Double: return value.toInt();
     case QJsonValue::Bool:   return value.toBool();
-    case QJsonValue::Array:
-    {
-        QJsonArray qArr = value.toArray();
-        Json::array arr;
-        for (const auto &i: qArr)
-            arr.push_back(Json::fromQJsonValue(i));
-        return arr;
+    case QJsonValue::Array: {
+        Json::array array;
+        Json::append(&array, value.toArray());
+        return array;
     }
-    case QJsonValue::Object:
-    {
-        QJsonObject qObj = value.toObject();
-        Json::object obj;
-        for (auto it = qObj.constBegin(); it != qObj.constEnd(); it++)
-            obj[it.key()] = Json::fromQJsonValue(it.value());
-        return obj;
+    case QJsonValue::Object: {
+        Json::object object;
+        Json::append(&object, value.toObject());
+        return object;
     }
     default: return static_null();
     }
 }
-
 
 /* * * * * * * * * * * * * * * * * * * *
  * Comparison
@@ -389,7 +386,7 @@ struct JsonParser final {
      */
     const QString &str;
     int i;
-    QString &err;
+    QString *err;
     bool failed;
     const JsonParse strategy;
 
@@ -403,8 +400,8 @@ struct JsonParser final {
 
     template <typename T>
     T fail(QString &&msg, const T err_ret) {
-        if (!failed)
-            err = std::move(msg);
+        if (!failed && err)
+            *err = std::move(msg);
         failed = true;
         return err_ret;
     }
@@ -771,7 +768,7 @@ struct JsonParser final {
 };
 }//namespace {
 
-Json Json::parse(const QString &in, QString &err, JsonParse strategy) {
+Json Json::parse(const QString &in, QString *err, JsonParse strategy) {
     JsonParser parser { in, 0, err, false, strategy };
     Json result = parser.parse_json(0);
 

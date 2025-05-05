@@ -46,6 +46,17 @@ void TilesetEditorTileSelector::draw() {
         painter.drawImage(origin, tileImage);
     }
 
+    if (this->showDivider) {
+        int row = this->primaryTileset->tiles.length() / this->numTilesWide;
+        if (this->primaryTileset->tiles.length() % this->numTilesWide != 0) {
+            // Round up height for incomplete last row
+            row++;
+        }
+        const int y = row * 16;
+        painter.setPen(Qt::white);
+        painter.drawLine(0, y, this->numTilesWide * 16, y);
+    }
+
     painter.end();
     this->setPixmap(QPixmap::fromImage(image));
 
@@ -219,66 +230,32 @@ QPoint TilesetEditorTileSelector::getTileCoordsOnWidget(uint16_t tile) {
 }
 
 QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
-    if (!this->primaryTileset || !this->secondaryTileset) {
+    if (!this->primaryTileset)
         return QImage();
-    }
 
-    int primaryLength = this->primaryTileset->tiles.length();
-    int height = qCeil(primaryLength / static_cast<double>(this->numTilesWide));
-    QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
-
-    QPainter painter(&image);
-    for (uint16_t tile = 0; tile < primaryLength; tile++) {
-        QImage tileImage;
-        if (tile < primaryLength) {
-            tileImage = getGreyscaleTileImage(tile, this->primaryTileset, this->secondaryTileset);
-        } else {
-            tileImage = QImage(8, 8, QImage::Format_RGBA8888);
-            tileImage.fill(qRgb(0, 0, 0));
-        }
-
-        int y = tile / this->numTilesWide;
-        int x = tile % this->numTilesWide;
-        QPoint origin = QPoint(x * 8, y * 8);
-        painter.drawImage(origin, tileImage);
-    }
-
-    painter.end();
-
-    // Image is first converted using greyscale so that palettes with duplicate colors
-    // are properly represented in the final image.
-    QImage indexedImage = image.convertToFormat(QImage::Format::Format_Indexed8, greyscalePalette.toVector());
-    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
-    indexedImage.setColorTable(palette.toVector());
-    return indexedImage;
+    return buildImage(0, this->primaryTileset->tiles.length());
 }
 
 QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
-    if (!this->primaryTileset || !this->secondaryTileset) {
+    if (!this->secondaryTileset)
         return QImage();
-    }
 
-    int secondaryLength = this->secondaryTileset->tiles.length();
-    int height = qCeil(secondaryLength / static_cast<double>(this->numTilesWide));
+    return buildImage(Project::getNumTilesPrimary(), this->secondaryTileset->tiles.length());
+}
+
+QImage TilesetEditorTileSelector::buildImage(int tileIdStart, int numTiles) {
+    int height = qCeil(numTiles / static_cast<double>(this->numTilesWide));
     QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
+    image.fill(0);
 
     QPainter painter(&image);
-    uint16_t primaryLength = static_cast<uint16_t>(Project::getNumTilesPrimary());
-    for (uint16_t tile = 0; tile < secondaryLength; tile++) {
-        QImage tileImage;
-        if (tile < secondaryLength) {
-            tileImage = getGreyscaleTileImage(tile + primaryLength, this->primaryTileset, this->secondaryTileset);
-        } else {
-            tileImage = QImage(8, 8, QImage::Format_RGBA8888);
-            tileImage.fill(qRgb(0, 0, 0));
-        }
-
-        int y = tile / this->numTilesWide;
-        int x = tile % this->numTilesWide;
+    for (int i = 0; i < numTiles; i++) {
+        QImage tileImage = getGreyscaleTileImage(tileIdStart + i, this->primaryTileset, this->secondaryTileset);
+        int y = i / this->numTilesWide;
+        int x = i % this->numTilesWide;
         QPoint origin = QPoint(x * 8, y * 8);
         painter.drawImage(origin, tileImage);
     }
-
     painter.end();
 
     // Image is first converted using greyscale so that palettes with duplicate colors
@@ -327,7 +304,7 @@ void TilesetEditorTileSelector::drawUnused() {
     unusedPainter.setOpacity(0.5);
 
     for (int tile = 0; tile < this->usedTiles.size(); tile++) {
-        if (!usedTiles[tile]) {
+        if (!this->usedTiles[tile]) {
             unusedPainter.drawPixmap((tile % 16) * 16, (tile / 16) * 16, redX);
         }
     }

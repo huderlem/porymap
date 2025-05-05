@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>631</width>
-    <height>600</height>
+    <width>642</width>
+    <height>609</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,8 +38,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>568</height>
+             <width>570</width>
+             <height>680</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -52,7 +52,7 @@
                <item>
                 <widget class="QCheckBox" name="checkBox_UsePoryscript">
                  <property name="toolTip">
-                  <string>Whether map script files should prefer using .pory</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether map script files should prefer using .pory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>Use Poryscript</string>
@@ -61,8 +61,21 @@
                </item>
                <item>
                 <widget class="QCheckBox" name="checkBox_ShowWildEncounterTables">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, Porymap will display wild encounter data on the Wild Pokémon tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string>Show Wild Encounter Tables</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBox_PreserveMatchingOnlyData">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, Porymap will not discard data like &amp;quot;connections_include_order&amp;quot; or &amp;quot;name_clone&amp;quot;, which serve no purpose other than recreating the original game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Preserve data only needed to match the original game</string>
                  </property>
                 </widget>
                </item>
@@ -81,7 +94,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -89,7 +102,7 @@
                <item row="1" column="0">
                 <widget class="QPushButton" name="button_ImportDefaultPrefabs">
                  <property name="toolTip">
-                  <string>Restore the data in the prefabs file to the version defaults. Will create a new file if one doesn't exist.</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Restore the data in the prefabs file to the version defaults. Will create a new file if one doesn't exist.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>Import Defaults</string>
@@ -99,7 +112,7 @@
                <item row="0" column="1">
                 <widget class="QLineEdit" name="lineEdit_PrefabsPath">
                  <property name="toolTip">
-                  <string>The file that will be used to populate the Prefabs tab</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The file that will be used to populate the Prefabs tab&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="placeholderText">
                   <string>prefabs.json</string>
@@ -125,7 +138,7 @@
                <item row="1" column="6">
                 <spacer name="horizontalSpacer">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -138,7 +151,7 @@
                <item row="0" column="1" colspan="6">
                 <widget class="QLineEdit" name="lineEdit_CollisionGraphics">
                  <property name="toolTip">
-                  <string>The image sheet that will be used to represent elevation and collision on the Collision tab</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The image sheet that will be used to represent elevation and collision on the Collision tab&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="clearButtonEnabled">
                   <bool>true</bool>
@@ -151,7 +164,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -166,7 +179,7 @@
                <item row="1" column="5">
                 <widget class="NoScrollSpinBox" name="spinBox_MaxCollision">
                  <property name="toolTip">
-                  <string>The maximum collision value represented with an icon on the image sheet</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The maximum collision value represented with an icon on the image sheet&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -187,17 +200,17 @@
                <item row="1" column="2">
                 <widget class="NoScrollSpinBox" name="spinBox_MaxElevation">
                  <property name="toolTip">
-                  <string>The maximum elevation value represented with an icon on the image sheet</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The maximum elevation value represented with an icon on the image sheet&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="3">
                 <spacer name="horizontalSpacer_4">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Orientation::Horizontal</enum>
                  </property>
                  <property name="sizeType">
-                  <enum>QSizePolicy::Maximum</enum>
+                  <enum>QSizePolicy::Policy::Maximum</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -235,7 +248,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -260,7 +273,7 @@
                <item row="1" column="2" colspan="3">
                 <widget class="QLineEdit" name="lineEdit_PokemonIcon">
                  <property name="toolTip">
-                  <string>The icon that will be displayed on the Wild Pokémon tab for the above species</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be displayed on the Wild Pokémon tab for the above species&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="clearButtonEnabled">
                   <bool>true</bool>
@@ -271,15 +284,100 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_PlayerViewDistance">
+              <property name="title">
+               <string>Player View Distance</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <layout class="QFormLayout" name="formLayout_PlayerViewDistanceCol1">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_North">
+                   <property name="text">
+                    <string>North</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_South">
+                   <property name="text">
+                    <string>South</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_North">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see North of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 160 pixel tall GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_South">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see South of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 160 pixel tall GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QFormLayout" name="formLayout_PlayerViewDistanceCol2">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_West">
+                   <property name="text">
+                    <string>West</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_PlayerViewDistance_East">
+                   <property name="text">
+                    <string>East</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_West">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see West of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 240 pixel wide GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_PlayerViewDistance_East">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The distance (in pixels) that a player is able to see East of their character's position in-game. By default this is the distance from the center 16x16 to the edge of the 240 pixel wide GBA screen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QFrame" name="frame_Warning">
               <property name="styleSheet">
                <string notr="true">.QFrame { border: 1px solid red; }</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
@@ -287,7 +385,6 @@
                  <property name="font">
                   <font>
                    <pointsize>12</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -319,7 +416,7 @@
                   <item>
                    <spacer name="horizontalSpacer_6">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -338,7 +435,7 @@
             <item>
              <spacer name="verticalSpacer_3">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -369,8 +466,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>548</height>
+             <width>570</width>
+             <height>622</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -380,41 +477,54 @@
                <string>Map Data Defaults</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_3">
-               <item row="1" column="1" colspan="3">
-                <widget class="QWidget" name="widget_CustomSizeBorderMetatiles" native="true">
-                 <layout class="QHBoxLayout" name="horizontalLayout_3">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                 </layout>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_FillMetatile">
-                 <property name="toolTip">
-                  <string>The default metatile value that will be used to fill new maps</string>
-                 </property>
-                 <property name="prefix">
-                  <string>0x</string>
-                 </property>
-                 <property name="displayIntegerBase">
-                  <number>16</number>
-                 </property>
-                </widget>
-               </item>
                <item row="5" column="0">
                 <widget class="QLabel" name="label_Elevation">
                  <property name="text">
                   <string>Elevation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="label_MapWidth">
+                 <property name="text">
+                  <string>Width</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_Elevation">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default elevation that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0" colspan="2">
+                <widget class="QCheckBox" name="checkBox_CreateTextFile">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Create separate text file</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_MapWidth">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default layout width for new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_MapHeight">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default layout height for new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
                  </property>
                 </widget>
                </item>
@@ -425,13 +535,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0" colspan="2">
-                <widget class="QCheckBox" name="checkBox_CreateTextFile">
-                 <property name="toolTip">
-                  <string>Whether a separate text.inc or text.pory file will be created for new maps, alongside the scripts file</string>
-                 </property>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_Collision">
                  <property name="text">
-                  <string>Create separate text file</string>
+                  <string>Collision</string>
                  </property>
                 </widget>
                </item>
@@ -439,6 +546,20 @@
                 <widget class="QLabel" name="label_BorderMetatiles">
                  <property name="text">
                   <string>Border Metatiles</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="UIntHexSpinBox" name="spinBox_FillMetatile">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default metatile value that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="NoScrollSpinBox" name="spinBox_Collision">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default collision that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -461,7 +582,7 @@
                    <item>
                     <widget class="QLineEdit" name="lineEdit_BorderMetatiles">
                      <property name="toolTip">
-                      <string>A comma-separated list of metatile values that will be used to fill new map borders</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A comma-separated list of metatile values that will be used to fill new map borders&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                     </widget>
                    </item>
@@ -482,54 +603,30 @@
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile1">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile1">
                      <property name="toolTip">
-                      <string>The default metatile value that will be used for the top-left border metatile on new maps.</string>
-                     </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default metatile value that will be used for the top-left border metatile on new maps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile2">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile2">
                      <property name="toolTip">
-                      <string>The default metatile value that will be used for the top-right border metatile on new maps.</string>
-                     </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default metatile value that will be used for the top-right border metatile on new maps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile3">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile3">
                      <property name="toolTip">
-                      <string>The default metatile value that will be used for the bottom-left border metatile on new maps.</string>
-                     </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default metatile value that will be used for the bottom-left border metatile on new maps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="NoScrollSpinBox" name="spinBox_BorderMetatile4">
+                    <widget class="UIntHexSpinBox" name="spinBox_BorderMetatile4">
                      <property name="toolTip">
-                      <string>The default metatile value that will be used for the bottom-right border metatile on new maps.</string>
-                     </property>
-                     <property name="prefix">
-                      <string>0x</string>
-                     </property>
-                     <property name="displayIntegerBase">
-                      <number>16</number>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default metatile value that will be used for the bottom-right border metatile on new maps.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                     </widget>
                    </item>
@@ -537,24 +634,28 @@
                  </widget>
                 </widget>
                </item>
-               <item row="5" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Elevation">
-                 <property name="toolTip">
-                  <string>The default elevation that will be used to fill new maps</string>
-                 </property>
+               <item row="1" column="1" colspan="3">
+                <widget class="QWidget" name="widget_CustomSizeBorderMetatiles" native="true">
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                 </layout>
                 </widget>
                </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_Collision">
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_MapHeight">
                  <property name="text">
-                  <string>Collision</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Collision">
-                 <property name="toolTip">
-                  <string>The default collision that will be used to fill new maps</string>
+                  <string>Height</string>
                  </property>
                 </widget>
                </item>
@@ -567,10 +668,10 @@
                <string notr="true">.QFrame { border: 1px solid red; }</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_18">
                <item>
@@ -578,7 +679,6 @@
                  <property name="font">
                   <font>
                    <pointsize>12</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -604,9 +704,9 @@
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_MetatileIdMask" native="true">
+                   <widget class="UIntHexSpinBox" name="spinBox_MetatileIdMask">
                     <property name="toolTip">
-                     <string>The mask used to read/write metatile IDs in map data.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The mask used to read/write metatile IDs in map data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -618,9 +718,9 @@
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_CollisionMask" native="true">
+                   <widget class="UIntHexSpinBox" name="spinBox_CollisionMask">
                     <property name="toolTip">
-                     <string>The mask used to read/write collision values in map data.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The mask used to read/write collision values in map data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -632,9 +732,9 @@
                    </widget>
                   </item>
                   <item row="2" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_ElevationMask" native="true">
+                   <widget class="UIntHexSpinBox" name="spinBox_ElevationMask">
                     <property name="toolTip">
-                     <string>The mask used to read/write elevation values in map data.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The mask used to read/write elevation values in map data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -663,7 +763,7 @@
                   <item row="0" column="1">
                    <widget class="QCheckBox" name="checkBox_EnableAllowFlags">
                     <property name="toolTip">
-                     <string>Whether &quot;Allow Running&quot;, &quot;Allow Biking&quot; and &quot;Allow Dig &amp; Escape Rope&quot; are default options for Map Headers</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether &amp;quot;Allow Running&amp;quot;, &amp;quot;Allow Biking&amp;quot; and &amp;quot;Allow Dig &amp;amp; Escape Rope&amp;quot; are default options for Map Headers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Enable 'Allow Running/Biking/Escaping'</string>
@@ -673,7 +773,7 @@
                   <item row="0" column="0">
                    <widget class="QCheckBox" name="checkBox_EnableFloorNumber">
                     <property name="toolTip">
-                     <string>Whether &quot;Floor Number&quot; is a default option for Map Headers</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether &amp;quot;Floor Number&amp;quot; is a default option for Map Headers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Enable 'Floor Number'</string>
@@ -683,7 +783,7 @@
                   <item row="1" column="0">
                    <widget class="QCheckBox" name="checkBox_EnableCustomBorderSize">
                     <property name="toolTip">
-                     <string>Whether the dimensions of the border can be changed. If not set, all borders are 2x2</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether the dimensions of the border can be changed. If not set, all borders are 2x2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Enable Custom Border Size</string>
@@ -693,7 +793,7 @@
                   <item row="0" column="2">
                    <spacer name="horizontalSpacer_3">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -712,7 +812,7 @@
             <item>
              <spacer name="verticalSpacer_5">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -743,8 +843,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>568</height>
+             <width>570</width>
+             <height>798</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -762,7 +862,11 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="NoScrollComboBox" name="comboBox_DefaultPrimaryTileset"/>
+                <widget class="NoScrollComboBox" name="comboBox_DefaultPrimaryTileset">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default primary tileset to use for new maps/layouts.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_SecondaryTileset">
@@ -772,7 +876,91 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="NoScrollComboBox" name="comboBox_DefaultSecondaryTileset"/>
+                <widget class="NoScrollComboBox" name="comboBox_DefaultSecondaryTileset">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default secondary tileset to use for new maps/layouts.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_TransparentPixelRendering">
+              <property name="title">
+               <string>Transparent Pixel Rendering</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_22">
+               <item>
+                <widget class="QRadioButton" name="radioButton_RenderBlack">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fully transparent pixels will be rendered as black pixels (the Pokémon games do this by default)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Render as black</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="radioButton_RenderFirstPalColor">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fully transparent pixels will be rendered using the first palette color (this the default behavior for the GBA)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Render using first palette color</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_UnusedLayerRendering">
+              <property name="title">
+               <string>Unused Layer Rendering</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_3">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_UnusedTileNorma">
+                 <property name="text">
+                  <string>Normal</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="UIntHexSpinBox" name="spinBox_UnusedTileNormal">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This raw tile value will be used to fill the unused bottom layer of Normal metatiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_UnusedTileCovered">
+                 <property name="text">
+                  <string>Covered</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="UIntHexSpinBox" name="spinBox_UnusedTileCovered">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This raw tile value will be used to fill the unused top layer of Covered metatiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_UnusedTileSplit">
+                 <property name="text">
+                  <string>Split</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="UIntHexSpinBox" name="spinBox_UnusedTileSplit">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This raw tile value will be used to fill the unused middle layer of Split metatiles&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -783,10 +971,10 @@
                <string notr="true">.QFrame { border: 1px solid red; }</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_13">
                <item>
@@ -794,7 +982,6 @@
                  <property name="font">
                   <font>
                    <pointsize>12</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -813,24 +1000,21 @@
                  </property>
                  <layout class="QGridLayout" name="gridLayout_2">
                   <item row="4" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_LayerTypeMask" native="true">
+                   <widget class="UIntHexSpinBox" name="spinBox_LayerTypeMask">
                     <property name="toolTip">
-                     <string>The mask used to read/write Layer Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The mask used to read/write Layer Type from the metatile's attributes data. If 0, this attribute is disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
                   <item row="3" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_BehaviorMask" native="true">
+                   <widget class="UIntHexSpinBox" name="spinBox_BehaviorMask">
                     <property name="toolTip">
-                     <string>The mask used to read/write Metatile Behavior from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The mask used to read/write Metatile Behavior from the metatile's attributes data. If 0, this attribute is disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
                   <item row="2" column="0">
                    <widget class="QLabel" name="label_AttributesSize">
-                    <property name="toolTip">
-                     <string>The number of bytes used per metatile for metatile attributes</string>
-                    </property>
                     <property name="text">
                      <string>Attributes size (in bytes)</string>
                     </property>
@@ -839,10 +1023,10 @@
                   <item row="1" column="0">
                    <spacer name="verticalSpacer">
                     <property name="orientation">
-                     <enum>Qt::Vertical</enum>
+                     <enum>Qt::Orientation::Vertical</enum>
                     </property>
                     <property name="sizeType">
-                     <enum>QSizePolicy::Maximum</enum>
+                     <enum>QSizePolicy::Policy::Maximum</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -861,15 +1045,18 @@
                   </item>
                   <item row="0" column="0">
                    <widget class="QCheckBox" name="checkBox_EnableTripleLayerMetatiles">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, metatiles will be interpreted as having 3 layers of 4 tiles each (12 tiles total) as opposed to the default 2 layers of 4 tiles each (8 total).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Enable Triple Layer Metatiles</string>
                     </property>
                    </widget>
                   </item>
                   <item row="7" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_TerrainTypeMask" native="true">
+                   <widget class="UIntHexSpinBox" name="spinBox_TerrainTypeMask">
                     <property name="toolTip">
-                     <string>The mask used to read/write Terrain Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The mask used to read/write Terrain Type from the metatile's attributes data. If 0, this attribute is disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -894,9 +1081,9 @@
                    </widget>
                   </item>
                   <item row="5" column="1">
-                   <widget class="UIntHexSpinBox" name="spinBox_EncounterTypeMask" native="true">
+                   <widget class="UIntHexSpinBox" name="spinBox_EncounterTypeMask">
                     <property name="toolTip">
-                     <string>The mask used to read/write Encounter Type from the metatile's attributes data. If 0, this attribute is disabled.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The mask used to read/write Encounter Type from the metatile's attributes data. If 0, this attribute is disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -909,6 +1096,9 @@
                   </item>
                   <item row="2" column="1">
                    <widget class="NoScrollComboBox" name="comboBox_AttributesSize">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The number of bytes each metatile has for metatile attributes. This is the metadata about each metatile like behvior, layer type, etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="editable">
                      <bool>false</bool>
                     </property>
@@ -924,10 +1114,10 @@
                   <item row="9" column="0">
                    <spacer name="verticalSpacer_6">
                     <property name="orientation">
-                     <enum>Qt::Vertical</enum>
+                     <enum>Qt::Orientation::Vertical</enum>
                     </property>
                     <property name="sizeType">
-                     <enum>QSizePolicy::MinimumExpanding</enum>
+                     <enum>QSizePolicy::Policy::MinimumExpanding</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -949,7 +1139,7 @@
                   <item>
                    <widget class="QCheckBox" name="checkBox_OutputCallback">
                     <property name="toolTip">
-                     <string>Whether the C data outputted for new tilesets will include the &quot;callback&quot; field</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether the C data outputted for new tilesets will include the &amp;quot;callback&amp;quot; field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Output 'callback' field</string>
@@ -959,7 +1149,7 @@
                   <item>
                    <widget class="QCheckBox" name="checkBox_OutputIsCompressed">
                     <property name="toolTip">
-                     <string>Whether the C data outputted for new tilesets will include the &quot;isCompressed&quot; field</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether the C data outputted for new tilesets will include the &amp;quot;isCompressed&amp;quot; field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string>Output 'isCompressed' field</string>
@@ -975,7 +1165,7 @@
             <item>
              <spacer name="verticalSpacer_2">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -1006,24 +1196,63 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>788</height>
+             <width>570</width>
+             <height>927</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QGroupBox" name="groupBox_EventsTabIcon">
+              <property name="title">
+               <string>Tab Icon</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_12">
+               <item row="1" column="1">
+                <widget class="QToolButton" name="button_EventsTabIcon">
+                 <property name="visible">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLineEdit" name="lineEdit_EventsTabIcon">
+                 <property name="visible">
+                  <bool>false</bool>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The image file path to use for the icon of the Events tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <widget class="NoScrollComboBox" name="comboBox_EventsTabIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be displayed for the Events tab in the editor. If 'Automatic' is chosen, the icon will be a random player character from the project's base game version. If 'Custom' is chosen an image file path may be specified.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="editable">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
             <item>
              <widget class="QGroupBox" name="groupBox_DefaultIcons">
               <property name="title">
                <string>Default Icons</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_TriggersIcon">
-                 <property name="text">
-                  <string>Triggers</string>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_WarpsIcon">
                  <property name="text">
@@ -1031,47 +1260,24 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="lineEdit_WarpsIcon">
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="lineEdit_BGsIcon">
                  <property name="toolTip">
-                  <string>The icon that will be used to represent Warp events</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent BG events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="clearButtonEnabled">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
-                <widget class="QLineEdit" name="lineEdit_HealspotsIcon">
-                 <property name="toolTip">
-                  <string>The icon that will be used to represent Healspot events</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_BGsIcon">
+               <item row="4" column="2">
+                <widget class="QToolButton" name="button_HealLocationsIcon">
                  <property name="text">
-                  <string>BGs</string>
+                  <string>...</string>
                  </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_HealspotsIcon">
-                 <property name="text">
-                  <string>Healspots</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="lineEdit_ObjectsIcon">
-                 <property name="toolTip">
-                  <string>The icon that will be used to represent Object events that don't have their own sprite</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
                </item>
@@ -1082,34 +1288,17 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
-                <widget class="QLineEdit" name="lineEdit_TriggersIcon">
-                 <property name="toolTip">
-                  <string>The icon that will be used to represent Trigger events</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="lineEdit_BGsIcon">
-                 <property name="toolTip">
-                  <string>The icon that will be used to represent BG events</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QToolButton" name="button_ObjectsIcon">
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_BGsIcon">
                  <property name="text">
-                  <string>...</string>
+                  <string>BGs</string>
                  </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_TriggersIcon">
+                 <property name="text">
+                  <string>Triggers</string>
                  </property>
                 </widget>
                </item>
@@ -1119,19 +1308,35 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="2">
-                <widget class="QToolButton" name="button_TriggersIcon">
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_HealLocationsIcon">
                  <property name="text">
-                  <string>...</string>
+                  <string>Heal Locations</string>
                  </property>
-                 <property name="icon">
-                  <iconset resource="../resources/images.qrc">
-                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEdit_ObjectsIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Object events that don't have their own sprite&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEdit_WarpsIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Warp events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -1141,19 +1346,50 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="2">
-                <widget class="QToolButton" name="button_HealspotsIcon">
+               <item row="4" column="1">
+                <widget class="QLineEdit" name="lineEdit_HealLocationsIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Heal Location events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QToolButton" name="button_TriggersIcon">
                  <property name="text">
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QToolButton" name="button_ObjectsIcon">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="lineEdit_TriggersIcon">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The icon that will be used to represent Trigger events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -1169,13 +1405,13 @@
                <item row="1" column="2">
                 <widget class="QToolButton" name="button_RemoveWarpBehavior">
                  <property name="toolTip">
-                  <string>Remove the current text from the list</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove the current text from the list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
                  </property>
                 </widget>
@@ -1193,7 +1429,7 @@
                <item row="0" column="0" colspan="3">
                 <widget class="QCheckBox" name="checkBox_DisableWarning">
                  <property name="toolTip">
-                  <string>If checked, Warp Events will not display a warning about incompatible metatile behaviors</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, Warp Events will not display a warning about incompatible metatile behaviors&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>Disable Warning</string>
@@ -1204,15 +1440,15 @@
                 <widget class="NoScrollComboBox" name="comboBox_WarpBehaviors"/>
                </item>
                <item row="4" column="0" colspan="3">
-                <widget class="QTextEdit" name="textEdit_WarpBehaviors">
+                <widget class="NoScrollTextEdit" name="textEdit_WarpBehaviors">
                  <property name="toolTip">
-                  <string>Metatile Behaviors on this list won't trigger warnings for Warp Events</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Metatile Behaviors on this list won't trigger warnings for Warp Events&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                  <property name="textInteractionFlags">
-                  <set>Qt::NoTextInteraction</set>
+                  <set>Qt::TextInteractionFlag::NoTextInteraction</set>
                  </property>
                  <property name="placeholderText">
                   <string>Use the dropbown and buttons to add behaviors to the list...</string>
@@ -1222,13 +1458,13 @@
                <item row="1" column="1">
                 <widget class="QToolButton" name="button_AddWarpBehavior">
                  <property name="toolTip">
-                  <string>Add the current text to the list</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add the current text to the list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources/images.qrc">
+                  <iconset>
                    <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
                  </property>
                 </widget>
@@ -1242,10 +1478,10 @@
                <string notr="true">.QFrame { border: 1px solid red; }</string>
               </property>
               <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
+               <enum>QFrame::Shape::StyledPanel</enum>
               </property>
               <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+               <enum>QFrame::Shadow::Raised</enum>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_15">
                <item>
@@ -1253,7 +1489,6 @@
                  <property name="font">
                   <font>
                    <pointsize>12</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -1263,6 +1498,29 @@
                  <property name="wordWrap">
                   <bool>true</bool>
                  </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QWidget" name="widget_MaxEvents" native="true">
+                 <layout class="QFormLayout" name="formLayout_4">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_MaxEvents">
+                    <property name="text">
+                     <string>Maximum Events per Event group</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="NoScrollSpinBox" name="spinBox_MaxEvents">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maps cannot have more than this number of events in each event group. Object events are additionally limited by 'define_obj_event_count' on the Identifiers tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </widget>
                </item>
                <item>
@@ -1316,7 +1574,7 @@
                   <item row="0" column="2">
                    <spacer name="horizontalSpacer_2">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -1335,7 +1593,7 @@
             <item>
              <spacer name="verticalSpacer_4">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -1366,28 +1624,25 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>490</height>
+             <width>570</width>
+             <height>499</height>
             </rect>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_10">
-            <item>
-             <widget class="QLabel" name="label_ProjectFilesHelp">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://huderlem.github.io/porymap/manual/project-files.html#files&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0069d9;&quot;&gt;Help&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <layout class="QGridLayout" name="gridLayout_10" rowstretch="1,2,8">
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
-              <property name="textFormat">
-               <enum>Qt::RichText</enum>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-              </property>
-              <property name="openExternalLinks">
-               <bool>true</bool>
-              </property>
-             </widget>
+             </spacer>
             </item>
-            <item>
+            <item row="2" column="0" colspan="3">
              <widget class="QWidget" name="widget_ProjectPaths" native="true">
               <layout class="QVBoxLayout" name="verticalLayout_6">
                <property name="spacing">
@@ -1418,8 +1673,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>533</width>
-                    <height>440</height>
+                    <width>544</width>
+                    <height>341</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_ProjectPaths">
@@ -1438,6 +1693,34 @@
                </item>
               </layout>
              </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="button_AddGlobalConstantsFile">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add additional C files containing #defines or enums. These will be used to resolve unknown symbols during project launch.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Add Global Constants File...</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QToolButton" name="button_HelpFiles">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="3">
+             <layout class="QGridLayout" name="gridLayout_GlobalConstantsFiles"/>
             </item>
            </layout>
           </widget>
@@ -1460,28 +1743,23 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>559</width>
-             <height>490</height>
+             <width>570</width>
+             <height>499</height>
             </rect>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_19">
-            <item>
-             <widget class="QLabel" name="label_IdentifiersHelp">
+           <layout class="QGridLayout" name="gridLayout_11">
+            <item row="0" column="0">
+             <widget class="QToolButton" name="button_HelpIdentifiers">
               <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://huderlem.github.io/porymap/manual/project-files.html#identifiers&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0069d9;&quot;&gt;Help&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>...</string>
               </property>
-              <property name="textFormat">
-               <enum>Qt::RichText</enum>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-              </property>
-              <property name="openExternalLinks">
-               <bool>true</bool>
+              <property name="icon">
+               <iconset>
+                <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
               </property>
              </widget>
             </item>
-            <item>
+            <item row="2" column="0" colspan="3">
              <widget class="QWidget" name="widget_Identifiers" native="true">
               <layout class="QVBoxLayout" name="verticalLayout_20">
                <property name="spacing">
@@ -1512,8 +1790,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>533</width>
-                    <height>440</height>
+                    <width>544</width>
+                    <height>425</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_Identifiers">
@@ -1533,6 +1811,36 @@
               </layout>
              </widget>
             </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="button_AddGlobalConstant">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add an additional #define name and expression. This may be used to evaluate other #defines during project launch.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Add Global Constant...</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer_7">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="1" column="0" colspan="3">
+             <layout class="QGridLayout" name="gridLayout_GlobalConstants"/>
+            </item>
            </layout>
           </widget>
          </widget>
@@ -1544,7 +1852,7 @@
     <item>
      <widget class="QDialogButtonBox" name="buttonBox">
       <property name="standardButtons">
-       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::RestoreDefaults</set>
+       <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok|QDialogButtonBox::StandardButton::RestoreDefaults</set>
       </property>
      </widget>
     </item>
@@ -1563,13 +1871,21 @@
    <header>noscrollspinbox.h</header>
   </customwidget>
   <customwidget>
-   <class>UIntHexSpinBox</class>
-   <extends>QWidget</extends>
+   <class>NoScrollTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>noscrolltextedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UIntSpinBox</class>
+   <extends>QAbstractSpinBox</extends>
    <header>uintspinbox.h</header>
   </customwidget>
+  <customwidget>
+   <class>UIntHexSpinBox</class>
+   <extends>UIntSpinBox</extends>
+   <header location="global">uintspinbox.h</header>
+  </customwidget>
  </customwidgets>
- <resources>
-  <include location="../resources/images.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

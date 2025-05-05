@@ -2,15 +2,21 @@
 #include "scripting.h"
 #include "imageproviders.h"
 
+void MapView::updateScene() {
+    if (this->scene()) {
+        this->scene()->update();
+    }
+}
+
 void MapView::clear(int layer) {
     this->getOverlay(layer)->clearItems();
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, clear all layers
 void MapView::clear() {
     this->clearOverlayMap();
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::hide(int layer) {
@@ -37,14 +43,14 @@ bool MapView::getVisibility(int layer) {
 
 void MapView::setVisibility(bool visible, int layer) {
     this->getOverlay(layer)->setHidden(!visible);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set visibility of all layers
 void MapView::setVisibility(bool visible) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setHidden(!visible);
-    this->scene()->update();
+    this->updateScene();
 }
 
 int MapView::getX(int layer) {
@@ -57,49 +63,49 @@ int MapView::getY(int layer) {
 
 void MapView::setX(int x, int layer) {
     this->getOverlay(layer)->setX(x);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set x of all layers
 void MapView::setX(int x) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setX(x);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::setY(int y, int layer) {
     this->getOverlay(layer)->setY(y);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set y of all layers
 void MapView::setY(int y) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setY(y);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::setClippingRect(int x, int y, int width, int height, int layer) {
     this->getOverlay(layer)->setClippingRect(QRectF(x, y, width, height));
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::setClippingRect(int x, int y, int width, int height) {
     QRectF rect = QRectF(x, y, width, height);
     foreach (Overlay * layer, this->overlayMap)
         layer->setClippingRect(rect);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::clearClippingRect(int layer) {
     this->getOverlay(layer)->clearClippingRect();
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::clearClippingRect() {
     foreach (Overlay * layer, this->overlayMap)
         layer->clearClippingRect();
-    this->scene()->update();
+    this->updateScene();
 }
 
 QJSValue MapView::getPosition(int layer) {
@@ -109,26 +115,26 @@ QJSValue MapView::getPosition(int layer) {
 
 void MapView::setPosition(int x, int y, int layer) {
     this->getOverlay(layer)->setPosition(x, y);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set position of all layers
 void MapView::setPosition(int x, int y) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setPosition(x, y);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::move(int deltaX, int deltaY, int layer) {
     this->getOverlay(layer)->move(deltaX, deltaY);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, move all layers
 void MapView::move(int deltaX, int deltaY) {
     foreach (Overlay * layer, this->overlayMap)
         layer->move(deltaX, deltaY);
-    this->scene()->update();
+    this->updateScene();
 }
 
 int MapView::getOpacity(int layer) {
@@ -137,14 +143,14 @@ int MapView::getOpacity(int layer) {
 
 void MapView::setOpacity(int opacity, int layer) {
     this->getOverlay(layer)->setOpacity(opacity);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set opacity of all layers
 void MapView::setOpacity(int opacity) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setOpacity(opacity);
-    this->scene()->update();
+    this->updateScene();
 }
 
 qreal MapView::getHorizontalScale(int layer) {
@@ -157,38 +163,38 @@ qreal MapView::getVerticalScale(int layer) {
 
 void MapView::setHorizontalScale(qreal scale, int layer) {
     this->getOverlay(layer)->setHScale(scale);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set horizontal scale of all layers
 void MapView::setHorizontalScale(qreal scale) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setHScale(scale);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::setVerticalScale(qreal scale, int layer) {
     this->getOverlay(layer)->setVScale(scale);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set vertical scale of all layers
 void MapView::setVerticalScale(qreal scale) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setVScale(scale);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::setScale(qreal hScale, qreal vScale, int layer) {
     this->getOverlay(layer)->setScale(hScale, vScale);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set scale of all layers
 void MapView::setScale(qreal hScale, qreal vScale) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setScale(hScale, vScale);
-    this->scene()->update();
+    this->updateScene();
 }
 
 int MapView::getRotation(int layer) {
@@ -197,41 +203,41 @@ int MapView::getRotation(int layer) {
 
 void MapView::setRotation(int angle, int layer) {
     this->getOverlay(layer)->setRotation(angle);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, set rotation of all layers
 void MapView::setRotation(int angle) {
     foreach (Overlay * layer, this->overlayMap)
         layer->setRotation(angle);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::rotate(int degrees, int layer) {
     this->getOverlay(layer)->rotate(degrees);
-    this->scene()->update();
+    this->updateScene();
 }
 
 // Overload. No layer provided, rotate all layers
 void MapView::rotate(int degrees) {
     foreach (Overlay * layer, this->overlayMap)
         layer->rotate(degrees);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::addText(QString text, int x, int y, QString color, int fontSize, int layer) {
     this->getOverlay(layer)->addText(text, x, y, color, fontSize);
-    this->scene()->update();
+    this->updateScene();
 }
 
 void MapView::addRect(int x, int y, int width, int height, QString borderColor, QString fillColor, int rounding, int layer) {
     if (this->getOverlay(layer)->addRect(x, y, width, height, borderColor, fillColor, rounding))
-        this->scene()->update();
+        this->updateScene();
 }
 
 void MapView::addPath(QList<int> xCoords, QList<int> yCoords, QString borderColor, QString fillColor, int layer) {
     if (this->getOverlay(layer)->addPath(xCoords, yCoords, borderColor, fillColor))
-        this->scene()->update();
+        this->updateScene();
 }
 
 void MapView::addPath(QList<QList<int>> coords, QString borderColor, QString fillColor, int layer) {
@@ -250,33 +256,36 @@ void MapView::addPath(QList<QList<int>> coords, QString borderColor, QString fil
 
 void MapView::addImage(int x, int y, QString filepath, int layer, bool useCache) {
     if (this->getOverlay(layer)->addImage(x, y, filepath, useCache))
-        this->scene()->update();
+        this->updateScene();
 }
 
 void MapView::createImage(int x, int y, QString filepath, int width, int height, int xOffset, int yOffset, qreal hScale, qreal vScale, int paletteId, bool setTransparency, int layer, bool useCache) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
     QList<QRgb> palette;
     if (paletteId != -1)
-        palette = Tileset::getPalette(paletteId, this->editor->map->layout->tileset_primary, this->editor->map->layout->tileset_secondary);
+        palette = Tileset::getPalette(paletteId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
     if (this->getOverlay(layer)->addImage(x, y, filepath, useCache, width, height, xOffset, yOffset, hScale, vScale, palette, setTransparency))
-        this->scene()->update();
+        this->updateScene();
 }
 
 void MapView::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency, int layer) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
     QImage image = getPalettedTileImage(tileId,
-                                        this->editor->map->layout->tileset_primary,
-                                        this->editor->map->layout->tileset_secondary,
+                                        this->editor->layout->tileset_primary,
+                                        this->editor->layout->tileset_secondary,
                                         paletteId)
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
+                                        .flipped(Util::getOrientation(xflip, yflip));
+#else
                                         .mirrored(xflip, yflip);
+#endif
+
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->getOverlay(layer)->addImage(x, y, image))
-        this->scene()->update();
+        this->updateScene();
 }
 
 void MapView::addTileImage(int x, int y, QJSValue tileObj, bool setTransparency, int layer) {
@@ -285,16 +294,15 @@ void MapView::addTileImage(int x, int y, QJSValue tileObj, bool setTransparency,
 }
 
 void MapView::addMetatileImage(int x, int y, int metatileId, bool setTransparency, int layer) {
-    if (!this->editor || !this->editor->map || !this->editor->map->layout
-     || !this->editor->map->layout->tileset_primary || !this->editor->map->layout->tileset_secondary)
+    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
     QImage image = getMetatileImage(static_cast<uint16_t>(metatileId),
-                                    this->editor->map->layout->tileset_primary,
-                                    this->editor->map->layout->tileset_secondary,
-                                    this->editor->map->metatileLayerOrder,
-                                    this->editor->map->metatileLayerOpacity);
+                                    this->editor->layout->tileset_primary,
+                                    this->editor->layout->tileset_secondary,
+                                    this->editor->layout->metatileLayerOrder,
+                                    this->editor->layout->metatileLayerOpacity);
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->getOverlay(layer)->addImage(x, y, image))
-        this->scene()->update();
+        this->updateScene();
 }

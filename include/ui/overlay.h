@@ -50,19 +50,19 @@ private:
     QColor fillColor;
 };
 
-class OverlayImage : public OverlayItem {
+class OverlayPixmap : public OverlayItem {
 public:
-    OverlayImage(int x, int y, QImage image) {
+    OverlayPixmap(int x, int y, QPixmap pixmap) {
         this->x = x;
         this->y = y;
-        this->image = image;
+        this->pixmap = pixmap;
     }
-    ~OverlayImage() {}
+    ~OverlayPixmap() {}
     virtual void render(QPainter *painter);
 private:
     int x;
     int y;
-    QImage image;
+    QPixmap pixmap;
 };
 
 class Overlay

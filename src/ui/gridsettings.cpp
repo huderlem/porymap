@@ -1,8 +1,6 @@
 #include "ui_gridsettingsdialog.h"
 #include "gridsettings.h"
 
-// TODO: Save settings in config
-
 const QMap<GridSettings::Style, QString> GridSettings::styleToName = {
     {Style::Solid, "Solid"},
     {Style::LargeDashes, "Large Dashes"},
@@ -146,7 +144,7 @@ void GridSettingsDialog::updateInput() {
     ui->colorInput->setColor(m_settings->color.rgb());
 
     const QSignalBlocker b_Style(ui->comboBox_Style);
-    ui->comboBox_Style->setCurrentText(GridSettings::getStyleName(m_settings->style));
+    ui->comboBox_Style->setTextItem(GridSettings::getStyleName(m_settings->style));
 }
 
 void GridSettingsDialog::setWidth(int value) {

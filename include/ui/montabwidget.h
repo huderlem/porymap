@@ -27,19 +27,20 @@ public:
     void copy(int index);
     void paste(int index);
 
+    void setCurrentField(const QString &fieldName);
+
 public slots:
     void setTabActive(int index, bool active = true);
     void deactivateTab(int tabIndex);
 
 private:
-    bool eventFilter(QObject *object, QEvent *event);
-
     void actionCopyTab(int index);
     void actionAddDeleteTab(int index);
 
     QVector<bool> activeTabs;
     QVector<QPushButton *> addDeleteTabButtons;
     QVector<QPushButton *> copyTabButtons;
+    QMap<QString,int> fieldNameToIndex;
 
     Editor *editor;
 };

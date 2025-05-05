@@ -12,6 +12,8 @@ public:
     void wheelEvent(QWheelEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
 
+    void setLineEditEnabled(bool enabled);
+
     unsigned getActionId();
 
 private:
