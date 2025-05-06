@@ -168,11 +168,15 @@ void Editor::setEditMode(EditMode editMode) {
     if (editingLayout && this->layout) {
         editStack = &this->layout->editHistory;
     }
-    this->cursorMapTileRect->setSingleTileMode();
+
+    this->cursorMapTileRect->setSingleTileMode(editMode == EditMode::Collision);
     this->cursorMapTileRect->setActive(editingLayout);
     this->playerViewRect->setActive(editingLayout);
     this->editGroup.setActiveStack(editStack);
-    setMapEditingButtonsEnabled(editingLayout);
+    this->ui->toolButton_Fill->setEnabled(editingLayout);
+    this->ui->toolButton_Dropper->setEnabled(editingLayout);
+    this->ui->pushButton_ChangeDimensions->setEnabled(editingLayout);
+    this->ui->checkBox_smartPaths->setEnabled(editingLayout);
 
     if (this->editMode == EditMode::Events || oldEditMode == EditMode::Events) {
         // When switching to or from the Events tab the opacity of the events changes. Redraw the events to reflect that change.
@@ -181,22 +185,6 @@ void Editor::setEditMode(EditMode editMode) {
     if (this->editMode == EditMode::Events){
         updateWarpEventWarnings();
     }
-}
-
-void Editor::setMapEditingButtonsEnabled(bool enabled) {
-    this->ui->toolButton_Fill->setEnabled(enabled);
-    this->ui->toolButton_Dropper->setEnabled(enabled);
-    this->ui->pushButton_ChangeDimensions->setEnabled(enabled);
-    // If the fill button is pressed, unpress it and select the pointer.
-    if (!enabled && (this->ui->toolButton_Fill->isChecked() || this->ui->toolButton_Dropper->isChecked())) {
-        this->mapEditAction = EditAction::Select;
-        this->settings->mapCursor = QCursor();
-        this->cursorMapTileRect->setSingleTileMode();
-        this->ui->toolButton_Fill->setChecked(false);
-        this->ui->toolButton_Dropper->setChecked(false);
-        this->ui->toolButton_Select->setChecked(true);
-    }
-    this->ui->checkBox_smartPaths->setEnabled(enabled);
 }
 
 void Editor::clearWildMonTables() {
@@ -1406,7 +1394,6 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             if (event->buttons() & Qt::RightButton) {
                 this->eventEditAction = EditAction::Select;
                 this->settings->mapCursor = QCursor();
-                this->cursorMapTileRect->setSingleTileMode();
                 this->ui->toolButton_Paint->setChecked(false);
                 this->ui->toolButton_Select->setChecked(true);
             } else {

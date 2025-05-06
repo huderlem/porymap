@@ -2454,7 +2454,7 @@ void MainWindow::on_toolButton_Paint_clicked()
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
 
     if (ui->mapViewTab->currentIndex() != MapViewTab::Collision)
-        editor->cursorMapTileRect->stopSingleTileMode();
+        editor->cursorMapTileRect->setSingleTileMode(false);
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -2473,7 +2473,7 @@ void MainWindow::on_toolButton_Select_clicked()
         editor->eventEditAction = Editor::EditAction::Select;
 
     editor->settings->mapCursor = QCursor();
-    editor->cursorMapTileRect->setSingleTileMode();
+    editor->cursorMapTileRect->setSingleTileMode(true);
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -2492,7 +2492,7 @@ void MainWindow::on_toolButton_Fill_clicked()
         editor->eventEditAction = Editor::EditAction::Fill;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
-    editor->cursorMapTileRect->setSingleTileMode();
+    editor->cursorMapTileRect->setSingleTileMode(true);
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -2511,7 +2511,7 @@ void MainWindow::on_toolButton_Dropper_clicked()
         editor->eventEditAction = Editor::EditAction::Pick;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
-    editor->cursorMapTileRect->setSingleTileMode();
+    editor->cursorMapTileRect->setSingleTileMode(true);
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -2530,7 +2530,7 @@ void MainWindow::on_toolButton_Move_clicked()
         editor->eventEditAction = Editor::EditAction::Move;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
-    editor->cursorMapTileRect->setSingleTileMode();
+    editor->cursorMapTileRect->setSingleTileMode(true);
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -2549,7 +2549,7 @@ void MainWindow::on_toolButton_Shift_clicked()
         editor->eventEditAction = Editor::EditAction::Shift;
 
     editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
-    editor->cursorMapTileRect->setSingleTileMode();
+    editor->cursorMapTileRect->setSingleTileMode(true);
 
     ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
