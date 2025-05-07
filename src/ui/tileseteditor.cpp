@@ -1145,12 +1145,13 @@ void TilesetEditor::countMetatileUsage() {
     // do not double count
     this->metatileSelector->usedMetatiles.fill(0);
 
-    for (auto layout : this->project->mapLayouts) {
+    for (const auto &layoutId : this->project->layoutIds()) {
+        Layout *layout = this->project->getLayout(layoutId);
         bool usesPrimary = (layout->tileset_primary_label == this->primaryTileset->name);
         bool usesSecondary = (layout->tileset_secondary_label == this->secondaryTileset->name);
 
         if (usesPrimary || usesSecondary) {
-            if (!this->project->loadLayout(layout))
+            if (!this->project->loadLayout(layoutId))
                 continue;
 
             // for each block in the layout, mark in the vector that it is used
@@ -1183,7 +1184,8 @@ void TilesetEditor::countTileUsage() {
     QSet<Tileset*> primaryTilesets;
     QSet<Tileset*> secondaryTilesets;
 
-    for (auto &layout : this->project->mapLayouts) {
+    for (const auto &layoutId : this->project->layoutIds()) {
+        Layout *layout = this->project->getLayout(layoutId);
         if (layout->tileset_primary_label == this->primaryTileset->name
          || layout->tileset_secondary_label == this->secondaryTileset->name) {
             // need to check metatiles

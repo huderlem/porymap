@@ -678,7 +678,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     connect(project, &Project::mapGroupAdded, this, &MainWindow::onNewMapGroupCreated);
     connect(project, &Project::mapSectionAdded, this, &MainWindow::onNewMapSectionCreated);
     connect(project, &Project::mapSectionDisplayNameChanged, this, &MainWindow::onMapSectionDisplayNameChanged);
-    connect(project, &Project::mapsExcluded, this, &MainWindow::showMapsExcludedAlert);
     this->editor->setProject(project);
 
     // Make sure project looks reasonable before attempting to load it
@@ -798,19 +797,6 @@ void MainWindow::showProjectOpenFailure() {
     RecentErrorMessage::show(QStringLiteral("There was an error opening the project."), this);
 }
 
-// Alert the user that one or more maps have been excluded while loading the project.
-void MainWindow::showMapsExcludedAlert(const QStringList &excludedMapNames) {
-    auto msgBox = new RecentErrorMessage("", this);
-    msgBox->setAttribute(Qt::WA_DeleteOnClose);
-    if (excludedMapNames.length() == 1) {
-        msgBox->setText(QString("Failed to load map '%1'. Saving will exclude this map from your project.").arg(excludedMapNames.first()));
-    } else {
-        msgBox->setText(QStringLiteral("Failed to load the maps listed below. Saving will exclude these maps from your project."));
-        msgBox->setDetailedText(excludedMapNames.join("\n")); // Overwrites error details text, user will need to check the log.
-    }
-    msgBox->open();
-}
-
 bool MainWindow::isProjectOpen() {
     return editor && editor->project;
 }
@@ -819,22 +805,22 @@ bool MainWindow::setInitialMap() {
     porysplash->showMessage("Opening initial map");
 
     const QString recent = userConfig.recentMapOrLayout;
-    if (editor->project->mapNames.contains(recent)) {
+    if (editor->project->isKnownMap(recent)) {
         // User recently had a map open that still exists.
         if (setMap(recent))
             return true;
-    } else if (editor->project->layoutIds.contains(recent)) {
+    } else if (editor->project->isKnownLayout(recent)) {
         // User recently had a layout open that still exists.
         if (setLayout(recent))
             return true;
     }
 
     // Failed to open recent map/layout, or no recent map/layout. Try opening maps then layouts sequentially.
-    for (const auto &name : editor->project->mapNames) {
+    for (const auto &name : editor->project->mapNames()) {
         if (name != recent && setMap(name))
             return true;
     }
-    for (const auto &id : editor->project->layoutIds) {
+    for (const auto &id : editor->project->layoutIds()) {
         if (id != recent && setLayout(id))
             return true;
     }
@@ -966,39 +952,39 @@ void MainWindow::unsetMap() {
 
 // setMap, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a map to open.
-bool MainWindow::userSetMap(QString map_name) {
-    if (editor->map && editor->map->name() == map_name)
+bool MainWindow::userSetMap(const QString &mapName) {
+    if (editor->map && editor->map->name() == mapName)
         return true; // Already set
 
-    if (map_name.isEmpty()) {
+    if (mapName.isEmpty()) {
         WarningMessage::show(QStringLiteral("Cannot open map with empty name."), this);
         return false;
     }
 
-    if (map_name == editor->project->getDynamicMapName()) {
-        auto msgBox = new WarningMessage(QString("Cannot open map '%1'.").arg(map_name), this);
+    if (mapName == editor->project->getDynamicMapName()) {
+        auto msgBox = new WarningMessage(QString("Cannot open map '%1'.").arg(mapName), this);
         msgBox->setAttribute(Qt::WA_DeleteOnClose);
         msgBox->setInformativeText(QStringLiteral("This map name is a placeholder to indicate that the warp's map will be set programmatically."));
         msgBox->open();
         return false;
     }
 
-    if (!setMap(map_name)) {
-        RecentErrorMessage::show(QString("There was an error opening map '%1'.").arg(map_name), this);
+    if (!setMap(mapName)) {
+        RecentErrorMessage::show(QString("There was an error opening map '%1'.").arg(mapName), this);
         return false;
     }
     return true;
 }
 
-bool MainWindow::setMap(QString map_name) {
-    if (!editor || !editor->project || map_name.isEmpty() || map_name == editor->project->getDynamicMapName()) {
-        logWarn(QString("Ignored setting map to '%1'").arg(map_name));
+bool MainWindow::setMap(const QString &mapName) {
+    if (!editor || !editor->project || mapName.isEmpty() || mapName == editor->project->getDynamicMapName()) {
+        logWarn(QString("Ignored setting map to '%1'").arg(mapName));
         return false;
     }
 
-    logInfo(QString("Setting map to '%1'").arg(map_name));
-    if (!editor->setMap(map_name)) {
-        logWarn(QString("Failed to set map to '%1'").arg(map_name));
+    logInfo(QString("Setting map to '%1'").arg(mapName));
+    if (!editor->setMap(mapName)) {
+        logWarn(QString("Failed to set map to '%1'").arg(mapName));
         return false;
     }
 
@@ -1018,9 +1004,9 @@ bool MainWindow::setMap(QString map_name) {
 
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
-    userConfig.recentMapOrLayout = map_name;
+    userConfig.recentMapOrLayout = mapName;
 
-    Scripting::cb_MapOpened(map_name);
+    Scripting::cb_MapOpened(mapName);
     prefab.updatePrefabUi(editor->layout);
     updateTilesetEditor();
 
@@ -1043,7 +1029,7 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
 
 // setLayout, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a layout to open.
-bool MainWindow::userSetLayout(QString layoutId) {
+bool MainWindow::userSetLayout(const QString &layoutId) {
     if (!setLayout(layoutId)) {
         RecentErrorMessage::show(QString("There was an error opening layout '%1'.").arg(layoutId), this);
         return false;
@@ -1055,10 +1041,10 @@ bool MainWindow::userSetLayout(QString layoutId) {
     return true;
 }
 
-bool MainWindow::setLayout(QString layoutId) {
+bool MainWindow::setLayout(const QString &layoutId) {
     // Prefer logging the name of the layout as displayed in the map list.
-    const Layout* layout = this->editor->project ? this->editor->project->mapLayouts.value(layoutId) : nullptr;
-    logInfo(QString("Setting layout to '%1'").arg(layout ? layout->name : layoutId));
+    QString layoutName = this->editor->project ? this->editor->project->getLayoutName(layoutId) : QString();
+    logInfo(QString("Setting layout to '%1'").arg(layoutName.isEmpty() ? layoutId : layoutName));
 
     if (!this->editor->setLayout(layoutId)) {
         return false;
@@ -1197,7 +1183,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
     if (!this->editor || !this->editor->project || !this->editor->map)
         return;
 
-    if (!this->editor->project->mapLayouts.contains(text)) {
+    if (!this->editor->project->isKnownLayout(text)) {
         // User may be in the middle of typing the name of a layout, don't bother trying to load it.
         return;
     }
@@ -1208,7 +1194,7 @@ void MainWindow::on_comboBox_LayoutSelector_currentTextChanged(const QString &te
 
         // New layout failed to load, restore previous layout
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
-        ui->comboBox_LayoutSelector->setTextItem(this->editor->map->layout()->id);
+        ui->comboBox_LayoutSelector->setTextItem(this->editor->map->layoutId());
         return;
     }
     this->editor->map->setLayout(layout);
@@ -1222,7 +1208,7 @@ void MainWindow::onLayoutSelectorEditingFinished() {
 
     // If the user left the layout selector in an invalid state, restore it so that it displays the current layout.
     const QString text = ui->comboBox_LayoutSelector->currentText();
-    if (!this->editor->project->mapLayouts.contains(text)) {
+    if (!this->editor->project->isKnownLayout(text)) {
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
         ui->comboBox_LayoutSelector->setTextItem(this->editor->layout->id);
     }
@@ -1247,17 +1233,17 @@ bool MainWindow::setProjectUI() {
 
     const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
     ui->comboBox_LayoutSelector->clear();
-    ui->comboBox_LayoutSelector->addItems(project->layoutIds);
+    ui->comboBox_LayoutSelector->addItems(project->layoutIds());
 
     const QSignalBlocker b_DiveMap(ui->comboBox_DiveMap);
     ui->comboBox_DiveMap->clear();
-    ui->comboBox_DiveMap->addItems(project->mapNames);
+    ui->comboBox_DiveMap->addItems(project->mapNames());
     ui->comboBox_DiveMap->setClearButtonEnabled(true);
     ui->comboBox_DiveMap->setFocusedScrollingEnabled(false);
 
     const QSignalBlocker b_EmergeMap(ui->comboBox_EmergeMap);
     ui->comboBox_EmergeMap->clear();
-    ui->comboBox_EmergeMap->addItems(project->mapNames);
+    ui->comboBox_EmergeMap->addItems(project->mapNames());
     ui->comboBox_EmergeMap->setClearButtonEnabled(true);
     ui->comboBox_EmergeMap->setFocusedScrollingEnabled(false);
 
@@ -1484,11 +1470,11 @@ void MainWindow::onNewMapCreated(Map *newMap, const QString &groupName) {
     // Add new map to the map lists
     this->mapGroupModel->insertMapItem(newMap->name(), groupName);
     this->mapLocationModel->insertMapItem(newMap->name(), newMap->header()->location());
-    this->layoutTreeModel->insertMapItem(newMap->name(), newMap->layout()->id);
+    this->layoutTreeModel->insertMapItem(newMap->name(), newMap->layoutId());
 
     // Refresh any combo box that displays map names and persists between maps
     // (other combo boxes like for warp destinations are repopulated when the map changes).
-    int mapIndex = this->editor->project->mapNames.indexOf(newMap->name());
+    int mapIndex = this->editor->project->mapNames().indexOf(newMap->name());
     if (mapIndex >= 0) {
         ui->comboBox_DiveMap->insertItem(mapIndex, newMap->name());
         ui->comboBox_EmergeMap->insertItem(mapIndex, newMap->name());
@@ -1502,7 +1488,7 @@ void MainWindow::onNewLayoutCreated(Layout *layout) {
     logInfo(QString("Created a new layout named %1.").arg(layout->name));
 
     // Refresh layout combo box
-    int layoutIndex = this->editor->project->layoutIds.indexOf(layout->id);
+    int layoutIndex = this->editor->project->layoutIds().indexOf(layout->id);
     if (layoutIndex >= 0) {
         const QSignalBlocker b(ui->comboBox_LayoutSelector);
         ui->comboBox_LayoutSelector->insertItem(layoutIndex, layout->id);
@@ -2707,7 +2693,7 @@ void MainWindow::on_pushButton_AddConnection_clicked() {
     if (!this->editor || !this->editor->map || !this->editor->project)
         return;
 
-    auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames);
+    auto dialog = new NewMapConnectionDialog(this, this->editor->map, this->editor->project->mapNames());
     connect(dialog, &NewMapConnectionDialog::newConnectionedAdded, this->editor, &Editor::addNewConnection);
     connect(dialog, &NewMapConnectionDialog::connectionReplaced, this->editor, &Editor::replaceConnection);
     dialog->open();

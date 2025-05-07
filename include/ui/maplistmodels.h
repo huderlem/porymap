@@ -84,6 +84,7 @@ protected:
     QIcon mapGrayIcon;
     QIcon mapIcon;
     QIcon mapEditedIcon;
+    QIcon mapErroredIcon;
     QIcon mapOpenedIcon;
     QIcon mapFolderIcon;
     QIcon emptyMapFolderIcon;

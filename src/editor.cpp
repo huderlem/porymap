@@ -779,7 +779,7 @@ void Editor::displayConnection(MapConnection *connection) {
     connect(pixmapItem, &ConnectionPixmapItem::positionChanged, this, &Editor::maskNonVisibleConnectionTiles);
 
     // Create item for the list panel
-    auto listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, pixmapItem->connection, project->mapNames);
+    auto listItem = new ConnectionsListItem(ui->scrollAreaContents_ConnectionsList, pixmapItem->connection, project->mapNames());
     ui->layout_ConnectionsList->insertWidget(ui->layout_ConnectionsList->count() - 1, listItem); // Insert above the vertical spacer
 
     // Double clicking the pixmap or clicking the list item's map button opens the connected map
@@ -939,7 +939,7 @@ void Editor::removeDivingMapPixmap(MapConnection *connection) {
 }
 
 bool Editor::setDivingMapName(const QString &mapName, const QString &direction) {
-    if (!mapName.isEmpty() && !this->project->mapNames.contains(mapName))
+    if (!mapName.isEmpty() && !this->project->isKnownMap(mapName))
         return false;
     if (!MapConnection::isDiving(direction))
         return false;
@@ -977,7 +977,7 @@ void Editor::onDivingMapEditingFinished(NoScrollComboBox *combo, const QString &
 }
 
 void Editor::updateDivingMapButton(QToolButton* button, const QString &mapName) {
-    if (this->project) button->setDisabled(!this->project->mapNames.contains(mapName));
+    if (this->project) button->setDisabled(!this->project->isKnownMap(mapName));
 }
 
 void Editor::updateDivingMapsVisibility() {
@@ -1227,7 +1227,7 @@ bool Editor::setMap(QString map_name) {
     unsetMap();
     this->map = loadedMap;
 
-    setLayout(map->layout()->id);
+    setLayout(map->layoutId());
 
     editGroup.addStack(map->editHistory());
     editGroup.setActiveStack(map->editHistory());

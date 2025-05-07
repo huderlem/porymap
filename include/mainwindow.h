@@ -342,11 +342,11 @@ private:
 
     bool tilesetNeedsRedraw = false;
 
-    bool setLayout(QString layoutId);
-    bool setMap(QString);
+    bool setLayout(const QString &layoutId);
+    bool setMap(const QString &mapName);
     void unsetMap();
-    bool userSetLayout(QString layoutId);
-    bool userSetMap(QString);
+    bool userSetLayout(const QString &layoutId);
+    bool userSetMap(const QString &mapName);
     void redrawMapScene();
     void refreshMapScene();
     void refreshMetatileViews();
@@ -380,7 +380,6 @@ private:
     bool closeProject();
     void showRecentError(const QString &baseMessage);
     void showProjectOpenFailure();
-    void showMapsExcludedAlert(const QStringList &excludedMapNames);
 
     bool setInitialMap();
     void saveGlobalConfigs();

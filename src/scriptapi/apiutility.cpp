@@ -246,7 +246,7 @@ void ScriptUtility::setMetatileLayerOpacity(QList<float> order) {
 QList<QString> ScriptUtility::getMapNames() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();
-    return window->editor->project->mapNames;
+    return window->editor->project->mapNames();
 }
 
 QList<QString> ScriptUtility::getMapConstants() {
@@ -256,18 +256,15 @@ QList<QString> ScriptUtility::getMapConstants() {
 }
 
 QList<QString> ScriptUtility::getLayoutNames() {
-    QList<QString> names;
     if (!window || !window->editor || !window->editor->project)
-        return names;
-    for (const auto &layout : window->editor->project->mapLayouts)
-        names.append(layout->name);
-    return names;
+        return {};
+    return window->editor->project->getLayoutNames();
 }
 
 QList<QString> ScriptUtility::getLayoutConstants() {
     if (!window || !window->editor || !window->editor->project)
         return QList<QString>();
-    return window->editor->project->layoutIds;
+    return window->editor->project->layoutIds();
 }
 
 QList<QString> ScriptUtility::getTilesetNames() {
