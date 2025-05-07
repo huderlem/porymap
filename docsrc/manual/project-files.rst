@@ -110,10 +110,10 @@ In addition to these files, there are some specific symbol and macro names that 
    ``define_attribute_encounter``, ``METATILE_ATTRIBUTE_ENCOUNTER_TYPE``, name used to extract setting from ``symbol_attribute_table``
    ``define_metatile_label_prefix``, ``METATILE_``, expected prefix for metatile label macro names
    ``define_heal_locations_prefix``, ``HEAL_LOCATION_``, default prefix for heal location macro names
-   ``define_layout_prefix``, ``LAYOUT_``, default prefix for layout macro names
-   ``define_map_prefix``, ``MAP_``, expected prefix for map macro names
-   ``define_map_dynamic``, ``DYNAMIC``, macro name after prefix for Dynamic maps
-   ``define_map_empty``, ``UNDEFINED``, macro name after prefix for empty maps
+   ``define_layout_prefix``, ``LAYOUT_``, default prefix for layout ID names
+   ``define_map_prefix``, ``MAP_``, default prefix for map ID names
+   ``define_map_dynamic``, ``MAP_DYNAMIC``, ID name for Dynamic maps
+   ``define_map_empty``, ``MAP_UNDEFINED``, ID name for empty maps
    ``define_map_section_prefix``, ``MAPSEC_``, expected prefix for location macro names
    ``define_map_section_empty``, ``NONE``, macro name after prefix for empty region map sections
    ``define_species_prefix``, ``SPECIES_``, expected prefix for species macro names

@@ -974,14 +974,7 @@ bool Project::saveWildMonData() {
 // Because of how event ID names are checked it doesn't guarantee that the name
 // won't be in-use by some map that hasn't been loaded yet.
 QString Project::getNewHealLocationName(const Map* map) const {
-    if (!map) return QString();
-
-    QString idName = map->constantName();
-    const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
-    if (idName.startsWith(mapPrefix)) {
-        idName.remove(0, mapPrefix.length());
-    }
-    return toUniqueIdentifier(projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix) + idName);
+    return !map ? QString() : toUniqueIdentifier(projectConfig.getIdentifier(ProjectIdentifier::define_heal_locations_prefix) + Util::toDefineCase(map->name()));
 }
 
 bool Project::saveHealLocations() {
@@ -3380,11 +3373,11 @@ int Project::getMaxEvents(Event::Group group) const {
 }
 
 QString Project::getEmptyMapDefineName() {
-    return projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_empty);
+    return projectConfig.getIdentifier(ProjectIdentifier::define_map_empty);
 }
 
 QString Project::getDynamicMapDefineName() {
-    return projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
+    return projectConfig.getIdentifier(ProjectIdentifier::define_map_dynamic);
 }
 
 QString Project::getDynamicMapName() {
