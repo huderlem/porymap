@@ -1975,12 +1975,6 @@ bool Project::readMapGroups() {
                 failedMapNames.append(mapName);
                 continue;
             }
-            const QString expectedPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
-            if (!mapConstant.startsWith(expectedPrefix)) {
-                logWarn(QString("Map '%1' has invalid \"id\" value '%2' and will be ignored. Value must begin with '%3'.").arg(mapName).arg(mapConstant).arg(expectedPrefix));
-                failedMapNames.append(mapName);
-                continue;
-            }
             auto it = this->mapConstantsToMapNames.constFind(mapConstant);
             if (it != this->mapConstantsToMapNames.constEnd()) {
                 logWarn(QString("Map '%1' has the same \"id\" value '%2' as map '%3' and will be ignored.").arg(mapName).arg(it.key()).arg(it.value()));
@@ -2079,6 +2073,37 @@ QString Project::getMapLayoutId(const QString &mapName, const QString &defaultVa
 QString Project::getMapLocation(const QString &mapName, const QString &defaultValue) const {
     Map* map = this->maps.value(mapName);
     return map ? map->header()->location() : defaultValue;
+}
+
+// Determining which map a secret base ID refers to relies on assumptions about its name.
+// The default format is for a secret base ID of 'SECRET_BASE_FOO_#' to refer to a map with the constant
+// 'MAP_SECRET_BASE_FOO', so we strip the `_#` suffix and add the default map prefix 'MAP_'. If this fails,
+// we'll try every combination of that prefix, suffix, and 'SECRET_BASE_FOO'.
+QString Project::secretBaseIdToMapName(const QString &secretBaseId) const {
+    const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
+    QString baseIdNoSuffix = secretBaseId.left(secretBaseId.lastIndexOf("_"));
+
+    auto it = this->mapConstantsToMapNames.constFind(mapPrefix + baseIdNoSuffix);
+    if (it != this->mapConstantsToMapNames.constEnd()) {
+        // Found a result of the format 'SECRET_BASE_FOO_#' -> 'MAP_SECRET_BASE_FOO'.
+        return it.value();
+    }
+    it = this->mapConstantsToMapNames.constFind(baseIdNoSuffix);
+    if (it != this->mapConstantsToMapNames.constEnd()) {
+        // Found a result of the format 'SECRET_BASE_FOO_#' -> 'SECRET_BASE_FOO'.
+        return it.value();
+    }
+    it = this->mapConstantsToMapNames.constFind(mapPrefix + secretBaseId);
+    if (it != this->mapConstantsToMapNames.constEnd()) {
+        // Found a result of the format 'SECRET_BASE_FOO_#' -> 'MAP_SECRET_BASE_FOO_#'.
+        return it.value();
+    }
+    it = this->mapConstantsToMapNames.constFind(secretBaseId);
+    if (it != this->mapConstantsToMapNames.constEnd()) {
+        // 'SECRET_BASE_FOO_#' is already a map constant.
+        return it.value();
+    }
+    return QString();
 }
 
 // When we ask the user to provide a new identifier for something (like a map name or MAPSEC id)

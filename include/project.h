@@ -115,6 +115,7 @@ public:
     QString getMapConstant(const QString &mapName, const QString &defaultValue = QString()) const;
     QString getMapLayoutId(const QString &mapName, const QString &defaultValue = QString()) const;
     QString getMapLocation(const QString &mapName, const QString &defaultValue = QString()) const;
+    QString secretBaseIdToMapName(const QString &secretBaseId) const;
 
     struct NewMapSettings {
         QString name;

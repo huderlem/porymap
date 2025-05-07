@@ -1135,24 +1135,29 @@ void MainWindow::openEventMap(Event *sourceEvent) {
     Event::Type eventType = sourceEvent->getEventType();
     if (eventType == Event::Type::Warp) {
         // Warp events open to their destination warp event.
-        WarpEvent *warp = dynamic_cast<WarpEvent *>(sourceEvent);
+        auto warp = dynamic_cast<WarpEvent *>(sourceEvent);
         targetMapName = warp->getDestinationMap();
         targetEventIdName = warp->getDestinationWarpID();
         targetEventGroup = Event::Group::Warp;
     } else if (eventType == Event::Type::CloneObject) {
         // Clone object events open to their target object event.
-        CloneObjectEvent *clone = dynamic_cast<CloneObjectEvent *>(sourceEvent);
+        auto clone = dynamic_cast<CloneObjectEvent *>(sourceEvent);
         targetMapName = clone->getTargetMap();
         targetEventIdName = clone->getTargetID();
         targetEventGroup = Event::Group::Object;
     } else if (eventType == Event::Type::SecretBase) {
         // Secret Bases open to their secret base entrance
-        const QString mapPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix);
-        SecretBaseEvent *base = dynamic_cast<SecretBaseEvent *>(sourceEvent);
+        auto base = dynamic_cast<SecretBaseEvent *>(sourceEvent);
 
         // Extract the map name from the secret base ID.
         QString baseId = base->getBaseID();
-        targetMapName = this->editor->project->mapConstantsToMapNames.value(mapPrefix + baseId.left(baseId.lastIndexOf("_")));
+        if (baseId.isEmpty())
+            return;
+        targetMapName = this->editor->project->secretBaseIdToMapName(baseId);
+        if (targetMapName.isEmpty()) {
+            WarningMessage::show(QString("Failed to determine which map '%1' refers to.").arg(baseId), this);
+            return;
+        }
 
         // Just select the first warp. Normally the only warp event on every secret base map is the entrance/exit, so this is usually correct.
         // The warp IDs for secret bases are specified in the project's C code, not in the map data, so we don't have an easy way to read the actual IDs.
@@ -1160,7 +1165,7 @@ void MainWindow::openEventMap(Event *sourceEvent) {
         targetEventGroup = Event::Group::Warp;
     } else if (eventType == Event::Type::HealLocation && projectConfig.healLocationRespawnDataEnabled) {
         // Heal location events open to their respawn NPC
-        HealLocationEvent *heal = dynamic_cast<HealLocationEvent *>(sourceEvent);
+        auto heal = dynamic_cast<HealLocationEvent *>(sourceEvent);
         targetMapName = heal->getRespawnMapName();
         targetEventIdName = heal->getRespawnNPC();
         targetEventGroup = Event::Group::Object;
@@ -1168,7 +1173,7 @@ void MainWindow::openEventMap(Event *sourceEvent) {
         // Other event types have no target map to open.
         return;
     }
-    if (!userSetMap(targetMapName))
+    if (targetMapName.isEmpty() || !userSetMap(targetMapName))
         return;
 
     // Map opened successfully, now try to select the targeted event on that map.
