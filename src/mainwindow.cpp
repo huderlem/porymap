@@ -1038,12 +1038,20 @@ bool MainWindow::setMap(QString map_name) {
 // When editing in layout-only mode they are disabled.
 void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
     bool mapEditingEnabled = !layoutOnly;
-    this->ui->mainTabBar->setTabEnabled(MainTab::Events, mapEditingEnabled);
-    this->ui->mainTabBar->setTabEnabled(MainTab::Header, mapEditingEnabled);
-    this->ui->mainTabBar->setTabEnabled(MainTab::Connections, mapEditingEnabled);
-    this->ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, mapEditingEnabled && editor->project->wildEncountersLoaded);
+    ui->mainTabBar->setTabEnabled(MainTab::Events, mapEditingEnabled);
+    ui->mainTabBar->setTabEnabled(MainTab::Header, mapEditingEnabled);
+    ui->mainTabBar->setTabEnabled(MainTab::Connections, mapEditingEnabled);
+    ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, mapEditingEnabled && this->editor->project->wildEncountersLoaded);
 
-    this->ui->comboBox_LayoutSelector->setEnabled(mapEditingEnabled);
+    // Set a tool tip to explain why the tabs are disabled.
+    static const QString disabledToolTip = Util::toHtmlParagraph("You are in layout-only mode. This tab is only enabled when a map is open.");
+    QString toolTip = mapEditingEnabled ? QString() : disabledToolTip;
+    ui->mainTabBar->setTabToolTip(MainTab::Events, toolTip);
+    ui->mainTabBar->setTabToolTip(MainTab::Header, toolTip);
+    ui->mainTabBar->setTabToolTip(MainTab::Connections, toolTip);
+    ui->mainTabBar->setTabToolTip(MainTab::WildPokemon, this->editor->project->wildEncountersLoaded ? toolTip : QString());
+
+    ui->comboBox_LayoutSelector->setEnabled(mapEditingEnabled);
 }
 
 // setLayout, but with a visible error message in case of failure.
