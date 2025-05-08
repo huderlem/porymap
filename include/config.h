@@ -12,6 +12,7 @@
 #include <QUrl>
 #include <QVersionNumber>
 #include <QGraphicsPixmapItem>
+#include <set>
 
 #include "events.h"
 #include "gridsettings.h"
@@ -96,6 +97,7 @@ public:
         this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
         this->shownInGameReloadMessage = false;
         this->gridSettings = GridSettings();
+        this->statusBarLogTypes = { LogType::LOG_ERROR, LogType::LOG_WARN };
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -161,6 +163,8 @@ public:
     QByteArray newLayoutDialogGeometry;
     bool shownInGameReloadMessage;
     GridSettings gridSettings;
+    // Prefer over QSet to prevent shuffling elements when writing the config file.
+    std::set<LogType> statusBarLogTypes;
 
 protected:
     virtual QString getConfigFilepath() override;

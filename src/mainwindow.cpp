@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    cleanupLargeLog();
+    logInit();
     logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 }
 
@@ -142,6 +142,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
 
 void MainWindow::initWindow() {
     porymapConfig.load();
+    this->initLogStatusBar();
     this->initCustomUI();
     this->initExtraSignals();
     this->initEditor();
@@ -235,6 +236,14 @@ void MainWindow::applyUserShortcuts() {
     for (auto *shortcut : findChildren<Shortcut *>())
         if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
+}
+
+void MainWindow::initLogStatusBar() {
+    removeLogStatusBar(this->statusBar());
+    QSet logTypes = QSet(porymapConfig.statusBarLogTypes.begin(), porymapConfig.statusBarLogTypes.end());
+    if (!logTypes.isEmpty()) {
+        addLogStatusBar(this->statusBar(), logTypes);
+    }
 }
 
 void MainWindow::initCustomUI() {
@@ -634,7 +643,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
 
     if (!QDir(dir).exists()) {
         const QString errorMsg = QString("Failed to open %1: No such directory").arg(projectString);
-        this->statusBar()->showMessage(errorMsg);
         if (initial) {
             // Graceful startup if recent project directory is missing
             logWarn(errorMsg);
@@ -653,7 +661,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     }
 
     const QString openMessage = QString("Opening %1").arg(projectString);
-    this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
 
     porysplash->start();
@@ -691,7 +698,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
 
     // Load the project
     if (!(loadProjectData() && setProjectUI() && setInitialMap())) {
-        this->statusBar()->showMessage(QString("Failed to open %1").arg(projectString));
         showProjectOpenFailure();
         delete this->editor->project;
         // TODO: Allow changing project settings at this point
@@ -703,7 +709,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->editor->project->saveConfig();
     
     updateWindowTitle();
-    this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
 
     porymapConfig.projectManuallyClosed = false;
     porymapConfig.addRecentProject(dir);
@@ -2922,6 +2927,7 @@ void MainWindow::on_actionPreferences_triggered() {
         connect(preferenceEditor, &PreferenceEditor::themeChanged, this, &MainWindow::setTheme);
         connect(preferenceEditor, &PreferenceEditor::themeChanged, editor, &Editor::maskNonVisibleConnectionTiles);
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::initLogStatusBar);
         // Changes to porymapConfig.loadAllEventScripts or porymapConfig.eventSelectionShapeMode
         // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, editor, &Editor::updateEvents);
