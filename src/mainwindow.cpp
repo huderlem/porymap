@@ -470,6 +470,10 @@ void MainWindow::initMapList() {
     ui->mapListToolBar_Locations->setEditsAllowedButtonVisible(false);
     ui->mapListToolBar_Layouts->setEditsAllowedButtonVisible(false);
 
+    // When searching the Layouts list, don't expand to show all the maps. If the user is searching
+    // this list then they're probably more interested in the layouts than the maps.
+    ui->mapListToolBar_Layouts->setExpandListForSearch(false);
+
     // Initialize settings from config
     ui->mapListToolBar_Groups->setEditsAllowed(porymapConfig.mapListEditGroupsEnabled);
     for (auto i = porymapConfig.mapListHideEmptyEnabled.constBegin(); i != porymapConfig.mapListHideEmptyEnabled.constEnd(); i++) {
