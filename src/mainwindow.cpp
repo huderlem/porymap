@@ -423,24 +423,51 @@ void MainWindow::initMapList() {
     QFrame *buttonFrame = new QFrame(this->ui->mapListContainer);
     buttonFrame->setFrameShape(QFrame::NoFrame);
 
-    QHBoxLayout *layout = new QHBoxLayout(buttonFrame);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
+    QHBoxLayout *buttonLayout = new QHBoxLayout(buttonFrame);
+    buttonLayout->setSpacing(0);
+    buttonLayout->setContentsMargins(0, 0, 0, 0);
 
     // Create add map/layout button
     QPushButton *buttonAdd = new QPushButton(QIcon(":/icons/add.ico"), "");
-    buttonAdd->setToolTip("Create New Map");
+    buttonAdd->setToolTip("Create new map");
     connect(buttonAdd, &QPushButton::clicked, this, &MainWindow::openNewMapDialog);
-    layout->addWidget(buttonAdd);
+    buttonLayout->addWidget(buttonAdd);
 
     /* TODO: Remove button disabled, no current support for deleting maps/layouts
     // Create remove map/layout button
     QPushButton *buttonRemove = new QPushButton(QIcon(":/icons/delete.ico"), "");
     connect(buttonRemove, &QPushButton::clicked, this, &MainWindow::deleteCurrentMapOrLayout);
-    layout->addWidget(buttonRemove);
+    buttonLayout->addWidget(buttonRemove);
     */
 
     ui->mapListContainer->setCornerWidget(buttonFrame, Qt::TopRightCorner);
+
+    // Navigation arrows
+    auto navigationFrame = new QFrame(ui->mapListContainer);
+    navigationFrame->setFrameShape(QFrame::NoFrame);
+
+    auto navigationLayout = new QHBoxLayout(navigationFrame);
+    navigationLayout->setSpacing(0);
+    navigationLayout->setContentsMargins(0, 0, 0, 0);
+
+    auto backArrow = new QToolButton(navigationFrame);
+    backArrow->setArrowType(Qt::LeftArrow);
+    backArrow->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    backArrow->setToolTip("Open previous map");
+    backArrow->setEnabled(false);
+    connect(backArrow, &QToolButton::clicked, this, &MainWindow::openPreviousMap);
+    navigationLayout->addWidget(backArrow);
+    this->backNavigation.button = backArrow;
+
+    auto forwardArrow = new QToolButton(navigationFrame);
+    forwardArrow->setArrowType(Qt::RightArrow);
+    forwardArrow->setToolTip("Open next map");
+    forwardArrow->setEnabled(false);
+    connect(forwardArrow, &QToolButton::clicked, this, &MainWindow::openNextMap);
+    navigationLayout->addWidget(forwardArrow);
+    this->forwardNavigation.button = forwardArrow;
+
+    ui->mapListContainer->setCornerWidget(navigationFrame, Qt::TopLeftCorner);
 
     // Connect tool bars to lists
     ui->mapListToolBar_Groups->setList(ui->mapList);
@@ -950,12 +977,65 @@ void MainWindow::unsetMap() {
     setLayoutOnlyMode(true);
 }
 
+void MainWindow::openPreviousMap() {
+    openMapFromHistory(true);
+}
+
+void MainWindow::openNextMap() {
+    openMapFromHistory(false);
+}
+
+// Either open a map/layout from the 'Back' list and put it in the 'Forward' list (i.e., previous == true) or vice versa.
+void MainWindow::openMapFromHistory(bool previous) {
+    if (!this->editor->project)
+        return;
+
+    MapNavigation* popNavigation = (previous) ? &this->backNavigation : &this->forwardNavigation;
+    MapNavigation* pushNavigation = (previous) ? &this->forwardNavigation : &this->backNavigation;
+    if (popNavigation->stack.isEmpty())
+        return;
+
+    QString incomingItem = popNavigation->stack.top();
+    QString outgoingItem = getActiveItemName();
+
+    this->ignoreNavigationRecords = true;
+
+    bool success = false;
+    if (this->editor->project->isKnownMap(incomingItem)) {
+        success = userSetMap(incomingItem);
+    } else if (this->editor->project->isKnownLayout(incomingItem)) {
+        success = userSetLayout(incomingItem);
+    }
+    if (success) {
+        // We were successful in opening the map/layout, so we can remove it from the history.
+        popNavigation->stack.pop();
+        if (popNavigation->stack.isEmpty()) {
+            popNavigation->button->setEnabled(false);
+        }
+
+        // Save the map/layout that was previously open.
+        pushNavigation->stack.push(outgoingItem);
+        pushNavigation->button->setEnabled(true);
+    }
+
+    this->ignoreNavigationRecords = false;
+
+}
+
+void MainWindow::recordNavigation(const QString &itemName) {
+    if (this->ignoreNavigationRecords)
+        return;
+
+    this->backNavigation.stack.push(itemName);
+    this->backNavigation.button->setEnabled(true);
+
+    this->forwardNavigation.stack.clear();
+    this->forwardNavigation.button->setEnabled(false);
+}
+
 // setMap, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a map to open.
 bool MainWindow::userSetMap(const QString &mapName) {
-    if (editor->map && editor->map->name() == mapName)
-        return true; // Already set
-
     if (mapName.isEmpty()) {
         WarningMessage::show(QStringLiteral("Cannot open map with empty name."), this);
         return false;
@@ -969,10 +1049,15 @@ bool MainWindow::userSetMap(const QString &mapName) {
         return false;
     }
 
+    QString prevItem = getActiveItemName();
+    if (prevItem == mapName)
+        return true; // Already set
+
     if (!setMap(mapName)) {
         RecentErrorMessage::show(QString("There was an error opening map '%1'.").arg(mapName), this);
         return false;
     }
+    recordNavigation(prevItem);
     return true;
 }
 
@@ -1030,10 +1115,21 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
 // setLayout, but with a visible error message in case of failure.
 // Use when the user is specifically requesting a layout to open.
 bool MainWindow::userSetLayout(const QString &layoutId) {
+    if (layoutId.isEmpty()) {
+        WarningMessage::show(QStringLiteral("Cannot open layout with empty ID."), this);
+        return false;
+    }
+
+    QString prevItem = getActiveItemName();
+    if (prevItem == layoutId)
+        return true; // Already set
+
     if (!setLayout(layoutId)) {
         RecentErrorMessage::show(QString("There was an error opening layout '%1'.").arg(layoutId), this);
         return false;
     }
+
+    recordNavigation(prevItem);
 
     // Only the Layouts tab of the map list shows Layouts, so if we're not already on that tab we'll open it now.
     ui->mapListContainer->setCurrentIndex(MapListTab::Layouts);
@@ -1698,20 +1794,22 @@ void MainWindow::rebuildMapList_Layouts() {
     resetMapListFilters();
 }
 
+QString MainWindow::getActiveItemName() {
+    if (this->editor->map) return this->editor->map->name();
+    if (this->editor->layout) return this->editor->layout->id;
+    return QString();
+}
+
 void MainWindow::updateMapList() {
-    // Get the name of the open map/layout (or clear the relevant selection if there is none).
-    QString activeItemName; 
-    if (this->editor->map) {
-        activeItemName = this->editor->map->name();
-    } else {
+    QString activeItemName = getActiveItemName();
+
+    // Clear relevant selections
+    if (!this->editor->map) {
         ui->mapList->clearSelection();
         ui->locationList->clearSelection();
-
-        if (this->editor->layout) {
-            activeItemName = this->editor->layout->id;
-        } else {
-            ui->layoutList->clearSelection();
-        }
+    }
+    if (!this->editor->layout) {
+        ui->layoutList->clearSelection();
     }
 
     this->mapGroupModel->setActiveItem(activeItemName);

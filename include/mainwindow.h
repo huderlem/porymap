@@ -331,6 +331,14 @@ private:
     QAction *redoAction = nullptr;
     QPointer<QUndoView> undoView = nullptr;
 
+    struct MapNavigation {
+        QStack<QString> stack;
+        QPointer<QToolButton> button;
+    };
+    MapNavigation backNavigation;
+    MapNavigation forwardNavigation;
+    bool ignoreNavigationRecords = false;
+
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
 
@@ -391,6 +399,11 @@ private:
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
     void onMapListTabChanged(int index);
+    QString getActiveItemName();
+    void recordNavigation(const QString &itemName);
+    void openMapFromHistory(bool previous);
+    void openPreviousMap();
+    void openNextMap();
 
     void displayMapProperties();
     void checkToolButtons();
