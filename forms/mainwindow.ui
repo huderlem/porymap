@@ -2885,6 +2885,9 @@
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
     <addaction name="separator"/>
+    <addaction name="actionBack"/>
+    <addaction name="actionForward"/>
+    <addaction name="separator"/>
     <addaction name="actionCursor_Tile_Outline"/>
     <addaction name="actionPlayer_View_Rectangle"/>
     <addaction name="actionBetter_Cursors"/>
@@ -3246,6 +3249,22 @@
   <action name="actionDuplicate_Current_Map_Layout">
    <property name="text">
     <string>Duplicate Current Map/Layout...</string>
+   </property>
+  </action>
+  <action name="actionBack">
+   <property name="text">
+    <string>Back</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Left</string>
+   </property>
+  </action>
+  <action name="actionForward">
+   <property name="text">
+    <string>Forward</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Right</string>
    </property>
   </action>
  </widget>

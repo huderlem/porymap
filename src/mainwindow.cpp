@@ -455,6 +455,7 @@ void MainWindow::initMapList() {
     backArrow->setToolTip("Open previous map");
     backArrow->setEnabled(false);
     connect(backArrow, &QToolButton::clicked, this, &MainWindow::openPreviousMap);
+    connect(ui->actionBack, &QAction::triggered, this, &MainWindow::openPreviousMap);
     navigationLayout->addWidget(backArrow);
     this->backNavigation.button = backArrow;
 
@@ -463,6 +464,7 @@ void MainWindow::initMapList() {
     forwardArrow->setToolTip("Open next map");
     forwardArrow->setEnabled(false);
     connect(forwardArrow, &QToolButton::clicked, this, &MainWindow::openNextMap);
+    connect(ui->actionForward, &QAction::triggered, this, &MainWindow::openNextMap);
     navigationLayout->addWidget(forwardArrow);
     this->forwardNavigation.button = forwardArrow;
 
