@@ -1415,6 +1415,9 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     if (itemType == "map_name") {
         // Right-clicking on a map.
         openItemAction = menu.addAction("Open Map");
+        connect(menu.addAction("Open JSON file"), &QAction::triggered, [this, itemName] {
+            this->editor->openMapJson(itemName);
+        });
         menu.addSeparator();
         copyListNameAction = menu.addAction("Copy Map Name");
         copyToolTipAction = menu.addAction("Copy Map ID");
@@ -1442,6 +1445,9 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     } else if (itemType == "map_layout") {
         // Right-clicking on a map layout
         openItemAction = menu.addAction("Open Layout");
+        connect(menu.addAction("Open JSON file"), &QAction::triggered, [this, itemName] {
+            this->editor->openLayoutJson(itemName);
+        });
         menu.addSeparator();
         copyListNameAction = menu.addAction("Copy Layout Name");
         copyToolTipAction = menu.addAction("Copy Layout ID");

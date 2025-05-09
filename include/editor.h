@@ -184,6 +184,8 @@ public:
     void shouldReselectEvents();
     void scaleMapView(int);
     static void openInTextEditor(const QString &path, int lineNum = 0);
+    void openMapJson(const QString &mapName) const;
+    void openLayoutJson(const QString &layoutId) const;
     void setCollisionGraphics();
 
     enum ZValue {

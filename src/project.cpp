@@ -330,7 +330,7 @@ QSet<QString> Project::getTopLevelMapFields() const {
 }
 
 bool Project::readMapJson(const QString &mapName, QJsonDocument * out) {
-    const QString mapFilepath = QString("%1%2/map.json").arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders)).arg(mapName);
+    const QString mapFilepath = Map::getJsonFilepath(mapName);
     watchFile(mapFilepath);
     QString error;
     if (!parser.tryParseJsonFile(out, mapFilepath, &error)) {
@@ -757,7 +757,11 @@ bool Project::saveMapLayouts() {
 }
 
 void Project::watchFile(const QString &filename) {
-    this->fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filename));
+    if (!filename.startsWith(this->root)) {
+        this->fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filename));
+    } else {
+        this->fileWatcher.addPath(filename);
+    }
 }
 
 void Project::watchFiles(const QStringList &filenames) {
@@ -1284,7 +1288,7 @@ bool Project::saveMap(Map *map, bool skipLayout) {
     }
 
     // Create map.json for map data.
-    QString mapFilepath = fullPath + "/map.json";
+    QString mapFilepath = map->getJsonFilepath();
     QFile mapFile(mapFilepath);
     if (!mapFile.open(QIODevice::WriteOnly)) {
         logError(QString("Could not open '%1' for writing: %2").arg(mapFilepath).arg(mapFile.errorString()));
@@ -2930,7 +2934,7 @@ bool Project::readEventScriptLabels() {
     this->globalScriptLabels.clear();
 
     if (porymapConfig.loadAllEventScripts) {
-        for (const auto &filePath : getEventScriptsFilePaths())
+        for (const auto &filePath : getEventScriptsFilepaths())
             this->globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
 
        this->globalScriptLabels.sort(Qt::CaseInsensitive);
@@ -2973,7 +2977,7 @@ QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) con
         return QString("%1_MapScripts::\n\t.byte 0\n").arg(mapName);
 }
 
-QStringList Project::getEventScriptsFilePaths() const {
+QStringList Project::getEventScriptsFilepaths() const {
     QStringList filePaths(QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts)));
     const QString scriptsDir = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_scripts_folders));
     const QString mapsDir = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_map_folders));
