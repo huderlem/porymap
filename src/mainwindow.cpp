@@ -612,13 +612,32 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    logInfo("Restoring main window geometry from previous session.");
     QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
-    this->restoreGeometry(geometry.value("main_window_geometry"));
-    this->restoreState(geometry.value("main_window_state"));
-    this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
-    this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
-    this->ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
+    const QByteArray mainWindowGeometry = geometry.value("main_window_geometry");
+    if (!mainWindowGeometry.isEmpty()) {
+        logInfo("Restoring main window geometry from previous session.");
+        restoreGeometry(mainWindowGeometry);
+        restoreState(geometry.value("main_window_state"));
+        ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
+        ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
+        ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
+    }
+
+    // Resize the window if it exceeds the available screen size.
+    auto screen = windowHandle() ? windowHandle()->screen() : QGuiApplication::primaryScreen();
+    if (!screen) return;
+    const QRect screenGeometry = screen->availableGeometry();
+    if (this->width() > screenGeometry.width() || this->height() > screenGeometry.height()) {
+        auto pixelRatio = screen->devicePixelRatio();
+        logInfo(QString("Resizing main window. Dimensions of %1x%2 exceed available screen size of %3x%4")
+                        .arg(qRound(this->width() * pixelRatio))
+                        .arg(qRound(this->height() * pixelRatio))
+                        .arg(qRound(screenGeometry.width() * pixelRatio))
+                        .arg(qRound(screenGeometry.height() * pixelRatio)));
+        resize(qMin(this->width(), screenGeometry.width()),
+               qMin(this->height(), screenGeometry.height()));
+        move(screenGeometry.center() - this->rect().center());
+    }
 }
 
 void MainWindow::setTheme(QString theme) {
