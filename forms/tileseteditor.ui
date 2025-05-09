@@ -633,32 +633,36 @@
     </property>
     <addaction name="actionSave_Tileset"/>
     <addaction name="separator"/>
-   </widget>
-   <widget class="QMenu" name="menuTools">
-    <property name="title">
-     <string>Tools</string>
-    </property>
     <addaction name="actionImport_Primary_Tiles"/>
     <addaction name="actionImport_Secondary_Tiles"/>
+    <addaction name="separator"/>
     <addaction name="actionImport_Primary_Metatiles"/>
     <addaction name="actionImport_Secondary_Metatiles"/>
-    <addaction name="actionChange_Metatiles_Count"/>
-    <addaction name="actionChange_Palettes"/>
     <addaction name="separator"/>
     <addaction name="actionExport_Primary_Tiles_Image"/>
     <addaction name="actionExport_Secondary_Tiles_Image"/>
     <addaction name="actionExport_Primary_Metatiles_Image"/>
     <addaction name="actionExport_Secondary_Metatiles_Image"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionChange_Palettes"/>
+    <addaction name="separator"/>
+   </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
     <addaction name="actionCut"/>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionChange_Metatiles_Count"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
