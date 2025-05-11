@@ -1,0 +1,25 @@
+/* DEFAULT theme for porymap */
+
+/*  
+    For newer versions of macOS at least, icons
+    using Qt::ArrowType do not change color when
+    disabled, so we specify the color change ourselves.
+*/
+QToolButton {
+    color: black;
+}
+QToolButton:disabled {
+    color: gray;
+}
+QComboBox {
+    color: black;
+}
+QComboBox:disabled {
+    color: gray;
+}
+QAbstractSpinBox {
+    color: black;
+}
+QAbstractSpinBox:disabled {
+    color: gray;
+}

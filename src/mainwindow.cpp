@@ -669,14 +669,10 @@ void MainWindow::restoreWindowState() {
 }
 
 void MainWindow::setTheme(QString theme) {
-    if (theme == "default") {
-        setStyleSheet("");
-    } else {
-        QFile File(QString(":/themes/%1.qss").arg(theme));
-        File.open(QFile::ReadOnly);
-        QString stylesheet = QLatin1String(File.readAll());
-        setStyleSheet(stylesheet);
-    }
+    QFile File(QString(":/themes/%1.qss").arg(theme));
+    File.open(QFile::ReadOnly);
+    QString stylesheet = QLatin1String(File.readAll());
+    setStyleSheet(stylesheet);
 }
 
 bool MainWindow::openProject(QString dir, bool initial) {

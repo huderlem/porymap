@@ -38,7 +38,9 @@ void PreferenceEditor::initFields() {
     QDirIterator it(":/themes", QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString themeName = re.match(it.next()).captured(1);
-        themes.append(themeName);
+        if (!themes.contains(themeName)) {
+            themes.append(themeName);
+        }
     }
     themeSelector->addItems(themes);
 }
