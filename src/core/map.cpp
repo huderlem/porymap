@@ -56,6 +56,9 @@ void Map::setLayout(Layout *layout) {
     if (layout == m_layout)
         return;
     m_layout = layout;
+    if (layout) {
+        m_layoutId = layout->id;
+    }
     emit layoutChanged();
 }
 
@@ -65,19 +68,19 @@ QString Map::mapConstantFromName(const QString &name) {
 }
 
 int Map::getWidth() const {
-    return m_layout->getWidth();
+    return m_layout ? m_layout->getWidth() : 0;
 }
 
 int Map::getHeight() const {
-    return m_layout->getHeight();
+    return m_layout ? m_layout->getHeight() : 0;
 }
 
 int Map::getBorderWidth() const {
-    return m_layout->getBorderWidth();
+    return m_layout ? m_layout->getBorderWidth() : 0;
 }
 
 int Map::getBorderHeight() const {
-    return m_layout->getBorderHeight();
+    return m_layout ? m_layout->getBorderHeight() : 0;
 }
 
 // Get the portion of the map that can be rendered when rendered as a map connection.
@@ -111,6 +114,9 @@ QRect Map::getConnectionRect(const QString &direction, Layout * fromLayout) cons
 }
 
 QPixmap Map::renderConnection(const QString &direction, Layout * fromLayout) {
+    if (!m_layout)
+        return QPixmap();
+
     QRect bounds = getConnectionRect(direction, fromLayout);
     if (!bounds.isValid())
         return QPixmap();
@@ -372,7 +378,7 @@ void Map::setClean() {
 }
 
 bool Map::hasUnsavedChanges() const {
-    return !m_editHistory->isClean() || m_layout->hasUnsavedChanges() || m_hasUnsavedDataChanges || !m_isPersistedToFile;
+    return !m_editHistory->isClean() || (m_layout && m_layout->hasUnsavedChanges()) || m_hasUnsavedDataChanges || !m_isPersistedToFile;
 }
 
 void Map::pruneEditHistory() {

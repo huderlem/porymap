@@ -509,11 +509,102 @@ bool Layout::saveBlockdata(const QString &root) {
 bool Layout::writeBlockdata(const QString &path, const Blockdata &blockdata) const {
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly)) {
-        logError(QString("Could not open '%1' for writing: %2").arg(path).arg(file.errorString()));
+        logError(QString("Failed to write '%1' for %2: %3").arg(path).arg(this->name).arg(file.errorString()));
         return false;
     }
 
     QByteArray data = blockdata.serialize();
     file.write(data);
     return true;
+}
+
+bool Layout::loadBorder(const QString &root) {
+    if (this->border_path.isEmpty()) {
+        logError(QString("Failed to load border for %1: no path specified.").arg(this->name));
+        return false;
+    }
+
+    QString error;
+    QString path = QString("%1/%2").arg(root).arg(this->border_path);
+    auto blockdata = readBlockdata(path, &error);
+    if (!error.isEmpty()) {
+        logError(QString("Failed to load border for %1 from '%2': %3").arg(this->name).arg(path).arg(error));
+        return false;
+    }
+
+    // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
+    if (this->border_width <= 0) {
+        this->border_width = DEFAULT_BORDER_WIDTH;
+    }
+    if (this->border_height <= 0) {
+        this->border_height = DEFAULT_BORDER_HEIGHT;
+    }
+
+    this->border = blockdata;
+    this->lastCommitBlocks.border = blockdata;
+    this->lastCommitBlocks.borderDimensions = QSize(this->border_width, this->border_height);
+
+    int expectedSize = this->border_width * this->border_height;
+    if (this->border.count() != expectedSize) {
+        logWarn(QString("%1 border blockdata length %2 does not match dimensions %3x%4 (should be %5). Resizing border blockdata.")
+                .arg(this->name)
+                .arg(this->border.count())
+                .arg(this->border_width)
+                .arg(this->border_height)
+                .arg(expectedSize));
+        this->border.resize(expectedSize);
+    }
+    return true;
+}
+
+bool Layout::loadBlockdata(const QString &root) {
+    if (this->blockdata_path.isEmpty()) {
+        logError(QString("Failed to load blockdata for %1: no path specified.").arg(this->name));
+        return false;
+    }
+
+    QString error;
+    QString path = QString("%1/%2").arg(root).arg(this->blockdata_path);
+    auto blockdata = readBlockdata(path, &error);
+    if (!error.isEmpty()) {
+        logError(QString("Failed to load blockdata for %1 from '%2': %3").arg(this->name).arg(path).arg(error));
+        return false;
+    }
+
+    this->blockdata = blockdata;
+    this->lastCommitBlocks.blocks = blockdata;
+    this->lastCommitBlocks.layoutDimensions = QSize(this->width, this->height);
+
+    int expectedSize = this->width * this->height;
+    if (expectedSize <= 0) {
+        logError(QString("Failed to load blockdata for %1: invalid dimensions %2x%3").arg(this->name).arg(this->width).arg(this->height));
+        return false;
+    }
+    if (this->blockdata.count() != expectedSize) {
+        logWarn(QString("%1 blockdata length %2 does not match dimensions %3x%4 (should be %5). Resizing blockdata.")
+                .arg(this->name)
+                .arg(this->blockdata.count())
+                .arg(this->width)
+                .arg(this->height)
+                .arg(expectedSize));
+        this->blockdata.resize(expectedSize);
+    }
+    return true;
+}
+
+Blockdata Layout::readBlockdata(const QString &path, QString *error) {
+    Blockdata blockdata;
+
+    QFile file(path);
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.readAll();
+        for (int i = 0; (i + 1) < data.length(); i += 2) {
+            uint16_t word = static_cast<uint16_t>((data[i] & 0xff) + ((data[i + 1] & 0xff) << 8));
+            blockdata.append(word);
+        }
+    } else {
+        if (error) *error = file.errorString();
+    }
+
+    return blockdata;
 }

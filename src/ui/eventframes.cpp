@@ -227,14 +227,14 @@ void EventFrame::populateMapNameDropdown(NoScrollComboBox * combo, Project * pro
     if (!project)
         return;
 
-    populateDropdown(combo, project->mapNames);
+    populateDropdown(combo, project->mapNames());
 
     // This frame type displays map names, so when a new map is created we need to repopulate it.
     connect(project, &Project::mapCreated, this, &EventFrame::invalidateValues, Qt::UniqueConnection);
 }
 
 void EventFrame::populateIdNameDropdown(NoScrollComboBox * combo, Project * project, const QString &mapName, Event::Group group) {
-    if (!project || !project->mapNames.contains(mapName))
+    if (!project || !project->isKnownMap(mapName))
         return;
 
     Map *map = project->loadMap(mapName);

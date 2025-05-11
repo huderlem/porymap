@@ -331,6 +331,14 @@ private:
     QAction *redoAction = nullptr;
     QPointer<QUndoView> undoView = nullptr;
 
+    struct MapNavigation {
+        QStack<QString> stack;
+        QPointer<QToolButton> button;
+    };
+    MapNavigation backNavigation;
+    MapNavigation forwardNavigation;
+    bool ignoreNavigationRecords = false;
+
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
 
@@ -342,11 +350,11 @@ private:
 
     bool tilesetNeedsRedraw = false;
 
-    bool setLayout(QString layoutId);
-    bool setMap(QString);
+    bool setLayout(const QString &layoutId);
+    bool setMap(const QString &mapName);
     void unsetMap();
-    bool userSetLayout(QString layoutId);
-    bool userSetMap(QString);
+    bool userSetLayout(const QString &layoutId);
+    bool userSetMap(const QString &mapName);
     void redrawMapScene();
     void refreshMapScene();
     void refreshMetatileViews();
@@ -380,7 +388,6 @@ private:
     bool closeProject();
     void showRecentError(const QString &baseMessage);
     void showProjectOpenFailure();
-    void showMapsExcludedAlert(const QStringList &excludedMapNames);
 
     bool setInitialMap();
     void saveGlobalConfigs();
@@ -392,6 +399,11 @@ private:
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
     void onMapListTabChanged(int index);
+    QString getActiveItemName();
+    void recordNavigation(const QString &itemName);
+    void openMapFromHistory(bool previous);
+    void openPreviousMap();
+    void openNextMap();
 
     void displayMapProperties();
     void checkToolButtons();

@@ -100,11 +100,11 @@ void MapImageExporter::setModeSpecificUi() {
     const QSignalBlocker b(ui->comboBox_MapSelection);
     ui->comboBox_MapSelection->clear();
     if (m_map) {
-        ui->comboBox_MapSelection->addItems(m_project->mapNames);
+        ui->comboBox_MapSelection->addItems(m_project->mapNames());
         ui->comboBox_MapSelection->setTextItem(m_map->name());
         ui->label_MapSelection->setText(m_mode == ImageExporterMode::Stitch ? QStringLiteral("Starting Map") : QStringLiteral("Map"));
     } else if (m_layout) {
-        ui->comboBox_MapSelection->addItems(m_project->layoutIds);
+        ui->comboBox_MapSelection->addItems(m_project->layoutIds());
         ui->comboBox_MapSelection->setTextItem(m_layout->id);
         ui->label_MapSelection->setText(QStringLiteral("Layout"));
     }
@@ -155,13 +155,13 @@ void MapImageExporter::updateMapSelection() {
     auto oldLayout = m_layout;
 
     const QString text = ui->comboBox_MapSelection->currentText();
-    if (m_project->mapNames.contains(text)) {
+    if (m_project->isKnownMap(text)) {
         auto newMap = m_project->loadMap(text);
         if (newMap) {
             m_map = newMap;
             m_layout = newMap->layout();
         }
-    } else if (m_project->layoutIds.contains(text)) {
+    } else if (m_project->isKnownLayout(text)) {
         auto newLayout = m_project->loadLayout(text);
         if (newLayout) {
             m_map = nullptr;

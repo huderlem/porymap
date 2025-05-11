@@ -43,7 +43,7 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
 
     ui->newLayoutForm->initUi(project);
     ui->comboBox_Group->addItems(project->groupNames);
-    ui->comboBox_LayoutID->addItems(project->layoutIds);
+    ui->comboBox_LayoutID->addItems(project->layoutIds());
 
     auto validator = new IdentifierValidator(this);
     ui->lineEdit_Name->setValidator(validator);
@@ -128,7 +128,7 @@ void NewMapDialog::saveSettings() {
     //  (an older iteration of this dialog gave users an option to name new layouts, but it's extra clutter for
     //   something the majority of users creating a map won't need. If they want to give a specific name to a layout
     //   they can create the layout first, then create a new map that uses that layout.)
-    const Layout *layout = this->project->mapLayouts.value(settings->layout.id);
+    const Layout *layout = this->project->getLayout(settings->layout.id);
     if (!layout) {
         const QString newLayoutName = settings->name + QStringLiteral("_Layout");
         settings->layout.name = this->project->toUniqueIdentifier(newLayoutName);
@@ -198,7 +198,7 @@ bool NewMapDialog::validateLayoutID(bool allowEmpty) {
     QString errorText;
     if (layoutId.isEmpty()) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_LayoutID->text());
-    } else if (!this->project->layoutIds.contains(layoutId) && !this->project->isIdentifierUnique(layoutId)) {
+    } else if (!this->project->isKnownLayout(layoutId) && !this->project->isIdentifierUnique(layoutId)) {
         errorText = QString("%1 must either be the ID for an existing layout, or a unique identifier for a new layout.").arg(ui->label_LayoutID->text());
     }
 
@@ -213,7 +213,7 @@ void NewMapDialog::on_comboBox_LayoutID_currentTextChanged(const QString &text) 
     validateLayoutID(true);
 
     // Changing the layout ID to an existing layout updates the layout settings to match.
-    const Layout *layout = this->project->mapLayouts.value(text);
+    const Layout *layout = this->project->getLayout(text);
     if (!layout && this->mapToCopy) {
         // When duplicating a map, if a new layout ID is specified the settings will be updated
         // to match the layout of the map we're duplicating.

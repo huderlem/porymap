@@ -47,6 +47,7 @@ MapListModel::MapListModel(Project *project, QObject *parent) : QStandardItemMod
     this->mapGrayIcon = QIcon(QStringLiteral(":/icons/map_grayed.ico"));
     this->mapIcon = QIcon(QStringLiteral(":/icons/map.ico"));
     this->mapEditedIcon = QIcon(QStringLiteral(":/icons/map_edited.ico"));
+    this->mapErroredIcon = QIcon(QStringLiteral(":/icons/map_errored.ico"));
     this->mapOpenedIcon = QIcon(QStringLiteral(":/icons/map_opened.ico"));
 
     this->mapFolderIcon.addFile(QStringLiteral(":/icons/folder_closed_map.ico"), QSize(), QIcon::Normal, QIcon::Off);
@@ -121,7 +122,7 @@ QStandardItem *MapListModel::createMapFolderItem(const QString &folderName, QSta
 }
 
 QStandardItem *MapListModel::insertMapItem(const QString &mapName, const QString &folderName) {
-    if (mapName.isEmpty() || mapName == this->project->getDynamicMapName()) // Disallow adding MAP_DYNAMIC to the map list.
+    if (mapName.isEmpty() || folderName.isEmpty() || mapName == this->project->getDynamicMapName()) // Disallow adding MAP_DYNAMIC to the map list.
         return nullptr;
 
     QStandardItem *map = createMapItem(mapName);
@@ -163,11 +164,13 @@ QVariant MapListModel::data(const QModelIndex &index, int role) const {
             // Decorating map in the map list
             if (name == this->activeItemName)
                 return this->mapOpenedIcon;
-
-            const Map* map = this->project->getMap(name);
-            if (!this->project->isMapLoaded(map))
-                return this->mapGrayIcon;
-            return map->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon;
+            if (this->project->isErroredMap(name))
+                return this->mapErroredIcon;
+            if (this->project->isUnsavedMap(name))
+                return this->mapEditedIcon;
+            if (this->project->isLoadedMap(name))
+                return this->mapIcon;
+            return this->mapGrayIcon;
         } else if (type == this->folderTypeName) {
             // Decorating map folder in the map list
             return item->hasChildren() ? this->mapFolderIcon : this->emptyMapFolderIcon;
@@ -372,7 +375,6 @@ void MapGroupModel::updateProject() {
     if (!this->project) return;
 
     // Temporary objects in case of failure, so we won't modify the project unless it succeeds.
-    QStringList mapNames;
     QStringList groupNames;
     QMap<QString, QStringList> groupNameToMapNames;
 
@@ -388,11 +390,9 @@ void MapGroupModel::updateProject() {
             }
             QString mapName = mapItem->data(MapListUserRoles::NameRole).toString();
             groupNameToMapNames[groupName].append(mapName);
-            mapNames.append(mapName);
         }
     }
 
-    this->project->mapNames = mapNames;
     this->project->groupNames = groupNames;
     this->project->groupNameToMapNames = groupNameToMapNames;
     this->project->hasUnsavedDataChanges = true;
@@ -445,7 +445,7 @@ MapLocationModel::MapLocationModel(Project *project, QObject *parent) : MapListM
     for (const auto &idName : this->project->mapSectionIdNames) {
         insertMapFolderItem(idName);
     }
-    for (const auto &mapName : this->project->mapNames) {
+    for (const auto &mapName : this->project->mapNames()) {
         insertMapItem(mapName, this->project->getMapLocation(mapName));
     }
 }
@@ -466,10 +466,10 @@ QStandardItem *MapLocationModel::createMapFolderItem(const QString &folderName, 
 LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListModel(project, parent) {
     this->folderTypeName = "map_layout";
 
-    for (const auto &layoutId : this->project->layoutIds) {
+    for (const auto &layoutId : this->project->layoutIds()) {
         insertMapFolderItem(layoutId);
     }
-    for (const auto &mapName : this->project->mapNames) {
+    for (const auto &mapName : this->project->mapNames()) {
         insertMapItem(mapName, this->project->getMapLayoutId(mapName));
     }
 }
@@ -483,8 +483,8 @@ QStandardItem *LayoutTreeModel::createMapFolderItem(const QString &folderName, Q
 
     // Despite using layout IDs internally, the Layouts map list shows layouts using their file path name.
     // We could handle this with Qt::DisplayRole in LayoutTreeModel::data, but then it would be sorted using the ID instead of the name.
-    const Layout* layout = this->project->mapLayouts.value(folderName);
-    if (layout) folder->setText(layout->name);
+    QString layoutName = this->project->getLayoutName(folderName);
+    if (!layoutName.isEmpty()) folder->setText(layoutName);
 
     // The layout ID will instead be shown as a tool tip.
     folder->setToolTip(folderName);
@@ -501,18 +501,18 @@ QVariant LayoutTreeModel::data(const QModelIndex &index, int role) const {
 
     const QStandardItem *item = this->itemAt(index)->child(row, col);
     const QString type = item->data(MapListUserRoles::TypeRole).toString();
-    const QString name = item->data(MapListUserRoles::NameRole).toString();
+    const QString layoutId = item->data(MapListUserRoles::NameRole).toString();
 
     if (type == this->folderTypeName) {
         if (role == Qt::DecorationRole) {
             // Map layouts are used as folders, but we display them with the same icons as maps.
-            if (name == this->activeItemName)
+            if (layoutId == this->activeItemName)
                 return this->mapOpenedIcon;
-
-            const Layout* layout = this->project->mapLayouts.value(name);
-            if (!this->project->isLayoutLoaded(layout))
-                return this->mapGrayIcon;
-            return layout->hasUnsavedChanges() ? this->mapEditedIcon : this->mapIcon;
+            if (this->project->isUnsavedLayout(layoutId))
+                return this->mapEditedIcon;
+            if (this->project->isLoadedLayout(layoutId))
+                return this->mapIcon;
+            return this->mapGrayIcon;
         }
     }
     return MapListModel::data(index, role);

@@ -48,6 +48,9 @@ public:
     void setLayout(Layout *layout);
     Layout* layout() const { return m_layout; }
 
+    void setLayoutId(const QString &layoutId) { m_layoutId = layoutId; }
+    QString layoutId() const { return layout() ? layout()->id : m_layoutId; }
+
     int getWidth() const;
     int getHeight() const;
     int getBorderWidth() const;
@@ -110,6 +113,7 @@ public:
 private:
     QString m_name;
     QString m_constantName;
+    QString m_layoutId; // Only needed if layout fails to load.
     QString m_sharedEventsMap = "";
     QString m_sharedScriptsMap = "";
 

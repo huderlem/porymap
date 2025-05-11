@@ -122,6 +122,9 @@ public:
     bool saveBorder(const QString &root);
     bool saveBlockdata(const QString &root);
 
+    bool loadBorder(const QString &root);
+    bool loadBlockdata(const QString &root);
+
     bool layoutBlockChanged(int i, const Blockdata &cache);
 
     uint16_t getBorderMetatileId(int x, int y);
@@ -147,6 +150,7 @@ private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
     bool writeBlockdata(const QString &path, const Blockdata &blockdata) const;
+    static Blockdata readBlockdata(const QString &path, QString *error);
 
     static int getBorderDrawDistance(int dimension, qreal minimum);
 

@@ -31,17 +31,11 @@ public:
 
 public:
     QString root;
-    QStringList mapNames;
     QStringList groupNames;
     QMap<QString, QStringList> groupNameToMapNames;
     QStringList healLocationSaveOrder;
     QMap<QString, QList<HealLocationEvent*>> healLocations;
     QMap<QString, QString> mapConstantsToMapNames;
-    QString layoutsLabel;
-    QStringList layoutIds;
-    QStringList layoutIdsMaster;
-    QMap<QString, Layout*> mapLayouts;
-    QMap<QString, Layout*> mapLayoutsMaster;
     QMap<QString, int> gfxDefines;
     QString defaultSong;
     QStringList songNames;
@@ -78,6 +72,27 @@ public:
 
     void setRoot(const QString&);
 
+    const QStringList& mapNames() const { return this->alphabeticalMapNames; }
+    bool isKnownMap(const QString &mapName) const { return this->maps.contains(mapName); }
+    bool isErroredMap(const QString &mapName) const { return this->erroredMaps.contains(mapName); }
+    bool isLoadedMap(const QString &mapName) const { return this->loadedMapNames.contains(mapName); }
+    bool isUnsavedMap(const QString &mapName) const;
+
+    // Note: This does not guarantee the map is loaded.
+    Map* getMap(const QString &mapName) { return this->maps.value(mapName); }
+    Map* loadMap(const QString &mapName);
+
+    const QStringList& layoutIds() const { return this->alphabeticalLayoutIds; }
+    bool isKnownLayout(const QString &layoutId) const { return this->mapLayouts.contains(layoutId); }
+    bool isLoadedLayout(const QString &layoutId) const { return this->loadedLayoutIds.contains(layoutId); }
+    bool isUnsavedLayout(const QString &layoutId) const;
+    QString getLayoutName(const QString &layoutId) const;
+    QStringList getLayoutNames() const;
+
+    // Note: This does not guarantee the layout is loaded.
+    Layout* getLayout(const QString &layoutId) const { return this->mapLayouts.value(layoutId); }
+    Layout* loadLayout(const QString &layoutId);
+
     void clearMaps();
     void clearTilesetCache();
     void clearMapLayouts();
@@ -88,26 +103,12 @@ public:
     int getSupportedMajorVersion(QString *errorOut = nullptr);
     bool load();
 
-    Map* loadMap(const QString &mapName);
-
-    // Note: This does not guarantee the map is loaded.
-    Map* getMap(const QString &mapName) { return this->maps.value(mapName); }
-
-    bool isMapLoaded(const Map *map) const { return map && isMapLoaded(map->name()); }
-    bool isMapLoaded(const QString &mapName) const { return this->loadedMapNames.contains(mapName); }
-    bool isLayoutLoaded(const Layout *layout) const { return layout && isLayoutLoaded(layout->id); }
-    bool isLayoutLoaded(const QString &layoutId) const { return this->loadedLayoutIds.contains(layoutId); }
-
     QMap<QString, Tileset*> tilesetCache;
     Tileset* loadTileset(QString, Tileset *tileset = nullptr);
     Tileset* getTileset(QString, bool forceLoad = false);
     QStringList primaryTilesetLabels;
     QStringList secondaryTilesetLabels;
     QStringList tilesetLabelsOrdered;
-
-    Blockdata readBlockdata(QString, bool *ok = nullptr);
-    bool loadBlockdata(Layout *);
-    bool loadLayoutBorder(Layout *);
 
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
@@ -158,13 +159,9 @@ public:
     bool hasUnsavedChanges();
     bool hasUnsavedDataChanges = false;
 
-    bool readMapJson(const QString &mapName, QJsonDocument * out);
     bool loadMapEvent(Map *map, QJsonObject json, Event::Type defaultType = Event::Type::None);
     bool loadMapData(Map*);
     bool readMapLayouts();
-    Layout *loadLayout(QString layoutId);
-    bool loadLayout(Layout *);
-    bool loadMapLayout(Map*);
     bool loadLayoutTilesets(Layout *);
     bool loadTilesetAssets(Tileset*);
     void loadTilesetMetatileLabels(Tileset*);
@@ -265,6 +262,14 @@ private:
     QMap<QString, QString> facingDirections;
     QHash<QString, QString> speciesToIconPath;
     QHash<QString, Map*> maps;
+    QHash<QString, QString> erroredMaps;
+    QStringList alphabeticalMapNames;
+    QString layoutsLabel;
+    QStringList alphabeticalLayoutIds;
+    QStringList orderedLayoutIds;
+    QStringList orderedLayoutIdsMaster;
+    QHash<QString, Layout*> mapLayouts;
+    QHash<QString, Layout*> mapLayoutsMaster;
 
     // Fields for preserving top-level JSON data that Porymap isn't expecting.
     QJsonObject customLayoutsData;
@@ -283,6 +288,10 @@ private:
     // list, none of the rest of its data in map.json).
     QSet<QString> loadedMapNames;
     QSet<QString> loadedLayoutIds;
+
+    // Data for layouts that failed to load at launch.
+    // We can't display these layouts to the user, but we want to preserve the data when they save.
+    QList<QJsonObject> failedLayoutsData;
 
     const QRegularExpression re_gbapalExtension;
     const QRegularExpression re_bppExtension;
@@ -306,6 +315,8 @@ private:
         QJsonObject custom;
     };
     QHash<QString, LocationData> locationData;
+
+    QJsonDocument readMapJson(const QString &mapName, QString *error = nullptr);
 
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
@@ -349,7 +360,6 @@ signals:
     void mapSectionAdded(const QString &idName);
     void mapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
     void mapSectionIdNamesChanged(const QStringList &idNames);
-    void mapsExcluded(const QStringList &excludedMapNames);
     void eventScriptLabelsRead();
 };
 
