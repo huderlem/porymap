@@ -169,7 +169,6 @@ void Editor::setEditMode(EditMode editMode) {
         editStack = &this->layout->editHistory;
     }
 
-    this->cursorMapTileRect->setSingleTileMode(editMode == EditMode::Collision);
     this->cursorMapTileRect->setActive(editingLayout);
     this->playerViewRect->setActive(editingLayout);
     this->editGroup.setActiveStack(editStack);
@@ -185,6 +184,39 @@ void Editor::setEditMode(EditMode editMode) {
     if (this->editMode == EditMode::Events){
         updateWarpEventWarnings();
     }
+
+    if (current_view) {
+        // Updating the edit action is only relevant for edit modes with a graphics view.
+        setEditAction(getEditAction());
+    }
+}
+
+Editor::EditAction Editor::getEditAction() const {
+    return this->editMode == EditMode::Events ? getEventEditAction() : getMapEditAction();
+}
+
+void Editor::setEditAction(EditAction editAction) {
+    if (this->editMode == EditMode::Events) {
+        this->eventEditAction = editAction;
+        this->map_ruler->setEnabled(editAction == EditAction::Select);
+    } else {
+        this->mapEditAction = editAction;
+        this->map_ruler->setEnabled(false);
+    }
+
+    this->cursorMapTileRect->setSingleTileMode(!(editAction == EditAction::Paint && this->editMode == EditMode::Metatiles));
+
+    // Update cursor
+    static const QMap<EditAction, QCursor> cursors = {
+        {EditAction::Paint,  QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10)},
+        {EditAction::Select, QCursor()},
+        {EditAction::Fill,   QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10)},
+        {EditAction::Pick,   QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10)},
+        {EditAction::Move,   QCursor(QPixmap(":/icons/move.ico"), 7, 7)},
+        {EditAction::Shift,  QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10)},
+    };
+    this->settings->mapCursor = cursors.value(editAction);
+    emit editActionSet(editAction);
 }
 
 void Editor::clearWildMonTables() {
@@ -1377,7 +1409,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
         } else if (mapEditAction == EditAction::Pick) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
-            } else {
+            } else if (event->type() != QEvent::GraphicsSceneMouseRelease) {
                 item->pick(event);
             }
         } else if (mapEditAction == EditAction::Shift) {
@@ -1392,10 +1424,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
         if (eventEditAction == EditAction::Paint && event->type() == QEvent::GraphicsSceneMousePress) {
             // Right-clicking while in paint mode will change mode to select.
             if (event->buttons() & Qt::RightButton) {
-                this->eventEditAction = EditAction::Select;
-                this->settings->mapCursor = QCursor();
-                this->ui->toolButton_Paint->setChecked(false);
-                this->ui->toolButton_Select->setChecked(true);
+                setEditAction(EditAction::Select);
             } else {
                 // Left-clicking while in paint mode will add a new event of the
                 // type of the first currently selected events.

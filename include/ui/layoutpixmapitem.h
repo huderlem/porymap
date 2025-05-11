@@ -92,6 +92,7 @@ public:
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
+    QPoint lastMetatileSelectionPos = QPoint(-1,-1);
 
     unsigned actionId_ = 0;
 

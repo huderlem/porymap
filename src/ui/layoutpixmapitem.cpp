@@ -321,6 +321,7 @@ void LayoutPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) 
 
     // Update/apply copied metatiles.
     if (event->type() == QEvent::GraphicsSceneMousePress) {
+        this->lastMetatileSelectionPos = pos;
         selection_origin = QPoint(pos.x(), pos.y());
         selection.clear();
         selection.append(QPoint(pos.x(), pos.y()));
@@ -329,6 +330,9 @@ void LayoutPixmapItem::updateMetatileSelection(QGraphicsSceneMouseEvent *event) 
             this->metatileSelector->selectFromMap(block.metatileId(), block.collision(), block.elevation());
         }
     } else if (event->type() == QEvent::GraphicsSceneMouseMove) {
+        if (pos == this->lastMetatileSelectionPos)
+            return;
+        this->lastMetatileSelectionPos = pos;
         int x1 = selection_origin.x();
         int y1 = selection_origin.y();
         int x2 = pos.x();

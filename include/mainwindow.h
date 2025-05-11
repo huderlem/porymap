@@ -407,8 +407,7 @@ private:
     void openNextMap();
 
     void displayMapProperties();
-    void checkToolButtons();
-    void clickToolButtonFromEditAction(Editor::EditAction editAction);
+    void setEditActionUi(Editor::EditAction editAction);
 
     void updateWindowTitle();
 

@@ -363,6 +363,7 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::wildMonTableEdited, [this] { markMapEdited(this->editor->map); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
     connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
+    connect(this->editor, &Editor::editActionSet, this, &MainWindow::setEditActionUi);
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
     connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
     connect(ui->graphicsView_Connections, &ConnectionsView::pressedDelete, this->editor, &Editor::removeSelectedConnection);
@@ -2167,10 +2168,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     if (index == MainTab::Map) {
         ui->stackedWidget_MapEvents->setCurrentIndex(0);
         on_mapViewTab_tabBarClicked(ui->mapViewTab->currentIndex());
-        clickToolButtonFromEditAction(editor->mapEditAction);
     } else if (index == MainTab::Events) {
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
-        clickToolButtonFromEditAction(editor->eventEditAction);
     } else if (index == MainTab::Connections) {
         ui->graphicsView_Connections->setFocus(); // Avoid opening tab with focus on something editable
     }
@@ -2179,9 +2178,6 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
     if (index != MainTab::WildPokemon) {
         if (editor->project && editor->project->wildEncountersLoaded)
             editor->saveEncounterTabData();
-    }
-    if (index != MainTab::Events) {
-        editor->map_ruler->setEnabled(false);
     }
 }
 
@@ -2276,36 +2272,6 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
         initCustomScriptsEditor();
     connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
             customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
-}
-
-void MainWindow::on_actionPencil_triggered()
-{
-    on_toolButton_Paint_clicked();
-}
-
-void MainWindow::on_actionPointer_triggered()
-{
-    on_toolButton_Select_clicked();
-}
-
-void MainWindow::on_actionFlood_Fill_triggered()
-{
-    on_toolButton_Fill_clicked();
-}
-
-void MainWindow::on_actionEyedropper_triggered()
-{
-    on_toolButton_Dropper_clicked();
-}
-
-void MainWindow::on_actionMove_triggered()
-{
-    on_toolButton_Move_clicked();
-}
-
-void MainWindow::on_actionMap_Shift_triggered()
-{
-    on_toolButton_Shift_clicked();
 }
 
 void MainWindow::resetMapViewScale() {
@@ -2572,133 +2538,33 @@ void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int valu
     this->editor->collision_item->draw(true);
 }
 
-void MainWindow::on_toolButton_Paint_clicked()
-{
-    if (ui->mainTabBar->currentIndex() == MainTab::Map)
-        editor->mapEditAction = Editor::EditAction::Paint;
-    else
-        editor->eventEditAction = Editor::EditAction::Paint;
+void MainWindow::on_actionPencil_triggered()     { on_toolButton_Paint_clicked(); }
+void MainWindow::on_actionPointer_triggered()    { on_toolButton_Select_clicked(); }
+void MainWindow::on_actionFlood_Fill_triggered() { on_toolButton_Fill_clicked(); }
+void MainWindow::on_actionEyedropper_triggered() { on_toolButton_Dropper_clicked(); }
+void MainWindow::on_actionMove_triggered()       { on_toolButton_Move_clicked(); }
+void MainWindow::on_actionMap_Shift_triggered()  { on_toolButton_Shift_clicked(); }
 
-    editor->settings->mapCursor = QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10);
+void MainWindow::on_toolButton_Paint_clicked()   { editor->setEditAction(Editor::EditAction::Paint); }
+void MainWindow::on_toolButton_Select_clicked()  { editor->setEditAction(Editor::EditAction::Select); }
+void MainWindow::on_toolButton_Fill_clicked()    { editor->setEditAction(Editor::EditAction::Fill); }
+void MainWindow::on_toolButton_Dropper_clicked() { editor->setEditAction(Editor::EditAction::Pick); }
+void MainWindow::on_toolButton_Move_clicked()    { editor->setEditAction(Editor::EditAction::Move); }
+void MainWindow::on_toolButton_Shift_clicked()   { editor->setEditAction(Editor::EditAction::Shift); }
 
-    if (ui->mapViewTab->currentIndex() != MapViewTab::Collision)
-        editor->cursorMapTileRect->setSingleTileMode(false);
-
-    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->graphicsView_Map);
-    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
-    ui->graphicsView_Map->setFocus();
-
-    checkToolButtons();
-}
-
-void MainWindow::on_toolButton_Select_clicked()
-{
-    if (ui->mainTabBar->currentIndex() == MainTab::Map)
-        editor->mapEditAction = Editor::EditAction::Select;
-    else
-        editor->eventEditAction = Editor::EditAction::Select;
-
-    editor->settings->mapCursor = QCursor();
-    editor->cursorMapTileRect->setSingleTileMode(true);
-
-    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->graphicsView_Map);
-    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
-    ui->graphicsView_Map->setFocus();
-
-    checkToolButtons();
-}
-
-void MainWindow::on_toolButton_Fill_clicked()
-{
-    if (ui->mainTabBar->currentIndex() == MainTab::Map)
-        editor->mapEditAction = Editor::EditAction::Fill;
-    else
-        editor->eventEditAction = Editor::EditAction::Fill;
-
-    editor->settings->mapCursor = QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10);
-    editor->cursorMapTileRect->setSingleTileMode(true);
-
-    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->graphicsView_Map);
-    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
-    ui->graphicsView_Map->setFocus();
-
-    checkToolButtons();
-}
-
-void MainWindow::on_toolButton_Dropper_clicked()
-{
-    if (ui->mainTabBar->currentIndex() == MainTab::Map)
-        editor->mapEditAction = Editor::EditAction::Pick;
-    else
-        editor->eventEditAction = Editor::EditAction::Pick;
-
-    editor->settings->mapCursor = QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10);
-    editor->cursorMapTileRect->setSingleTileMode(true);
-
-    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->graphicsView_Map);
-    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
-    ui->graphicsView_Map->setFocus();
-
-    checkToolButtons();
-}
-
-void MainWindow::on_toolButton_Move_clicked()
-{
-    if (ui->mainTabBar->currentIndex() == MainTab::Map)
-        editor->mapEditAction = Editor::EditAction::Move;
-    else
-        editor->eventEditAction = Editor::EditAction::Move;
-
-    editor->settings->mapCursor = QCursor(QPixmap(":/icons/move.ico"), 7, 7);
-    editor->cursorMapTileRect->setSingleTileMode(true);
-
-    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QScroller::grabGesture(ui->graphicsView_Map, QScroller::LeftMouseButtonGesture);
-    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::FullViewportUpdate);
-    ui->graphicsView_Map->setFocus();
-
-    checkToolButtons();
-}
-
-void MainWindow::on_toolButton_Shift_clicked()
-{
-    if (ui->mainTabBar->currentIndex() == MainTab::Map)
-        editor->mapEditAction = Editor::EditAction::Shift;
-    else
-        editor->eventEditAction = Editor::EditAction::Shift;
-
-    editor->settings->mapCursor = QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10);
-    editor->cursorMapTileRect->setSingleTileMode(true);
-
-    ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    QScroller::ungrabGesture(ui->graphicsView_Map);
-    ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
-    ui->graphicsView_Map->setFocus();
-
-    checkToolButtons();
-}
-
-void MainWindow::checkToolButtons() {
-    Editor::EditAction editAction;
-    if (ui->mainTabBar->currentIndex() == MainTab::Map) {
-        editAction = editor->mapEditAction;
+void MainWindow::setEditActionUi(Editor::EditAction editAction) {
+    if (editAction == Editor::EditAction::Move) {
+        ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        QScroller::grabGesture(ui->graphicsView_Map, QScroller::LeftMouseButtonGesture);
+        ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::FullViewportUpdate);
     } else {
-        editAction = editor->eventEditAction;
-        if (editAction == Editor::EditAction::Select && editor->map_ruler)
-            editor->map_ruler->setEnabled(true);
-        else if (editor->map_ruler)
-            editor->map_ruler->setEnabled(false);
+        ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        QScroller::ungrabGesture(ui->graphicsView_Map);
+        ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
     }
+    ui->graphicsView_Map->setFocus();
 
     ui->toolButton_Paint->setChecked(editAction == Editor::EditAction::Paint);
     ui->toolButton_Select->setChecked(editAction == Editor::EditAction::Select);
@@ -2706,22 +2572,6 @@ void MainWindow::checkToolButtons() {
     ui->toolButton_Dropper->setChecked(editAction == Editor::EditAction::Pick);
     ui->toolButton_Move->setChecked(editAction == Editor::EditAction::Move);
     ui->toolButton_Shift->setChecked(editAction == Editor::EditAction::Shift);
-}
-
-void MainWindow::clickToolButtonFromEditAction(Editor::EditAction editAction) {
-    if (editAction == Editor::EditAction::Paint) {
-        on_toolButton_Paint_clicked();
-    } else if (editAction == Editor::EditAction::Select) {
-        on_toolButton_Select_clicked();
-    } else if (editAction == Editor::EditAction::Fill) {
-        on_toolButton_Fill_clicked();
-    } else if (editAction == Editor::EditAction::Pick) {
-        on_toolButton_Dropper_clicked();
-    } else if (editAction == Editor::EditAction::Move) {
-        on_toolButton_Move_clicked();
-    } else if (editAction == Editor::EditAction::Shift) {
-        on_toolButton_Shift_clicked();
-    }
 }
 
 void MainWindow::onOpenConnectedMap(MapConnection *connection) {

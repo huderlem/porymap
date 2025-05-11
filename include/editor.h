@@ -162,8 +162,10 @@ public:
     QPointer<MapConnection> connection_to_select = nullptr;
 
     enum class EditAction { None, Paint, Select, Fill, Shift, Pick, Move };
-    EditAction mapEditAction = EditAction::Paint;
-    EditAction eventEditAction = EditAction::Select;
+    void setEditAction(EditAction editAction);
+    EditAction getEditAction() const;
+    EditAction getMapEditAction() const { return this->mapEditAction; }
+    EditAction getEventEditAction() const { return this->eventEditAction; }
 
     enum class EditMode { None, Disabled, Metatiles, Collision, Header, Events, Connections, Encounters };
     void setEditMode(EditMode editMode);
@@ -219,6 +221,9 @@ private:
     QPixmap collisionSheetPixmap;
 
     EditMode editMode = EditMode::None;
+
+    EditAction mapEditAction = EditAction::Paint;
+    EditAction eventEditAction = EditAction::Select;
 
     bool save(bool currentOnly);
     void clearMap();
@@ -280,6 +285,7 @@ signals:
     void mapRulerStatusChanged(const QString &);
     void tilesetUpdated(QString);
     void gridToggled(bool);
+    void editActionSet(EditAction newEditAction);
 };
 
 #endif // EDITOR_H
