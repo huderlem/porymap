@@ -126,6 +126,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Fix regression that stopped the map zoom from centering on the cursor.
 - Fix `Open Map Scripts` not working on maps with a `shared_scripts_map` field.
 - Fix the main window sometimes exceeding the screen size on first launch.
+- Fix right-click selections with the eyedropper clearing when the mouse is released.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
