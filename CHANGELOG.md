@@ -27,6 +27,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - Add a setting to customize the size and position of the player view distance.
 - Add `onLayoutOpened` to the scripting API.
 - Add a splash loading screen for project openings.
+- Add Back/Forward buttons for navigating to previous maps or layouts.
 
 ### Changed
 - `Change Dimensions` now has an interactive resizing rectangle.
