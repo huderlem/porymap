@@ -3102,15 +3102,13 @@ void MainWindow::onWarpBehaviorWarningClicked() {
         "<br></html></body></p>"
     );
 
-    QPointer msgBox = new InfoMessage(QStringLiteral("Warp Events only function as exits on certain metatiles"), this);
+    auto msgBox = new InfoMessage(QStringLiteral("Warp Events only function as exits on certain metatiles"), this);
     auto settingsButton = msgBox->addButton("Open Settings...", QMessageBox::ActionRole);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setTextFormat(Qt::RichText);
     msgBox->setInformativeText(informative);
-    connect(msgBox, &InfoMessage::finished, [this, msgBox, settingsButton] {
-        if (msgBox && msgBox->clickedButton()  && msgBox->clickedButton() == settingsButton) {
-            openProjectSettingsEditor(ProjectSettingsEditor::eventsTab);
-        }
+    connect(settingsButton, &QAbstractButton::clicked, [this] {
+        openProjectSettingsEditor(ProjectSettingsEditor::eventsTab);
     });
     msgBox->open();
 }
