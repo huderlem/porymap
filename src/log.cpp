@@ -111,7 +111,7 @@ void updateLogDisplays(const QString &message, LogType type) {
     };
 
     bool startTimer = false;
-    auto it = QMutableListIterator(Log::displays);
+    auto it = QMutableListIterator<Log::Display>(Log::displays);
     while (it.hasNext()) {
         auto display = it.next();
         if (!display.statusBar) {

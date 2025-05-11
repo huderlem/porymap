@@ -240,7 +240,7 @@ void MainWindow::applyUserShortcuts() {
 
 void MainWindow::initLogStatusBar() {
     removeLogStatusBar(this->statusBar());
-    QSet logTypes = QSet(porymapConfig.statusBarLogTypes.begin(), porymapConfig.statusBarLogTypes.end());
+    auto logTypes = QSet<LogType>(porymapConfig.statusBarLogTypes.begin(), porymapConfig.statusBarLogTypes.end());
     if (!logTypes.isEmpty()) {
         addLogStatusBar(this->statusBar(), logTypes);
     }
