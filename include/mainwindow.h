@@ -400,7 +400,8 @@ private:
     void openMapListItem(const QModelIndex &index);
     void onMapListTabChanged(int index);
     QString getActiveItemName();
-    void recordNavigation(const QString &itemName);
+    void recordMapNavigation(const QString &itemName);
+    void resetMapNavigation();
     void openMapFromHistory(bool previous);
     void openPreviousMap();
     void openNextMap();

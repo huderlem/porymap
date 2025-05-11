@@ -1046,13 +1046,20 @@ void MainWindow::openMapFromHistory(bool previous) {
     this->ignoreNavigationRecords = false;
 }
 
-void MainWindow::recordNavigation(const QString &itemName) {
+void MainWindow::recordMapNavigation(const QString &itemName) {
     if (this->ignoreNavigationRecords)
         return;
 
     this->backNavigation.stack.push(itemName);
     this->backNavigation.button->setEnabled(true);
 
+    this->forwardNavigation.stack.clear();
+    this->forwardNavigation.button->setEnabled(false);
+}
+
+void MainWindow::resetMapNavigation() {
+    this->backNavigation.stack.clear();
+    this->backNavigation.button->setEnabled(false);
     this->forwardNavigation.stack.clear();
     this->forwardNavigation.button->setEnabled(false);
 }
@@ -1081,7 +1088,7 @@ bool MainWindow::userSetMap(const QString &mapName) {
         RecentErrorMessage::show(QString("There was an error opening map '%1'.").arg(mapName), this);
         return false;
     }
-    recordNavigation(prevItem);
+    recordMapNavigation(prevItem);
     return true;
 }
 
@@ -1161,7 +1168,7 @@ bool MainWindow::userSetLayout(const QString &layoutId) {
         return false;
     }
 
-    recordNavigation(prevItem);
+    recordMapNavigation(prevItem);
 
     // Only the Layouts tab of the map list shows Layouts, so if we're not already on that tab we'll open it now.
     ui->mapListContainer->setCurrentIndex(MapListTab::Layouts);
@@ -1459,6 +1466,7 @@ void MainWindow::clearProjectUI() {
     delete this->layoutTreeModel;
     delete this->layoutListProxyModel;
     resetMapListFilters();
+    resetMapNavigation();
 }
 
 void MainWindow::scrollMapList(MapTree *list, const QString &itemName) {
