@@ -138,7 +138,7 @@ void MapListToolBar::applyFilter(const QString &filterText) {
         if (filterText.isEmpty()) {
             m_list->collapseAll();
             emit filterCleared(m_list);
-        } else {
+        } else if (m_expandListForSearch) {
             m_list->expandToDepth(0);
         }
     }

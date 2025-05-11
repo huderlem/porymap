@@ -819,14 +819,26 @@ bool ParseUtil::jsonToBool(const QJsonValue &value, bool * ok) {
     return false;
 }
 
-int ParseUtil::getScriptLineNumber(const QString &filePath, const QString &scriptLabel) {
+int ParseUtil::getJsonLineNumber(const QString &filepath, const QString &searchText) {
+    if (searchText.isEmpty())
+        return 0;
+
+    const QString text = readTextFile(filepath);
+    int index = text.indexOf(searchText);
+    if (index < 0)
+        return 0;
+
+    return text.left(index).count('\n') + 1;
+}
+
+int ParseUtil::getScriptLineNumber(const QString &filepath, const QString &scriptLabel) {
     if (scriptLabel.isEmpty())
         return 0;
 
-    if (filePath.endsWith(".inc") || filePath.endsWith(".s"))
-        return getRawScriptLineNumber(readTextFile(filePath), scriptLabel);
-    else if (filePath.endsWith(".pory"))
-        return getPoryScriptLineNumber(readTextFile(filePath), scriptLabel);
+    if (filepath.endsWith(".inc") || filepath.endsWith(".s"))
+        return getRawScriptLineNumber(readTextFile(filepath), scriptLabel);
+    else if (filepath.endsWith(".pory"))
+        return getPoryScriptLineNumber(readTextFile(filepath), scriptLabel);
 
     return 0;
 }

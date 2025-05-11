@@ -37,6 +37,9 @@ public:
     void setFilterLocked(bool locked) { m_filterLocked = locked; }
     bool isFilterLocked() const { return m_filterLocked; }
 
+    void setExpandListForSearch(bool expand) { m_expandListForSearch = expand; }
+    bool getExpandListForSearch() const { return m_expandListForSearch; }
+
     void setSearchFocus();
 
 signals:
@@ -51,6 +54,7 @@ private:
     bool m_filterLocked = false;
     bool m_editsAllowed = false;
     bool m_emptyFoldersVisible = true;
+    bool m_expandListForSearch = true;
 };
 
 #endif // MAPLISTTOOLBAR_H

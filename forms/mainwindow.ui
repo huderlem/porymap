@@ -2867,6 +2867,13 @@
     <addaction name="action_Save"/>
     <addaction name="action_Save_Project"/>
     <addaction name="separator"/>
+    <addaction name="action_NewMap"/>
+    <addaction name="action_NewLayout"/>
+    <addaction name="actionNew_Tileset"/>
+    <addaction name="actionDuplicate_Current_Map_Layout"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
+    <addaction name="separator"/>
     <addaction name="action_Export_Map_Image"/>
     <addaction name="actionExport_Stitched_Map_Image"/>
     <addaction name="actionExport_Map_Timelapse_Image"/>
@@ -2909,15 +2916,8 @@
     <addaction name="actionMove"/>
     <addaction name="actionMap_Shift"/>
     <addaction name="separator"/>
-    <addaction name="action_NewMap"/>
-    <addaction name="action_NewLayout"/>
-    <addaction name="actionNew_Tileset"/>
-    <addaction name="actionDuplicate_Current_Map_Layout"/>
-    <addaction name="separator"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionRegion_Map_Editor"/>
-    <addaction name="separator"/>
-    <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_Project_in_Text_Editor"/>
    </widget>

@@ -81,6 +81,43 @@
          </widget>
         </item>
         <item>
+         <widget class="QGroupBox" name="groupBox_Logging">
+          <property name="title">
+           <string>Logging</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_StatusMessages">
+             <property name="text">
+              <string>Status bar message types</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_StatusErrors">
+             <property name="text">
+              <string>Errors</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_StatusWarnings">
+             <property name="text">
+              <string>Warnings</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_StatusInformation">
+             <property name="text">
+              <string>Information</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer_4">
           <property name="orientation">
            <enum>Qt::Orientation::Vertical</enum>

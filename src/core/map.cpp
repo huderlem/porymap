@@ -148,13 +148,13 @@ void Map::invalidateScripts() {
 
 QStringList Map::getScriptLabels(Event::Group group) {
     if (!m_scriptsLoaded) {
-        const QString scriptsFilePath = getScriptsFilePath();
-        m_scriptLabels = ParseUtil::getGlobalScriptLabels(scriptsFilePath);
+        const QString scriptsFilepath = getScriptsFilepath();
+        m_scriptLabels = ParseUtil::getGlobalScriptLabels(scriptsFilepath);
         m_scriptsLoaded = true;
 
         // Track the scripts file for changes. Path may have changed, so stop tracking old files.
         m_scriptFileWatcher->removePaths(m_scriptFileWatcher->files());
-        m_scriptFileWatcher->addPath(scriptsFilePath);
+        m_scriptFileWatcher->addPath(scriptsFilepath);
     }
 
     QStringList scriptLabels = m_scriptLabels;
@@ -173,7 +173,7 @@ QStringList Map::getScriptLabels(Event::Group group) {
     return scriptLabels;
 }
 
-QString Map::getScriptsFilePath() const {
+QString Map::getScriptsFilepath() const {
     const bool usePoryscript = projectConfig.usePoryScript;
     auto path = QDir::cleanPath(QString("%1/%2/%3/scripts")
                                         .arg(projectConfig.projectDir)
@@ -184,6 +184,13 @@ QString Map::getScriptsFilePath() const {
         extension = Project::getScriptFileExtension(false);
     path += extension;
     return path;
+}
+
+QString Map::getJsonFilepath(const QString &mapName) {
+    return QDir::cleanPath(QString("%1/%2/%3/map.json")
+                                        .arg(projectConfig.projectDir)
+                                        .arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders))
+                                        .arg(mapName));
 }
 
 void Map::resetEvents() {

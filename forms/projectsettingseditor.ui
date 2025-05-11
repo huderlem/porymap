@@ -39,7 +39,7 @@
              <x>0</x>
              <y>0</y>
              <width>570</width>
-             <height>680</height>
+             <height>692</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -94,7 +94,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -164,7 +164,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -248,7 +248,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -467,37 +467,16 @@
              <x>0</x>
              <y>0</y>
              <width>570</width>
-             <height>622</height>
+             <height>552</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
             <item>
-             <widget class="QGroupBox" name="groupBox_MapDataDefaults">
+             <widget class="QGroupBox" name="groupBox_NewMapDefaults">
               <property name="title">
-               <string>Map Data Defaults</string>
+               <string>New Map Defaults</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_3">
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_Elevation">
-                 <property name="text">
-                  <string>Elevation</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="label_MapWidth">
-                 <property name="text">
-                  <string>Width</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Elevation">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default elevation that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                </widget>
-               </item>
                <item row="8" column="0" colspan="2">
                 <widget class="QCheckBox" name="checkBox_CreateTextFile">
                  <property name="toolTip">
@@ -505,61 +484,6 @@
                  </property>
                  <property name="text">
                   <string>Create separate text file</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_MapWidth">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default layout width for new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_MapHeight">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default layout height for new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_FillMetatile">
-                 <property name="text">
-                  <string>Metatile ID</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_Collision">
-                 <property name="text">
-                  <string>Collision</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_BorderMetatiles">
-                 <property name="text">
-                  <string>Border Metatiles</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="UIntHexSpinBox" name="spinBox_FillMetatile">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default metatile value that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="NoScrollSpinBox" name="spinBox_Collision">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default collision that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -634,6 +558,51 @@
                  </widget>
                 </widget>
                </item>
+               <item row="2" column="0" colspan="2">
+                <layout class="QFormLayout" name="formLayout_5">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_MapWidth">
+                   <property name="text">
+                    <string>Width</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_MapWidth">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default layout width for new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_MapHeight">
+                   <property name="text">
+                    <string>Height</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_MapHeight">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default layout height for new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_BorderMetatiles">
+                 <property name="text">
+                  <string>Border Metatiles</string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="1" colspan="3">
                 <widget class="QWidget" name="widget_CustomSizeBorderMetatiles" native="true">
                  <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -649,13 +618,52 @@
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
+                  <item>
+                   <widget class="UIntHexSpinBox" name="spinBox_FillMetatile">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default metatile value that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </widget>
                </item>
-               <item row="7" column="0">
-                <widget class="QLabel" name="label_MapHeight">
+               <item row="2" column="2" colspan="2">
+                <layout class="QFormLayout" name="formLayout_6">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_Elevation">
+                   <property name="text">
+                    <string>Elevation</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_Collision">
+                   <property name="text">
+                    <string>Collision</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_Collision">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default collision that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="NoScrollSpinBox" name="spinBox_Elevation">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The default elevation that will be used to fill new maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_FillMetatile">
                  <property name="text">
-                  <string>Height</string>
+                  <string>Metatile ID</string>
                  </property>
                 </widget>
                </item>
@@ -1197,7 +1205,7 @@
              <x>0</x>
              <y>0</y>
              <width>570</width>
-             <height>927</height>
+             <height>915</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -1216,7 +1224,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -1276,7 +1284,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -1308,7 +1316,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -1346,7 +1354,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -1367,7 +1375,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -1378,7 +1386,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/folder.ico</normaloff>:/icons/folder.ico</iconset>
                  </property>
                 </widget>
@@ -1411,7 +1419,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
                  </property>
                 </widget>
@@ -1464,7 +1472,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="../resources/images.qrc">
                    <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
                  </property>
                 </widget>
@@ -1674,7 +1682,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>544</width>
-                    <height>341</height>
+                    <height>338</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_ProjectPaths">
@@ -1703,7 +1711,7 @@
                <string>Add Global Constants File...</string>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="../resources/images.qrc">
                 <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
               </property>
              </widget>
@@ -1714,7 +1722,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="../resources/images.qrc">
                 <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
               </property>
              </widget>
@@ -1754,7 +1762,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="../resources/images.qrc">
                 <normaloff>:/icons/help.ico</normaloff>:/icons/help.ico</iconset>
               </property>
              </widget>
@@ -1791,7 +1799,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>544</width>
-                    <height>425</height>
+                    <height>421</height>
                    </rect>
                   </property>
                   <layout class="QFormLayout" name="layout_Identifiers">
@@ -1820,7 +1828,7 @@
                <string>Add Global Constant...</string>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="../resources/images.qrc">
                 <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
               </property>
              </widget>
@@ -1886,6 +1894,8 @@
    <header location="global">uintspinbox.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resources/images.qrc"/>
+ </resources>
  <connections/>
 </ui>

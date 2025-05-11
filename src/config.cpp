@@ -476,6 +476,13 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->gridSettings.style = GridSettings::getStyleFromName(value);
     } else if (key == "grid_color") {
         this->gridSettings.color = getConfigColor(key, value);
+    } else if (key == "status_bar_log_types") {
+        this->statusBarLogTypes.clear();
+        auto typeStrings = value.split(",", Qt::SkipEmptyParts);
+        for (const auto &typeString : typeStrings) {
+            LogType type = static_cast<LogType>(getConfigInteger(key, typeString, 0, 2));
+            this->statusBarLogTypes.insert(type);
+        }
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
     }
@@ -559,6 +566,12 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("grid_y", QString::number(this->gridSettings.offsetY));
     map.insert("grid_style", GridSettings::getStyleName(this->gridSettings.style));
     map.insert("grid_color", this->gridSettings.color.name().remove("#")); // Our text config treats '#' as the start of a comment.
+
+    QStringList logTypesStrings;
+    for (const auto &type : this->statusBarLogTypes) {
+        logTypesStrings.append(QString::number(type));
+    }
+    map.insert("status_bar_log_types", logTypesStrings.join(","));
     
     return map;
 }

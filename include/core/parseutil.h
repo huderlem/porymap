@@ -73,6 +73,8 @@ public:
     bool tryParseJsonFile(QJsonDocument *out, const QString &filepath, QString *error = nullptr);
     bool tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath, QString *error = nullptr);
 
+    static int getJsonLineNumber(const QString &filepath, const QString &searchText);
+
     // Returns the 1-indexed line number for the definition of scriptLabel in the scripts file at filePath.
     // Returns 0 if a definition for scriptLabel cannot be found.
     static int getScriptLineNumber(const QString &filePath, const QString &scriptLabel);

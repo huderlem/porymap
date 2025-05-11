@@ -2272,13 +2272,13 @@ void Editor::deleteSelectedEvents() {
 }
 
 void Editor::openMapScripts() const {
-    openInTextEditor(map->getScriptsFilePath());
+    openInTextEditor(map->getScriptsFilepath());
 }
 
 void Editor::openScript(const QString &scriptLabel) const {
     // Find the location of scriptLabel.
-    QStringList scriptPaths(map->getScriptsFilePath());
-    scriptPaths << project->getEventScriptsFilePaths();
+    QStringList scriptPaths(map->getScriptsFilepath());
+    scriptPaths << project->getEventScriptsFilepaths();
     int lineNum = 0;
     QString scriptPath = scriptPaths.first();
     for (const auto &path : scriptPaths) {
@@ -2290,6 +2290,16 @@ void Editor::openScript(const QString &scriptLabel) const {
     }
 
     openInTextEditor(scriptPath, lineNum);
+}
+
+void Editor::openMapJson(const QString &mapName) const {
+    openInTextEditor(Map::getJsonFilepath(mapName));
+}
+
+void Editor::openLayoutJson(const QString &layoutId) const {
+    QString path = QDir::cleanPath(QString("%1/%2").arg(projectConfig.projectDir).arg(projectConfig.getFilePath(ProjectFilePath::json_layouts)));
+    QString idField = QString("\"id\": \"%1\",").arg(layoutId);
+    openInTextEditor(path, ParseUtil::getJsonLineNumber(path, idField));
 }
 
 void Editor::openInTextEditor(const QString &path, int lineNum) {

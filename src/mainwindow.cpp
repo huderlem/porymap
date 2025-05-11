@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    cleanupLargeLog();
+    logInit();
     logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
 }
 
@@ -142,6 +142,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
 
 void MainWindow::initWindow() {
     porymapConfig.load();
+    this->initLogStatusBar();
     this->initCustomUI();
     this->initExtraSignals();
     this->initEditor();
@@ -235,6 +236,14 @@ void MainWindow::applyUserShortcuts() {
     for (auto *shortcut : findChildren<Shortcut *>())
         if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
+}
+
+void MainWindow::initLogStatusBar() {
+    removeLogStatusBar(this->statusBar());
+    QSet logTypes = QSet(porymapConfig.statusBarLogTypes.begin(), porymapConfig.statusBarLogTypes.end());
+    if (!logTypes.isEmpty()) {
+        addLogStatusBar(this->statusBar(), logTypes);
+    }
 }
 
 void MainWindow::initCustomUI() {
@@ -489,6 +498,10 @@ void MainWindow::initMapList() {
     ui->mapListToolBar_Locations->setEditsAllowedButtonVisible(false);
     ui->mapListToolBar_Layouts->setEditsAllowedButtonVisible(false);
 
+    // When searching the Layouts list, don't expand to show all the maps. If the user is searching
+    // this list then they're probably more interested in the layouts than the maps.
+    ui->mapListToolBar_Layouts->setExpandListForSearch(false);
+
     // Initialize settings from config
     ui->mapListToolBar_Groups->setEditsAllowed(porymapConfig.mapListEditGroupsEnabled);
     for (auto i = porymapConfig.mapListHideEmptyEnabled.constBegin(); i != porymapConfig.mapListHideEmptyEnabled.constEnd(); i++) {
@@ -627,13 +640,32 @@ void MainWindow::loadUserSettings() {
 }
 
 void MainWindow::restoreWindowState() {
-    logInfo("Restoring main window geometry from previous session.");
     QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
-    this->restoreGeometry(geometry.value("main_window_geometry"));
-    this->restoreState(geometry.value("main_window_state"));
-    this->ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
-    this->ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
-    this->ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
+    const QByteArray mainWindowGeometry = geometry.value("main_window_geometry");
+    if (!mainWindowGeometry.isEmpty()) {
+        logInfo("Restoring main window geometry from previous session.");
+        restoreGeometry(mainWindowGeometry);
+        restoreState(geometry.value("main_window_state"));
+        ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
+        ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
+        ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
+    }
+
+    // Resize the window if it exceeds the available screen size.
+    auto screen = windowHandle() ? windowHandle()->screen() : QGuiApplication::primaryScreen();
+    if (!screen) return;
+    const QRect screenGeometry = screen->availableGeometry();
+    if (this->width() > screenGeometry.width() || this->height() > screenGeometry.height()) {
+        auto pixelRatio = screen->devicePixelRatio();
+        logInfo(QString("Resizing main window. Dimensions of %1x%2 exceed available screen size of %3x%4")
+                        .arg(qRound(this->width() * pixelRatio))
+                        .arg(qRound(this->height() * pixelRatio))
+                        .arg(qRound(screenGeometry.width() * pixelRatio))
+                        .arg(qRound(screenGeometry.height() * pixelRatio)));
+        resize(qMin(this->width(), screenGeometry.width()),
+               qMin(this->height(), screenGeometry.height()));
+        move(screenGeometry.center() - this->rect().center());
+    }
 }
 
 void MainWindow::setTheme(QString theme) {
@@ -662,7 +694,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
 
     if (!QDir(dir).exists()) {
         const QString errorMsg = QString("Failed to open %1: No such directory").arg(projectString);
-        this->statusBar()->showMessage(errorMsg);
         if (initial) {
             // Graceful startup if recent project directory is missing
             logWarn(errorMsg);
@@ -681,7 +712,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     }
 
     const QString openMessage = QString("Opening %1").arg(projectString);
-    this->statusBar()->showMessage(openMessage);
     logInfo(openMessage);
 
     porysplash->start();
@@ -718,7 +748,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
 
     // Load the project
     if (!(loadProjectData() && setProjectUI() && setInitialMap())) {
-        this->statusBar()->showMessage(QString("Failed to open %1").arg(projectString));
         showProjectOpenFailure();
         delete this->editor->project;
         // TODO: Allow changing project settings at this point
@@ -730,7 +759,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
     this->editor->project->saveConfig();
     
     updateWindowTitle();
-    this->statusBar()->showMessage(QString("Opened %1").arg(projectString));
 
     porymapConfig.projectManuallyClosed = false;
     porymapConfig.addRecentProject(dir);
@@ -1104,12 +1132,20 @@ bool MainWindow::setMap(const QString &mapName) {
 // When editing in layout-only mode they are disabled.
 void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
     bool mapEditingEnabled = !layoutOnly;
-    this->ui->mainTabBar->setTabEnabled(MainTab::Events, mapEditingEnabled);
-    this->ui->mainTabBar->setTabEnabled(MainTab::Header, mapEditingEnabled);
-    this->ui->mainTabBar->setTabEnabled(MainTab::Connections, mapEditingEnabled);
-    this->ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, mapEditingEnabled && editor->project->wildEncountersLoaded);
+    ui->mainTabBar->setTabEnabled(MainTab::Events, mapEditingEnabled);
+    ui->mainTabBar->setTabEnabled(MainTab::Header, mapEditingEnabled);
+    ui->mainTabBar->setTabEnabled(MainTab::Connections, mapEditingEnabled);
+    ui->mainTabBar->setTabEnabled(MainTab::WildPokemon, mapEditingEnabled && this->editor->project->wildEncountersLoaded);
 
-    this->ui->comboBox_LayoutSelector->setEnabled(mapEditingEnabled);
+    // Set a tool tip to explain why the tabs are disabled.
+    static const QString disabledToolTip = Util::toHtmlParagraph("You are in layout-only mode. This tab is only enabled when a map is open.");
+    QString toolTip = mapEditingEnabled ? QString() : disabledToolTip;
+    ui->mainTabBar->setTabToolTip(MainTab::Events, toolTip);
+    ui->mainTabBar->setTabToolTip(MainTab::Header, toolTip);
+    ui->mainTabBar->setTabToolTip(MainTab::Connections, toolTip);
+    ui->mainTabBar->setTabToolTip(MainTab::WildPokemon, this->editor->project->wildEncountersLoaded ? toolTip : QString());
+
+    ui->comboBox_LayoutSelector->setEnabled(mapEditingEnabled);
 }
 
 // setLayout, but with a visible error message in case of failure.
@@ -1480,6 +1516,9 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     if (itemType == "map_name") {
         // Right-clicking on a map.
         openItemAction = menu.addAction("Open Map");
+        connect(menu.addAction("Open JSON file"), &QAction::triggered, [this, itemName] {
+            this->editor->openMapJson(itemName);
+        });
         menu.addSeparator();
         copyListNameAction = menu.addAction("Copy Map Name");
         copyToolTipAction = menu.addAction("Copy Map ID");
@@ -1507,6 +1546,9 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     } else if (itemType == "map_layout") {
         // Right-clicking on a map layout
         openItemAction = menu.addAction("Open Layout");
+        connect(menu.addAction("Open JSON file"), &QAction::triggered, [this, itemName] {
+            this->editor->openLayoutJson(itemName);
+        });
         menu.addSeparator();
         copyListNameAction = menu.addAction("Copy Layout Name");
         copyToolTipAction = menu.addAction("Copy Layout ID");
@@ -3006,6 +3048,7 @@ void MainWindow::on_actionPreferences_triggered() {
         connect(preferenceEditor, &PreferenceEditor::themeChanged, this, &MainWindow::setTheme);
         connect(preferenceEditor, &PreferenceEditor::themeChanged, editor, &Editor::maskNonVisibleConnectionTiles);
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::togglePreferenceSpecificUi);
+        connect(preferenceEditor, &PreferenceEditor::preferencesSaved, this, &MainWindow::initLogStatusBar);
         // Changes to porymapConfig.loadAllEventScripts or porymapConfig.eventSelectionShapeMode
         // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, editor, &Editor::updateEvents);

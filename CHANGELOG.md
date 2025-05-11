@@ -57,6 +57,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - `MAP_OFFSET_W` and `MAP_OFFSET_H` (used to limit the maximum map size) are now read from the project.
 - The rendered area of the map border is now limited to the maximum player view distance (prior to this it included two extra rows on the top and bottom).
 - An error message will now be shown when Porymap is unable to save changes (e.g. if Porymap doesn't have write permissions for your project).
+- Error and warning logs are now displayed in the status bar. This can be changed with a new setting.
 - A project may now be opened even if it has no maps or map groups. A minimum of one map layout is required.
 - The file extensions that are expected for `.png` and `.pal` data files and the extensions outputted when creating a new tileset can now be customized.
 - Miscellaneous performance improvements, especially for opening projects.
@@ -123,6 +124,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 - The Metatile / Tile usage counts in the Tileset Editor now update to reflect changes.
 - Fix regression that stopped the map zoom from centering on the cursor.
 - Fix `Open Map Scripts` not working on maps with a `shared_scripts_map` field.
+- Fix the main window sometimes exceeding the screen size on first launch.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed

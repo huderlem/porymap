@@ -85,8 +85,11 @@ public:
     bool hasEvent(Event *) const;
 
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
-    QString getScriptsFilePath() const;
+    QString getScriptsFilepath() const;
     void openScript(const QString &label);
+
+    static QString getJsonFilepath(const QString &mapName);
+    QString getJsonFilepath() const { return getJsonFilepath(m_name); }
 
     void deleteConnections();
     QList<MapConnection*> getConnections() const { return m_connections; }
