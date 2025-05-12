@@ -480,6 +480,15 @@ void MainWindow::initMapList() {
 
     ui->mapListContainer->setCornerWidget(navigationFrame, Qt::TopLeftCorner);
 
+    // Can't seem to get mapListContainer to update the size hint appropriately for
+    // the new corner widgets. The default size hint is too small, and the tabs will elide.
+    // For now we set an explicit minimum to fit both the tabs and buttons, and we make
+    // the buttons as small as they can reasonably be to maximize space for the tabs.
+    ui->mapListContainer->setMinimumWidth(285);
+    buttonAdd->setFixedWidth(25);
+    backArrow->setFixedWidth(15);
+    forwardArrow->setFixedWidth(15);
+
     // Connect tool bars to lists
     ui->mapListToolBar_Groups->setList(ui->mapList);
     ui->mapListToolBar_Locations->setList(ui->locationList);
