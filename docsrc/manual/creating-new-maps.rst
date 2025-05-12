@@ -4,73 +4,38 @@
 Creating New Maps
 *****************
 
-Creating a new map in porymap is easy! Just click *Tools -> New Map...*.
-Alternatively, in any of the map list sort modes, you can right click on a folder
-in order to add a new map to the folder. 
+Creating a new map in porymap is easy! Just click ``File > New Map...`` and you'll be greeted with a dialog that has all the options for your new map. These options are described below. Change them however you like, hit ``OK``, and you should see your new map!
 
-For example, when sorting maps by their layout, you can add a new Pokemon Center from the existing layout.
-
-.. figure:: images/creating-new-maps/right-click-layout-sort.png
-    :alt: Add New Map with Layout
-
-    Add New Map with Layout
-
-New Map Options
----------------
-
-The popup window when you create a new map will display some options in order to customize your new map.
+Your settings will remain the same for the next time you open this dialog. If you'd like to restore them to their default values, hit ``Reset``.
 
 .. figure:: images/creating-new-maps/new-map-options-window.png
     :alt: New Map Options Window
+    :width: 60%
+    :align: center
 
     New Map Options Window
 
-The options you see may be different depending on your base project, but they are:
+Map Name
+	A unique name for your new map. This name won't appear in-game. It will appear in Porymap's map list and various dropdowns, and will be used to create a unique ``MAP_NAME`` ID for your new map. For the in-game map name, see ``Location Name`` under ``Header Data``.
 
-Name
-	The name of the new map. This cannot be changed in porymap.
+Map Group
+	Which map group the new map will belong to. You can either select an existing map group, or enter the name of a new map group that you'd like Porymap to create. In Porymap, the only place you'll see the map group is on the ``Groups`` tab of the map list. The map group you choose is mostly organizational, but you may have some features in your game that rely on maps being grouped together. For more on map groups, see `Navigation <https://huderlem.github.io/porymap/manual/navigation#map-list.html>`_.
 
-Group
-	Which map group the new map will belong to. This cannot be changed in porymap.
+Layout ID
+	The ID name for your new map's layout. This ID name will be updated automatically as you enter the name of your new map. If you're creating an entirely new map, this ID name should be unique. If you'd to like to create a new map using an existing layout, select the ID from the dropdown. Selecting an existing layout ID will disable the dimensions and tilesets settings, because these are determined by the layout.
 
-Map Width
-	The width (in metatiles) of the map. This can be changed in porymap.
+Map Dimensions
+	The width and height (in metatiles) of the map.
 
-Map Height
-	The height (in metatiles) of the map. This can be changed in porymap.
+Border Dimensions
+	The width and height (in metatiles) of the map's border blocks. You will only see this setting if you have ``Enable Custom Border Size`` checked under ``Options > Project Settings``
 
-Border Width
-	The width (in metatiles) of the map border blocks. This can be changed in porymap.
-
-Border Height
-	The height (in metatiles) of the map border blocks. This can be changed in porymap.
-
-Primary Tileset
-	The map's primary tileset. This can be changed in porymap.
-
-Secondary Tileset
-	The map's secondary tileset. This can be changed in porymap.
-
-Type
-	Whether this map is an indoor or outdoor map. This can be changed in porymap.
-
-Location
-	The region map section this map exists in. This can be changed in porymap.
+Tilesets
+	The map's primary and secondary tileset.
 
 Can Fly To
-	Whether a heal location event will be created with this map. This cannot be changed in porymap.
+	Whether a Heal Location event will be created for this map. This is provided for historical convenience. This used to be the only way to add a Heal Location event to a map, but since Porymap v6.0.0 you can create a new one at any time from the ``Events`` tab.
 
-Show Location Name
-    Shows or hides the map name popup window when entering the map. This can be changed in porymap.
+Header Data
+	This collapsible section contains some additional information about your map. You can click on the arrow to the left of ``Header Data`` to expand or collapse this section. This section is provided for convenience only, you don't need to worry about it right now! All this information can be edited later on the ``Header`` tab. See `Editing Map Headers <https://huderlem.github.io/porymap/manual/editing-map-header.html>`_.
 
-Allow Running
-	Whether the player can sprint on this map. This can be changed in porymap.
-
-Allow Biking
-	Whether the player can use the bike on this map. This can be changed in porymap.
-
-Allow Escape Rope
-	Whether the user can escape from this map. This can be changed in porymap.
-
-Floor Number
-	The floor number for this map if it is associated with an elevator. This can be changed in porymap.
