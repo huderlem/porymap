@@ -2490,13 +2490,6 @@ void MainWindow::on_groupBox_DiveMapOpacity_toggled(bool on) {
 }
 
 void MainWindow::setDivingMapsVisible(bool visible) {
-    // Qt doesn't change the style of disabled sliders, so we do it ourselves
-    QString stylesheet = visible ? "" : "QSlider::groove:horizontal {border: 1px solid #999999; border-radius: 3px; height: 2px; background: #B1B1B1;}"
-                                        "QSlider::handle:horizontal {border: 1px solid #444444; border-radius: 3px; width: 10px; height: 9px; margin: -5px -1px; background: #5C5C5C; }";
-    ui->slider_DiveEmergeMapOpacity->setStyleSheet(stylesheet);
-    ui->slider_DiveMapOpacity->setStyleSheet(stylesheet);
-    ui->slider_EmergeMapOpacity->setStyleSheet(stylesheet);
-
     // Sync UI toggle elements
     const QSignalBlocker blocker1(ui->groupBox_DiveMapOpacity);
     const QSignalBlocker blocker2(ui->actionDive_Emerge_Map);

@@ -388,3 +388,24 @@ QHeaderView {
   margin: 0px;
   font: 12px;
 }
+
+/* Sliders */
+
+/* Qt doesn't change the style of disabled sliders, so we do it ourselves */
+QSlider::groove:horizontal:disabled {
+    border: 1px solid gray;
+    border-radius: 3px;
+    height: 2px;
+    background: none;
+}
+QSlider::sub-page:horizontal:disabled {
+    background: #B1B1B1;
+}
+QSlider::handle:horizontal:disabled {
+    border: 1px solid #444444;
+    border-radius: 3px;
+    width: 10px;
+    height: 9px;
+    margin: -5px -1px;
+    background: #5C5C5C;
+}
