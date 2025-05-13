@@ -11,7 +11,7 @@
 #include "validator.h"
 #include "eventfilters.h"
 #include "utility.h"
-#include <QMessageBox>
+#include "message.h"
 #include <QDialogButtonBox>
 #include <QCloseEvent>
 #include <QImageReader>
@@ -89,14 +89,10 @@ void TilesetEditor::updateLayout(Layout *layout) {
 
 void TilesetEditor::updateTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel) {
     if (this->hasUnsavedChanges) {
-        QMessageBox::StandardButton result = QMessageBox::question(
-            this,
-            QApplication::applicationName(),
-            "Tileset has been modified, save changes?",
-            QMessageBox::No | QMessageBox::Yes,
-            QMessageBox::Yes);
-        if (result == QMessageBox::Yes)
+        auto result = SaveChangesMessage::show(QStringLiteral("Tileset"), false, this);
+        if (result == QMessageBox::Yes) {
             this->save();
+        }
     }
     this->setTilesets(primaryTilesetLabel, secondaryTilesetLabel);
     this->refresh();
@@ -735,14 +731,11 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         logError(QString("Failed to open image file: '%1'").arg(filepath));
     }
     if (image.width() == 0 || image.height() == 0 || image.width() % 8 != 0 || image.height() % 8 != 0) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import tiles.");
-        msgBox.setInformativeText(QString("The image dimensions (%1 x %2) are invalid. Width and height must be multiples of 8 pixels.")
+        ErrorMessage::show(QStringLiteral("Failed to import tiles."),
+                           QString("The image dimensions (%1 x %2) are invalid. Width and height must be multiples of 8 pixels.")
                                   .arg(image.width())
-                                  .arg(image.height()));
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
+                                  .arg(image.height()),
+                            this);
         return;
     }
 
@@ -752,27 +745,23 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
     int totalTiles = numTilesHigh * numTilesWide;
     int maxAllowedTiles = primary ? Project::getNumTilesPrimary() : Project::getNumTilesTotal() - Project::getNumTilesPrimary();
     if (totalTiles > maxAllowedTiles) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import tiles.");
-        msgBox.setInformativeText(QString("The maximum number of tiles allowed in the %1 tileset is %2, but the provided image contains %3 total tiles.")
+        ErrorMessage::show(QStringLiteral("Failed to import tiles."),
+                           QString("The maximum number of tiles allowed in the %1 tileset is %2, but the provided image contains %3 total tiles.")
                                   .arg(descriptor)
                                   .arg(maxAllowedTiles)
-                                  .arg(totalTiles));
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
+                                  .arg(totalTiles),
+                           this);
         return;
     }
 
     // Ask user to provide a palette for the un-indexed image.
     if (image.colorCount() == 0) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Select Palette for Tiles");
-        msgBox.setInformativeText(QString("The provided image is not indexed. Please select a palette file for the image. An indexed image will be generated using the provided image and palette.")
-                                  .arg(image.colorCount()));
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Warning);
-        msgBox.exec();
+        auto msgBox = new QuestionMessage(QStringLiteral("Select a palette file for this image?"), this);
+        msgBox->setAttribute(Qt::WA_DeleteOnClose);
+        msgBox->setInformativeText(QStringLiteral("The provided image is not indexed. "
+                                                  "An indexed image will be generated using the provided image and palette."));
+        if (msgBox->exec() != QMessageBox::Yes)
+            return;
 
         QString filepath = FileDialog::getOpenFileName(this, "Select Palette for Tiles Image", "", "Palette Files (*.pal *.act *tpl *gpl)");
         if (filepath.isEmpty()) {
@@ -782,13 +771,7 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
         bool error = false;
         QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
         if (error) {
-            QMessageBox msgBox(this);
-            msgBox.setText("Failed to import palette.");
-            QString message = QString("The palette file could not be processed. View porymap.log for specific errors.");
-            msgBox.setInformativeText(message);
-            msgBox.setDefaultButton(QMessageBox::Ok);
-            msgBox.setIcon(QMessageBox::Icon::Critical);
-            msgBox.exec();
+            RecentErrorMessage::show(QStringLiteral("Failed to import palette."), this);
             return;
         }
 
@@ -804,13 +787,7 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset, bool primary) {
 void TilesetEditor::closeEvent(QCloseEvent *event)
 {
     if (this->hasUnsavedChanges) {
-        QMessageBox::StandardButton result = QMessageBox::question(
-            this,
-            QApplication::applicationName(),
-            "Tileset has been modified, save changes?",
-            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
-            QMessageBox::Yes);
-
+        auto result = SaveChangesMessage::show(QStringLiteral("Tileset"), this);
         if (result == QMessageBox::Yes) {
             if (this->save()) {
                 event->accept();
@@ -1062,13 +1039,7 @@ void TilesetEditor::importTilesetMetatiles(Tileset *tileset, bool primary)
     bool error = false;
     QList<Metatile*> metatiles = AdvanceMapParser::parseMetatiles(filepath, &error, primary);
     if (error) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import metatiles from Advance Map 1.92 .bvd file.");
-        QString message = QString("The .bvd file could not be processed. View porymap.log for specific errors.");
-        msgBox.setInformativeText(message);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
+        RecentErrorMessage::show(QStringLiteral("Failed to import metatiles from Advance Map 1.92 .bvd file."), this);
         qDeleteAll(metatiles);
         return;
     }

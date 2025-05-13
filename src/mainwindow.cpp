@@ -3133,11 +3133,7 @@ bool MainWindow::closeProject() {
         return true;
 
     if (this->editor->project->hasUnsavedChanges()) {
-        QuestionMessage msgBox(QStringLiteral("The project has been modified, save changes?"), this);
-        msgBox.addButton(QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Yes);
-
-        auto reply = msgBox.exec();
+        auto reply = SaveChangesMessage::show(QStringLiteral("The project"), this);
         if (reply == QMessageBox::Yes) {
             if (!save())
                 return false;

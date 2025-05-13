@@ -52,6 +52,15 @@ QuestionMessage::QuestionMessage(const QString &message, QWidget *parent) :
     setDefaultButton(QMessageBox::No);
 }
 
+SaveChangesMessage::SaveChangesMessage(const QString &name, bool allowCancel, QWidget *parent) :
+    QuestionMessage(QString("%1 has been modified, save changes?").arg(name), parent)
+{
+    if (allowCancel) {
+        addButton(QMessageBox::Cancel);
+    }
+    setDefaultButton(QMessageBox::Yes);
+}
+
 RecentErrorMessage::RecentErrorMessage(const QString &message, QWidget *parent) :
     ErrorMessage(message, parent)
 {
@@ -63,24 +72,31 @@ void RecentErrorMessage::show(const QString &message, QWidget *parent) {
     auto msgBox = new RecentErrorMessage(message, parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->open();
-};
+}
 
-void ErrorMessage::show(const QString &message, QWidget *parent) {
+void ErrorMessage::show(const QString &message, const QString &informativeText, QWidget *parent) {
     auto msgBox = new ErrorMessage(message, parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->setInformativeText(informativeText);
     msgBox->open();
-};
+}
 
-void WarningMessage::show(const QString &message, QWidget *parent) {
+void WarningMessage::show(const QString &message, const QString &informativeText, QWidget *parent) {
     auto msgBox = new WarningMessage(message, parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->setInformativeText(informativeText);
     msgBox->open();
-};
+}
 
 int QuestionMessage::show(const QString &message, QWidget *parent) {
     QuestionMessage msgBox(message, parent);
     return msgBox.exec();
-};
+}
+
+int SaveChangesMessage::show(const QString &name, bool allowCancel, QWidget *parent) {
+    SaveChangesMessage msgBox(name, allowCancel, parent);
+    return msgBox.exec();
+}
 
 void InfoMessage::show(const QString &message, const QString &informativeText, QWidget *parent) {
     auto msgBox = new InfoMessage(message, parent);
