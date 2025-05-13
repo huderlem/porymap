@@ -23,7 +23,7 @@ When launching Porymap for the first time, you will be greeted with the followin
 
     Porymap Empty Window
 
-The first thing we'll do is open a Gen 3 decompilation project with *File -> Open Project…* (``Ctrl+O``).  A folder selection dialog will pop up.  Choose the location of your existing decompilation project.  After doing so, Porymap will take a few seconds to load the project, and the main window should now be displaying the first map. (In ``pokeemerald``, it's Petalburg City.)
+The first thing we'll do is open a Gen 3 decompilation project with ``File > Open Project…`` (``Ctrl+O``).  A folder selection dialog will pop up.  Choose the location of your existing decompilation project.  After doing so, Porymap will take a few seconds to load the project, and the main window should now be displaying the first map. (In ``pokeemerald``, it's Petalburg City.)
 
 
 .. figure:: images/introduction/porymap-loaded-project.png
@@ -31,7 +31,10 @@ The first thing we'll do is open a Gen 3 decompilation project with *File -> Ope
 
     Porymap Main Window
 
-Now, let's make our first basic edit using Porymap. We'll use the Pencil Tool to draw some more flowers on the grass in Petalburg City.  First, make sure the Pencil Tool is selected.  You can click the Pencil Tool button, press the ``N`` shortcut, or select *Tools -> Pencil*.  The various painting Tool buttons are found on the left side of the toolbar above the map area.
+.. |button-pencil| image:: images/introduction/pencil.png
+   :height: 24
+
+Now, let's make our first basic edit using Porymap. We'll use the Pencil Tool to draw some more flowers on the grass in Petalburg City.  First, make sure the Pencil Tool is selected.  You can click the |button-pencil| button, press the ``N`` shortcut, or select ``Tools > Pencil``.  The various painting Tool buttons are found on the left side of the toolbar above the map area.
 
 .. figure:: images/introduction/tool-buttons.png
     :alt: Tool Buttons
@@ -42,6 +45,8 @@ Next, select the flower metatile from the Metatile Selection panel by left-click
 
 .. figure:: images/introduction/metatile-selection-panel.png
     :alt: Metatile Selection Panel
+    :width: 50%
+    :align: center
 
     Metatile Selection Panel
 
@@ -59,7 +64,10 @@ Place some flowers in Petalburg City by left-clicking to paint on the map area.
 
     Flowery Petalburg City
 
-That looks great!  Save your changes with *File -> Save* (``Ctrl+S``).  Finally, compile the ROM and see the results in-game.
+That looks great!  Save your changes with ``File > Save`` (``Ctrl+S``). Finally, compile the ROM and see the results in-game.
+
+.. note::
+    When you're playing the game and you save, a portion of the overworld is also saved, so if you've saved on a map that you were editing in Porymap you will need to reload the map in-game. The first time you save in Porymap you will see a message reminding you of this.
 
 .. note::
     When re-compiling your ROM, it is not recommended to use ``NODEP=1``, since that can result in data changes being ignored.
