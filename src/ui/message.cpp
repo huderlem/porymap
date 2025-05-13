@@ -7,6 +7,13 @@ Message::Message(QMessageBox::Icon icon, const QString &text, QMessageBox::Stand
     QMessageBox(icon, QApplication::applicationName(), text, buttons, parent)
 {
     setWindowModality(Qt::WindowModal);
+
+    // QMessageBoxes with stylesheets are not allowed to be native (see Qt's QMessageBoxPrivate::canBeNativeDialog).
+    // We're preferring the native dialog appearance over Porymap's themes here.
+    // Frustratingly, it doesn't matter what's in the stylesheet. Even a stylesheet with just comments will trigger this,
+    // and manually setting the Message's stylesheet to an empty string doesn't undo this, so we need to explicitly clear
+    // the stylesheet attribute in order to use native dialogs.
+    setAttribute(Qt::WA_StyleSheet, false);
 }
 
 ErrorMessage::ErrorMessage(const QString &message, QWidget *parent) :
@@ -75,8 +82,9 @@ int QuestionMessage::show(const QString &message, QWidget *parent) {
     return msgBox.exec();
 };
 
-void InfoMessage::show(const QString &message, QWidget *parent) {
+void InfoMessage::show(const QString &message, const QString &informativeText, QWidget *parent) {
     auto msgBox = new InfoMessage(message, parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
+    msgBox->setInformativeText(informativeText);
     msgBox->open();
-};
+}

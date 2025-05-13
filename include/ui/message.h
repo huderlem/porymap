@@ -38,7 +38,8 @@ public:
 class InfoMessage : public Message {
 public:
     InfoMessage(const QString &message, QWidget *parent);
-    static void show(const QString &message, QWidget *parent);
+    static void show(const QString &message, const QString &informativeText, QWidget *parent);
+    static void show(const QString &message, QWidget *parent) { InfoMessage::show(message, QString(), parent); }
 };
 
 // Basic question message with a 'Yes' and 'No' button.

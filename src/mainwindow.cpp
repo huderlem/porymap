@@ -1895,7 +1895,8 @@ bool MainWindow::save(bool currentOnly) {
 
     if (success && !porymapConfig.shownInGameReloadMessage) {
         // Show a one-time warning that the user may need to reload their map to see their new changes.
-        InfoMessage::show(QStringLiteral("Reload your map in-game!\n\nIf your game is currently saved on a map you have edited, "
+        InfoMessage::show(QStringLiteral("Reload your map in-game!"),
+                          QStringLiteral("If your game is currently saved on a map you have edited, "
                                          "the changes may not appear until you leave the map and return."),
                           this);
         porymapConfig.shownInGameReloadMessage = true;
