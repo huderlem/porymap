@@ -19,7 +19,7 @@ Map Name
 	A unique name for your new map. This name won't appear in-game. It will appear in Porymap's map list and various dropdowns, and will be used to create a unique ``MAP_NAME`` ID for your new map. For the in-game map name, see ``Location Name`` under ``Header Data``.
 
 Map Group
-	Which map group the new map will belong to. You can either select an existing map group, or enter the name of a new map group that you'd like Porymap to create. In Porymap, the only place you'll see the map group is on the ``Groups`` tab of the map list. The map group you choose is mostly organizational, but you may have some features in your game that rely on maps being grouped together. For more on map groups, see `Navigation <https://huderlem.github.io/porymap/manual/navigation#map-list.html>`_.
+	Which map group the new map will belong to. You can either select an existing map group, or enter the name of a new map group that you'd like Porymap to create. In Porymap, the only place you'll see the map group is on the ``Groups`` tab of the map list. The map group you choose is mostly organizational, but you may have some features in your game that rely on maps being grouped together. For more on map groups, see :ref:`Map List <navigation-map-list>`.
 
 Layout ID
 	The ID name for your new map's layout. This ID name will be updated automatically as you enter the name of your new map. If you're creating an entirely new map, this ID name should be unique. If you'd to like to create a new map using an existing layout, select the ID from the dropdown. Selecting an existing layout ID will disable the dimensions and tilesets settings, because these are determined by the layout.

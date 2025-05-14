@@ -1,3 +1,5 @@
+.. _editing-wild-encounters:
+
 ***********************
 Editing Wild Encounters
 ***********************

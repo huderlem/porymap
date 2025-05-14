@@ -4,93 +4,134 @@ Navigation
 
 Porymap can seem daunting at first because it has many buttons, tabs, panes, and windows.  Let's briefly go over the different parts of the application.
 
+.. _navigation-map-list:
+
 Map List
 --------
 
-The map list contains a hierarchical view of all of the maps in your project.  It is situated on the left side of Porymap's main window.  To switch to a different map, simply double-click or press ``Enter`` on the desired map's name.  Larger maps can take a few seconds to load the first time, so be patient.
+The map list contains a hierarchical view of all of the maps in your project.  It is situated on the left side of Porymap's main window.  To switch to a different map, simply double-click on the desired map's name.  Larger maps can take a few seconds to load the first time, so be patient.
 
 .. figure:: images/navigation/map-list-pane.png
     :alt: Map List Pane
+    :width: 40%
+    :align: center
 
     Map List Pane
 
-By default, the maps are organized by their map groups.  The *Sort Map List* |sort-map-list-button| button gives you some other options to organize the maps:
+Tabs
+^^^^
 
-Sort by Group
-    Organizes by map groups.
+The map list has 3 tabs that each organize your maps a bit differently.
 
-Sort by Area
-    Organizes by region map section.
+Groups
+    Maps are sorted by "map groups". Next to each map name you will see a ``[AA.BB]`` prefix. ``AA`` will be the map group number, and ``BB`` will be the map number. These are the numbers you can get in your project using the ``MAP_GROUP`` and ``MAP_NUM`` macros, respectively.
 
-Sort by Layout
-    Organizes by map layouts. Most layouts are only used by a single map, but layouts like the Pokemon Center are used by many maps.
+Locations
+    Maps are sorted by their ``Location`` value from the ``Header`` tab. This value may also be referred to as a "region map section" or "mapsec" for short, because it is used to identify maps for the region map. Maps with the same ``Location`` will have the same in-game name, if it appears.
 
-Right-clicking on the folder name in any of the sort modes will bring up a dialog to create a new map in that folder. For more details, see: :ref:`Creating New Maps <creating-new-maps>`.
+Layouts
+    Maps are sorted by their ``Layout``. From this tab you can also open and edit layouts directly. Most layouts are only used by a single map, but layouts like the Pokémon Center are used by many maps. Some maps have multiple layouts that they can switch between, like ``Route111`` using both ``Route111_Layout`` and ``Route111_NoMirageTower_Layout``. 
 
-The *Expand All* |expand-all-button| and *Collapse All* |collapse-all-button| buttons will expand or collapse all of the map folders.
 
-Type in the filter to show maps that contain the filter text.
+On any of the tabs, right-clicking on a folder name or map name will bring up some helpful options. For instance, you can right-click on a folder to add a new map to that folder, or right-click on a map to duplicate that map.
+
+Buttons
+^^^^^^^
+
+Under each tab you'll also find a set of buttons that operate on the current map list tab.
+
+ - |folder-add| Adds a new folder
+ - |folder-eye| Hides empty folders
+ - |folder-expand| Expands all of the map folders
+ - |folder-collapse| Collapses all of the map folders
+ - |lock| Allows you to rename folders and reorganize the map list; this is is only accessible on the ``Groups`` tab.
+
+.. |folder-add| image:: images/navigation/folder-add.png
+   :height: 24
+
+.. |folder-eye| image:: images/navigation/folder-eye.png
+   :height: 24
+
+.. |folder-expand| image:: images/navigation/folder-expand.png
+   :height: 24
+
+.. |folder-collapse| image:: images/navigation/folder-collapse.png
+   :height: 24
+
+.. |lock| image:: images/navigation/lock.png
+   :height: 24
+
+To the left of the tabs the |button-navigation| buttons will let you go back/forward to previous maps you had open, and to the right of the tabs the |button-add| button will open the dialog to create a new map (see :ref:`Creating New Maps <creating-new-maps>`).
+
+.. |button-add| image:: images/navigation/button-add.png
+   :height: 24
+
+.. |button-navigation| image:: images/navigation/button-navigation.png
+   :height: 24
+
+Type in the filter to show maps/folders that contain the filter text.
 
 .. figure:: images/navigation/filter-map-list.png
     :alt: Filter Map List
+    :width: 40%
+    :align: center
+
 
     Filter Map List
 
-.. |sort-map-list-button|
-   image:: images/navigation/sort-map-list-button.png
+Status Icons
+^^^^^^^^^^^^
 
-.. |expand-all-button|
-   image:: images/navigation/expand-all-button.png
+Next to each map/layout name you'll see an icon that indicates its current status.
 
-.. |collapse-all-button|
-   image:: images/navigation/collapse-all-button.png
+  - |map-icon-unloaded| Has not been loaded
+  - |map-icon-loaded| Has been loaded
+  - |map-icon-open| Is currently open
+  - |map-icon-unsaved| Has unsaved changes
+  - |map-icon-error| An error occurred, Porymap cannot use this map elsewhere in the project. See your error log file for more details.
+
+.. |map-icon-unloaded| image:: images/navigation/map-icon-unloaded.png
+   :height: 24
+
+.. |map-icon-loaded| image:: images/navigation/map-icon-loaded.png
+   :height: 24
+
+.. |map-icon-open| image:: images/navigation/map-icon-open.png
+   :height: 24
+
+.. |map-icon-unsaved| image:: images/navigation/map-icon-unsaved.png
+   :height: 24
+
+.. |map-icon-error| image:: images/navigation/map-icon-error.png
+   :height: 24
 
 Main Window
 -----------
 
-Most of the work you do in Porymap is in the center Main Window.  It features 4 tabbed views which each have different purposes, but they all operate within the context of the currently-opened map in the Map List.  Let's quickly summarize what each of these tabs is used for.
+Most of the work you do in Porymap is in the center Main Window.  It features 5 tabbed views which each have different purposes, but they all operate within the context of the currently-opened map in the Map List.  Let's quickly summarize what each of these tabs is used for.
 
 .. figure:: images/navigation/main-window-tabs.png
     :alt: Main Window Tabs
+    :width: 90%
+    :align: center
 
     Main Window Tabs
 
-Map Tab
-    Paint metatiles and their collision properties to change the appearance of the map and how the player can walk around the map.  When the Map Tab is selected, the pane on the right side of the map will have two tabs: Metatiles and Collision.  You can switch between these to paint either metatiles or collision properties onto the map.
+:ref:`Map <editing-map-tiles>`
+    Paint metatiles and their collision properties to change the appearance of the map and how the player can walk around the map.
 
-Events Tab
+:ref:`Events <editing-map-events>`
     Edit the interactable events on the map.  This includes things like objects, warps, script triggers, and more.
 
-Header Tab
+:ref:`Header <editing-map-headers>`
     Choose various gameplay properties to set for the map. This includes things like background music and weather.
 
-Connections Tab
+:ref:`Connections <editing-map-connections>`
     Change how the map connects with surrounding maps when the player walks from one to another.
 
-Wild Pokémon Tab
+:ref:`Wild Pokémon <editing-wild-encounters>`
     Edit the wild Pokémon available in the map.
 
-Tileset Editor
---------------
 
-The Tileset Editor can be opened with *File -> Tileset Editor* (``Ctrl+T``).  
-Check out :ref:`The Tileset Editor <tse-ref>` section for more details.
-
-.. figure:: images/navigation/tileset-editor.png
-    :alt: Tileset Editor
-
-    Tileset Editor
-
-Region Map Editor
------------------
-
-The Region Map Editor can be opened with *File -> Region Map Editor* (``Ctrl+M``). 
-This window will allow you to modify the look and layout of maps on the game's region map.
-Check out :ref:`The Region Map Editor <rme-ref>` section for more details.
-
-.. figure:: images/navigation/region-map-editor.png
-    :alt: Region Map Editor
-
-    Region Map Editor
-
-We covered all of the basic views and windows of porymap above.  Next, let's learn how to use Porymap's features to the fullest when editing map tiles.
+.. note::
+    If you have a layout open, only the ``Map`` tab will be active. Additionally, the Wild Pokémon tab may be disabled if the data failed to load, or if you disabled it under ``Project Settings``.

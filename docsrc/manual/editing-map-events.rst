@@ -1,3 +1,5 @@
+.. _editing-map-events:
+
 ******************
 Editing Map Events
 ******************

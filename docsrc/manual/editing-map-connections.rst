@@ -1,3 +1,5 @@
+.. _editing-map-connections:
+
 ***********************
 Editing Map Connections
 ***********************

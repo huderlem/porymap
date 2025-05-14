@@ -1,3 +1,5 @@
+.. _editing-map-headers:
+
 *******************
 Editing Map Headers
 *******************
