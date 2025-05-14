@@ -117,8 +117,16 @@ Most of the work you do in Porymap is in the center Main Window.  It features 5 
 
     Main Window Tabs
 
-:ref:`Map <editing-map-tiles>`
-    Paint metatiles and their collision properties to change the appearance of the map and how the player can walk around the map.
+Map
+    This tab is further divided into 3 tabs, accessible from the panel on the right
+
+    .. figure:: images/navigation/map-tabs.png
+        :alt: Map Tabs
+        :width: 40%
+
+    - :ref:`Metatiles <editing-map-tiles>`: Change the map's visual appearance by painting metatiles and setting the map's layout and tilesets.
+    - :ref:`Collision <editing-map-collisions>`:  Determine how the player can navigate the map by painting collision and elevation values.
+    - :ref:`Prefabs <editing-map-tiles-prefabs>`: Save groups of metatiles/collision for more convenient painting.
 
 :ref:`Events <editing-map-events>`
     Edit the interactable events on the map.  This includes things like objects, warps, script triggers, and more.

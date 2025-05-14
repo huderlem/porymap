@@ -168,6 +168,9 @@ Undo & Redo
 
 When painting metatiles, you can undo and redo actions you take.  This makes it very easy to fix mistakes or go back in time.  Undo can be performed with ``Ctrl+Z`` or *Edit -> Undo*.  Redo can be performed with ``Ctrl+Y`` or *Edit -> Redo*.
 
+
+.. _editing-map-tiles-prefabs:
+
 Prefabs
 -------
 
