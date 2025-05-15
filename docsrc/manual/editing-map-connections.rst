@@ -8,6 +8,7 @@ Maps can be connected together so that the player can seamlessly walk between th
 
 .. figure:: images/editing-map-connections/map-connections.png
     :alt: Map Connections View
+    :align: center
 
     Map Connections View
 
@@ -40,4 +41,4 @@ You can select the ``Show Emerge/Dive Maps`` checkbox to view your connected div
 Mirror Connections
 ------------------
 
-An extremely useful feature is the *Mirror to Connecting Maps* checkbox in the top-right corner.  Connections are one-way, which means that you must keep the two connections in sync between the two maps.  For example, Petalburg City has a west connection to Route 104, and Route 104 has an east connection to Petalburg City.  If *Mirror to Connecting Maps* is enabled, then Porymap will automatically update both sides of the connection.  Be sure to *File -> Save All* (``Ctrl+Shift+S``) when saving, since you will need to save both maps' connections.
+An extremely useful feature is the *Mirror to Connecting Maps* checkbox in the top-right corner.  Connections are one-way, which means that you must keep the two connections in sync between the two maps.  For example, Petalburg City has a west connection to Route 104, and Route 104 has an east connection to Petalburg City.  If *Mirror to Connecting Maps* is enabled, then Porymap will automatically update both sides of the connection.  Be sure to ``File > Save All`` (``Ctrl+Shift+S``) when saving, since you will need to save both maps' connections.

@@ -8,6 +8,8 @@ The map header is a collection of miscellaneous properties that belong to a map.
 
 .. figure:: images/editing-map-header/map-header.png
     :alt: Map Header View
+    :width: 80%
+    :align: center
 
     Map Header View
 
@@ -16,6 +18,9 @@ Song
 
 Location
     The region map section to which the map belongs.
+
+Location Name
+    The in-game name that can appear for this map. This name is shared with all maps that use the same ``Location``.
 
 Requires Flash
     Whether or not the map has limited vision which the HM move Flash can expand.
@@ -42,7 +47,11 @@ Allow Dig & Escape Rope
     Controls whether the Dig field move or the Escape Rope item can be used.
 
 Floor Number
-    Exclusive to pokefirered. Used to append a number to the map name popup. Negative values are prefixed with "B" for basement, and floor 127 is "Rooftop".
+    Used to append a number to the map name popup. Negative values are prefixed with "B" for basement, and floor 127 is "Rooftop".
 
-Custom Fields
-    You can enter custom fields if you need support for additional fields in your project.  They can also be useful for keeping notes.
+Custom Attributes
+    You can enter new data if you need support for additional fields in your project.  They can also be useful for keeping notes. See :ref:`Custom Attributes <custom-attributes>`
+
+
+.. note::
+    ``Allow Running``, ``Allow Biking``, and ``Allow Dig & Escape Rope`` are disabled by default for pokeruby projects. ``Floor Number`` is disabled by default for pokeruby and pokeemerald projects. Their behavior is normally handled some other way, or doesn't exist. If you have modified your pokeruby/pokeemerald project to use one of these disabled fields, they can be enabled on the ``Maps`` tab of ``Options > Project Settings...``.
