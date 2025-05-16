@@ -4,8 +4,7 @@
 #include "config.h"
 #include "log.h"
 #include "filedialog.h"
-
-#include <QMessageBox>
+#include "message.h"
 
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
@@ -165,27 +164,11 @@ void PaletteEditor::on_actionImport_Palette_triggered()
     bool error = false;
     QList<QRgb> palette = PaletteUtil::parse(filepath, &error);
     if (error) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import palette.");
-        QString message = QString("The palette file could not be processed. View porymap.log for specific errors.");
-        msgBox.setInformativeText(message);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
+        RecentErrorMessage::show(QStringLiteral("Failed to import palette."), this);
         return;
     }
-
-    if (palette.length() < this->numColors) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Failed to import palette.");
-        QString message = QString("The palette file has %1 colors, but it must have %2 colors.")
-                                    .arg(palette.length())
-                                    .arg(this->numColors);
-        msgBox.setInformativeText(message);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Icon::Critical);
-        msgBox.exec();
-        return;
+    while (palette.length() < this->numColors) {
+        palette.append(0);
     }
 
     const int paletteId = ui->spinBox_PaletteId->value();

@@ -503,7 +503,7 @@ bool Tileset::loadTilesImage(QImage *importedImage) {
     } else if (colorCount < 16) {
         QVector<QRgb> colorTable = image.colorTable();
         for (int i = colorTable.length(); i < 16; i++) {
-            colorTable.append(Qt::black);
+            colorTable.append(0);
         }
         image.setColorTable(colorTable);
     }
