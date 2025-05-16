@@ -3,6 +3,7 @@
 #include "movablerect.h"
 #include "config.h"
 #include "utility.h"
+#include "message.h"
 
 #include "ui_resizelayoutpopup.h"
 
@@ -70,10 +71,11 @@ QVariant BoundedPixmapItem::itemChange(GraphicsItemChange change, const QVariant
     ************************************************************************
  ******************************************************************************/
 
-ResizeLayoutPopup::ResizeLayoutPopup(QWidget *parent, Editor *editor) :
+ResizeLayoutPopup::ResizeLayoutPopup(QWidget *parent, Layout *layout, Project *project) :
     QDialog(parent),
     parent(parent),
-    editor(editor),
+    layout(layout),
+    project(project),
     ui(new Ui::ResizeLayoutPopup)
 {
     ui->setupUi(this);
@@ -107,11 +109,10 @@ void ResizeLayoutPopup::on_buttonBox_clicked(QAbstractButton *button) {
 ///   (1) pixmap representing the current layout / not resizable / drag-movable
 ///   (1) layout outline / resizable / not movable
 void ResizeLayoutPopup::setupLayoutView() {
-    if (!this->editor || !this->editor->layout) return;
+    if (!this->layout || !this->project) return;
 
     // Border stuff
-    bool bordersEnabled = projectConfig.useCustomBorderSize;
-    if (bordersEnabled) {
+    if (projectConfig.useCustomBorderSize) {
         this->ui->spinBox_borderWidth->setMinimum(1);
         this->ui->spinBox_borderHeight->setMinimum(1);
         this->ui->spinBox_borderWidth->setMaximum(MAX_BORDER_WIDTH);
@@ -119,15 +120,14 @@ void ResizeLayoutPopup::setupLayoutView() {
     } else {
         this->ui->frame_border->setVisible(false);
     }
-    this->ui->spinBox_borderWidth->setValue(this->editor->layout->getBorderWidth());
-    this->ui->spinBox_borderHeight->setValue(this->editor->layout->getBorderHeight());
+    this->ui->spinBox_borderWidth->setValue(this->layout->getBorderWidth());
+    this->ui->spinBox_borderHeight->setValue(this->layout->getBorderHeight());
 
     // Layout stuff
-    QPixmap pixmap = this->editor->layout->pixmap;
-    this->layoutPixmap = new BoundedPixmapItem(pixmap);
+    this->layoutPixmap = new BoundedPixmapItem(this->layout->pixmap);
     this->scene->addItem(layoutPixmap);
-    int maxWidth = this->editor->project->getMaxMapWidth();
-    int maxHeight = this->editor->project->getMaxMapHeight();
+    int maxWidth = this->project->getMaxMapWidth();
+    int maxHeight = this->project->getMaxMapHeight();
     QGraphicsRectItem *cover = new QGraphicsRectItem(-maxWidth * 8, -maxHeight * 8, maxWidth * 16, maxHeight * 16);
     this->scene->addItem(cover);
 
@@ -138,33 +138,25 @@ void ResizeLayoutPopup::setupLayoutView() {
 
     static bool layoutSizeRectVisible = true;
 
-    this->outline = new ResizableRect(this, &layoutSizeRectVisible, this->editor->layout->getWidth(), this->editor->layout->getHeight(), qRgb(255, 0, 255));
+    this->outline = new ResizableRect(this, &layoutSizeRectVisible, this->layout->getWidth(), this->layout->getHeight(), qRgb(255, 0, 255));
     this->outline->setZValue(Editor::ZValue::ResizeLayoutPopup); // Ensure on top of view
     this->outline->setLimit(cover->rect().toAlignedRect());
     connect(outline, &ResizableRect::rectUpdated, [=](QRect rect){
         // Note: this extra limit check needs access to the project values, so it is done here and not ResizableRect::mouseMoveEvent
-        // Upper limits: maximum metatiles in a map formula:
-        //     max = (width + 15) * (height + 14)
-        // This limit can be found in fieldmap.c in pokeruby/pokeemerald/pokefirered.
-        int size = editor->project->getMapDataSize(rect.width() / 16, rect.height() / 16);
-        int maxSize = editor->project->getMaxMapDataSize();
+        int size = this->project->getMapDataSize(rect.width() / 16, rect.height() / 16);
+        int maxSize = this->project->getMaxMapDataSize();
         if (size > maxSize) {
-            QSize addition = editor->project->getMapSizeAddition();
-            QString errorText = QString("The maximum layout width and height is the following: (width + %1) * (height + %2) <= %3\n"
-                    "The specified layout width and height was: (%4 + %1) * (%5 + %2) = %6")
-                        .arg(addition.width())
-                        .arg(addition.height())
-                        .arg(maxSize)
-                        .arg(rect.width() / 16)
-                        .arg(rect.height() / 16)
-                        .arg(size);
-            QMessageBox warning;
-            warning.setIcon(QMessageBox::Warning);
-            warning.setText("The specified width and height are too large.");
-            warning.setInformativeText(errorText);
-            warning.setStandardButtons(QMessageBox::Ok);
-            warning.setDefaultButton(QMessageBox::Ok);
-            warning.exec();
+            QSize addition = this->project->getMapSizeAddition();
+            WarningMessage::show(QStringLiteral("The specified width and height are too large."),
+                                 QString("The maximum layout width and height is the following: (width + %1) * (height + %2) <= %3\n"
+                                         "The specified layout width and height was: (%4 + %1) * (%5 + %2) = %6")
+                                            .arg(addition.width())
+                                            .arg(addition.height())
+                                            .arg(maxSize)
+                                            .arg(rect.width() / 16)
+                                            .arg(rect.height() / 16)
+                                            .arg(size),
+                                this);
             // adjust rect to last accepted size
             rect = this->scene->getValidRect();
         }

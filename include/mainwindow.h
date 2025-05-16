@@ -34,6 +34,7 @@
 #include "mapheaderform.h"
 #include "newlayoutdialog.h"
 #include "message.h"
+#include "resizelayoutpopup.h"
 
 
 
@@ -253,8 +254,8 @@ private slots:
 
     void on_actionTileset_Editor_triggered();
 
-    void moveEvent(QMoveEvent *event);
-    void closeEvent(QCloseEvent *);
+    void moveEvent(QMoveEvent *event) override;
+    void closeEvent(QCloseEvent *) override;
 
     void eventTabChanged(int index);
 
@@ -326,6 +327,7 @@ private:
     QPointer<WildMonChart> wildMonChart = nullptr;
     QPointer<WildMonSearch> wildMonSearch = nullptr;
     QPointer<QuestionMessage> fileWatcherWarning = nullptr;
+    QPointer<ResizeLayoutPopup> resizeLayoutPopup = nullptr;
 
     QAction *undoAction = nullptr;
     QAction *redoAction = nullptr;

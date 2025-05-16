@@ -9,10 +9,12 @@
 #include <QDialogButtonBox>
 
 class ResizableRect;
-class Editor;
 namespace Ui {
     class ResizeLayoutPopup;
 }
+
+class Layout;
+class Project;
 
 
 
@@ -68,7 +70,7 @@ class ResizeLayoutPopup : public QDialog
     Q_OBJECT
 
 public:
-    ResizeLayoutPopup(QWidget *parent, Editor *editor);
+    ResizeLayoutPopup(QWidget *parent, Layout *layout, Project *project);
     ~ResizeLayoutPopup();
 
     void setupLayoutView();
@@ -96,7 +98,8 @@ private slots:
 
 private:
     QWidget *parent = nullptr;
-    Editor *editor = nullptr;
+    QPointer<Layout> layout = nullptr;
+    QPointer<Project> project = nullptr;
 
     Ui::ResizeLayoutPopup *ui;
 

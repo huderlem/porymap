@@ -1755,7 +1755,11 @@ void Editor::displayMapEvents() {
     events_group = new QGraphicsItemGroup;
     scene->addItem(events_group);
 
-    for (const auto &event : map->getEvents()) {
+    const auto events = map->getEvents();
+    if (!events.isEmpty()) {
+        this->selectedEvents.append(events.first());
+    }
+    for (const auto &event : events) {
         addEventPixmapItem(event);
     }
 

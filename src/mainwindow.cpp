@@ -1215,6 +1215,8 @@ bool MainWindow::setLayout(const QString &layoutId) {
     return true;
 }
 
+// TODO: This is being used to do more work than necessary (e.g. when a layout is resized,
+//       we don't need to be recreating the metatile selector, all the events, etc.)
 void MainWindow::redrawMapScene() {
     editor->displayLayout();
     editor->displayMap();
@@ -2623,8 +2625,12 @@ void MainWindow::onMapRulerStatusChanged(const QString &status) {
 
 void MainWindow::moveEvent(QMoveEvent *event) {
     QMainWindow::moveEvent(event);
-    if (label_MapRulerStatus && label_MapRulerStatus->isVisible() && label_MapRulerStatus->parentWidget())
+    if (label_MapRulerStatus && label_MapRulerStatus->isVisible() && label_MapRulerStatus->parentWidget()) {
         label_MapRulerStatus->move(label_MapRulerStatus->parentWidget()->mapToGlobal(QPoint(6, 6)));
+    }
+    if (this->resizeLayoutPopup) {
+        this->resizeLayoutPopup->resetPosition();
+    }
 }
 
 void MainWindow::on_action_Export_Map_Image_triggered() {
@@ -2768,17 +2774,15 @@ void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &
 }
 
 void MainWindow::on_pushButton_ChangeDimensions_clicked() {
-    if (!editor || !editor->layout) return;
+    if (this->resizeLayoutPopup || !this->editor->layout || !this->editor->project) return;
 
-    ResizeLayoutPopup popup(this->ui->graphicsView_Map, this->editor);
-    popup.show();
-    popup.setupLayoutView();
-    if (popup.exec() == QDialog::Accepted) {
+    this->resizeLayoutPopup = new ResizeLayoutPopup(this->ui->graphicsView_Map, this->editor->layout, this->editor->project);
+    this->resizeLayoutPopup->show();
+    this->resizeLayoutPopup->setupLayoutView();
+    if (this->resizeLayoutPopup->exec() == QDialog::Accepted) {
         Layout *layout = this->editor->layout;
-        Map *map = this->editor->map;
-
-        QMargins result = popup.getResult();
-        QSize borderResult = popup.getBorderResult();
+        QMargins result = this->resizeLayoutPopup->getResult();
+        QSize borderResult = this->resizeLayoutPopup->getBorderResult();
         QSize oldLayoutDimensions(layout->getWidth(), layout->getHeight());
         QSize oldBorderDimensions(layout->getBorderWidth(), layout->getBorderHeight());
         if (!result.isNull() || (borderResult != oldBorderDimensions)) {
@@ -2795,6 +2799,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
             ));
         }
         // If we're in map-editing mode, adjust the events' position by the same amount.
+        Map *map = this->editor->map;
         if (map) {
             auto events = map->getEvents();
             int deltaX = result.left();
@@ -2804,6 +2809,7 @@ void MainWindow::on_pushButton_ChangeDimensions_clicked() {
             }
         }
     }
+    this->resizeLayoutPopup->deleteLater();
 }
 
 void MainWindow::setSmartPathsEnabled(bool enabled)
