@@ -73,6 +73,7 @@ public:
     void setRoot(const QString&);
 
     const QStringList& mapNames() const { return this->alphabeticalMapNames; }
+    QStringList getMapNamesByGroup() const;
     bool isKnownMap(const QString &mapName) const { return this->maps.contains(mapName); }
     bool isErroredMap(const QString &mapName) const { return this->erroredMaps.contains(mapName); }
     bool isLoadedMap(const QString &mapName) const { return this->loadedMapNames.contains(mapName); }

@@ -878,7 +878,7 @@ bool MainWindow::setInitialMap() {
     }
 
     // Failed to open recent map/layout, or no recent map/layout. Try opening maps then layouts sequentially.
-    for (const auto &name : editor->project->mapNames()) {
+    for (const auto &name : editor->project->getMapNamesByGroup()) {
         if (name != recent && setMap(name))
             return true;
     }

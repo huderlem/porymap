@@ -2017,6 +2017,16 @@ QStringList Project::getLayoutNames() const {
     return names;
 }
 
+QStringList Project::getMapNamesByGroup() const {
+    QStringList names;
+    for (const auto &groupName : this->groupNames) {
+        for (const auto &groupMapNames : this->groupNameToMapNames.value(groupName)) {
+            names.append(groupMapNames);
+        }
+    }
+    return names;
+}
+
 bool Project::isUnsavedMap(const QString &mapName) const {
     Map* map = this->maps.value(mapName);
     return map ? map->hasUnsavedChanges() : false;
