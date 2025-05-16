@@ -680,7 +680,6 @@ void LayoutPixmapItem::select(QGraphicsSceneMouseEvent *event) {
                     selection.append(QPoint(x, y));
                 }
             }
-            logInfo(QString("selected (%1, %2) -> (%3, %4)").arg(x1).arg(y1).arg(x2).arg(y2));
         }
     }
 }
