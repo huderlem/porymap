@@ -3111,9 +3111,11 @@ bool MainWindow::closeSupplementaryWindows() {
 
     // Attempt to close any visible windows (excluding the main window), giving each a chance to abort the process.
     for (const auto &widget : QApplication::topLevelWidgets()) {
-        if (widget != this && widget->isWindow() && widget->isVisible()) {
+        if (widget != this && widget->isWindow()) {
             // Make sure the window is raised and activated before closing in case it has a confirmation prompt.
-            openSubWindow(widget);
+            if (widget->isVisible()) {
+                openSubWindow(widget);
+            }
             if (!widget->close()) {
                 QString message = QStringLiteral("Aborted project close");
                 if (widget && !widget->objectName().isEmpty()) {
@@ -3132,11 +3134,11 @@ bool MainWindow::closeSupplementaryWindows() {
 }
 
 bool MainWindow::closeProject() {
-    if (!closeSupplementaryWindows())
-        return false;
-
     if (!isProjectOpen())
         return true;
+
+    if (!closeSupplementaryWindows())
+        return false;
 
     if (this->editor->project->hasUnsavedChanges()) {
         auto reply = SaveChangesMessage::show(QStringLiteral("The project"), this);
