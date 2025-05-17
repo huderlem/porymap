@@ -369,9 +369,10 @@ QString Tileset::getExpectedDir()
 
 QString Tileset::getExpectedDir(QString tilesetName, bool isSecondary)
 {
+    const QString basePath = isSecondary ? projectConfig.getFilePath(ProjectFilePath::data_secondary_tilesets_folders)
+                                         : projectConfig.getFilePath(ProjectFilePath::data_primary_tilesets_folders);
+
     static const QRegularExpression re("([a-z])([A-Z0-9])");
-    const QString category = isSecondary ? "secondary" : "primary";
-    const QString basePath = projectConfig.getFilePath(ProjectFilePath::data_tilesets_folders) + category + "/";
     const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
     return basePath + tilesetName.replace(prefix, "").replace(re, "\\1_\\2").toLower();
 }
