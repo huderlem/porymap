@@ -8,7 +8,7 @@ This is where you edit the region maps for your game.  You are able to edit the
 background tilemap, the layout of map sections, and the array of map section entries 
 which determines the dimensions of each section.
 
-To open the region map editor, navigate to *Tools -> Region Map Editor* from
+To open the region map editor, navigate to ``Tools > Region Map Editor`` from
 porymap's main window. There is also a keyboard shortcut which is by default ``Ctrl+M``.
 
 When you first open the region map editor, you will need to configure porymap to 
@@ -86,14 +86,14 @@ Background Image Tab
 When this tab is selected, you can draw on the region map.  Select tiles from
 the tile selector on the right.  You can single-click or drag your mouse around 
 to paint the selected tile onto the region map image.  If you make a mistake, or 
-are unhappy with what you have done, you can undo (``Ctrl+Z`` or *Edit -> Undo*)
-and redo (``Ctrl+Y`` or *Edit -> Redo*) your changes.  Right-clicking on the map
+are unhappy with what you have done, you can undo (``Ctrl+Z`` or ``Edit > Undo``)
+and redo (``Ctrl+Y`` or ``Edit > Redo``) your changes.  Right-clicking on the map
 image will select the tile under your mouse from the tile selector.  
 
 If your tilemap format is not "Plain", then you can also select the palette, 
 h-flip, and v-flip of any tile you are painting with.
 
-If you want to clear the background image, *Edit -> Clear Background Image* 
+If you want to clear the background image, ``Edit > Clear Background Image``
 will set all tiles to the first tile in the tile selector.
 
 You can use the sliders to zoom in and out on each of the view panes.
@@ -122,11 +122,11 @@ region map.
 
 There are a couple of tools which make editing multiple layout squares simultaneously easier.
 
-*Edit -> Clear Map Layout* will set all squares in the layout to ``MAPSEC_NONE``.
+``Edit > Clear Map Layout`` will set all squares in the layout to ``MAPSEC_NONE``.
 
-*Edit -> Swap Layout Sections...* will exchange two layout sections with each other.
+``Edit > Swap Layout Sections...`` will exchange two layout sections with each other.
 
-*Edit -> Replace Layout Section...* will replace all instances of one section with another.
+``Edit > Replace Layout Section...`` will replace all instances of one section with another.
 
 The "Delete Square" button simply resets a single layout square to ``MAPSEC_NONE``.
 
@@ -151,9 +151,4 @@ use the "Location" "x" and "y" spinboxes to change the coordinates of the entry.
 You can also drag the entry around the map.  The "x" and "y" values correspond to
 the position of the entry's top-left square on the region map.  The "Dimensions" 
 "width" and "height" spinboxes will change the size of the map entry.
-
-
-To change the popup name of the map section when you enter the map, type it
-into the "Map Name" box.
-
 
