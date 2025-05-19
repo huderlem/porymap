@@ -93,26 +93,26 @@ jobs:
         if: steps.cache-static-qt.outputs.cache-hit != 'true'
         with:
           repo: 'huderlem/porymap'
-          version: 'tags/qt-static-6.0.1-windows'
-          file: 'Qt-Static-Windows-mingw-6.0.1.zip'
+          version: 'tags/qt-static-6.9.0-windows'
+          file: 'Qt-Static-Windows-mingw-6.9.0.zip'
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Unzip Static Qt
         if: steps.cache-static-qt.outputs.cache-hit != 'true'
-        run: powershell.exe -Command "Expand-Archive -Path Qt-Static-Windows-mingw-6.0.1.zip -DestinationPath ../Qt"
+        run: powershell.exe -Command "Expand-Archive -Path Qt-Static-Windows-mingw-6.9.0.zip -DestinationPath ../Qt"
       
       - uses: dsaltares/fetch-gh-release-asset@master
         with:
           repo: 'huderlem/porymap'
-          version: 'tags/qt-static-6.0.1-windows'
-          file: 'mingw810_64.zip'
+          version: 'tags/qt-static-6.9.0-windows'
+          file: 'mingw1310_64.zip'
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Unzip mingw
-        run: powershell.exe -Command "Expand-Archive -Path mingw810_64.zip -DestinationPath ../mingw810_64"
+        run: powershell.exe -Command "Expand-Archive -Path mingw1310_64.zip -DestinationPath ../mingw1310_64"
       
       - name: Add Qt Static to PATH
-        run: echo "$env:GITHUB_WORKSPACE/../Qt/6.0.1/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        run: echo "$env:GITHUB_WORKSPACE/../Qt/6.9.0/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
       - name: Add static config to .pro file
         run: echo "CONFIG += qt static" >> porymap.pro
@@ -122,15 +122,15 @@ jobs:
 
       - name: Run Qmake
         env:
-          QTDIR: ../Qt/6.0.1
+          QTDIR: ../Qt/6.9.0
         run: qmake.exe -o Makefile porymap.pro -spec win32-g++ "CONFIG+=qtquickcompiler"
 
       - name: Add mingw to PATH
-        run: echo "$env:GITHUB_WORKSPACE/../mingw810_64/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+        run: echo "$env:GITHUB_WORKSPACE/../mingw1310_64/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
 
       - name: Compile
         env:
-          QTDIR: ../Qt/6.0.1
+          QTDIR: ../Qt/6.9.0
         run: mingw32-make.exe -j8
       
       - name: Prep Release Directory
