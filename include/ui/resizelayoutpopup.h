@@ -1,6 +1,9 @@
 #ifndef RESIZELAYOUTPOPUP_H
 #define RESIZELAYOUTPOPUP_H
 
+#include "maplayout.h"
+#include "project.h"
+
 #include <QDialog>
 #include <QPointer>
 #include <QGraphicsScene>
@@ -12,9 +15,6 @@ class ResizableRect;
 namespace Ui {
     class ResizeLayoutPopup;
 }
-
-class Layout;
-class Project;
 
 
 
