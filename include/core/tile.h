@@ -18,6 +18,9 @@ public:
     uint16_t palette:4;
     uint16_t rawValue() const;
 
+    Qt::Orientations orientation() const;
+    void flip(QImage *image) const;
+
     static int getIndexInTileset(int);
 
     static const uint16_t maxValue;

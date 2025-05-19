@@ -383,13 +383,8 @@ void TilesetEditor::drawSelectedTiles() {
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             auto tile = tiles.at(tileIndex);
-            QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true)
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
-                    .flipped(Util::getOrientation(tile.xflip, tile.yflip))
-#else
-                    .mirrored(tile.xflip, tile.yflip)
-#endif
-                    .scaled(16, 16);
+            QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(16, 16);
+            tile.flip(&tileImage);
             tileIndex++;
             painter.drawImage(i * 16, j * 16, tileImage);
         }

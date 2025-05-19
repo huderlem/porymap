@@ -1,7 +1,6 @@
 #include "config.h"
 #include "metatilelayersitem.h"
 #include "imageproviders.h"
-#include "utility.h"
 #include <QPainter>
 
 static const QList<QPoint> tilePositions = {
@@ -28,13 +27,8 @@ void MetatileLayersItem::draw() {
     int numTiles = qMin(projectConfig.getNumTilesInMetatile(), this->metatile ? this->metatile->tiles.length() : 0);
     for (int i = 0; i < numTiles; i++) {
         Tile tile = this->metatile->tiles.at(i);
-        QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true)
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
-                .flipped(Util::getOrientation(tile.xflip, tile.yflip))
-#else
-                .mirrored(tile.xflip, tile.yflip)
-#endif
-                .scaled(16, 16);
+        QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(16, 16);
+        tile.flip(&tileImage);
         painter.drawImage(tilePositions.at(i) * 16, tileImage);
     }
     if (this->showGrid) {

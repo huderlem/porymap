@@ -270,27 +270,25 @@ void MapView::createImage(int x, int y, QString filepath, int width, int height,
 }
 
 void MapView::addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency, int layer) {
-    if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
+    this->addTileImage(x, y, Tile(tileId, xflip, yflip, paletteId), setTransparency, layer);
+}
+
+void MapView::addTileImage(int x, int y, QJSValue tileObj, bool setTransparency, int layer) {
+    this->addTileImage(x, y, Scripting::toTile(tileObj), setTransparency, layer);
+}
+
+void MapView::addTileImage(int x, int y, const Tile &tile, bool setTransparency, int layer) {
+        if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
-    QImage image = getPalettedTileImage(tileId,
+    QImage image = getPalettedTileImage(tile.tileId,
                                         this->editor->layout->tileset_primary,
                                         this->editor->layout->tileset_secondary,
-                                        paletteId)
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
-                                        .flipped(Util::getOrientation(xflip, yflip));
-#else
-                                        .mirrored(xflip, yflip);
-#endif
-
+                                        tile.palette);
+    tile.flip(&image);
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->getOverlay(layer)->addImage(x, y, image))
         this->updateScene();
-}
-
-void MapView::addTileImage(int x, int y, QJSValue tileObj, bool setTransparency, int layer) {
-    Tile tile = Scripting::toTile(tileObj);
-    this->addTileImage(x, y, tile.tileId, tile.xflip, tile.yflip, tile.palette, setTransparency, layer);
 }
 
 void MapView::addMetatileImage(int x, int y, int metatileId, bool setTransparency, int layer) {

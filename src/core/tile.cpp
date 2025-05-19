@@ -41,6 +41,22 @@ uint16_t Tile::rawValue() const {
          | bitsPalette.pack(this->palette);
 }
 
+Qt::Orientations Tile::orientation() const {
+    return Util::getOrientation(this->xflip, this->yflip);
+}
+
+void Tile::flip(QImage *image) const {
+    if (!image) return;
+
+    // QImage::flip was introduced in 6.9.0 to replace QImage::mirrored.
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
+    image->flip(this->orientation());
+#else
+    *image = image->mirrored(this->xflip, this->yflip);
+#endif
+
+}
+
 int Tile::getIndexInTileset(int tileId) {
     if (tileId < Project::getNumTilesPrimary()) {
         return tileId;

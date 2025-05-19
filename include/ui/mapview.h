@@ -4,6 +4,7 @@
 #include <QJSValue>
 #include "graphicsview.h"
 #include "overlay.h"
+#include "tile.h"
 
 class Editor;
 
@@ -82,6 +83,7 @@ private:
     QMap<int, Overlay*> overlayMap;
 
     void updateScene();
+    void addTileImage(int x, int y, const Tile &tile, bool setTransparency, int layer = 0);
 };
 
 #endif // GRAPHICSVIEW_H
