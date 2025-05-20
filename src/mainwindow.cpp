@@ -138,6 +138,13 @@ void MainWindow::setWindowDisabled(bool disabled) {
     ui->actionCheck_for_Updates->setDisabled(false);
     if (!disabled)
         togglePreferenceSpecificUi();
+
+    // Disabling the central widget above sets focus to the map list's search bar,
+    // which prevents users from using keyboard shortcuts for menu actions.
+    // Rather than explicitly set the tab order to give focus to something else
+    // (which is a bit of a pain to set up and maintain) we just make sure focus
+    // is on something that (mostly) ignores the keyboard.
+    ui->graphicsView_Map->setFocus();
 }
 
 void MainWindow::initWindow() {
