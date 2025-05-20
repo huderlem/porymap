@@ -2,9 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are breaking changes in the pret projects.
-
-The **"Breaking Changes"** listed below are changes that have been made in the decompilation projects (e.g. pokeemerald), which porymap requires in order to work properly. It also includes changes to the scripting API that may change the behavior of existing porymap scripts. If porymap is used with a project or API script that is not up-to-date with the breaking changes, then porymap will likely break or behave improperly.
+and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are **"Breaking Changes"** in the pret projects. For more on this, see [the manual page on breaking changes](https://huderlem.github.io/porymap/manual/breaking-changes.html).
 
 ## [Unreleased]
 ### Added
@@ -491,7 +489,7 @@ The **"Breaking Changes"** listed below are changes that have been made in the d
 ## [2.0.0] - 2019-10-16
 ### Breaking Changes
 - Accomodate event object graphics pointer table being explicitly indexed. From changes introduced in commits [cdae0c1444bed98e652c87dc3e3edcecacfef8be](https://github.com/pret/pokeemerald/commit/cdae0c1444bed98e652c87dc3e3edcecacfef8be) and [0e8ccfc4fd3544001f4c25fafd401f7558bdefba](https://github.com/pret/pokeruby/commit/0e8ccfc4fd3544001f4c25fafd401f7558bdefba).
-- New "field" key in wild encounter JSON data from pokeemerald and pokeruby commits [adb0a444577b59eb02788c782a3d04bc285be0ba](https://github.com/pret/pokeemerald/commit/adb0a444577b59eb02788c782a3d04bc285be0ba) and [https://github.com/pret/pokeruby/commit/c73de8bed752ca538d90cfc93c4a9e8c7965f8c9](c73de8bed752ca538d90cfc93c4a9e8c7965f8c9).
+- New "field" key in wild encounter JSON data from pokeemerald and pokeruby commits [adb0a444577b59eb02788c782a3d04bc285be0ba](https://github.com/pret/pokeemerald/commit/adb0a444577b59eb02788c782a3d04bc285be0ba) and [c73de8bed752ca538d90cfc93c4a9e8c7965f8c9](https://github.com/pret/pokeruby/commit/c73de8bed752ca538d90cfc93c4a9e8c7965f8c9).
 
 
 ### Added

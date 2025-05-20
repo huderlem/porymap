@@ -21,6 +21,7 @@ Porymap Documentation
     manual/tileset-editor
     manual/scripting-capabilities
     manual/project-files
+    manual/breaking-changes
     manual/shortcuts
     manual/settings-and-options
 

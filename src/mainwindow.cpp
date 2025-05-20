@@ -840,8 +840,9 @@ bool MainWindow::checkProjectVersion(Project *project) {
             //       unknown commit, rather than merging the required changes directly from the base repo.
             //       In this case the 'projectVersion' may actually be too old to use for their repo.
             ErrorMessage msgBox(QStringLiteral("Your project may be incompatible!"), porysplash);
-            msgBox.setInformativeText(QString("Make sure '%1' has all the required changes for Porymap version %2."
-                                              "") // TODO: Once we have a wiki or manual page describing breaking changes, link that here.
+            msgBox.setTextFormat(Qt::RichText);
+            msgBox.setInformativeText(QString("Make sure '%1' has all the required changes for Porymap version %2.<br>"
+                                              "See <a href=\"https://huderlem.github.io/porymap/manual/breaking-changes.html\">Breaking Changes</a> in the manul for more details")
                                               .arg(project->getProjectTitle())
                                               .arg(porymapVersion.majorVersion()));
             auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
