@@ -569,6 +569,11 @@ void Editor::configureEncounterJSON(QWidget *window) {
     dialog.setWindowTitle("Configure Wild Encounter Fields");
     dialog.setWindowModality(Qt::NonModal);
 
+    enum GridRow {
+        NoteLabel,
+        Header,
+        TableStart
+    };
     QGridLayout grid;
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
@@ -600,8 +605,9 @@ void Editor::configureEncounterJSON(QWidget *window) {
             index = tempFields.size() - 1;
         }
         EncounterField &currentField = tempFields[index];
+        const int numSlotColumns = 4;
         for (int i = 0; i < currentField.encounterRates.size(); i++) {
-            grid.addWidget(createNewSlot(i, currentField), i / 4 + 1, i % 4);
+            grid.addWidget(createNewSlot(i, currentField), (i / numSlotColumns) + GridRow::TableStart, i % numSlotColumns);
         }
 
         updateTotal(currentField);
@@ -669,6 +675,9 @@ void Editor::configureEncounterJSON(QWidget *window) {
     });
     // TODO: method for editing groups?
 
+    auto noteLabel = new QLabel(QStringLiteral("Note: This affects all maps, not just the current map."));
+    grid.addWidget(noteLabel, GridRow::NoteLabel, 0, 1, -1, Qt::AlignCenter);
+
     QFrame firstRow;
     QHBoxLayout firstRowLayout;
     firstRowLayout.addWidget(fieldChoiceLabel);
@@ -678,7 +687,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
     firstRowLayout.addWidget(removeSlotButton);
     firstRowLayout.addWidget(addSlotButton);
     firstRow.setLayout(&firstRowLayout);
-    grid.addWidget(&firstRow, 0, 0, 1, 4, Qt::AlignLeft);
+    grid.addWidget(&firstRow, GridRow::Header, 0, 1, -1, Qt::AlignLeft);
 
     QHBoxLayout lastRow;
     lastRow.addWidget(totalLabel);
