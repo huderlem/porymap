@@ -51,8 +51,6 @@
 
 // We only publish release binaries for Windows and macOS.
 // This is relevant for the update promoter, which alerts users of a new release.
-// TODO: Currently the update promoter is disabled on our Windows releases because
-//       the pre-compiled Qt build doesn't link OpenSSL. Re-enable below once this is fixed.
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 #define RELEASE_PLATFORM
 #endif
