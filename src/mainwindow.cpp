@@ -1477,6 +1477,8 @@ void MainWindow::clearProjectUI() {
 
     this->mapHeaderForm->clear();
 
+    prefab.clearPrefabUi();
+
     // Clear map models
     delete this->mapGroupModel;
     delete this->groupListProxyModel;

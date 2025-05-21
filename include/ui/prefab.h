@@ -7,6 +7,7 @@
 #include <QString>
 #include <QLabel>
 #include <QUuid>
+#include <QPointer>
 
 struct PrefabItem
 {
@@ -20,15 +21,16 @@ struct PrefabItem
 class Prefab
 {
 public:
-    void initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Layout *layout);
+    void initPrefabUI(QPointer<MetatileSelector> selector, QPointer<QWidget> prefabWidget, QPointer<QLabel> emptyPrefabLabel, Layout *layout);
     void addPrefab(MetatileSelection selection, Layout *layout, QString name);
-    void updatePrefabUi(Layout *layout);
+    void updatePrefabUi(QPointer<Layout> layout);
+    void clearPrefabUi();
     bool tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, QString filepath = "");
 
 private:
-    MetatileSelector *selector;
-    QWidget *prefabWidget;
-    QLabel *emptyPrefabLabel;
+    QPointer<MetatileSelector> selector;
+    QPointer<QWidget> prefabWidget;
+    QPointer<QLabel> emptyPrefabLabel;
     QList<PrefabItem> items;
     void loadPrefabs();
     void savePrefabs();

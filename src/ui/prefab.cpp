@@ -159,7 +159,7 @@ QList<PrefabItem> Prefab::getPrefabsForTilesets(QString primaryTileset, QString 
     return filteredPrefabs;
 }
 
-void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLabel *emptyPrefabLabel, Layout *layout) {
+void Prefab::initPrefabUI(QPointer<MetatileSelector> selector, QPointer<QWidget> prefabWidget, QPointer<QLabel> emptyPrefabLabel, Layout* layout) {
     this->selector = selector;
     this->prefabWidget = prefabWidget;
     this->emptyPrefabLabel = emptyPrefabLabel;
@@ -167,30 +167,38 @@ void Prefab::initPrefabUI(MetatileSelector *selector, QWidget *prefabWidget, QLa
     this->updatePrefabUi(layout);
 }
 
+void Prefab::clearPrefabUi() {
+    if (!this->prefabWidget) {
+        return;
+    }
+    auto uiLayout = this->prefabWidget->layout();
+    if (!uiLayout) {
+        return;
+    }
+    // Cleanup the PrefabFrame to have a clean slate.
+    while (uiLayout->count() > 1) {
+        auto child = uiLayout->takeAt(1);
+        delete child->widget();
+        delete child;
+    }
+}
+
 // This function recreates the UI state for the prefab tab.
 // We completely delete all the prefab widgets, and recreate new widgets
 // from the relevant list of prefab items.
 // This is not very efficient, but it gets the job done.
-void Prefab::updatePrefabUi(Layout *layout) {
-    if (!this->selector)
+void Prefab::updatePrefabUi(QPointer<Layout> layout) {
+    if (!layout || !this->prefabWidget)
         return;
-    // Cleanup the PrefabFrame to have a clean slate.
-    auto uiLayout = this->prefabWidget->layout();
-    while (uiLayout && uiLayout->count() > 1) {
-        auto child = uiLayout->takeAt(1);
-        if (child->widget()) {
-            delete child->widget();
-        }
-        delete child;
-    }
+    clearPrefabUi();
 
     QList<PrefabItem> prefabs = this->getPrefabsForTilesets(layout->tileset_primary_label, layout->tileset_secondary_label);
+    if (this->emptyPrefabLabel) {
+        this->emptyPrefabLabel->setVisible(prefabs.isEmpty());
+    }
     if (prefabs.isEmpty()) {
-        emptyPrefabLabel->setVisible(true);
         return;
     }
-
-    emptyPrefabLabel->setVisible(false);
 
     // Add all the prefab widgets to this wrapper parent frame because directly adding them
     // to the main prefab widget will cause the UI to immediately render each new widget, which is slow.
@@ -212,8 +220,10 @@ void Prefab::updatePrefabUi(Layout *layout) {
 
         // Clicking on the prefab graphics item selects it for painting.
         QObject::connect(frame->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [this, item, frame](QMouseEvent *event){
-            selector->setPrefabSelection(item.selection);
-            QToolTip::showText(frame->ui->graphicsView_Prefab->mapToGlobal(event->pos()), "Selected prefab!", nullptr, {}, 1000);
+            if (this->selector) {
+                this->selector->setPrefabSelection(item.selection);
+                QToolTip::showText(frame->ui->graphicsView_Prefab->mapToGlobal(event->pos()), "Selected prefab!", nullptr, {}, 1000);
+            }
         });
 
         // Clicking the delete button removes it from the list of known prefabs and updates the UI.
