@@ -203,17 +203,26 @@ ProjectFilePath reverseDefaultPaths(QString str) {
     return static_cast<ProjectFilePath>(-1);
 }
 
-KeyValueConfigBase::~KeyValueConfigBase() {
-
+void KeyValueConfigBase::setRoot(const QString &root) {
+    m_root = root;
+    QDir dir(m_root);
+    if (!m_root.isEmpty() && !dir.exists()) {
+        dir.mkpath(m_root);
+    }
+    m_filepath = dir.absoluteFilePath(m_filename);
 }
 
-void KeyValueConfigBase::load() {
+bool KeyValueConfigBase::load(const QString &root) {
+    if (!root.isEmpty()) {
+        setRoot(root);
+    }
     reset();
-    QFile file(this->getConfigFilepath());
-    if (!file.exists()) {
+    QFile file(this->filepath());
+    if (file.exists() && !file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open config file '%1': ").arg(this->filepath()) + file.errorString());
+        return false;
+    } else if (file.size() == 0) {
         this->init();
-    } else if (!file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open config file '%1': ").arg(this->getConfigFilepath()) + file.errorString());
     }
 
     QTextStream in(&file);
@@ -231,7 +240,7 @@ void KeyValueConfigBase::load() {
 
         QRegularExpressionMatch match = re.match(line);
         if (!match.hasMatch()) {
-            logWarn(QString("Invalid config line in %1: '%2'").arg(this->getConfigFilepath()).arg(line));
+            logWarn(QString("Invalid config line in %1: '%2'").arg(this->filepath()).arg(line));
             continue;
         }
 
@@ -240,6 +249,7 @@ void KeyValueConfigBase::load() {
     this->setUnreadKeys();
 
     file.close();
+    return true;
 }
 
 bool KeyValueConfigBase::save() {
@@ -249,9 +259,9 @@ bool KeyValueConfigBase::save() {
         text += QString("%1=%2\n").arg(it.key()).arg(it.value());
     }
 
-    QFile file(this->getConfigFilepath());
+    QFile file(this->filepath());
     if (!file.open(QIODevice::WriteOnly)) {
-        logError(QString("Could not open config file '%1' for writing: ").arg(this->getConfigFilepath()) + file.errorString());
+        logError(QString("Could not open config file '%1' for writing: ").arg(this->filepath()) + file.errorString());
         return false;
     }
 
@@ -300,16 +310,9 @@ QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &val
 
 PorymapConfig porymapConfig;
 
-QString PorymapConfig::getConfigFilepath() {
-    // porymap config file is in the same directory as porymap itself.
-    QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir dir(settingsPath);
-    if (!dir.exists())
-        dir.mkpath(settingsPath);
-
-    QString configPath = dir.absoluteFilePath("porymap.cfg");
-
-    return configPath;
+PorymapConfig::PorymapConfig() : KeyValueConfigBase(QStringLiteral("porymap.cfg")) {
+    reset();
+    setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
@@ -330,7 +333,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         bool ok;
         int tab = key.mid(QStringLiteral("map_list_hide_empty_enabled/").length()).toInt(&ok, 0);
         if (!ok) {
-            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
             return;
         }
         this->mapListHideEmptyEnabled.insert(tab, getConfigBool(key, value));
@@ -485,7 +488,7 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             this->statusBarLogTypes.insert(type);
         }
     } else {
-        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
     }
 }
 
@@ -773,9 +776,8 @@ QIcon ProjectConfig::getPlayerIcon(BaseGameVersion baseGameVersion, int characte
 
 ProjectConfig projectConfig;
 
-QString ProjectConfig::getConfigFilepath() {
-    // porymap config file is in the same directory as porymap itself.
-    return QDir(this->projectDir).filePath("porymap.project.cfg");
+ProjectConfig::ProjectConfig() : KeyValueConfigBase(QStringLiteral("porymap.project.cfg")) {
+    reset();
 }
 
 void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
@@ -871,14 +873,14 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         if (k != static_cast<ProjectFilePath>(-1)) {
             this->setFilePath(k, value);
         } else {
-            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
         }
     } else if (key.startsWith("ident/")) {
         auto identifierId = reverseDefaultIdentifier(key.mid(QStringLiteral("ident/").length()));
         if (identifierId != static_cast<ProjectIdentifier>(-1)) {
             this->setIdentifier(identifierId, value);
         } else {
-            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+            logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
         }
     } else if (key.startsWith("global_constant/")) {
         this->globalConstants.insert(key.mid(QStringLiteral("global_constant/").length()), value);
@@ -935,7 +937,7 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "forced_major_version") {
         this->forcedMajorVersion = getConfigInteger(key, value);
     } else {
-        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
     }
     readKeys.append(key);
 }
@@ -1048,7 +1050,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
 }
 
 void ProjectConfig::init() {
-    QString dirName = QDir(this->projectDir).dirName().toLower();
+    QString dirName = QDir(this->projectDir()).dirName().toLower();
 
     BaseGameVersion version = stringToBaseGameVersion(dirName);
     if (version != BaseGameVersion::none) {
@@ -1107,7 +1109,7 @@ QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
     QString customPath = this->getCustomFilePath(pathId);
     if (!customPath.isEmpty()) {
         // A custom filepath has been specified. If the file/folder exists, use that.
-        const QString baseDir = this->projectDir + "/";
+        const QString baseDir = this->projectDir() + "/";
         if (customPath.startsWith(baseDir)) {
             customPath.remove(0, baseDir.length());
         }
@@ -1201,9 +1203,8 @@ QMap<QString, QString> ProjectConfig::getPokemonIconPaths() {
 
 UserConfig userConfig;
 
-QString UserConfig::getConfigFilepath() {
-    // porymap config file is in the same directory as porymap itself.
-    return QDir(this->projectDir).filePath("porymap.user.cfg");
+UserConfig::UserConfig() : KeyValueConfigBase(QStringLiteral("porymap.user.cfg")) {
+    reset();
 }
 
 void UserConfig::parseConfigKeyValue(QString key, QString value) {
@@ -1214,7 +1215,7 @@ void UserConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "custom_scripts") {
         this->parseCustomScripts(value);
     } else {
-        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->getConfigFilepath()).arg(key));
+        logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
     }
     readKeys.append(key);
 }
@@ -1283,15 +1284,10 @@ QList<bool> UserConfig::getCustomScriptsEnabled() {
 
 ShortcutsConfig shortcutsConfig;
 
-QString ShortcutsConfig::getConfigFilepath() {
-    QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir dir(settingsPath);
-    if (!dir.exists())
-        dir.mkpath(settingsPath);
-
-    QString configPath = dir.absoluteFilePath("porymap.shortcuts.cfg");
-
-    return configPath;
+ShortcutsConfig::ShortcutsConfig() : KeyValueConfigBase(QStringLiteral("porymap.shortcuts.cfg")),
+    user_shortcuts({ }),
+    default_shortcuts({ }) {
+    setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
 void ShortcutsConfig::parseConfigKeyValue(QString key, QString value) {

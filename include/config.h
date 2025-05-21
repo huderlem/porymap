@@ -29,11 +29,21 @@ class KeyValueConfigBase
 {
 public:
     bool save();
-    void load();
-    virtual ~KeyValueConfigBase();
+    bool load(const QString &dir = QString());
+
+    void setRoot(const QString &dir);
+    QString root() const { return m_root; }
+    QString filepath() const { return m_filepath; }
+    QString filename() const { return m_filename; }
+
+    explicit KeyValueConfigBase(const QString &filename)
+        : m_root(QString()),
+          m_filename(filename),
+          m_filepath(filename)
+    { };
+    virtual ~KeyValueConfigBase() {};
     virtual void reset() = 0;
 protected:
-    virtual QString getConfigFilepath() = 0;
     virtual void parseConfigKeyValue(QString key, QString value) = 0;
     virtual QMap<QString, QString> getKeyValueMap() = 0;
     virtual void init() = 0;
@@ -43,14 +53,16 @@ protected:
     static int getConfigInteger(const QString &key, const QString &value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
     static uint32_t getConfigUint32(const QString &key, const QString &value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
     static QColor getConfigColor(const QString &key, const QString &value, const QColor &defaultValue = Qt::black);
+
+    QString m_root;
+    QString m_filename;
+    QString m_filepath;
 };
 
 class PorymapConfig: public KeyValueConfigBase
 {
 public:
-    PorymapConfig() {
-        reset();
-    }
+    PorymapConfig();
     virtual void reset() override {
         this->recentProjects.clear();
         this->projectManuallyClosed = false;
@@ -167,7 +179,6 @@ public:
     std::set<LogType> statusBarLogTypes;
 
 protected:
-    virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
     virtual void init() override {};
@@ -318,9 +329,7 @@ enum ProjectFilePath {
 class ProjectConfig: public KeyValueConfigBase
 {
 public:
-    ProjectConfig() {
-        reset();
-    }
+    ProjectConfig();
     virtual void reset() override {
         this->baseGameVersion = BaseGameVersion::pokeemerald;
         // Reset non-version-specific settings
@@ -365,6 +374,7 @@ public:
     static QString getPlayerIconPath(BaseGameVersion baseGameVersion, int character);
     static QIcon getPlayerIcon(BaseGameVersion baseGameVersion, int character);
 
+    QString projectDir() const { return m_root; } // Alias for root()
     void reset(BaseGameVersion baseGameVersion);
     void setFilePath(ProjectFilePath pathId, const QString &path);
     void setFilePath(const QString &pathId, const QString &path);
@@ -387,7 +397,6 @@ public:
     QMap<QString, QString> getPokemonIconPaths();
 
     BaseGameVersion baseGameVersion;
-    QString projectDir;
     bool usePoryScript;
     bool useCustomBorderSize;
     bool eventWeatherTriggerEnabled;
@@ -435,7 +444,6 @@ public:
     QMap<QString,QString> globalConstants;
 
 protected:
-    virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
     virtual void init() override;
@@ -454,27 +462,25 @@ extern ProjectConfig projectConfig;
 class UserConfig: public KeyValueConfigBase
 {
 public:
-    UserConfig() {
-        reset();
-    }
+    UserConfig();
     virtual void reset() override {
         this->recentMapOrLayout = QString();
         this->useEncounterJson = true;
         this->customScripts.clear();
         this->readKeys.clear();
     }
+
+    QString projectDir() const { return m_root; } // Alias for root()
     void parseCustomScripts(QString input);
     QString outputCustomScripts();
     void setCustomScripts(QStringList scripts, QList<bool> enabled);
     QStringList getCustomScriptPaths();
     QList<bool> getCustomScriptsEnabled();
 
-    QString projectDir;
     QString recentMapOrLayout;
     bool useEncounterJson;
 
 protected:
-    virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
     virtual void init() override;
@@ -496,10 +502,7 @@ class Shortcut;
 class ShortcutsConfig : public KeyValueConfigBase
 {
 public:
-    ShortcutsConfig() :
-        user_shortcuts({ }),
-        default_shortcuts({ })
-    { }
+    ShortcutsConfig();
 
     virtual void reset() override { user_shortcuts.clear(); }
 
@@ -512,7 +515,6 @@ public:
     QList<QKeySequence> userShortcuts(const QObject *object) const;
 
 protected:
-    virtual QString getConfigFilepath() override;
     virtual void parseConfigKeyValue(QString key, QString value) override;
     virtual QMap<QString, QString> getKeyValueMap() override;
     virtual void init() override { };

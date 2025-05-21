@@ -3375,7 +3375,7 @@ QString Project::getExistingFilepath(QString filepath) {
     if (filepath.isEmpty() || QFile::exists(filepath))
         return filepath;
 
-    filepath = QDir::cleanPath(projectConfig.projectDir + QDir::separator() + filepath);
+    filepath = QDir::cleanPath(projectConfig.projectDir() + QDir::separator() + filepath);
     if (QFile::exists(filepath))
         return filepath;
 

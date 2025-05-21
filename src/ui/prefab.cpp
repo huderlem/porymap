@@ -94,7 +94,7 @@ void Prefab::savePrefabs() {
 
     QFileInfo info(filepath);
     if (info.isRelative()) {
-        filepath = QDir::cleanPath(projectConfig.projectDir + QDir::separator() + filepath);
+        filepath = QDir::cleanPath(projectConfig.projectDir() + QDir::separator() + filepath);
     }
     QFile prefabsFile(filepath);
     if (!prefabsFile.open(QIODevice::WriteOnly)) {
@@ -287,7 +287,7 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
     if (fileInfo.suffix().isEmpty())
         filepath += ".json";
     if (fileInfo.isRelative()) {
-        absFilepath = QDir::cleanPath(projectConfig.projectDir + QDir::separator() + filepath);
+        absFilepath = QDir::cleanPath(projectConfig.projectDir() + QDir::separator() + filepath);
     } else {
         absFilepath = filepath;
     }

@@ -21,7 +21,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) 
     QMainWindow(parent),
     ui(new Ui::ProjectSettingsEditor),
     project(project),
-    baseDir(projectConfig.projectDir + "/")
+    baseDir(projectConfig.projectDir() + "/")
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);

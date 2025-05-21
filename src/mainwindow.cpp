@@ -730,10 +730,11 @@ bool MainWindow::openProject(QString dir, bool initial) {
     porysplash->start();
 
     porysplash->showLoadingMessage("config");
-    userConfig.projectDir = dir;
-    userConfig.load();
-    projectConfig.projectDir = dir;
-    projectConfig.load();
+    if (!projectConfig.load(dir) || !userConfig.load(dir)) {
+        showProjectOpenFailure();
+        porysplash->stop();
+        return false;
+    }
 
     porysplash->showLoadingMessage("custom scripts");
     Scripting::init(this);
@@ -993,13 +994,8 @@ void MainWindow::showFileWatcherWarning() {
     this->fileWatcherWarning->exec();
 }
 
-QString MainWindow::getExistingDirectory(QString dir) {
-    return FileDialog::getExistingDirectory(this, "Open Directory", dir, QFileDialog::ShowDirsOnly);
-}
-
-void MainWindow::on_action_Open_Project_triggered()
-{
-    QString dir = getExistingDirectory(!projectConfig.projectDir.isEmpty() ? userConfig.projectDir : ".");
+void MainWindow::on_action_Open_Project_triggered() {
+    QString dir = FileDialog::getExistingDirectory(this, QStringLiteral("Choose Project Folder"));
     if (!dir.isEmpty())
         openProject(dir);
 }
@@ -2996,7 +2992,7 @@ void MainWindow::reloadScriptEngine() {
     Scripting::init(this);
     Scripting::populateGlobalObject(this);
     // Lying to the scripts here, simulating a project reload
-    Scripting::cb_ProjectOpened(projectConfig.projectDir);
+    Scripting::cb_ProjectOpened(projectConfig.projectDir());
     if (this->editor) {
         if (this->editor->layout)
             Scripting::cb_LayoutOpened(this->editor->layout->name);
