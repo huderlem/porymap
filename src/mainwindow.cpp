@@ -842,7 +842,7 @@ bool MainWindow::checkProjectVersion(Project *project) {
             ErrorMessage msgBox(QStringLiteral("Your project may be incompatible!"), porysplash);
             msgBox.setTextFormat(Qt::RichText);
             msgBox.setInformativeText(QString("Make sure '%1' has all the required changes for Porymap version %2.<br>"
-                                              "See <a href=\"https://huderlem.github.io/porymap/manual/breaking-changes.html\">Breaking Changes</a> in the manul for more details")
+                                              "See <a href=\"https://huderlem.github.io/porymap/manual/breaking-changes.html\">Breaking Changes</a> in the manual for more details")
                                               .arg(project->getProjectTitle())
                                               .arg(porymapVersion.majorVersion()));
             auto tryAnyway = msgBox.addButton("Try Anyway", QMessageBox::ActionRole);
