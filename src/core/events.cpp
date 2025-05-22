@@ -343,6 +343,7 @@ Event *WarpEvent::duplicate() const {
     copy->setX(this->getX());
     copy->setY(this->getY());
     copy->setElevation(this->getElevation());
+    copy->setIdName(this->getIdName());
     copy->setDestinationMap(this->getDestinationMap());
     copy->setDestinationWarpID(this->getDestinationWarpID());
 
@@ -362,6 +363,10 @@ EventFrame *WarpEvent::createEventFrame() {
 OrderedJson::object WarpEvent::buildEventJson(Project *project) {
     OrderedJson::object warpJson;
 
+    QString idName = this->getIdName();
+    if (!idName.isEmpty())
+        warpJson["warp_id"] = idName;
+
     warpJson["x"] = this->getX();
     warpJson["y"] = this->getY();
     warpJson["elevation"] = this->getElevation();
@@ -376,6 +381,7 @@ OrderedJson::object WarpEvent::buildEventJson(Project *project) {
 bool WarpEvent::loadFromJson(QJsonObject json, Project *project) {
     this->setX(readInt(&json, "x"));
     this->setY(readInt(&json, "y"));
+    this->setIdName(readString(&json, "warp_id"));
     this->setElevation(readInt(&json, "elevation"));
     this->setDestinationWarpID(readString(&json, "dest_warp_id"));
 
