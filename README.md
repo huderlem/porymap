@@ -18,4 +18,4 @@ Read [INSTALL.md](INSTALL.md) for instructions on how to compile Porymap from so
 [pokeemerald]: https://github.com/pret/pokeemerald
 [pokefirered]: https://github.com/pret/pokefirered
 [changelog]: https://github.com/huderlem/porymap/blob/master/CHANGELOG.md
-[releases]: https://github.com/huderlem/porymap/releases
+[releases]: https://github.com/huderlem/porymap/releases/latest
