@@ -264,7 +264,7 @@
       <item>
        <widget class="QCheckBox" name="checkBox_DisablePreviewUpdates">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the image in the preview window will not be recreated when the settings are changed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the image in the preview window will not be recreated when the settings are changed. This has no effect on the exported file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Disable preview updates</string>
@@ -274,7 +274,7 @@
       <item>
        <widget class="QCheckBox" name="checkBox_DisablePreviewScaling">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the image shown in the preview window will not scale to fit into the available space. The aspect ratio of the image will never change.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, the image shown in the preview window will not scale to fit into the available space. The aspect ratio of the image will never change. This has no effect on the exported file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Disable preview scaling</string>
