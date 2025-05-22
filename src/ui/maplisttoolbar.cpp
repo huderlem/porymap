@@ -116,10 +116,11 @@ void MapListToolBar::collapseList() {
     }
 }
 
-void MapListToolBar::applyFilter(const QString &filterText) {
-    if (m_filterLocked)
-        return;
+QString MapListToolBar::filterText() const {
+    return ui->lineEdit_filterBox->text();
+}
 
+void MapListToolBar::applyFilter(const QString &filterText) {
     const QSignalBlocker b(ui->lineEdit_filterBox);
     if (ui->lineEdit_filterBox->text() != filterText) {
         ui->lineEdit_filterBox->setText(filterText);
@@ -146,6 +147,10 @@ void MapListToolBar::applyFilter(const QString &filterText) {
 
 void MapListToolBar::clearFilter() {
     applyFilter("");
+}
+
+void MapListToolBar::refreshFilter() {
+    applyFilter(filterText());
 }
 
 void MapListToolBar::setSearchFocus() {

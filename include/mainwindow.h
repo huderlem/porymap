@@ -351,6 +351,7 @@ private:
     bool isProgrammaticEventTabChange;
 
     bool tilesetNeedsRedraw = false;
+    bool lockMapListAutoScroll = false;
 
     bool setLayout(const QString &layoutId);
     bool setMap(const QString &mapName);
@@ -383,7 +384,7 @@ private:
     void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
     void scrollMapListToCurrentLayout(MapTree *list);
-    void resetMapListFilters();
+    void scrollCurrentMapListToItem(const QString &itemName);
     void showFileWatcherWarning();
     QString getExistingDirectory(QString);
     bool openProject(QString dir, bool initial = false);

@@ -1127,7 +1127,7 @@ bool MainWindow::setMap(const QString &mapName) {
     displayMapProperties();
     updateWindowTitle();
     updateMapList();
-    resetMapListFilters();
+    scrollCurrentMapListToItem(mapName);
 
     // If the map's MAPSEC / layout changes, update the map's position in the map list.
     // These are doing more work than necessary, rather than rebuilding the entire list they should find and relocate the appropriate row.
@@ -1208,7 +1208,7 @@ bool MainWindow::setLayout(const QString &layoutId) {
     refreshMapScene();
     updateWindowTitle();
     updateMapList();
-    resetMapListFilters();
+    scrollCurrentMapListToItem(layoutId);
 
     connect(editor->layout, &Layout::needsRedrawing, this, &MainWindow::redrawMapScene, Qt::UniqueConnection);
 
@@ -1485,7 +1485,9 @@ void MainWindow::clearProjectUI() {
     delete this->locationListProxyModel;
     delete this->layoutTreeModel;
     delete this->layoutListProxyModel;
-    resetMapListFilters();
+    ui->mapListToolBar_Groups->clearFilter();
+    ui->mapListToolBar_Locations->clearFilter();
+    ui->mapListToolBar_Layouts->clearFilter();
     resetMapNavigation();
 }
 
@@ -1515,6 +1517,21 @@ void MainWindow::scrollMapListToCurrentMap(MapTree *list) {
 void MainWindow::scrollMapListToCurrentLayout(MapTree *list) {
     if (this->editor->layout) {
         scrollMapList(list, this->editor->layout->id);
+    }
+}
+
+// Scroll the current map list to the specified map name / layout ID.
+// No scrolling occurs if...
+// - The map list was in the middle of a search
+// - A map/layout is being opened by interacting with the list (in which case `lockMapListAutoScroll` is true)
+// - The item is not in the list (e.g. a layout ID for the Groups list)
+void MainWindow::scrollCurrentMapListToItem(const QString &itemName) {
+    if (this->lockMapListAutoScroll)
+        return;
+
+    auto toolbar = getCurrentMapListToolBar();
+    if (toolbar && toolbar->filterText().isEmpty()) {
+        scrollMapList(toolbar->list(), itemName);
     }
 }
 
@@ -1813,14 +1830,19 @@ void MainWindow::currentMetatilesSelectionChanged() {
 }
 
 void MainWindow::onMapListTabChanged(int index) {
+    auto newToolbar = getMapListToolBar(index);
+    auto oldToolbar = getMapListToolBar(porymapConfig.mapListTab);
+    if (newToolbar && oldToolbar && newToolbar != oldToolbar) {
+        newToolbar->applyFilter(oldToolbar->filterText());
+    }
+
     // Save current tab for future sessions.
     porymapConfig.mapListTab = index;
 
     // After changing a map list tab the old tab's search widget can keep focus, which isn't helpful
     // (and might be a little confusing to the user, because they don't know that each search bar is secretly a separate object).
     // When we change tabs we'll automatically focus in on the search bar. This should also make finding maps a little quicker.
-    auto toolbar = getCurrentMapListToolBar();
-    if (toolbar) toolbar->setSearchFocus();
+    if (newToolbar) newToolbar->setSearchFocus();
 }
 
 void MainWindow::openMapListItem(const QModelIndex &index) {
@@ -1832,10 +1854,9 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
         return;
     const QString name = data.toString();
 
-    // Normally when a new map/layout is opened the search filters are cleared and the lists will scroll to display that map/layout in the list.
-    // We don't want to do this when the user interacts with a list directly, so we temporarily prevent changes to the search filter.
-    auto toolbar = getCurrentMapListToolBar();
-    if (toolbar) toolbar->setFilterLocked(true);
+    // Normally when a new map/layout is opened the current map list will scroll to display that item in the list.
+    // We don't want to do this when the user interacts with a list directly, so we temporarily prevent this.
+    this->lockMapListAutoScroll = true;
 
     QString type = index.data(MapListUserRoles::TypeRole).toString();
     if (type == "map_name") {
@@ -1844,20 +1865,20 @@ void MainWindow::openMapListItem(const QModelIndex &index) {
         userSetLayout(name);
     }
 
-    if (toolbar) toolbar->setFilterLocked(false);
+    this->lockMapListAutoScroll = false;
 }
 
 void MainWindow::rebuildMapList_Locations() {
     this->mapLocationModel->deleteLater();
     this->mapLocationModel = new MapLocationModel(this->editor->project);
     this->locationListProxyModel->setSourceModel(this->mapLocationModel);
-    resetMapListFilters();
+    ui->mapListToolBar_Locations->refreshFilter();
 }
 void MainWindow::rebuildMapList_Layouts() {
     this->layoutTreeModel->deleteLater();
     this->layoutTreeModel = new LayoutTreeModel(this->editor->project);
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
-    resetMapListFilters();
+    ui->mapListToolBar_Layouts->refreshFilter();
 }
 
 QString MainWindow::getActiveItemName() {
@@ -2871,14 +2892,6 @@ MapTree* MainWindow::getCurrentMapList() {
     if (toolbar)
         return toolbar->list();
     return nullptr;
-}
-
-// Clear the search filters on all the map lists.
-// When the search filter is cleared the map lists will (if possible) display the currently-selected map/layout.
-void MainWindow::resetMapListFilters() {
-    ui->mapListToolBar_Groups->clearFilter();
-    ui->mapListToolBar_Locations->clearFilter();
-    ui->mapListToolBar_Layouts->clearFilter();
 }
 
 void MainWindow::mapListShortcut_ExpandAll() {
