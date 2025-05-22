@@ -2339,7 +2339,7 @@ void Editor::openMapJson(const QString &mapName) const {
 }
 
 void Editor::openLayoutJson(const QString &layoutId) const {
-    QString path = QDir::cleanPath(QString("%1/%2").arg(projectConfig.projectDir).arg(projectConfig.getFilePath(ProjectFilePath::json_layouts)));
+    QString path = QDir::cleanPath(QString("%1/%2").arg(projectConfig.projectDir()).arg(projectConfig.getFilePath(ProjectFilePath::json_layouts)));
     QString idField = QString("\"id\": \"%1\",").arg(layoutId);
     openInTextEditor(path, ParseUtil::getJsonLineNumber(path, idField));
 }

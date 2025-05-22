@@ -386,7 +386,6 @@ private:
     void scrollMapListToCurrentLayout(MapTree *list);
     void scrollCurrentMapListToItem(const QString &itemName);
     void showFileWatcherWarning();
-    QString getExistingDirectory(QString);
     bool openProject(QString dir, bool initial = false);
     bool closeProject();
     void showRecentError(const QString &baseMessage);

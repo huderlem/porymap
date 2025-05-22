@@ -176,7 +176,7 @@ QStringList Map::getScriptLabels(Event::Group group) {
 QString Map::getScriptsFilepath() const {
     const bool usePoryscript = projectConfig.usePoryScript;
     auto path = QDir::cleanPath(QString("%1/%2/%3/scripts")
-                                        .arg(projectConfig.projectDir)
+                                        .arg(projectConfig.projectDir())
                                         .arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders))
                                         .arg(!m_sharedScriptsMap.isEmpty() ? m_sharedScriptsMap : m_name));
     auto extension = Project::getScriptFileExtension(usePoryscript);
@@ -188,7 +188,7 @@ QString Map::getScriptsFilepath() const {
 
 QString Map::getJsonFilepath(const QString &mapName) {
     return QDir::cleanPath(QString("%1/%2/%3/map.json")
-                                        .arg(projectConfig.projectDir)
+                                        .arg(projectConfig.projectDir())
                                         .arg(projectConfig.getFilePath(ProjectFilePath::data_map_folders))
                                         .arg(mapName));
 }
