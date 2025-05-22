@@ -31,9 +31,7 @@ int Project::num_pals_primary = 6;
 int Project::num_pals_total = 13;
 
 Project::Project(QObject *parent) :
-    QObject(parent),
-    re_gbapalExtension(projectConfig.getIdentifier(ProjectIdentifier::regex_gbapal)),
-    re_bppExtension(projectConfig.getIdentifier(ProjectIdentifier::regex_bpp))
+    QObject(parent)
 {
     QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
 }
@@ -2917,14 +2915,12 @@ void Project::insertGlobalScriptLabels(QStringList &scriptLabels) const {
     scriptLabels.removeDuplicates();
 }
 
-QString Project::fixPalettePath(QString path) {
-    path.replace(this->re_gbapalExtension, ".pal");
-    return path;
+QString Project::fixPalettePath(const QString &path) const {
+    return Util::replaceExtension(path, QStringLiteral("pal"));
 }
 
-QString Project::fixGraphicPath(QString path) {
-    path.replace(this->re_bppExtension, ".png");
-    return path;
+QString Project::fixGraphicPath(const QString &path) const {
+    return Util::replaceExtension(path, QStringLiteral("png"));
 }
 
 QString Project::getScriptFileExtension(bool usePoryScript) {

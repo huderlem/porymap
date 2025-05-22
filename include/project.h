@@ -211,8 +211,8 @@ public:
     QPixmap getEventPixmap(Event::Group group);
     void loadEventPixmap(Event *event, bool forceLoad = false);
 
-    QString fixPalettePath(QString path);
-    QString fixGraphicPath(QString path);
+    QString fixPalettePath(const QString &path) const;
+    QString fixGraphicPath(const QString &path) const;
 
     static QString getScriptFileExtension(bool usePoryScript);
     QString getScriptDefaultString(bool usePoryScript, QString mapName) const;

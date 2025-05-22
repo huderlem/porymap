@@ -11,6 +11,7 @@ namespace Util {
     QString toHexString(uint32_t value, int minLength = 0);
     QString toHtmlParagraph(const QString &text);
     Qt::Orientations getOrientation(bool xflip, bool yflip);
+    QString replaceExtension(const QString &path, const QString &newExtension);
 }
 
 #endif // UTILITY_H

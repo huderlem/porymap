@@ -142,8 +142,6 @@ In addition to these files, there are some specific symbol and macro names that 
    ``regex_music``, ``\b(SE|MUS)_``, "regex to populate ``Song`` dropdown for maps"
    ``regex_encounter_types``, ``\bTILE_ENCOUNTER_``, "regex to populate the ``Encounter Type`` dropdown for the Tileset Editor"
    ``regex_terrain_types``, ``\bTILE_TERRAIN_``, "regex to populate the ``Terrain Type`` dropdown for the Tileset Editor"
-   ``regex_gbapal``, ``\.gbapal(\.[\w]+)?$``, "regex to get the expected file extension for ``.pal`` data files"
-   ``regex_bpp``, ``\.[\d]+bpp(\.[\w]+)?$``, "regex to get the expected file extension for ``.png`` data files"
    ``pals_output_extension``, ``.gbapal``, "the file extension to output for a new tileset's palette data files"
    ``tiles_output_extension``, ``.4bpp.lz``, "the file extension to output for a new tileset's tiles image data file"
 

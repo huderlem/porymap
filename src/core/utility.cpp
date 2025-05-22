@@ -2,6 +2,7 @@
 
 #include <QCollator>
 #include <QRegularExpression>
+#include <QFileInfo>
 
 // Sometimes we want to sort names alphabetically to make them easier to find in large combo box lists.
 // QStringList::sort (as of writing) can only sort numbers in lexical order, which has an undesirable
@@ -52,4 +53,14 @@ Qt::Orientations Util::getOrientation(bool xflip, bool yflip) {
     if (xflip) flags |= Qt::Orientation::Horizontal;
     if (yflip) flags |= Qt::Orientation::Vertical;
     return flags;
+}
+
+QString Util::replaceExtension(const QString &path, const QString &newExtension) {
+    if (path.isEmpty()) return path;
+    int oldExtensionLen = QFileInfo(path).completeSuffix().length();
+    QString basePath = path.left(path.size() - oldExtensionLen);
+    if (!basePath.endsWith(".")) {
+        basePath.append(".");
+    }
+    return basePath + newExtension;
 }
