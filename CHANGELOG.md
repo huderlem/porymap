@@ -55,6 +55,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - The max encounter rate is now read from the project, rather than assuming the default value from RSE.
 - `MAP_OFFSET_W` and `MAP_OFFSET_H` (used to limit the maximum map size) are now read from the project.
 - The rendered area of the map border is now limited to the maximum player view distance (prior to this it included two extra rows on the top and bottom).
+- Right-clicking on the border metatiles image will now select that metatile.
 - An error message will now be shown when Porymap is unable to save changes (e.g. if Porymap doesn't have write permissions for your project).
 - Error and warning logs are now displayed in the status bar. This can be changed with a new setting.
 - A project may now be opened even if it has no maps or map groups. A minimum of one map layout is required.
