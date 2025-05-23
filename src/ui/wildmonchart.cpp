@@ -3,6 +3,7 @@
 #include "ui_wildmonchart.h"
 #include "config.h"
 #include "utility.h"
+#include "message.h"
 
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
 
@@ -459,11 +460,7 @@ void WildMonChart::showHelpDialog() {
     } else if (ui->tabWidget->currentWidget() == ui->tabLevels) {
         informativeText = levelTabInfo;
     }
-
-    QMessageBox msgBox(QMessageBox::Information, QApplication::applicationName(), text, QMessageBox::Close, this);
-    msgBox.setTextFormat(Qt::RichText);
-    msgBox.setInformativeText(informativeText);
-    msgBox.exec();
+    InfoMessage::show(text, informativeText, this);
 }
 
 void WildMonChart::closeEvent(QCloseEvent *event) {
