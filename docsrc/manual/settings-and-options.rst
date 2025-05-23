@@ -1,3 +1,6 @@
+.. warning::
+    This page was last updated prior to the release of Porymap 6.0.0. Information may be outdated.
+
 .. _settings-and-options:
 
 ****************
