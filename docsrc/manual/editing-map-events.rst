@@ -279,8 +279,9 @@ This event is used to control where a player will arrive when they white out or 
     :align: center
 
     Heal Location Properties
+
 ID
-    The unique ID name of this Heal Location Event. This is the name you'll use to refer to this heal location in scripts (e.g. ``setrespawn HEAL_LOCATION_MY_MAP``) or elsewhere in your project. Unlike other ID name fields, this name is required and cannot be substituted with the ID number at the top of the window.
+    The unique ID name of this Heal Location Event. This is the name you'll use to refer to this heal location in scripts (e.g. ``setrespawn HEAL_LOCATION_VIRIDIAN_CITY``) or elsewhere in your project. Unlike other ID name fields, this name is required and cannot be substituted with the ID number at the top of the window.
 
 Respawn Map
     The map where the player will arrive when they white out (e.g. inside the PokéCenter that the heal location is in front of).
