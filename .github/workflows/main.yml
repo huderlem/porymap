@@ -126,8 +126,10 @@ jobs:
       - name: Run Qmake
         env:
           QTDIR: ../Qt/6.9.0
-          QMAKESPEC: ../Qt/6.9.0/mkspecs/win32-g++
-        run: qmake.exe -o Makefile porymap.pro "CONFIG+=qtquickcompiler"
+          QMAKESPEC: $env:GITHUB_WORKSPACE/../Qt/6.9.0/mkspecs/win32-g++
+        run: |
+          dir $env:GITHUB_WORKSPACE/../Qt/6.9.0/mkspecs
+          qmake.exe -o Makefile porymap.pro "CONFIG+=qtquickcompiler"
 
       - name: Add mingw to PATH
         run: echo "$env:GITHUB_WORKSPACE/../mingw1310_64/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
