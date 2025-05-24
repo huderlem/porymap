@@ -126,7 +126,7 @@ jobs:
       - name: Run Qmake
         env:
           QTDIR: ../Qt/6.9.0
-          QMAKESPEC: $env:GITHUB_WORKSPACE/../Qt/6.9.0/mkspecs/win32-g++
+          QMAKESPEC: ${{ github.workspace }}/../Qt/6.9.0/mkspecs/win32-g++
         run: |
           dir $env:GITHUB_WORKSPACE/../Qt/6.9.0/mkspecs
           qmake.exe -o Makefile porymap.pro "CONFIG+=qtquickcompiler"
