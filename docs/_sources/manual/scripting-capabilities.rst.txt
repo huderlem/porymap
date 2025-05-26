@@ -158,6 +158,13 @@ Callbacks
    :param mapName: the name of the opened map
    :type mapName: string
 
+.. js:function:: onLayoutOpened(layoutName)
+
+   Called when a layout is opened, either by selecting a new map/layout in the map list or swapping the layout for the current map.
+
+   :param layoutName: the name of the opened layout
+   :type layoutName: string
+
 .. js:function:: onBlockChanged(x, y, prevBlock, newBlock)
 
    Called when a block is changed on the map. For example, this is called when a user paints a new tile or changes the collision property of a block.
@@ -197,7 +204,7 @@ Callbacks
 
    Called when the mouse exits the map.
 
-.. js:function:: onMapResized(oldWidth, oldHeight, newWidth, newHeight)
+.. js:function:: onMapResized(oldWidth, oldHeight, delta)
 
    Called when the dimensions of the map are changed.
 
@@ -205,10 +212,8 @@ Callbacks
    :type oldWidth: number
    :param oldHeight: the height of the map before the change
    :type oldHeight: number
-   :param newWidth: the width of the map after the change
-   :type newWidth: number
-   :param newHeight: the height of the map after the change
-   :type newHeight: number
+   :param delta: the amount the map size changed in each direction. The object's shape is ``{left, right, top, bottom}``
+   :type prevBlock: delta
 
 .. js:function:: onBorderResized(oldWidth, oldHeight, newWidth, newHeight)
 
@@ -1995,7 +2000,28 @@ All utility functions are callable via the global ``utility`` object.
 
    Gets the list of map names.
 
-   :returns: the list of map names
+   :returns: the list of map names (e.g. `PetalburgCity`)
+   :rtype: array
+
+.. js:function:: utility.getMapConstants()
+
+   Gets the list of map IDs (e.g. `MAP_PETALBURG_CITY`)
+
+   :returns: the list of map IDs
+   :rtype: array
+
+.. js:function:: utility.getLayoutNames()
+
+   Gets the list of layout names.
+
+   :returns: the list of layout names (e.g. `PetalburgCity_Layout`)
+   :rtype: array
+
+.. js:function:: utility.getLayoutConstants()
+
+   Gets the list of layout IDs (e.g. `LAYOUT_PETALBURG_CITY`)
+
+   :returns: the list of layout IDs
    :rtype: array
 
 .. js:function:: utility.getTilesetNames()

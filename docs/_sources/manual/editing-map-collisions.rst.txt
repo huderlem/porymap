@@ -1,3 +1,5 @@
+.. _editing-map-collisions:
+
 **********************
 Editing Map Collisions
 **********************
