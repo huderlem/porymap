@@ -9,8 +9,6 @@
 #include <QSet>
 #include <QStringList>
 
-const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
-
 NewMapDialog::NewMapDialog(Project *project, QWidget *parent) :
     NewMapDialog(project, nullptr, parent)
 {}
@@ -158,7 +156,7 @@ bool NewMapDialog::validateName(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_NameError->setText(errorText);
     ui->label_NameError->setVisible(!isValid);
-    ui->lineEdit_Name->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->lineEdit_Name, !isValid);
     return isValid;
 }
 
@@ -184,7 +182,7 @@ bool NewMapDialog::validateGroup(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_GroupError->setText(errorText);
     ui->label_GroupError->setVisible(!isValid);
-    ui->comboBox_Group->lineEdit()->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->comboBox_Group->lineEdit(), !isValid);
     return isValid;
 }
 
@@ -205,7 +203,7 @@ bool NewMapDialog::validateLayoutID(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_LayoutIDError->setText(errorText);
     ui->label_LayoutIDError->setVisible(!isValid);
-    ui->comboBox_LayoutID->lineEdit()->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->comboBox_LayoutID->lineEdit(), !isValid);
     return isValid;
 }
 

@@ -4,8 +4,6 @@
 #include "imageexport.h"
 #include "validator.h"
 
-const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
-
 NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NewTilesetDialog),
@@ -49,7 +47,7 @@ bool NewTilesetDialog::validateName(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_NameError->setText(errorText);
     ui->label_NameError->setVisible(!isValid);
-    ui->lineEdit_Name->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->lineEdit_Name, !isValid);
     return isValid;
 }
 

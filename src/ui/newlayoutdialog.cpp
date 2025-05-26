@@ -8,8 +8,6 @@
 #include <QSet>
 #include <QStringList>
 
-const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
-
 NewLayoutDialog::NewLayoutDialog(Project *project, QWidget *parent) :
     NewLayoutDialog(project, nullptr, parent)
 {}
@@ -95,7 +93,7 @@ bool NewLayoutDialog::validateLayoutID(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_LayoutIDError->setText(errorText);
     ui->label_LayoutIDError->setVisible(!isValid);
-    ui->lineEdit_LayoutID->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->lineEdit_LayoutID, !isValid);
     return isValid;
 }
 
@@ -116,7 +114,7 @@ bool NewLayoutDialog::validateName(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_NameError->setText(errorText);
     ui->label_NameError->setVisible(!isValid);
-    ui->lineEdit_Name->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->lineEdit_Name, !isValid);
     return isValid;
 }
 

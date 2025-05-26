@@ -3,6 +3,7 @@
 #define UTILITY_H
 
 #include <QString>
+#include <QLineEdit>
 
 namespace Util {
     void numericalModeSort(QStringList &list);
@@ -12,6 +13,7 @@ namespace Util {
     QString toHtmlParagraph(const QString &text);
     Qt::Orientations getOrientation(bool xflip, bool yflip);
     QString replaceExtension(const QString &path, const QString &newExtension);
+    void setErrorStylesheet(QLineEdit *lineEdit, bool isError);
 }
 
 #endif // UTILITY_H

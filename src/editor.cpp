@@ -308,13 +308,9 @@ void Editor::addNewWildMonGroup(QWidget *window) {
     form.addRow(new QLabel("Group Base Label:"), lineEdit);
     lineEdit->setValidator(new IdentifierValidator(lineEdit));
     connect(lineEdit, &QLineEdit::textChanged, [this, &lineEdit, &buttonBox](QString text){
-        if (!this->project->isIdentifierUnique(text)) {
-            lineEdit->setStyleSheet("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
-            buttonBox.button(QDialogButtonBox::Ok)->setDisabled(true);
-        } else {
-            lineEdit->setStyleSheet("");
-            buttonBox.button(QDialogButtonBox::Ok)->setEnabled(true);
-        }
+        bool invalid = !this->project->isIdentifierUnique(text);
+        Util::setErrorStylesheet(lineEdit, invalid);
+        buttonBox.button(QDialogButtonBox::Ok)->setDisabled(invalid);
     });
     // Give a default value to the label.
     lineEdit->setText(this->project->toUniqueIdentifier("g" + map->name()));

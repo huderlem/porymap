@@ -64,3 +64,8 @@ QString Util::replaceExtension(const QString &path, const QString &newExtension)
     }
     return basePath + newExtension;
 }
+
+void Util::setErrorStylesheet(QLineEdit *lineEdit, bool isError) {
+    static const QString stylesheet = QStringLiteral("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
+    lineEdit->setStyleSheet(isError ? stylesheet : "");
+}

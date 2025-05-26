@@ -1,5 +1,6 @@
 #include "customattributesdialog.h"
 #include "ui_customattributesdialog.h"
+#include "utility.h"
 
 #include <QMessageBox>
 
@@ -61,7 +62,7 @@ bool CustomAttributesDialog::validateName(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_NameError->setText(errorText);
     ui->label_NameError->setVisible(!isValid);
-    ui->lineEdit_Name->setStyleSheet(!isValid ? "QLineEdit { background-color: rgba(255, 0, 0, 25%) }" : "");
+    Util::setErrorStylesheet(ui->lineEdit_Name, !isValid);
     return isValid;
 }
 

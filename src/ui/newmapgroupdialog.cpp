@@ -3,8 +3,6 @@
 #include "project.h"
 #include "validator.h"
 
-const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
-
 NewMapGroupDialog::NewMapGroupDialog(Project* project, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NewMapGroupDialog)
@@ -44,7 +42,7 @@ bool NewMapGroupDialog::validateName(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_NameError->setText(errorText);
     ui->label_NameError->setVisible(!isValid);
-    ui->lineEdit_Name->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->lineEdit_Name, !isValid);
     return isValid;
 }
 

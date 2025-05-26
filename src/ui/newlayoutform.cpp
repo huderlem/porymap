@@ -2,8 +2,6 @@
 #include "ui_newlayoutform.h"
 #include "project.h"
 
-const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
-
 NewLayoutForm::NewLayoutForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::NewLayoutForm)
@@ -119,7 +117,7 @@ bool NewLayoutForm::validatePrimaryTileset(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_PrimaryTilesetError->setText(errorText);
     ui->label_PrimaryTilesetError->setVisible(!isValid);
-    ui->comboBox_PrimaryTileset->lineEdit()->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->comboBox_PrimaryTileset->lineEdit(), !isValid);
     return isValid;
 }
 
@@ -136,6 +134,6 @@ bool NewLayoutForm::validateSecondaryTileset(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_SecondaryTilesetError->setText(errorText);
     ui->label_SecondaryTilesetError->setVisible(!isValid);
-    ui->comboBox_SecondaryTileset->lineEdit()->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->comboBox_SecondaryTileset->lineEdit(), !isValid);
     return isValid;
 }

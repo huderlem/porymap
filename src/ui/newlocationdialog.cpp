@@ -3,8 +3,6 @@
 #include "project.h"
 #include "validator.h"
 
-const QString lineEdit_ErrorStylesheet = "QLineEdit { background-color: rgba(255, 0, 0, 25%) }";
-
 NewLocationDialog::NewLocationDialog(Project* project, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NewLocationDialog),
@@ -52,7 +50,7 @@ bool NewLocationDialog::validateIdName(bool allowEmpty) {
     bool isValid = errorText.isEmpty();
     ui->label_IdNameError->setText(errorText);
     ui->label_IdNameError->setVisible(!isValid);
-    ui->lineEdit_IdName->setStyleSheet(!isValid ? lineEdit_ErrorStylesheet : "");
+    Util::setErrorStylesheet(ui->lineEdit_IdName, !isValid);
     return isValid;
 }
 
