@@ -2333,11 +2333,12 @@ void MainWindow::displayEventTabs() {
 }
 
 void MainWindow::updateEvents() {
-    if (this->editor->map) {
-        for (auto i = this->lastSelectedEvent.begin(); i != this->lastSelectedEvent.end(); i++) {
-            if (i.value() && !this->editor->map->hasEvent(i.value()))
-                this->lastSelectedEvent.insert(i.key(), nullptr);
-        }
+    if (!this->editor->map)
+        return;
+
+    for (auto i = this->lastSelectedEvent.begin(); i != this->lastSelectedEvent.end(); i++) {
+        if (i.value() && !this->editor->map->hasEvent(i.value()))
+            this->lastSelectedEvent.insert(i.key(), nullptr);
     }
     displayEventTabs();
     updateSelectedEvents();
