@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are **"Breaking Changes"** in the pret projects. For more on this, see [the manual page on breaking changes](https://huderlem.github.io/porymap/manual/breaking-changes.html).
 
 ## [Unreleased]
+### Breaking Changes
+- See [Breaking Changes](https://huderlem.github.io/porymap/manual/breaking-changes.html) in the manual.
+
 ### Added
 - Redesigned the map list, adding new features including opening/editing layouts with no associated map, editing the names of map groups, rearranging maps and map groups, and hiding empty folders.
 - Add a drop-down for changing the layout of the currently opened map.
