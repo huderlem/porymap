@@ -33,7 +33,7 @@ Layouts
     Maps are sorted by their ``Layout``. From this tab you can also open and edit layouts directly. Most layouts are only used by a single map, but layouts like the Pokémon Center are used by many maps. Some maps have multiple layouts that they can switch between, like ``Route111`` using both ``Route111_Layout`` and ``Route111_NoMirageTower_Layout``. 
 
 
-On any of the tabs, right-clicking on a folder name or map name will bring up some helpful options. For instance, you can right-click on a folder to add a new map to that folder, or right-click on a map to duplicate that map.
+On any of the tabs, right-clicking on a folder name or map name will bring up some helpful options. For instance, you can right-click on a folder to add a new map to that folder, or right-click on a map to duplicate that map. ``Locaitons`` or ``Groups`` folders may be deleted by right-clicking and selecting the ``Delete`` option, but only if the folder doesn't contain any maps.
 
 Buttons
 ^^^^^^^
