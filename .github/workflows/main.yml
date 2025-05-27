@@ -42,11 +42,13 @@ jobs:
      matrix:
        os: [macos-latest, macos-13]
     runs-on: ${{ matrix.os }}
-    env:
-      BUILD_NAME: porymap-${{ matrix.os }}
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+
+      # We need a separate step to expand matrix.os
+      - name: Set Build Name
+        run: echo "BUILD_NAME=porymap-${{ matrix.os }}" >> $GITHUB_ENV
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -68,19 +70,19 @@ jobs:
       - name: Prep Release Directory
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          mkdir $BUILD_NAME
-          cp porymap.dmg $BUILD_NAME/porymap.dmg
-          cp RELEASE-README.txt $BUILD_NAME/README.txt
+          mkdir ${{ env.BUILD_NAME }}
+          cp porymap.dmg ${{ env.BUILD_NAME }}/porymap.dmg
+          cp RELEASE-README.txt ${{ env.BUILD_NAME }}/README.txt
 
       - name: Bundle Release Directory
         if: startsWith(github.ref, 'refs/tags/')
-        run: zip -r $BUILD_NAME.zip $BUILD_NAME
+        run: zip -r ${{ env.BUILD_NAME }}.zip ${{ env.BUILD_NAME }}
 
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: $BUILD_NAME.zip
+          files: ${{ env.BUILD_NAME }}.zip
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
