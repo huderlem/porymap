@@ -3109,7 +3109,7 @@ QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
         // Set this whether we were successful or not, we only need to try to load it once.
         gfx->loaded = true;
     }
-    if (!gfx || gfx->spritesheet.isNull()) {
+    if (!gfx || gfx->spritesheet.width() == 0 || gfx->spritesheet.height() == 0) {
         // Either we didn't recognize the gfxName, or we were unable to load the sprite's image.
         return QPixmap();
     }
@@ -3118,18 +3118,13 @@ QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
     if (gfx->inanimate) {
         img = gfx->spritesheet.copy(0, 0, gfx->spriteWidth, gfx->spriteHeight);
     } else {
-        int x = 0;
-        int y = 0;
+        int x = frame * gfx->spriteWidth;
+        int y = ((frame * gfx->spriteWidth) / gfx->spritesheet.width()) * gfx->spriteHeight;
 
-        // Get frame's position in spritesheet.
-        // Assume horizontal layout. If position would exceed sheet width, try vertical layout.
-        if ((frame + 1) * gfx->spriteWidth <= gfx->spritesheet.width()) {
-            x = frame * gfx->spriteWidth;
-        } else if ((frame + 1) * gfx->spriteHeight <= gfx->spritesheet.height()) {
-            y = frame * gfx->spriteHeight;
-        }
-
-        img = gfx->spritesheet.copy(x, y, gfx->spriteWidth, gfx->spriteHeight);
+        img = gfx->spritesheet.copy(x % gfx->spritesheet.width(),
+                                    y % gfx->spritesheet.height(),
+                                    gfx->spriteWidth,
+                                    gfx->spriteHeight);
         if (hFlip) {
             img = img.transformed(QTransform().scale(-1, 1));
         }

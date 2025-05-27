@@ -129,6 +129,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix `Open Map Scripts` not working on maps with a `shared_scripts_map` field.
 - Fix the main window sometimes exceeding the screen size on first launch.
 - Fix right-click selections with the eyedropper clearing when the mouse is released.
+- Fix overworld sprite facing directions if spritesheet is arranged in multiple rows.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
