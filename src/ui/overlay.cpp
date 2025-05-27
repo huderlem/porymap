@@ -25,6 +25,18 @@ void Overlay::renderItems(QPainter *painter) {
 
     painter->save();
 
+    // don't waste time if there are no updated to be made
+    if (!valid) {
+        QPainter overlayPainter(&this->image);
+        overlayPainter.setClipping(false);
+        QTransform t = overlayPainter.transform();
+        t.translate(-this->image.offset().x(), -this->image.offset().y());
+        overlayPainter.setTransform(t);
+        for (auto item : this->items) {
+            item->render(&overlayPainter);
+        }
+    }
+
     if (this->clippingRect) {
         painter->setClipping(true);
         painter->setClipRect(*this->clippingRect);
@@ -37,10 +49,11 @@ void Overlay::renderItems(QPainter *painter) {
     painter->setTransform(transform);
 
     painter->setOpacity(this->opacity);
-    for (auto item : this->items)
-        item->render(painter);
+    painter->drawImage(this->image.offset(), this->image);
 
     painter->restore();
+
+    valid = true;
 }
 
 void Overlay::clearItems() {
@@ -48,6 +61,7 @@ void Overlay::clearItems() {
         delete item;
     }
     this->items.clear();
+    this->image.fill(QColor(0, 0, 0, 0));
 }
 
 QList<OverlayItem*> Overlay::getItems() {
