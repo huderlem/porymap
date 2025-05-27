@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are **"Breaking Changes"** in the pret projects. For more on this, see [the manual page on breaking changes](https://huderlem.github.io/porymap/manual/breaking-changes.html).
 
 ## [Unreleased]
+Nothing, yet.
+
+## [6.0.0] - 2025-05-26
 ### Breaking Changes
 - See [Breaking Changes](https://huderlem.github.io/porymap/manual/breaking-changes.html) in the manual.
 
@@ -129,6 +132,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix `Open Map Scripts` not working on maps with a `shared_scripts_map` field.
 - Fix the main window sometimes exceeding the screen size on first launch.
 - Fix right-click selections with the eyedropper clearing when the mouse is released.
+- Fix overworld sprite facing directions if spritesheet is arranged in multiple rows.
 
 ## [5.4.1] - 2024-03-21
 ### Fixed
@@ -605,7 +609,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/5.4.1...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/6.0.0...HEAD
+[6.0.0]: https://github.com/huderlem/porymap/compare/5.4.1...6.0.0
 [5.4.1]: https://github.com/huderlem/porymap/compare/5.4.0...5.4.1
 [5.4.0]: https://github.com/huderlem/porymap/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/huderlem/porymap/compare/5.2.0...5.3.0
