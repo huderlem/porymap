@@ -10,7 +10,7 @@ View the [Changelog][changelog] to see what's new.
 
 ## Download
 
-Windows and macOS users can download Porymap below to start using it immediately.
+Windows and macOS users can download Porymap below to start using it immediately. Older versions of Porymap may be downloaded from the [Releases](releases) page.
 
  - [Download Porymap for Windows](https://github.com/huderlem/porymap/releases/latest/download/porymap-windows.zip).
  - [Download Porymap for macOS latest (arm)](https://github.com/huderlem/porymap/releases/latest/download/porymap-macos-latest.zip).
