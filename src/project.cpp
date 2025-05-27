@@ -121,7 +121,7 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
     static const QMap<QString, QList<QPair<int, QString>>> historyMap = {
         // pokeemerald
         {"33b799c967fd63d04afe82eecc4892f3e45781b3", {
-            {6, "07c897ad48c36b178093bde8ca360823127d812b"}, // TODO: Update to merge commit for pokeemerald's porymap-6 branch
+            {6, "0c32d840fae64c612b01ca8b004d1f95b7f798ba"},
             {5, "c76beed98990a57c84d3930190fd194abfedf7e8"},
             {4, "cb5b8da77b9ba6837fcc8c5163bedc5008b12c2c"},
             {3, "204c431993dad29661a9ff47326787cd0cf381e6"},
@@ -130,13 +130,13 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
         }},
         // pokefirered
         {"670fef77ac4d9116d5fdc28c0da40622919a062b", {
-            {6, "7722e7a92ca5fa69925dcef82f6c89c35ec48171"}, // TODO: Update to merge commit for pokefirered's porymap-6 branch
+            {6, "f60d28ceb58cd6e7064e34c34e56d09b84420355"},
             {5, "52591dcee42933d64f60c59276fc13c3bb89c47b"},
             {4, "200c82e01a94dbe535e6ed8768d8afad4444d4d2"},
         }},
         // pokeruby
         {"1362b60f3467f0894d55e82f3294980b6373021d", {
-            {6, "bc5aeaa64ecad03aa4ab9e1000ba94916276c936"}, // TODO: Update to merge commit for pokeruby's porymap-6 branch
+            {6, "5eb76d89ce5c41feeba848abe10b8e52b1add84c"},
             {5, "d99cb43736dd1d4ee4820f838cb259d773d8bf25"},
             {4, "f302fcc134bf354c3655e3423be68fd7a99cb396"},
             {3, "b4f4d2c0f03462dcdf3492aad27890294600eb2e"},
