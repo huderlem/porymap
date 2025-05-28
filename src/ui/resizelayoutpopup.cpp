@@ -170,9 +170,10 @@ void ResizeLayoutPopup::setupLayoutView() {
     layoutPixmap->setBoundary(outline);
     emit this->outline->rectUpdated(outline->rect().toAlignedRect());
 
-    // TODO: is this an ideal size for all maps, or should this adjust based on starting dimensions?
-    this->ui->graphicsView->setTransform(QTransform::fromScale(0.5, 0.5));
-    this->ui->graphicsView->centerOn(layoutPixmap);
+    QRectF rect = this->outline->rect();
+    const int marginSize = 10 * 16; // Leave a margin of 10 metatiles around the map
+    rect += QMargins(marginSize, marginSize, marginSize, marginSize);
+    this->ui->graphicsView->fitInView(rect, Qt::KeepAspectRatio);
 }
 
 void ResizeLayoutPopup::on_spinBox_width_valueChanged(int value) {
