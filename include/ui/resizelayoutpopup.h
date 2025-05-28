@@ -91,6 +91,8 @@ protected:
         this->resetPosition();
     }
 
+    void keyPressEvent(QKeyEvent *) override;
+
 private slots:
     void on_spinBox_width_valueChanged(int value);
     void on_spinBox_height_valueChanged(int value);
@@ -107,6 +109,9 @@ private:
     BoundedPixmapItem *layoutPixmap = nullptr;
 
     QPointer<CheckeredBgScene> scene = nullptr;
+
+    void zoom(qreal delta);
+    qreal scale = 1.0;
 };
 
 #endif // RESIZELAYOUTPOPUP_H
