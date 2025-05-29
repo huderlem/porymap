@@ -127,6 +127,7 @@ private:
     bool m_hasUnsavedDataChanges = false;
     bool m_needsHealLocation = false;
     bool m_scriptsLoaded = false;
+    bool m_loggedScriptsFileError = false;
 
     QMap<Event::Group, QList<Event *>> m_events;
     QSet<Event *> m_ownedEvents; // for memory management

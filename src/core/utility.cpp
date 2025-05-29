@@ -48,6 +48,13 @@ QString Util::toHtmlParagraph(const QString &text) {
     return QString("<html><head/><body><p>%1</p></body></html>").arg(text);
 }
 
+QString Util::stripPrefix(const QString &s, const QString &prefix) {
+    if (!s.startsWith(prefix)) {
+        return s;
+    }
+    return QString(s).remove(0, prefix.length());
+}
+
 Qt::Orientations Util::getOrientation(bool xflip, bool yflip) {
     Qt::Orientations flags;
     if (xflip) flags |= Qt::Orientation::Horizontal;
