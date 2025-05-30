@@ -9,6 +9,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - The scale of the map can now be changed while resizing the map.
 
 ### Fixed
+- Fix duplicated maps writing the wrong name.
 - Fix small maps being difficult to see while resizing.
 
 ## [6.0.0] - 2025-05-26

@@ -405,6 +405,10 @@ bool Project::loadMapData(Map* map) {
     }
 
     QJsonObject mapObj = mapDoc.object();
+    QString name = ParseUtil::jsonToQString(mapObj.take("name"));
+    if (name != map->name()) {
+        logWarn(QString("Mismatched name '%1' for map '%2' will be overwritten.").arg(name).arg(map->name()));
+    }
 
     // We should already know the map constant ID from the initial project launch, but we'll ensure it's correct here anyway.
     map->setConstantName(ParseUtil::jsonToQString(mapObj.take("id")));
