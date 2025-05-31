@@ -765,9 +765,7 @@ QMap<QString,QString> ProjectSettingsEditor::getGlobalConstants() {
 
 // Display relative path if this file is in the project folder
 QString ProjectSettingsEditor::stripProjectDir(QString s) {
-    if (s.startsWith(this->baseDir))
-        s.remove(0, this->baseDir.length());
-    return s;
+    return Util::stripPrefix(s, this->baseDir);
 }
 
 void ProjectSettingsEditor::importDefaultPrefabsClicked(bool) {

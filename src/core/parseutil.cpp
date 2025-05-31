@@ -1,6 +1,7 @@
 #include "log.h"
 #include "parseutil.h"
 #include "loadingscreen.h"
+#include "utility.h"
 
 #include <QRegularExpression>
 #include <QJsonDocument>
@@ -59,11 +60,7 @@ QString ParseUtil::createErrorMessage(const QString &message, const QString &exp
 void ParseUtil::updateSplashScreen(QString path) {
     if (!this->updatesSplashScreen)
         return;
-
-    if (path.startsWith(this->root)) {
-        path.remove(0, this->root.length());
-    }
-    porysplash->showLoadingMessage(path);
+    porysplash->showLoadingMessage(Util::stripPrefix(path, this->root));
 }
 
 QString ParseUtil::readTextFile(const QString &path, QString *error) {
@@ -101,8 +98,12 @@ QString ParseUtil::loadTextFile(const QString &path, QString *error) {
 bool ParseUtil::cacheFile(const QString &path, QString *error) {
     updateSplashScreen(path);
 
-    this->fileCache.insert(path, readTextFile(pathWithRoot(path), error));
-    return !error || error->isEmpty();
+    // We use an internal '_error' variable because we use the error output to track success,
+    // and we want to report success regardless of whether the caller provided 'error'.
+    QString _error;
+    this->fileCache.insert(path, readTextFile(pathWithRoot(path), &_error));
+    if (error) *error = _error;
+    return _error.isEmpty();
 }
 
 int ParseUtil::textFileLineCount(const QString &path) {
@@ -879,11 +880,11 @@ int ParseUtil::getPoryScriptLineNumber(QString text, const QString &scriptLabel)
     return 0;
 }
 
-QStringList ParseUtil::getGlobalScriptLabels(const QString &filePath) {
+QStringList ParseUtil::getGlobalScriptLabels(const QString &filePath, QString *error) {
     if (filePath.endsWith(".inc") || filePath.endsWith(".s"))
-        return getGlobalRawScriptLabels(readTextFile(filePath));
+        return getGlobalRawScriptLabels(readTextFile(filePath, error));
     else if (filePath.endsWith(".pory"))
-        return getGlobalPoryScriptLabels(readTextFile(filePath));
+        return getGlobalPoryScriptLabels(readTextFile(filePath, error));
     else
         return { };
 }

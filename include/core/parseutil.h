@@ -80,7 +80,7 @@ public:
     static int getScriptLineNumber(const QString &filePath, const QString &scriptLabel);
     static int getRawScriptLineNumber(QString text, const QString &scriptLabel);
     static int getPoryScriptLineNumber(QString text, const QString &scriptLabel);
-    static QStringList getGlobalScriptLabels(const QString &filePath);
+    static QStringList getGlobalScriptLabels(const QString &filePath, QString *error = nullptr);
     static QStringList getGlobalRawScriptLabels(QString text);
     static QStringList getGlobalPoryScriptLabels(QString text);
     static QString removeStringLiterals(QString text);

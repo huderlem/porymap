@@ -294,6 +294,8 @@ private:
     // We can't display these layouts to the user, but we want to preserve the data when they save.
     QList<QJsonObject> failedLayoutsData;
 
+    QSet<QString> failedFileWatchPaths;
+
     const QRegularExpression re_gbapalExtension;
     const QRegularExpression re_bppExtension;
 
@@ -322,8 +324,8 @@ private:
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
 
-    void watchFile(const QString &filename);
-    void watchFiles(const QStringList &filenames);
+    bool watchFile(const QString &filename);
+    bool watchFiles(const QStringList &filenames);
     void ignoreWatchedFileTemporarily(const QString &filepath);
     void ignoreWatchedFilesTemporarily(const QStringList &filepaths);
     void recordFileChange(const QString &filepath);

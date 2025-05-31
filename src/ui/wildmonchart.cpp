@@ -121,9 +121,7 @@ void WildMonChart::readTable() {
         const QString groupName = this->tableIndexToGroupName.value(i);
 
         // Create species label (strip 'SPECIES_' prefix).
-        QString label = pokemon.species;
-        if (label.startsWith(speciesPrefix))
-            label.remove(0, speciesPrefix.length());
+        QString label = Util::stripPrefix(pokemon.species, speciesPrefix);
 
         // Add species/level frequency data
         Summary *summary = &this->speciesToGroupedData[label][groupName];
