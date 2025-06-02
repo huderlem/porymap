@@ -7,7 +7,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ## [Unreleased]
 Nothing, yet.
 
-## [6.0.0] - 2025-05-26
+## [6.0.0] - 2025-05-27
 ### Breaking Changes
 - See [Breaking Changes](https://huderlem.github.io/porymap/manual/breaking-changes.html) in the manual.
 
