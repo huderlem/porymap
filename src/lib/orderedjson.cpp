@@ -77,7 +77,11 @@ static void dump(bool value, QString &out, int *indent) {
 
 static void dump(const QString &value, QString &out, int *indent, bool isKey = false) {
     if (!isKey && !out.endsWith(": ")) out += QString(*indent * 2, ' ');
-    out += QString("\"%1\"").arg(value.toUtf8());
+
+    // Convert QString to a JSON-ready string using Qt's internal conversion.
+    // We use 'mid' and 'chopped' to remove the JSON array's '[' and ']' characters.
+    auto doc = QJsonDocument(QJsonArray() << value);
+    out += doc.toJson(QJsonDocument::Compact).mid(1).chopped(1);
 }
 
 static void dump(const Json::array &values, QString &out, int *indent) {
