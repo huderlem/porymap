@@ -77,40 +77,7 @@ static void dump(bool value, QString &out, int *indent) {
 
 static void dump(const QString &value, QString &out, int *indent, bool isKey = false) {
     if (!isKey && !out.endsWith(": ")) out += QString(*indent * 2, ' ');
-    out += '"';
-    for (int i = 0; i < value.length(); i++) {
-        const char ch = value[i].unicode();
-        if (ch == '\\') {
-            out += "\\\\";
-        } else if (ch == '"') {
-            out += "\\\"";
-        } else if (ch == '\b') {
-            out += "\\b";
-        } else if (ch == '\f') {
-            out += "\\f";
-        } else if (ch == '\n') {
-            out += "\\n";
-        } else if (ch == '\r') {
-            out += "\\r";
-        } else if (ch == '\t') {
-            out += "\\t";
-        } else if (static_cast<uint8_t>(ch) <= 0x1f) {
-            char buf[8];
-            snprintf(buf, sizeof buf, "\\u%04x", ch);
-            out += buf;
-        } else if (static_cast<uint8_t>(ch) == 0xe2 && static_cast<uint8_t>(value[i+1].unicode()) == 0x80
-                   && static_cast<uint8_t>(value[i+2].unicode()) == 0xa8) {
-            out += "\\u2028";
-            i += 2;
-        } else if (static_cast<uint8_t>(ch) == 0xe2 && static_cast<uint8_t>(value[i+1].unicode()) == 0x80
-                   && static_cast<uint8_t>(value[i+2].unicode()) == 0xa9) {
-            out += "\\u2029";
-            i += 2;
-        } else {
-            out += ch;
-        }
-    }
-    out += '"';
+    out += QString("\"%1\"").arg(value.toUtf8());
 }
 
 static void dump(const Json::array &values, QString &out, int *indent) {
