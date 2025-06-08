@@ -185,7 +185,7 @@ QList<Token> ParseUtil::tokenizeExpression(QString expression) {
     QList<Token> tokens;
 
     static const QStringList tokenTypes = {"hex", "decimal", "identifier", "operator", "leftparen", "rightparen"};
-    static const QRegularExpression re("^(?<hex>0x[0-9a-fA-F]+)|(?<decimal>[0-9]+)|(?<identifier>[a-zA-Z_0-9]+)|(?<operator>[+\\-*\\/<>|^%]+)|(?<leftparen>\\()|(?<rightparen>\\))");
+    static const QRegularExpression re("^(?<hex>0[xX][0-9a-fA-F]+)|(?<decimal>\\d+)|(?<identifier>\\w+)|(?<operator>[+\\-*\\/<>|^%]+)|(?<leftparen>\\()|(?<rightparen>\\))");
 
     expression = expression.trimmed();
     while (!expression.isEmpty()) {

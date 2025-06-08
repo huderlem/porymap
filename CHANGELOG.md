@@ -11,6 +11,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Fixed
 - Fix duplicated maps writing the wrong name.
 - Fix small maps being difficult to see while resizing.
+- Fix expressions using the prefix '0X' as opposed to '0x' not being recognized has hex numbers.
 
 ## [6.0.0] - 2025-05-26
 ### Breaking Changes
