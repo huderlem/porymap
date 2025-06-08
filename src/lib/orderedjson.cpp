@@ -26,6 +26,8 @@
 #include <cstdio>
 #include <limits>
 
+#include <QJsonDocument>
+
 namespace poryjson {
 
 static const int max_depth = 200;
