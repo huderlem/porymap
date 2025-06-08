@@ -225,6 +225,10 @@ public:
     QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
     QString findMetatileLabelsTileset(QString label);
 
+    bool watchFile(const QString &filename);
+    bool watchFiles(const QStringList &filenames);
+    bool stopFileWatch(const QString &filename);
+
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
     
@@ -324,8 +328,6 @@ private:
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
 
-    bool watchFile(const QString &filename);
-    bool watchFiles(const QStringList &filenames);
     void ignoreWatchedFileTemporarily(const QString &filepath);
     void ignoreWatchedFilesTemporarily(const QStringList &filepaths);
     void recordFileChange(const QString &filepath);

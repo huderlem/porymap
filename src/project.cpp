@@ -406,7 +406,6 @@ bool Project::loadMapData(Map* map) {
         logError(error);
         return false;
     }
-    watchFile(map->getJsonFilepath());
 
     QJsonObject mapObj = mapDoc.object();
 
@@ -768,6 +767,11 @@ bool Project::watchFiles(const QStringList &filenames) {
         if (!watchFile(filename)) success = false;
     }
     return success;
+}
+
+bool Project::stopFileWatch(const QString &filename) {
+    QString filepath = filename.startsWith(this->root) ? filename : QString("%1/%2").arg(this->root).arg(filename);
+    return this->fileWatcher.removePath(filepath);
 }
 
 void Project::ignoreWatchedFileTemporarily(const QString &filepath) {

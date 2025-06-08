@@ -147,7 +147,7 @@ void Map::invalidateScripts() {
 }
 
 QStringList Map::getScriptLabels(Event::Group group) {
-    if (!m_scriptsLoaded) {
+    if (!m_scriptsLoaded && m_isPersistedToFile) {
         const QString scriptsFilepath = getScriptsFilepath();
         QString error;
         m_scriptLabels = ParseUtil::getGlobalScriptLabels(scriptsFilepath, &error);
