@@ -147,14 +147,28 @@ void Map::invalidateScripts() {
 }
 
 QStringList Map::getScriptLabels(Event::Group group) {
-    if (!m_scriptsLoaded) {
+    if (!m_scriptsLoaded && m_isPersistedToFile) {
         const QString scriptsFilepath = getScriptsFilepath();
-        m_scriptLabels = ParseUtil::getGlobalScriptLabels(scriptsFilepath);
+        QString error;
+        m_scriptLabels = ParseUtil::getGlobalScriptLabels(scriptsFilepath, &error);
         m_scriptsLoaded = true;
+
+        if (!error.isEmpty() && !m_loggedScriptsFileError) {
+            logWarn(QString("Failed to read scripts file '%1' for %2: %3")
+                            .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
+                            .arg(m_name)
+                            .arg(error));
+            m_loggedScriptsFileError = true;
+        }
 
         // Track the scripts file for changes. Path may have changed, so stop tracking old files.
         m_scriptFileWatcher->removePaths(m_scriptFileWatcher->files());
-        m_scriptFileWatcher->addPath(scriptsFilepath);
+        if (!m_scriptFileWatcher->addPath(scriptsFilepath) && !m_loggedScriptsFileError) {
+            logWarn(QString("Failed to add scripts file '%1' to file watcher for %2.")
+                            .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
+                            .arg(m_name));
+            m_loggedScriptsFileError = true;
+        }
     }
 
     QStringList scriptLabels = m_scriptLabels;

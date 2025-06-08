@@ -225,6 +225,10 @@ public:
     QString buildMetatileLabelsText(const QMap<QString, uint16_t> defines);
     QString findMetatileLabelsTileset(QString label);
 
+    bool watchFile(const QString &filename);
+    bool watchFiles(const QStringList &filenames);
+    bool stopFileWatch(const QString &filename);
+
     static QString getExistingFilepath(QString filepath);
     void applyParsedLimits();
     
@@ -294,6 +298,8 @@ private:
     // We can't display these layouts to the user, but we want to preserve the data when they save.
     QList<QJsonObject> failedLayoutsData;
 
+    QSet<QString> failedFileWatchPaths;
+
     const QRegularExpression re_gbapalExtension;
     const QRegularExpression re_bppExtension;
 
@@ -322,8 +328,6 @@ private:
     void setNewLayoutBlockdata(Layout *layout);
     void setNewLayoutBorder(Layout *layout);
 
-    void watchFile(const QString &filename);
-    void watchFiles(const QStringList &filenames);
     void ignoreWatchedFileTemporarily(const QString &filepath);
     void ignoreWatchedFilesTemporarily(const QStringList &filepaths);
     void recordFileChange(const QString &filepath);

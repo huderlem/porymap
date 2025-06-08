@@ -30,9 +30,7 @@ void NewLocationDialog::onIdNameChanged(const QString &idName) {
     validateIdName(true);
 
     // Extract a presumed display name from the ID name
-    QString displayName = idName;
-    if (displayName.startsWith(namePrefix))
-        displayName.remove(0, namePrefix.length());
+    QString displayName = Util::stripPrefix(idName, namePrefix);
     displayName.replace("_", " ");
     ui->lineEdit_DisplayName->setText(displayName);
 }

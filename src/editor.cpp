@@ -1244,6 +1244,9 @@ void Editor::unsetMap() {
     if (this->map) {
         this->map->pruneEditHistory();
         this->map->disconnect(this);
+
+        // Don't let the file watcher accumulate map.json files.
+        this->project->stopFileWatch(this->map->getJsonFilepath());
     }
     clearMapEvents();
     clearMapConnections();
@@ -1279,6 +1282,7 @@ bool Editor::setMap(QString map_name) {
     connect(map, &Map::connectionAdded, this, &Editor::displayConnection);
     connect(map, &Map::connectionRemoved, this, &Editor::removeConnectionPixmap);
     updateEvents();
+    this->project->watchFile(map->getJsonFilepath());
 
     return true;
 }

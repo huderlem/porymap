@@ -133,11 +133,9 @@ QString CustomScriptsEditor::getScriptFilepath(QListWidgetItem * item, bool abso
 
 void CustomScriptsEditor::setScriptFilepath(QListWidgetItem * item, QString filepath) const {
     auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
-    if (!widget) return;
-
-    if (filepath.startsWith(this->baseDir))
-        filepath.remove(0, this->baseDir.length());
-    widget->ui->lineEdit_filepath->setText(filepath);
+    if (widget) {
+        widget->ui->lineEdit_filepath->setText(Util::stripPrefix(filepath, this->baseDir));
+    }
 }
 
 bool CustomScriptsEditor::getScriptEnabled(QListWidgetItem * item) const {
@@ -179,8 +177,7 @@ void CustomScriptsEditor::loadScript() {
 }
 
 void CustomScriptsEditor::displayNewScript(QString filepath) {
-    if (filepath.startsWith(this->baseDir))
-        filepath.remove(0, this->baseDir.length());
+    filepath = Util::stripPrefix(filepath, this->baseDir);
 
     // Verify new script path is not already in list
     for (int i = 0; i < ui->list->count(); i++) {

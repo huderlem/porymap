@@ -232,6 +232,7 @@ bool Project::load() {
 
 void Project::resetFileCache() {
     this->parser.clearFileCache();
+    this->failedFileWatchPaths.clear();
 
     const QSet<QString> filepaths = {
         // Whenever we load a tileset we'll need to parse some data from these files, so we cache them to avoid the overhead of opening the files.
@@ -245,6 +246,7 @@ void Project::resetFileCache() {
         // We need separate sets of constants from these files
         projectConfig.getFilePath(ProjectFilePath::constants_map_types),
         projectConfig.getFilePath(ProjectFilePath::global_fieldmap),
+        projectConfig.getFilePath(ProjectFilePath::constants_weather),
     };
     for (const auto &path : filepaths) {
         if (this->parser.cacheFile(path)) {
@@ -365,9 +367,10 @@ QSet<QString> Project::getTopLevelMapFields() const {
 }
 
 QJsonDocument Project::readMapJson(const QString &mapName, QString *error) {
+    // Note: We are explicitly not adding mapFilepath to the fileWatcher here.
+    //       All map.json files are read at launch, and adding them all to the filewatcher
+    //       can easily exceed the 256 file limit that exists on some platforms.
     const QString mapFilepath = Map::getJsonFilepath(mapName);
-    watchFile(mapFilepath);
-
     QJsonDocument doc;
     if (!parser.tryParseJsonFile(&doc, mapFilepath, error)) {
         if (error) {
@@ -745,17 +748,34 @@ bool Project::saveMapLayouts() {
     return true;
 }
 
-void Project::watchFile(const QString &filename) {
-    if (!filename.startsWith(this->root)) {
-        this->fileWatcher.addPath(QString("%1/%2").arg(this->root).arg(filename));
-    } else {
-        this->fileWatcher.addPath(filename);
+bool Project::watchFile(const QString &filename) {
+    QString filepath = filename.startsWith(this->root) ? filename : QString("%1/%2").arg(this->root).arg(filename);
+    if (!this->fileWatcher.addPath(filepath) && !this->fileWatcher.files().contains(filepath)) {
+        // We failed to watch the file, and this wasn't a file we were already watching.
+        // Log a warning, but only if A. we actually care that we failed, because 'monitor files' is enabled,
+        // B. we haven't logged a warning for this file yet, and C. we would have otherwise been able to watch it, because the file exists.
+        if (porymapConfig.monitorFiles && !this->failedFileWatchPaths.contains(filepath) && QFileInfo::exists(filepath)) {
+            this->failedFileWatchPaths.insert(filepath);
+            logWarn(QString("Failed to add '%1' to file watcher. Currently watching %2 files.")
+                            .arg(Util::stripPrefix(filepath, this->root))
+                            .arg(this->fileWatcher.files().length()));
+        }
+        return false;
     }
+    return true;
 }
 
-void Project::watchFiles(const QStringList &filenames) {
-    for (const auto &filename : filenames)
-        watchFile(filename);
+bool Project::watchFiles(const QStringList &filenames) {
+    bool success = true;
+    for (const auto &filename : filenames) {
+        if (!watchFile(filename)) success = false;
+    }
+    return success;
+}
+
+bool Project::stopFileWatch(const QString &filename) {
+    QString filepath = filename.startsWith(this->root) ? filename : QString("%1/%2").arg(this->root).arg(filename);
+    return this->fileWatcher.removePath(filepath);
 }
 
 void Project::ignoreWatchedFileTemporarily(const QString &filepath) {
@@ -770,6 +790,14 @@ void Project::ignoreWatchedFilesTemporarily(const QStringList &filepaths) {
 }
 
 void Project::recordFileChange(const QString &filepath) {
+    // --From the Qt manual--
+    // Note: As a safety measure, many applications save an open file by writing a new file and then deleting the old one.
+    //       In your slot function, you can check watcher.files().contains(path).
+    //       If it returns false, check whether the file still exists and then call addPath() to continue watching it.
+    if (!this->fileWatcher.files().contains(filepath) && QFileInfo::exists(filepath)) {
+        this->fileWatcher.addPath(filepath);
+    }
+
     if (this->modifiedFiles.contains(filepath)) {
         // We already recorded a change to this file
         return;
