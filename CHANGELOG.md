@@ -21,7 +21,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix files sometimes being removed from the file watcher if they're deleted as part of a write.
 - Fix `porymap.cfg` and `porymap.shortcuts.cfg` writing outside the `pret/porymap` folder.
 
-## [6.0.0] - 2025-05-26
+## [6.0.0] - 2025-05-27
 ### Breaking Changes
 - See [Breaking Changes](https://huderlem.github.io/porymap/manual/breaking-changes.html) in the manual.
 

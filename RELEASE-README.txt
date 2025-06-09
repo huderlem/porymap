@@ -7,7 +7,7 @@ Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues]
 
 -------------------------
 
-## [6.0.0] - 2025-05-26
+## [6.0.0] - 2025-05-27
 ### Breaking Changes
 - See [Breaking Changes](https://huderlem.github.io/porymap/manual/breaking-changes.html) in the manual.
 
