@@ -125,7 +125,7 @@ public:
     bool loadBorder(const QString &root);
     bool loadBlockdata(const QString &root);
 
-    bool layoutBlockChanged(int i, const Blockdata &cache);
+    bool layoutBlockChanged(int i, const Blockdata &curData, const Blockdata &cache);
 
     uint16_t getBorderMetatileId(int x, int y);
     void setBorderMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback = false);

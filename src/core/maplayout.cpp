@@ -150,13 +150,13 @@ void Layout::cacheCollision() {
         this->cached_collision.append(block);
 }
 
-bool Layout::layoutBlockChanged(int i, const Blockdata &cache) {
+bool Layout::layoutBlockChanged(int i, const Blockdata &curData, const Blockdata &cache) {
     if (cache.length() <= i)
         return true;
-    if (this->blockdata.length() <= i)
+    if (curData.length() <= i)
         return true;
 
-    return this->blockdata.at(i) != cache.at(i);
+    return curData.at(i) != cache.at(i);
 }
 
 uint16_t Layout::getBorderMetatileId(int x, int y) {
@@ -358,7 +358,7 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
 
     QPainter painter(&this->image);
     for (int i = 0; i < this->blockdata.length(); i++) {
-        if (!ignoreCache && !layoutBlockChanged(i, this->cached_blockdata)) {
+        if (!ignoreCache && !layoutBlockChanged(i, this->blockdata, this->cached_blockdata)) {
             continue;
         }
         int map_y = width_ ? i / width_ : 0;
@@ -409,7 +409,7 @@ QPixmap Layout::renderCollision(bool ignoreCache) {
     }
     QPainter painter(&collision_image);
     for (int i = 0; i < this->blockdata.length(); i++) {
-        if (!ignoreCache && !layoutBlockChanged(i, this->cached_collision)) {
+        if (!ignoreCache && !layoutBlockChanged(i, this->blockdata, this->cached_collision)) {
             continue;
         }
         changed_any = true;
@@ -446,7 +446,7 @@ QPixmap Layout::renderBorder(bool ignoreCache) {
     }
     QPainter painter(&this->border_image);
     for (int i = 0; i < this->border.length(); i++) {
-        if (!ignoreCache && (!border_resized && !layoutBlockChanged(i, this->cached_border))) {
+        if (!ignoreCache && (!border_resized && !layoutBlockChanged(i, this->border, this->cached_border))) {
             continue;
         }
 
