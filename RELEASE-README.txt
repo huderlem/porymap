@@ -1,11 +1,28 @@
-Version: 6.0.0
-Date: May 26th, 2025
+Version: 6.1.0
+Date: June 9th, 2025
 
 Official Porymap documentation: https://huderlem.github.io/porymap/
 
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [6.1.0] - 2025-06-09
+### Added
+- Add settings to change the application font and the map list font.
+
+### Changed
+- The scale of the map can now be changed while resizing the map.
+
+### Fixed
+- Fix duplicated maps writing the wrong name.
+- Fix small maps being difficult to see while resizing.
+- Fix the map border sometimes not updating to reflect changes.
+- Fix expressions using the prefix '0X' as opposed to '0x' not being recognized has hex numbers.
+- Fix certain characters not writing correctly to JSON files.
+- Fix all `map.json` files being added to the file watcher at launch.
+- Fix files sometimes being removed from the file watcher if they're deleted as part of a write.
+- Fix `porymap.cfg` and `porymap.shortcuts.cfg` writing outside the `pret/porymap` folder.
 
 ## [6.0.0] - 2025-05-27
 ### Breaking Changes
