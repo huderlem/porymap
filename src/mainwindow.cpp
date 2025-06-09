@@ -687,6 +687,10 @@ void MainWindow::setTheme(QString theme) {
     QFile File(QString(":/themes/%1.qss").arg(theme));
     File.open(QFile::ReadOnly);
     QString stylesheet = QLatin1String(File.readAll());
+
+    stylesheet.append(QString("QWidget { %1 } ").arg(Util::toStylesheetString(porymapConfig.applicationFont)));
+    stylesheet.append(QString("MapTree { %1 } ").arg(Util::toStylesheetString(porymapConfig.mapListFont)));
+
     setStyleSheet(stylesheet);
 }
 
@@ -2940,10 +2944,7 @@ void MainWindow::on_actionPreferences_triggered() {
 }
 
 void MainWindow::togglePreferenceSpecificUi() {
-    if (porymapConfig.textEditorOpenFolder.isEmpty())
-        ui->actionOpen_Project_in_Text_Editor->setEnabled(false);
-    else
-        ui->actionOpen_Project_in_Text_Editor->setEnabled(true);
+    ui->actionOpen_Project_in_Text_Editor->setEnabled(!porymapConfig.textEditorOpenFolder.isEmpty());
 
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();

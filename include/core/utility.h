@@ -15,6 +15,7 @@ namespace Util {
     Qt::Orientations getOrientation(bool xflip, bool yflip);
     QString replaceExtension(const QString &path, const QString &newExtension);
     void setErrorStylesheet(QLineEdit *lineEdit, bool isError);
+    QString toStylesheetString(const QFont &font);
 }
 
 #endif // UTILITY_H

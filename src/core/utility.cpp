@@ -48,6 +48,25 @@ QString Util::toHtmlParagraph(const QString &text) {
     return QString("<html><head/><body><p>%1</p></body></html>").arg(text);
 }
 
+QString Util::toStylesheetString(const QFont &font) {
+    QString s = QString("font-family: \"%1\";").arg(font.family());
+
+    if (font.pixelSize() >= 0) {
+        s.append(QString(" font-size: %1px;").arg(font.pixelSize()));
+    } else if (font.pointSize() >= 0) {
+        s.append(QString(" font-size: %1pt;").arg(font.pointSize()));
+    }
+    if (font.bold()) {
+        s.append(" font-weight: bold;");
+    }
+    if (font.style() == QFont::StyleItalic) {
+        s.append(" font-style: italic;");
+    } else if (font.style() == QFont::StyleOblique) {
+        s.append(" font-style: oblique;");
+    }
+    return s;
+}
+
 QString Util::stripPrefix(const QString &s, const QString &prefix) {
     if (!s.startsWith(prefix)) {
         return s;
