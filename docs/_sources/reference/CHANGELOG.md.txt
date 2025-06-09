@@ -7,7 +7,24 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ## [Unreleased]
 Nothing, yet.
 
-## [6.0.0] - 2025-05-26
+## [6.1.0] - 2025-06-09
+### Added
+- Add settings to change the application font and the map list font.
+
+### Changed
+- The scale of the map can now be changed while resizing the map.
+
+### Fixed
+- Fix duplicated maps writing the wrong name.
+- Fix small maps being difficult to see while resizing.
+- Fix the map border sometimes not updating to reflect changes.
+- Fix expressions using the prefix '0X' as opposed to '0x' not being recognized has hex numbers.
+- Fix certain characters not writing correctly to JSON files.
+- Fix all `map.json` files being added to the file watcher at launch.
+- Fix files sometimes being removed from the file watcher if they're deleted as part of a write.
+- Fix `porymap.cfg` and `porymap.shortcuts.cfg` writing outside the `pret/porymap` folder.
+
+## [6.0.0] - 2025-05-27
 ### Breaking Changes
 - See [Breaking Changes](https://huderlem.github.io/porymap/manual/breaking-changes.html) in the manual.
 
@@ -609,7 +626,8 @@ Nothing, yet.
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/6.0.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/6.1.0...HEAD
+[6.1.0]: https://github.com/huderlem/porymap/compare/6.0.0...6.1.0
 [6.0.0]: https://github.com/huderlem/porymap/compare/5.4.1...6.0.0
 [5.4.1]: https://github.com/huderlem/porymap/compare/5.4.0...5.4.1
 [5.4.0]: https://github.com/huderlem/porymap/compare/5.3.0...5.4.0
