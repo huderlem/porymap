@@ -14,6 +14,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Fixed
 - Fix duplicated maps writing the wrong name.
 - Fix small maps being difficult to see while resizing.
+- Fix the map border sometimes not updating to reflect changes.
 - Fix expressions using the prefix '0X' as opposed to '0x' not being recognized has hex numbers.
 - Fix certain characters not writing correctly to JSON files.
 - Fix all `map.json` files being added to the file watcher at launch.
