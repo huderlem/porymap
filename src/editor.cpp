@@ -1245,8 +1245,9 @@ void Editor::unsetMap() {
         this->map->pruneEditHistory();
         this->map->disconnect(this);
 
-        // Don't let the file watcher accumulate map.json files.
+        // Don't let the file watcher accumulate map.json / scripts.inc files.
         this->project->stopFileWatch(this->map->getJsonFilepath());
+        this->map->invalidateScripts();
     }
     clearMapEvents();
     clearMapConnections();

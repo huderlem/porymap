@@ -143,6 +143,7 @@ void Map::setSharedScriptsMap(const QString &sharedScriptsMap) {
 
 void Map::invalidateScripts() {
     m_scriptsLoaded = false;
+    m_scriptFileWatcher->removePaths(m_scriptFileWatcher->files());
     emit scriptsModified();
 }
 
@@ -151,7 +152,6 @@ QStringList Map::getScriptLabels(Event::Group group) {
         const QString scriptsFilepath = getScriptsFilepath();
         QString error;
         m_scriptLabels = ParseUtil::getGlobalScriptLabels(scriptsFilepath, &error);
-        m_scriptsLoaded = true;
 
         if (!error.isEmpty() && !m_loggedScriptsFileError) {
             logWarn(QString("Failed to read scripts file '%1' for %2: %3")
@@ -161,14 +161,14 @@ QStringList Map::getScriptLabels(Event::Group group) {
             m_loggedScriptsFileError = true;
         }
 
-        // Track the scripts file for changes. Path may have changed, so stop tracking old files.
-        m_scriptFileWatcher->removePaths(m_scriptFileWatcher->files());
-        if (!m_scriptFileWatcher->addPath(scriptsFilepath) && !m_loggedScriptsFileError) {
+        if (!m_scriptFileWatcher->files().contains(scriptsFilepath) && !m_scriptFileWatcher->addPath(scriptsFilepath) && !m_loggedScriptsFileError) {
             logWarn(QString("Failed to add scripts file '%1' to file watcher for %2.")
                             .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
                             .arg(m_name));
             m_loggedScriptsFileError = true;
         }
+
+        m_scriptsLoaded = true;
     }
 
     QStringList scriptLabels = m_scriptLabels;

@@ -87,6 +87,7 @@ public:
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
     QString getScriptsFilepath() const;
     void openScript(const QString &label);
+    void invalidateScripts();
 
     static QString getJsonFilepath(const QString &mapName);
     QString getJsonFilepath() const { return getJsonFilepath(m_name); }
@@ -143,8 +144,6 @@ private:
 
     QPointer<QUndoStack> m_editHistory;
     QPointer<QFileSystemWatcher> m_scriptFileWatcher;
-
-    void invalidateScripts();
 
 signals:
     void modified();
