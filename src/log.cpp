@@ -12,6 +12,7 @@ namespace Log {
     static QString path;
     static QFile file;
     static QTextStream textStream;
+    static bool initialized = false;
 
     struct Display {
         QPointer<QStatusBar> statusBar;
@@ -155,11 +156,15 @@ void log(const QString &message, LogType type) {
         break;
     }
 
-    updateLogDisplays(message, type);
-
     QString fullMessage = QString("%1 %2 %3").arg(now).arg(typeString).arg(message);
 
     qDebug().noquote() << colorizeMessage(fullMessage, type);
+
+    if (!Log::initialized) {
+        return;
+    }
+
+    updateLogDisplays(message, type);
 
     Log::textStream << fullMessage << Qt::endl;
     Log::file.flush();
@@ -194,4 +199,5 @@ void logInit() {
     if (cleanupLargeLog()) {
         logWarn(QString("Previous log file %1 was cleared due to being over 20MB in size.").arg(Log::path));
     }
+    Log::initialized = true;
 }

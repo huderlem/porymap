@@ -3,7 +3,6 @@
 #define MAPLISTMODELS_H
 
 #include <QTreeView>
-#include <QFontDatabase>
 #include <QStyledItemDelegate>
 #include <QStandardItemModel>
 #include <QMap>
@@ -24,7 +23,6 @@ class MapTree : public QTreeView {
 public:
     MapTree(QWidget *parent) : QTreeView(parent) {
         this->setDropIndicatorShown(true);
-        this->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
         this->setFocusPolicy(Qt::StrongFocus);
         this->setContextMenuPolicy(Qt::CustomContextMenu);
     }

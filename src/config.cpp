@@ -14,7 +14,6 @@
 #include <QLabel>
 #include <QTextStream>
 #include <QRegularExpression>
-#include <QStandardPaths>
 #include <QAction>
 #include <QAbstractButton>
 
@@ -310,7 +309,6 @@ PorymapConfig porymapConfig;
 
 PorymapConfig::PorymapConfig() : KeyValueConfigBase(QStringLiteral("porymap.cfg")) {
     reset();
-    setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
@@ -485,6 +483,12 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             LogType type = static_cast<LogType>(getConfigInteger(key, typeString, 0, 2));
             this->statusBarLogTypes.insert(type);
         }
+    } else if (key == "application_font") {
+        this->applicationFont = QFont();
+        this->applicationFont.fromString(value);
+    } else if (key == "map_list_font") {
+        this->mapListFont = QFont();
+        this->mapListFont.fromString(value);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
     }
@@ -574,6 +578,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
         logTypesStrings.append(QString::number(type));
     }
     map.insert("status_bar_log_types", logTypesStrings.join(","));
+    map.insert("application_font", this->applicationFont.toString());
+    map.insert("map_list_font", this->mapListFont.toString());
     
     return map;
 }
@@ -1285,7 +1291,6 @@ ShortcutsConfig shortcutsConfig;
 ShortcutsConfig::ShortcutsConfig() : KeyValueConfigBase(QStringLiteral("porymap.shortcuts.cfg")),
     user_shortcuts({ }),
     default_shortcuts({ }) {
-    setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
 void ShortcutsConfig::parseConfigKeyValue(QString key, QString value) {

@@ -7,6 +7,8 @@
 #include <QRegularExpression>
 #include <QDirIterator>
 #include <QFormLayout>
+#include <QFontDialog>
+#include <QToolTip>
 
 
 PreferenceEditor::PreferenceEditor(QWidget *parent) :
@@ -21,8 +23,23 @@ PreferenceEditor::PreferenceEditor(QWidget *parent) :
     themeSelector->setMinimumContentsLength(0);
     formLayout->addRow("Themes", themeSelector);
     setAttribute(Qt::WA_DeleteOnClose);
-    connect(ui->buttonBox, &QDialogButtonBox::clicked,
-            this, &PreferenceEditor::dialogButtonClicked);
+    connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &PreferenceEditor::dialogButtonClicked);
+
+    connect(ui->pushButton_CustomizeApplicationFont, &QPushButton::clicked, [this] {
+        openFontDialog(&this->applicationFont);
+    });
+    connect(ui->pushButton_CustomizeMapListFont, &QPushButton::clicked, [this] {
+        openFontDialog(&this->mapListFont);
+    });
+    connect(ui->pushButton_ResetApplicationFont, &QPushButton::clicked, [this] {
+        this->applicationFont = QFont();
+        QToolTip::showText(ui->pushButton_ResetApplicationFont->mapToGlobal(QPoint(0, 0)), "Font reset!");
+    });
+    connect(ui->pushButton_ResetMapListFont, &QPushButton::clicked, [this] {
+        this->mapListFont = PorymapConfig::defaultMapListFont();
+        QToolTip::showText(ui->pushButton_ResetMapListFont->mapToGlobal(QPoint(0, 0)), "Font reset!");
+    });
+
     initFields();
     updateFields();
 }
@@ -64,13 +81,16 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_StatusErrors->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_ERROR) != logTypeEnd);
     ui->checkBox_StatusWarnings->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_WARN) != logTypeEnd);
     ui->checkBox_StatusInformation->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_INFO) != logTypeEnd);
+
+    this->applicationFont = porymapConfig.applicationFont;
+    this->mapListFont = porymapConfig.mapListFont;
 }
 
 void PreferenceEditor::saveFields() {
+    bool changedTheme = false;
     if (themeSelector->currentText() != porymapConfig.theme) {
-        const auto theme = themeSelector->currentText();
-        porymapConfig.theme = theme;
-        emit themeChanged(theme);
+        porymapConfig.theme = themeSelector->currentText();
+        changedTheme = true;
     }
     bool loadAllEventScripts = ui->checkBox_AutocompleteAllScripts->isChecked();
     if (loadAllEventScripts != porymapConfig.loadAllEventScripts) {
@@ -90,9 +110,22 @@ void PreferenceEditor::saveFields() {
     if (ui->checkBox_StatusWarnings->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_WARN);
     if (ui->checkBox_StatusInformation->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_INFO);
 
+    if (porymapConfig.applicationFont != this->applicationFont) {
+        porymapConfig.applicationFont = this->applicationFont;
+        changedTheme = true;
+    }
+    if (porymapConfig.mapListFont != this->mapListFont) {
+        porymapConfig.mapListFont = this->mapListFont;
+        changedTheme = true;
+    }
+
     porymapConfig.save();
 
     emit preferencesSaved();
+
+    if (changedTheme) {
+        emit themeChanged(porymapConfig.theme);
+    }
 }
 
 void PreferenceEditor::dialogButtonClicked(QAbstractButton *button) {
@@ -105,4 +138,13 @@ void PreferenceEditor::dialogButtonClicked(QAbstractButton *button) {
     } else if (buttonRole == QDialogButtonBox::RejectRole) {
         close();
     }
+}
+
+void PreferenceEditor::openFontDialog(QFont *font) {
+    auto dialog = new QFontDialog(*font, this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dialog, &QFontDialog::fontSelected, [font](const QFont &selectedFont) {
+        *font = selectedFont;
+    });
+    dialog->open();
 }

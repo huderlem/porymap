@@ -12,6 +12,8 @@
 #include <QUrl>
 #include <QVersionNumber>
 #include <QGraphicsPixmapItem>
+#include <QFontDatabase>
+#include <QStandardPaths>
 #include <set>
 
 #include "events.h"
@@ -64,6 +66,7 @@ class PorymapConfig: public KeyValueConfigBase
 public:
     PorymapConfig();
     virtual void reset() override {
+        setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
         this->recentProjects.clear();
         this->projectManuallyClosed = false;
         this->reopenOnLaunch = true;
@@ -110,6 +113,8 @@ public:
         this->shownInGameReloadMessage = false;
         this->gridSettings = GridSettings();
         this->statusBarLogTypes = { LogType::LOG_ERROR, LogType::LOG_WARN };
+        this->applicationFont = QFont();
+        this->mapListFont = PorymapConfig::defaultMapListFont();
     }
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
@@ -127,6 +132,8 @@ public:
     QMap<QString, QByteArray> getRegionMapEditorGeometry();
     QMap<QString, QByteArray> getProjectSettingsEditorGeometry();
     QMap<QString, QByteArray> getCustomScriptsEditorGeometry();
+
+    static QFont defaultMapListFont() { return QFontDatabase::systemFont(QFontDatabase::FixedFont); }
 
     bool reopenOnLaunch;
     bool projectManuallyClosed;
@@ -177,6 +184,8 @@ public:
     GridSettings gridSettings;
     // Prefer over QSet to prevent shuffling elements when writing the config file.
     std::set<LogType> statusBarLogTypes;
+    QFont applicationFont;
+    QFont mapListFont;
 
 protected:
     virtual void parseConfigKeyValue(QString key, QString value) override;
@@ -502,7 +511,10 @@ class ShortcutsConfig : public KeyValueConfigBase
 public:
     ShortcutsConfig();
 
-    virtual void reset() override { user_shortcuts.clear(); }
+    virtual void reset() override {
+        setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+        user_shortcuts.clear();
+    }
 
     // Call this before applying user shortcuts so that the user can restore defaults.
     void setDefaultShortcuts(const QObjectList &objects);

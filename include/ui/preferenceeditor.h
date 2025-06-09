@@ -28,10 +28,12 @@ signals:
 private:
     Ui::PreferenceEditor *ui;
     NoScrollComboBox *themeSelector;
+    QFont applicationFont;
+    QFont mapListFont;
 
     void initFields();
     void saveFields();
-
+    void openFontDialog(QFont *font);
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);
