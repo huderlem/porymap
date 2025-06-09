@@ -143,6 +143,7 @@ void PreferenceEditor::dialogButtonClicked(QAbstractButton *button) {
 void PreferenceEditor::openFontDialog(QFont *font) {
     auto dialog = new QFontDialog(*font, this);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setOption(QFontDialog::DontUseNativeDialog);
     connect(dialog, &QFontDialog::fontSelected, [font](const QFont &selectedFont) {
         *font = selectedFont;
     });

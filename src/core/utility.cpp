@@ -51,19 +51,36 @@ QString Util::toHtmlParagraph(const QString &text) {
 QString Util::toStylesheetString(const QFont &font) {
     QString s = QString("font-family: \"%1\";").arg(font.family());
 
+    // Font size
     if (font.pixelSize() >= 0) {
         s.append(QString(" font-size: %1px;").arg(font.pixelSize()));
     } else if (font.pointSize() >= 0) {
         s.append(QString(" font-size: %1pt;").arg(font.pointSize()));
     }
-    if (font.bold()) {
-        s.append(" font-weight: bold;");
+
+    // Font weight
+    if (font.weight() >= 0) {
+        s.append(QString(" font-weight: %1;").arg(font.weight()));
     }
+
+    // Text decoration
+    if (font.underline() || font.strikeOut()) {
+        s.append(QString(" text-decoration:%1%2;")
+                    .arg(font.underline() ? " underline" : "")
+                    .arg(font.strikeOut() ? " line-through" : ""));
+    } else {
+        s.append(" text-decoration: none;");
+    }
+
+    // Font style
     if (font.style() == QFont::StyleItalic) {
         s.append(" font-style: italic;");
     } else if (font.style() == QFont::StyleOblique) {
         s.append(" font-style: oblique;");
+    } else {
+        s.append(" font-style: normal;");
     }
+
     return s;
 }
 
