@@ -8,6 +8,11 @@ AboutPorymap::AboutPorymap(QWidget *parent) :
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
+    // Set font in the stylesheet as opposed to the form so that it won't be overwritten by custom user fonts.
+    setStyleSheet("QLabel { font-family: \"Arial\"; }"
+                  "QLabel#label_Title { font-size: 22pt; font-weight: bold; } "
+                  "QLabel#label_Version { font-size: 12pt; }");
+
     this->ui->label_Version->setText(getVersionString());
 
     layout()->setSizeConstraint(QLayout::SetFixedSize);

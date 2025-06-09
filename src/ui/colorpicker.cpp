@@ -13,6 +13,8 @@ ColorPicker::ColorPicker(QWidget *parent) :
 
     this->scene = new QGraphicsScene;
 
+    setStyleSheet("QLabel#label_RGB, QLabel#label_HEX { font-family: \"Courier\"; }");
+
     // listen for spacebar press to take color
     QShortcut *takeColor = new QShortcut(Qt::Key_Space, this);
     QObject::connect(takeColor, &QShortcut::activated, [this](){

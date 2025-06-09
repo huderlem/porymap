@@ -169,11 +169,6 @@
          </item>
          <item>
           <widget class="QLabel" name="label_RGB">
-           <property name="font">
-            <font>
-             <family>Courier</family>
-            </font>
-           </property>
            <property name="text">
             <string>RGB (000, 000, 000)</string>
            </property>
@@ -181,11 +176,6 @@
          </item>
          <item>
           <widget class="QLabel" name="label_HEX">
-           <property name="font">
-            <font>
-             <family>Courier</family>
-            </font>
-           </property>
            <property name="text">
             <string>#FFFFFF</string>
            </property>
@@ -199,11 +189,6 @@
    </item>
    <item>
     <widget class="QLabel" name="label_SPACE">
-     <property name="font">
-      <font>
-       <family>Courier</family>
-      </font>
-     </property>
      <property name="text">
       <string>press [SPACE] to capture color</string>
      </property>

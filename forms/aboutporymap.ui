@@ -16,15 +16,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label_Title">
-     <property name="font">
-      <font>
-       <family>Arial</family>
-       <pointsize>22</pointsize>
-       <bold>true</bold>
-       <underline>false</underline>
-       <kerning>true</kerning>
-      </font>
-     </property>
      <property name="text">
       <string>Porymap</string>
      </property>
@@ -44,12 +35,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="font">
-      <font>
-       <family>Arial</family>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
@@ -60,11 +45,6 @@
    </item>
    <item>
     <widget class="QLabel" name="label_Description">
-     <property name="font">
-      <font>
-       <family>Arial</family>
-      </font>
-     </property>
      <property name="text">
       <string>Map editor for pokeemerald, pokefirered and pokeruby.</string>
      </property>
