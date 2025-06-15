@@ -169,7 +169,6 @@ void Editor::setEditMode(EditMode editMode) {
         editStack = &this->layout->editHistory;
     }
 
-    this->cursorMapTileRect->setActive(editingLayout);
     this->playerViewRect->setActive(editingLayout);
     this->editGroup.setActiveStack(editStack);
     this->ui->toolButton_Fill->setEnabled(editingLayout);
@@ -204,6 +203,10 @@ void Editor::setEditAction(EditAction editAction) {
         this->map_ruler->setEnabled(false);
     }
 
+    // Only show the tile cursor for tools that apply at a specific tile
+    this->cursorMapTileRect->setActive(getEditingLayout() && editAction != EditAction::Select && editAction != EditAction::Move);
+
+    // The tile cursor can only grow while painting metatiles
     this->cursorMapTileRect->setSingleTileMode(!(editAction == EditAction::Paint && this->editMode == EditMode::Metatiles));
 
     // Update cursor
