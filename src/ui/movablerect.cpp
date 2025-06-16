@@ -5,14 +5,11 @@
 #include "movablerect.h"
 #include "utility.h"
 
-MovableRect::MovableRect(bool *enabled, const QRectF &rect, const QRgb &color)
+MovableRect::MovableRect(const QRectF &rect, const QRgb &color)
   : QGraphicsRectItem(rect),
-    enabled(enabled),
     baseRect(rect),
     color(color)
-{
-    updateVisibility();
-}
+{ }
 
 /// Center rect on grid position (x, y)
 void MovableRect::updateLocation(int x, int y) {
@@ -20,28 +17,19 @@ void MovableRect::updateLocation(int x, int y) {
             this->baseRect.y() + (y * 16),
             this->baseRect.width(),
             this->baseRect.height());
-    updateVisibility();
 }
 
-void MovableRect::setActive(bool active) {
-    this->active = active;
-    updateVisibility();
-}
-
-void MovableRect::updateVisibility() {
-    setVisible(*this->enabled && this->active);
-}
 
 /******************************************************************************
     ************************************************************************
  ******************************************************************************/
 
-ResizableRect::ResizableRect(QObject *parent, bool *enabled, int width, int height, QRgb color)
+ResizableRect::ResizableRect(QObject *parent, int width, int height, QRgb color)
   : QObject(parent),
-    MovableRect(enabled, QRect(0, 0, width * 16, height * 16), color)
+    MovableRect(QRect(0, 0, width * 16, height * 16), color)
 {
-        setAcceptHoverEvents(true);
-        setFlags(this->flags() | QGraphicsItem::ItemIsMovable);
+    setAcceptHoverEvents(true);
+    setFlags(this->flags() | QGraphicsItem::ItemIsMovable);
 }
 
 ResizableRect::Edge ResizableRect::detectEdge(int x, int y) {

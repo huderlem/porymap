@@ -2176,7 +2176,6 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
                 prefab.updatePrefabUi(this->editor->layout);
         }
     }
-    editor->setCursorRectVisible(false);
 }
 
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
@@ -2240,11 +2239,7 @@ void MainWindow::on_actionPlayer_View_Rectangle_triggered()
     bool enabled = ui->actionPlayer_View_Rectangle->isChecked();
     porymapConfig.showPlayerView = enabled;
     this->editor->settings->playerViewRectEnabled = enabled;
-    if ((this->editor->map_item && this->editor->map_item->has_mouse)
-     || (this->editor->collision_item && this->editor->collision_item->has_mouse)) {
-        this->editor->playerViewRect->setVisible(enabled && this->editor->playerViewRect->getActive());
-        ui->graphicsView_Map->scene()->update();
-    }
+    this->editor->updateCursorRectVisibility();
 }
 
 void MainWindow::on_actionCursor_Tile_Outline_triggered()
@@ -2252,11 +2247,7 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     bool enabled = ui->actionCursor_Tile_Outline->isChecked();
     porymapConfig.showCursorTile = enabled;
     this->editor->settings->cursorTileRectEnabled = enabled;
-    if ((this->editor->map_item && this->editor->map_item->has_mouse)
-     || (this->editor->collision_item && this->editor->collision_item->has_mouse)) {
-        this->editor->cursorMapTileRect->setVisible(enabled && this->editor->cursorMapTileRect->getActive());
-        ui->graphicsView_Map->scene()->update();
-    }
+    this->editor->updateCursorRectVisibility();
 }
 
 void MainWindow::on_actionShow_Events_In_Map_View_triggered() {

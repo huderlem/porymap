@@ -6,7 +6,7 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (pos != this->previousPos) {
         this->previousPos = pos;
-        emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
+        emit this->hoverChanged(pos);
     }
     if (this->settings->betterCursors && this->getEditsEnabled()) {
         setCursor(this->settings->mapCursor);
@@ -15,16 +15,16 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
 
 void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
     this->has_mouse = true;
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
+    this->previousPos = Metatile::coordFromPixmapCoord(event->pos());
+    emit this->hoverEntered(this->previousPos);
 }
 
 void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    emit this->hoveredMapMovementPermissionCleared();
     if (this->settings->betterCursors && this->getEditsEnabled()){
         unsetCursor();
     }
     this->has_mouse = false;
+    emit this->hoverCleared();
 }
 
 void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -38,7 +38,7 @@ void CollisionPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (pos != this->previousPos) {
         this->previousPos = pos;
-        emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
+        emit this->hoverChanged(pos);
     }
     emit mouseEvent(event, this);
 }

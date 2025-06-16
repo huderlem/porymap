@@ -55,6 +55,10 @@ bool Layout::isWithinBounds(int x, int y) const {
     return (x >= 0 && x < this->getWidth() && y >= 0 && y < this->getHeight());
 }
 
+bool Layout::isWithinBounds(const QPoint &pos) const {
+    return isWithinBounds(pos.x(), pos.y());
+}
+
 bool Layout::isWithinBounds(const QRect &rect) const {
     return rect.left() >= 0 && rect.right() < this->getWidth() && rect.top() >= 0 && rect.bottom() < this->getHeight();
 }

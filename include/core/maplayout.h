@@ -100,6 +100,7 @@ public:
     QRect getVisibleRect() const;
 
     bool isWithinBounds(int x, int y) const;
+    bool isWithinBounds(const QPoint &pos) const;
     bool isWithinBounds(const QRect &rect) const;
     bool isWithinBorderBounds(int x, int y) const;
 

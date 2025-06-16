@@ -136,9 +136,7 @@ void ResizeLayoutPopup::setupLayoutView() {
     this->ui->spinBox_height->setMinimum(1);
     this->ui->spinBox_height->setMaximum(maxHeight);
 
-    static bool layoutSizeRectVisible = true;
-
-    this->outline = new ResizableRect(this, &layoutSizeRectVisible, this->layout->getWidth(), this->layout->getHeight(), qRgb(255, 0, 255));
+    this->outline = new ResizableRect(this, this->layout->getWidth(), this->layout->getHeight(), qRgb(255, 0, 255));
     this->outline->setZValue(Editor::ZValue::ResizeLayoutPopup); // Ensure on top of view
     this->outline->setLimit(cover->rect().toAlignedRect());
     connect(outline, &ResizableRect::rectUpdated, [=](QRect rect){

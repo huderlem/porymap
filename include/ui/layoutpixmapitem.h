@@ -102,16 +102,17 @@ signals:
     void startPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
     void endPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
     void mouseEvent(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
-    void hoveredMapMetatileChanged(const QPoint &pos);
-    void hoveredMapMetatileCleared();
+    void hoverEntered(const QPoint &pos);
+    void hoverChanged(const QPoint &pos);
+    void hoverCleared();
 
 protected:
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
 };
 
 #endif // MAPPIXMAPITEM_H

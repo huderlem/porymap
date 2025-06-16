@@ -23,11 +23,11 @@ public:
     QSpinBox * selectedElevation;
     qreal *opacity;
     void updateMovementPermissionSelection(QGraphicsSceneMouseEvent *event);
-    virtual void paint(QGraphicsSceneMouseEvent*);
-    virtual void floodFill(QGraphicsSceneMouseEvent*);
-    virtual void magicFill(QGraphicsSceneMouseEvent*);
-    virtual void pick(QGraphicsSceneMouseEvent*);
-    void draw(bool ignoreCache = false);
+    virtual void paint(QGraphicsSceneMouseEvent*) override;
+    virtual void floodFill(QGraphicsSceneMouseEvent*) override;
+    virtual void magicFill(QGraphicsSceneMouseEvent*) override;
+    virtual void pick(QGraphicsSceneMouseEvent*) override;
+    void draw(bool ignoreCache = false) override;
 
 private:
     unsigned actionId_ = 0;
@@ -36,16 +36,17 @@ private:
 
 signals:
     void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);
-    void hoveredMapMovementPermissionChanged(int, int);
-    void hoveredMapMovementPermissionCleared();
+    void hoverEntered(const QPoint &pos);
+    void hoverChanged(const QPoint &pos);
+    void hoverCleared();
 
 protected:
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
 };
 
 #endif // COLLISIONPIXMAPITEM_H
