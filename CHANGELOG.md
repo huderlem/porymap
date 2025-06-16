@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are **"Breaking Changes"** in the pret projects. For more on this, see [the manual page on breaking changes](https://huderlem.github.io/porymap/manual/breaking-changes.html).
 
 ## [Unreleased]
-Nothing, yet.
+### Fixed
+- Fix warning not appearing when the log file exceeds maximum size.
 
 ## [6.1.0] - 2025-06-09
 ### Added
