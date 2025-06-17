@@ -7,6 +7,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ## [Unreleased]
 ### Fixed
 - Fix warning not appearing when the log file exceeds maximum size.
+- Fix unnecessary resources being used to watch files.
 
 ## [6.1.0] - 2025-06-09
 ### Added

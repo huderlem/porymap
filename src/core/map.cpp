@@ -15,9 +15,6 @@ Map::Map(QObject *parent) : QObject(parent)
 {
     m_editHistory = new QUndoStack(this);
 
-    m_scriptFileWatcher = new QFileSystemWatcher(this);
-    connect(m_scriptFileWatcher, &QFileSystemWatcher::fileChanged, this, &Map::invalidateScripts);
-
     resetEvents();
 
     m_header = new MapHeader(this);
@@ -143,7 +140,7 @@ void Map::setSharedScriptsMap(const QString &sharedScriptsMap) {
 
 void Map::invalidateScripts() {
     m_scriptsLoaded = false;
-    m_scriptFileWatcher->removePaths(m_scriptFileWatcher->files());
+    delete m_scriptFileWatcher;
     emit scriptsModified();
 }
 
@@ -161,6 +158,12 @@ QStringList Map::getScriptLabels(Event::Group group) {
             m_loggedScriptsFileError = true;
         }
 
+        if (!m_scriptFileWatcher) {
+            // Only create the file watcher when it's first needed (even an empty QFileSystemWatcher will consume system resources).
+            // The other option would be for Porymap to have a single global QFileSystemWatcher, but that has complications of its own.
+            m_scriptFileWatcher = new QFileSystemWatcher(this);
+            connect(m_scriptFileWatcher, &QFileSystemWatcher::fileChanged, this, &Map::invalidateScripts);
+        }
         if (!m_scriptFileWatcher->files().contains(scriptsFilepath) && !m_scriptFileWatcher->addPath(scriptsFilepath) && !m_loggedScriptsFileError) {
             logWarn(QString("Failed to add scripts file '%1' to file watcher for %2.")
                             .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
