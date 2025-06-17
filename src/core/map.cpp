@@ -140,7 +140,12 @@ void Map::setSharedScriptsMap(const QString &sharedScriptsMap) {
 
 void Map::invalidateScripts() {
     m_scriptsLoaded = false;
+
+    // m_scriptFileWatcher is a QPointer so clearing it shouldn't be necessary,
+    // but it's possible that Map::getScriptLabels will be called before events are processed.
     delete m_scriptFileWatcher;
+    m_scriptFileWatcher = nullptr;
+
     emit scriptsModified();
 }
 
