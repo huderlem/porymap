@@ -2938,6 +2938,7 @@ void MainWindow::on_actionPreferences_triggered() {
         // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, editor, &Editor::updateEvents);
         connect(preferenceEditor, &PreferenceEditor::scriptSettingsChanged, editor->project, &Project::readEventScriptLabels);
+        connect(preferenceEditor, &PreferenceEditor::reloadProjectRequested, this, &MainWindow::on_action_Reload_Project_triggered);
     }
 
     openSubWindow(preferenceEditor);

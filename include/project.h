@@ -61,7 +61,6 @@ public:
     QMap<QString, uint32_t> metatileBehaviorMap;
     QMap<uint32_t, QString> metatileBehaviorMapInverse;
     ParseUtil parser;
-    QFileSystemWatcher fileWatcher;
     QSet<QString> modifiedFiles;
     bool usingAsmTilesets;
     QSet<QString> disabledSettingsNames;
@@ -263,6 +262,7 @@ public:
     static QString getMapGroupPrefix();
 
 private:
+    QPointer<QFileSystemWatcher> fileWatcher;
     QMap<QString, qint64> modifiedFileTimestamps;
     QMap<QString, QString> facingDirections;
     QHash<QString, QString> speciesToIconPath;
@@ -332,6 +332,8 @@ private:
     void ignoreWatchedFilesTemporarily(const QStringList &filepaths);
     void recordFileChange(const QString &filepath);
     void resetFileCache();
+    void resetFileWatcher();
+    void logFileWatchStatus();
 
     bool saveMapLayouts();
     bool saveMapGroups();

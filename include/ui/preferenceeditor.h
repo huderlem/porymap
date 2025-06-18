@@ -24,6 +24,7 @@ signals:
     void preferencesSaved();
     void themeChanged(const QString &theme);
     void scriptSettingsChanged(bool on);
+    void reloadProjectRequested();
 
 private:
     Ui::PreferenceEditor *ui;
