@@ -87,6 +87,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-static-windows:
+    if: false  # Windows job is currently disabled; it's failing to find required modules in the Qt build
     runs-on: windows-latest
     env:
       BUILD_NAME: porymap-windows
