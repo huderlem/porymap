@@ -2579,17 +2579,10 @@ void MainWindow::on_toolButton_Move_clicked()    { editor->setEditAction(Editor:
 void MainWindow::on_toolButton_Shift_clicked()   { editor->setEditAction(Editor::EditAction::Shift); }
 
 void MainWindow::setEditActionUi(Editor::EditAction editAction) {
-    if (editAction == Editor::EditAction::Move) {
-        ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        QScroller::grabGesture(ui->graphicsView_Map, QScroller::LeftMouseButtonGesture);
-        ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::FullViewportUpdate);
-    } else {
-        ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        QScroller::ungrabGesture(ui->graphicsView_Map);
-        ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
-    }
+    // TODO: Viewport's hand cursor is not reliably cleared when changing to QGraphicsView::NoDrag.
+    auto dragMode = (editAction == Editor::EditAction::Move) ? QGraphicsView::ScrollHandDrag : QGraphicsView::NoDrag;
+    ui->graphicsView_Connections->setDragMode(dragMode);
+    ui->graphicsView_Map->setDragMode(dragMode);
     ui->graphicsView_Map->setFocus();
 
     ui->toolButton_Paint->setChecked(editAction == Editor::EditAction::Paint);

@@ -210,10 +210,10 @@ void Editor::setEditAction(EditAction editAction) {
     // Update cursor
     static const QMap<EditAction, QCursor> cursors = {
         {EditAction::Paint,  QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10)},
-        {EditAction::Select, QCursor()},
+        {EditAction::Select, QCursor(Qt::ArrowCursor)},
         {EditAction::Fill,   QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10)},
         {EditAction::Pick,   QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10)},
-        {EditAction::Move,   QCursor(QPixmap(":/icons/move.ico"), 7, 7)},
+        {EditAction::Move,   QCursor(Qt::OpenHandCursor)},
         {EditAction::Shift,  QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10)},
     };
     this->settings->mapCursor = cursors.value(editAction);
@@ -1354,7 +1354,7 @@ void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *
     }
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    if (event->buttons() & Qt::RightButton && (mapEditAction == EditAction::Paint || mapEditAction == EditAction::Fill)) {
+    if (event->buttons() & Qt::RightButton && (this->mapEditAction == EditAction::Paint || this->mapEditAction == EditAction::Fill)) {
         this->cursorMapTileRect->initRightClickSelectionAnchor(pos.x(), pos.y());
     } else {
         this->cursorMapTileRect->initAnchor(pos.x(), pos.y());
@@ -1395,14 +1395,16 @@ void Editor::adjustStraightPathPos(QGraphicsSceneMouseEvent *event, LayoutPixmap
 }
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
-    if (!item->getEditsEnabled()) {
+    auto editAction = getEditAction();
+    if (!item->getEditsEnabled() || editAction == EditAction::Move) {
+        event->ignore();
         return;
     }
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
     if (this->getEditingLayout()) {
-        if (mapEditAction == EditAction::Paint) {
+        if (editAction == EditAction::Paint) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
             } else if (event->buttons() & Qt::MiddleButton) {
@@ -1420,9 +1422,9 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 adjustStraightPathPos(event, item, &pos);
                 item->paint(event);
             }
-        } else if (mapEditAction == EditAction::Select) {
+        } else if (editAction == EditAction::Select) {
             item->select(event);
-        } else if (mapEditAction == EditAction::Fill) {
+        } else if (editAction == EditAction::Fill) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
             } else if (event->modifiers() & Qt::ControlModifier) {
@@ -1430,18 +1432,18 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
             } else {
                 item->floodFill(event);
             }
-        } else if (mapEditAction == EditAction::Pick) {
+        } else if (editAction == EditAction::Pick) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
             } else if (event->type() != QEvent::GraphicsSceneMouseRelease) {
                 item->pick(event);
             }
-        } else if (mapEditAction == EditAction::Shift) {
+        } else if (editAction == EditAction::Shift) {
             adjustStraightPathPos(event, item, &pos);
             item->shift(event);
         }
     } else if (this->editMode == EditMode::Events) {
-        if (eventEditAction == EditAction::Paint && event->type() == QEvent::GraphicsSceneMousePress) {
+        if (editAction == EditAction::Paint && event->type() == QEvent::GraphicsSceneMousePress) {
             // Right-clicking while in paint mode will change mode to select.
             if (event->buttons() & Qt::RightButton) {
                 setEditAction(EditAction::Select);
@@ -1456,12 +1458,12 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 if (event && event->getPixmapItem())
                     event->getPixmapItem()->moveTo(pos);
             }
-        } else if (eventEditAction == EditAction::Select && event->type() == QEvent::GraphicsSceneMousePress) {
+        } else if (editAction == EditAction::Select && event->type() == QEvent::GraphicsSceneMousePress) {
             if (!(event->modifiers() & Qt::ControlModifier) && this->selectedEvents.length() > 1) {
                 // User is clearing group selection by clicking on the background
                 selectMapEvent(this->selectedEvents.first());
             }
-        } else if (eventEditAction == EditAction::Shift) {
+        } else if (editAction == EditAction::Shift) {
             static QPoint selection_origin;
 
             if (event->type() == QEvent::GraphicsSceneMouseRelease) {
@@ -1484,13 +1486,15 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
 }
 
 void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
-    if (!item->getEditsEnabled()) {
+    auto editAction = getEditAction();
+    if (!item->getEditsEnabled() || editAction == EditAction::Move) {
+        event->ignore();
         return;
     }
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
-    if (mapEditAction == EditAction::Paint) {
+    if (editAction == EditAction::Paint) {
         if (event->buttons() & Qt::RightButton) {
             item->updateMovementPermissionSelection(event);
         } else if (event->buttons() & Qt::MiddleButton) {
@@ -1503,9 +1507,9 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
             adjustStraightPathPos(event, item, &pos);
             item->paint(event);
         }
-    } else if (mapEditAction == EditAction::Select) {
+    } else if (editAction == EditAction::Select) {
         item->select(event);
-    } else if (mapEditAction == EditAction::Fill) {
+    } else if (editAction == EditAction::Fill) {
         if (event->buttons() & Qt::RightButton) {
             item->pick(event);
         } else if (event->modifiers() & Qt::ControlModifier) {
@@ -1513,9 +1517,9 @@ void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixm
         } else {
             item->floodFill(event);
         }
-    } else if (mapEditAction == EditAction::Pick) {
+    } else if (editAction == EditAction::Pick) {
         item->pick(event);
-    } else if (mapEditAction == EditAction::Shift) {
+    } else if (editAction == EditAction::Shift) {
         adjustStraightPathPos(event, item, &pos);
         item->shift(event);
     }

@@ -126,7 +126,11 @@ void ConnectionPixmapItem::setSelected(bool selected) {
     emit selectionChanged(selected);
 }
 
-void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
+void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    if (!this->getEditable()) {
+        event->ignore();
+        return;
+    }
     this->setSelected(true);
 }
 
