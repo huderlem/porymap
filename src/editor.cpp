@@ -1196,7 +1196,6 @@ void Editor::updateCursorRectVisibility() {
         auto editAction = getEditAction();
         bool visible = this->settings->cursorTileRectEnabled
                         && mouseInMap
-                        && getEditingLayout()
                         // Only show the tile cursor for tools that apply at a specific tile
                         && editAction != EditAction::Select
                         && editAction != EditAction::Move;
@@ -2224,7 +2223,7 @@ bool Editor::canAddEvents(const QList<Event*> &events) {
 }
 
 void Editor::duplicateSelectedEvents() {
-    if (this->selectedEvents.isEmpty() || !project || !map || !current_view || this->getEditingLayout())
+    if (this->selectedEvents.isEmpty() || !project || !map || !current_view || this->editMode != EditMode::Events)
         return;
 
     QList<Event *> duplicatedEvents;
