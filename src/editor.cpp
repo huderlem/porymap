@@ -155,7 +155,6 @@ void Editor::setEditMode(EditMode editMode) {
         break;
     }
 
-    map_item->setEditsEnabled(this->editMode != EditMode::Connections);
     map_item->draw();
     collision_item->draw();
 
@@ -207,16 +206,35 @@ void Editor::setEditAction(EditAction editAction) {
     // The tile cursor can only grow while painting metatiles
     this->cursorMapTileRect->setSingleTileMode(!(editAction == EditAction::Paint && this->editMode == EditMode::Metatiles));
 
+    auto dragMode = (editAction == EditAction::Move) ? QGraphicsView::ScrollHandDrag : QGraphicsView::NoDrag;
+    ui->graphicsView_Map->setDragMode(dragMode);
+    ui->graphicsView_Connections->setDragMode(dragMode);
+
     // Update cursor
-    static const QMap<EditAction, QCursor> cursors = {
-        {EditAction::Paint,  QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10)},
-        {EditAction::Select, QCursor(Qt::ArrowCursor)},
-        {EditAction::Fill,   QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10)},
-        {EditAction::Pick,   QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10)},
-        {EditAction::Move,   QCursor(Qt::OpenHandCursor)},
-        {EditAction::Shift,  QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10)},
-    };
-    this->settings->mapCursor = cursors.value(editAction);
+    if (this->settings->betterCursors) {
+        static const QMap<EditAction, QCursor> cursors = {
+            {EditAction::Paint,  QCursor(QPixmap(":/icons/pencil_cursor.ico"), 10, 10)},
+            {EditAction::Fill,   QCursor(QPixmap(":/icons/fill_color_cursor.ico"), 10, 10)},
+            {EditAction::Pick,   QCursor(QPixmap(":/icons/pipette_cursor.ico"), 10, 10)},
+            {EditAction::Shift,  QCursor(QPixmap(":/icons/shift_cursor.ico"), 10, 10)},
+        };
+
+        // Paint tools don't apply on the Connections tab, so don't show the cursor.
+        // We specifically unset the cursor for Move rather than explicitly set Qt::OpenHandCursor
+        // because otherwise the cursor may persist outside the map after the tool changes.
+        if (this->editMode == EditMode::Connections || editAction == EditAction::Move) {
+            if (this->map_item)
+                this->map_item->unsetCursor();
+            if (this->collision_item)
+                this->collision_item->unsetCursor();
+        } else {
+            auto cursor = cursors.value(editAction);
+            if (this->map_item)
+                this->map_item->setCursor(cursor);
+            if (this->collision_item)
+                this->collision_item->setCursor(cursor);
+        }
+    }
     emit editActionSet(editAction);
 }
 
@@ -1396,14 +1414,14 @@ void Editor::adjustStraightPathPos(QGraphicsSceneMouseEvent *event, LayoutPixmap
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
     auto editAction = getEditAction();
-    if (!item->getEditsEnabled() || editAction == EditAction::Move) {
+    if (editAction == EditAction::Move) {
         event->ignore();
         return;
     }
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
-    if (this->getEditingLayout()) {
+    if (this->editMode == EditMode::Metatiles) {
         if (editAction == EditAction::Paint) {
             if (event->buttons() & Qt::RightButton) {
                 item->updateMetatileSelection(event);
@@ -1487,7 +1505,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
 
 void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
     auto editAction = getEditAction();
-    if (!item->getEditsEnabled() || editAction == EditAction::Move) {
+    if (this->editMode != EditMode::Collision || editAction == EditAction::Move) {
         event->ignore();
         return;
     }

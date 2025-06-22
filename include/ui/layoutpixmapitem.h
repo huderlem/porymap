@@ -86,17 +86,12 @@ public:
     void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
     QPoint adjustCoords(QPoint pos);
 
-    void setEditsEnabled(bool enabled) { this->editsEnabled = enabled; }
-    bool getEditsEnabled() { return this->editsEnabled; }
-
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
     QPoint lastMetatileSelectionPos = QPoint(-1,-1);
 
     unsigned actionId_ = 0;
-
-    bool editsEnabled = true;
 
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);

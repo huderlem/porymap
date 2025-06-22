@@ -8,9 +8,6 @@ void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         this->previousPos = pos;
         emit this->hoverChanged(pos);
     }
-    if (this->settings->betterCursors && this->getEditsEnabled()) {
-        setCursor(this->settings->mapCursor);
-    }
 }
 
 void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
@@ -20,9 +17,6 @@ void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
 }
 
 void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    if (this->settings->betterCursors && this->getEditsEnabled()){
-        unsetCursor();
-    }
     this->has_mouse = false;
     emit this->hoverCleared();
 }

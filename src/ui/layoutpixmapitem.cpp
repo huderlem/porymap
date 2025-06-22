@@ -697,21 +697,15 @@ void LayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         this->metatilePos = pos;
         emit this->hoverChanged(pos);
     }
-    if (this->settings->betterCursors && this->editsEnabled) {
-        setCursor(this->settings->mapCursor);
-    }
 }
 
-void LayoutPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
+void LayoutPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
     this->has_mouse = true;
     this->metatilePos = Metatile::coordFromPixmapCoord(event->pos());
     emit this->hoverEntered(this->metatilePos);
 }
 
 void LayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    if (this->settings->betterCursors && this->editsEnabled) {
-        unsetCursor();
-    }
     this->has_mouse = false;
     emit this->hoverCleared();
 }

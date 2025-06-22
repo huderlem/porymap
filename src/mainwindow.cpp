@@ -2579,12 +2579,6 @@ void MainWindow::on_toolButton_Move_clicked()    { editor->setEditAction(Editor:
 void MainWindow::on_toolButton_Shift_clicked()   { editor->setEditAction(Editor::EditAction::Shift); }
 
 void MainWindow::setEditActionUi(Editor::EditAction editAction) {
-    // TODO: Viewport's hand cursor is not reliably cleared when changing to QGraphicsView::NoDrag.
-    auto dragMode = (editAction == Editor::EditAction::Move) ? QGraphicsView::ScrollHandDrag : QGraphicsView::NoDrag;
-    ui->graphicsView_Connections->setDragMode(dragMode);
-    ui->graphicsView_Map->setDragMode(dragMode);
-    ui->graphicsView_Map->setFocus();
-
     ui->toolButton_Paint->setChecked(editAction == Editor::EditAction::Paint);
     ui->toolButton_Select->setChecked(editAction == Editor::EditAction::Select);
     ui->toolButton_Fill->setChecked(editAction == Editor::EditAction::Fill);
