@@ -125,7 +125,7 @@ void Editor::closeProject() {
     delete this->project;
 }
 
-bool Editor::getEditingLayout() {
+bool Editor::getEditingLayout() const {
     return this->editMode == EditMode::Metatiles || this->editMode == EditMode::Collision;
 }
 
@@ -1366,8 +1366,12 @@ bool Editor::setLayout(QString layoutId) {
     return true;
 }
 
+bool Editor::canPaintMetatiles() const {
+    return this->editMode == EditMode::Metatiles && this->mapEditAction != EditAction::Select && this->mapEditAction != EditAction::Move;
+}
+
 void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *) {
-    if (!this->getEditingLayout()) {
+    if (!canPaintMetatiles()) {
         return;
     }
 
@@ -1380,7 +1384,7 @@ void Editor::onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *
 }
 
 void Editor::onMapEndPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *) {
-    if (!this->getEditingLayout()) {
+    if (!canPaintMetatiles()) {
         return;
     }
     this->cursorMapTileRect->stopRightClickSelectionAnchor();

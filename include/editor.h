@@ -172,7 +172,7 @@ public:
     void setEditMode(EditMode editMode);
     EditMode getEditMode() const { return this->editMode; }
 
-    bool getEditingLayout();
+    bool getEditingLayout() const;
 
     void setMapEditingButtonsEnabled(bool enabled);
 
@@ -256,10 +256,11 @@ private:
     static bool startDetachedProcess(const QString &command,
                                     const QString &workingDirectory = QString(),
                                     qint64 *pid = nullptr);
-
-private slots:
+    bool canPaintMetatiles() const;
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void onMapEndPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
+
+private slots:
     void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
