@@ -8,13 +8,13 @@
 
 class Editor;
 
-class MapView : public QGraphicsView
+class MapView : public GraphicsView
 {
     Q_OBJECT
 
 public:
-    MapView() : QGraphicsView() {}
-    MapView(QWidget *parent) : QGraphicsView(parent) {}
+    MapView() : GraphicsView() {}
+    MapView(QWidget *parent) : GraphicsView(parent) {}
 
     Editor *editor;
 

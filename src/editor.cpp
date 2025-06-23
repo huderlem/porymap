@@ -177,10 +177,20 @@ void Editor::setEditMode(EditMode editMode) {
     this->ui->pushButton_ChangeDimensions->setEnabled(editingLayout);
     this->ui->checkBox_smartPaths->setEnabled(editingLayout);
 
-    if (this->editMode == EditMode::Events || oldEditMode == EditMode::Events) {
+    if (this->editMode != oldEditMode) {
+        // When switching to or from the Connections tab we sync up the two separate map graphics views.
+        if (this->editMode == EditMode::Connections) {
+            ui->graphicsView_Connections->centerOn(ui->graphicsView_Map);
+        } else if (oldEditMode == EditMode::Connections) {
+            ui->graphicsView_Map->centerOn(ui->graphicsView_Connections);
+        }
+
         // When switching to or from the Events tab the opacity of the events changes. Redraw the events to reflect that change.
-       redrawAllEvents();
+        if (this->editMode == EditMode::Events || oldEditMode == EditMode::Events) {
+           redrawAllEvents();
+        }
     }
+
     if (this->editMode == EditMode::Events){
         updateWarpEventWarnings();
     }
