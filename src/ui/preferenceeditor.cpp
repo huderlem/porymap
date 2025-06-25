@@ -2,6 +2,7 @@
 #include "ui_preferenceeditor.h"
 #include "config.h"
 #include "noscrollcombobox.h"
+#include "message.h"
 
 #include <QAbstractButton>
 #include <QRegularExpression>
@@ -87,6 +88,8 @@ void PreferenceEditor::updateFields() {
 }
 
 void PreferenceEditor::saveFields() {
+    bool needsProjectReload = false;
+
     bool changedTheme = false;
     if (themeSelector->currentText() != porymapConfig.theme) {
         porymapConfig.theme = themeSelector->currentText();
@@ -100,7 +103,6 @@ void PreferenceEditor::saveFields() {
     porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
     porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();
-    porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();
     porymapConfig.reopenOnLaunch = ui->checkBox_OpenRecentProject->isChecked();
     porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
     porymapConfig.eventDeleteWarningDisabled = ui->checkBox_DisableEventWarning->isChecked();
@@ -109,6 +111,11 @@ void PreferenceEditor::saveFields() {
     if (ui->checkBox_StatusErrors->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_ERROR);
     if (ui->checkBox_StatusWarnings->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_WARN);
     if (ui->checkBox_StatusInformation->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_INFO);
+
+    if (porymapConfig.monitorFiles != ui->checkBox_MonitorProjectFiles->isChecked()) {
+        porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();
+        needsProjectReload = true;
+    }
 
     if (porymapConfig.applicationFont != this->applicationFont) {
         porymapConfig.applicationFont = this->applicationFont;
@@ -119,12 +126,18 @@ void PreferenceEditor::saveFields() {
         changedTheme = true;
     }
 
-    porymapConfig.save();
-
-    emit preferencesSaved();
-
     if (changedTheme) {
         emit themeChanged(porymapConfig.theme);
+    }
+
+    porymapConfig.save();
+    emit preferencesSaved();
+
+    if (needsProjectReload) {
+        auto message = QStringLiteral("Some changes will only take effect after reloading the project. Reload the project now?");
+        if (QuestionMessage::show(message, this) == QMessageBox::Yes) {
+            emit reloadProjectRequested();
+        }
     }
 }
 

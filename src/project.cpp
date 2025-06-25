@@ -32,9 +32,7 @@ int Project::num_pals_total = 13;
 
 Project::Project(QObject *parent) :
     QObject(parent)
-{
-    QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
-}
+{ }
 
 Project::~Project()
 {
@@ -186,6 +184,7 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
 
 bool Project::load() {
     this->parser.setUpdatesSplashScreen(true);
+    resetFileWatcher();
     resetFileCache();
     this->disabledSettingsNames.clear();
     bool success = readGlobalConstants()
@@ -225,6 +224,7 @@ bool Project::load() {
         initNewLayoutSettings();
         initNewMapSettings();
         applyParsedLimits();
+        logFileWatchStatus();
     }
     this->parser.setUpdatesSplashScreen(false);
     return success;
@@ -232,7 +232,6 @@ bool Project::load() {
 
 void Project::resetFileCache() {
     this->parser.clearFileCache();
-    this->failedFileWatchPaths.clear();
 
     const QSet<QString> filepaths = {
         // Whenever we load a tileset we'll need to parse some data from these files, so we cache them to avoid the overhead of opening the files.
@@ -749,16 +748,21 @@ bool Project::saveMapLayouts() {
 }
 
 bool Project::watchFile(const QString &filename) {
+    if (!porymapConfig.monitorFiles)
+        return true;
+
+    if (!this->fileWatcher) {
+        // Only create the file watcher when it's first needed (even an empty QFileSystemWatcher will consume system resources).
+        this->fileWatcher = new QFileSystemWatcher(this);
+        QObject::connect(this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
+    }
+
     QString filepath = filename.startsWith(this->root) ? filename : QString("%1/%2").arg(this->root).arg(filename);
-    if (!this->fileWatcher.addPath(filepath) && !this->fileWatcher.files().contains(filepath)) {
+    if (!this->fileWatcher->addPath(filepath) && !this->fileWatcher->files().contains(filepath)) {
         // We failed to watch the file, and this wasn't a file we were already watching.
-        // Log a warning, but only if A. we actually care that we failed, because 'monitor files' is enabled,
-        // B. we haven't logged a warning for this file yet, and C. we would have otherwise been able to watch it, because the file exists.
-        if (porymapConfig.monitorFiles && !this->failedFileWatchPaths.contains(filepath) && QFileInfo::exists(filepath)) {
+        // Record the filepath for logging later, assuming we should have been able to watch the file.
+        if (QFileInfo::exists(filepath)) {
             this->failedFileWatchPaths.insert(filepath);
-            logWarn(QString("Failed to add '%1' to file watcher. Currently watching %2 files.")
-                            .arg(Util::stripPrefix(filepath, this->root))
-                            .arg(this->fileWatcher.files().length()));
         }
         return false;
     }
@@ -774,8 +778,11 @@ bool Project::watchFiles(const QStringList &filenames) {
 }
 
 bool Project::stopFileWatch(const QString &filename) {
+    if (!this->fileWatcher)
+        return true;
+
     QString filepath = filename.startsWith(this->root) ? filename : QString("%1/%2").arg(this->root).arg(filename);
-    return this->fileWatcher.removePath(filepath);
+    return this->fileWatcher->removePath(filepath);
 }
 
 void Project::ignoreWatchedFileTemporarily(const QString &filepath) {
@@ -794,8 +801,8 @@ void Project::recordFileChange(const QString &filepath) {
     // Note: As a safety measure, many applications save an open file by writing a new file and then deleting the old one.
     //       In your slot function, you can check watcher.files().contains(path).
     //       If it returns false, check whether the file still exists and then call addPath() to continue watching it.
-    if (!this->fileWatcher.files().contains(filepath) && QFileInfo::exists(filepath)) {
-        this->fileWatcher.addPath(filepath);
+    if (this->fileWatcher && !this->fileWatcher->files().contains(filepath) && QFileInfo::exists(filepath)) {
+        this->fileWatcher->addPath(filepath);
     }
 
     if (this->modifiedFiles.contains(filepath)) {
@@ -813,6 +820,38 @@ void Project::recordFileChange(const QString &filepath) {
 
     this->modifiedFiles.insert(filepath);
     emit fileChanged(filepath);
+}
+
+// When calling 'watchFile' we record failures rather than log them immediately.
+// We do this primarily to condense the warning if we fail to monitor any files.
+void Project::logFileWatchStatus() {
+    if (!this->fileWatcher)
+        return;
+
+    int numSuccessful = this->fileWatcher->files().length();
+    int numAttempted = numSuccessful + this->failedFileWatchPaths.count();
+    if (numAttempted == 0)
+        return;
+
+    if (numSuccessful == 0) {
+        // We failed to watch every file we tried. As of writing this happens if Porymap is running
+        // on Windows and the project files are in WSL2. Rather than filling the log by
+        // outputting a warning for every file, just log that we failed to monitor any of them.
+        logWarn(QString("Failed to monitor project files"));
+        return;
+    } else {
+        logInfo(QString("Successfully monitoring %1/%2 project files").arg(numSuccessful).arg(numAttempted));
+    }
+
+    for (const auto &failedPath : this->failedFileWatchPaths) {
+        logWarn(QString("Failed to monitor project file '%1'").arg(failedPath));
+    }
+}
+
+void Project::resetFileWatcher() {
+    this->failedFileWatchPaths.clear();
+    delete this->fileWatcher;
+    this->fileWatcher = nullptr;
 }
 
 bool Project::saveMapGroups() {
