@@ -136,7 +136,7 @@ public:
             this->palette = PaletteUtil::parse(palFilepath, &err);
         }
         this->setPixmap(QPixmap::fromImage(this->tileset));
-        this->numTilesWide = this->tileset.width() / 8;
+        this->numTilesWide = this->tileset.width() / this->cellWidth;
         this->selectedTile = 0x00;
         setAcceptHoverEvents(true);
     }
