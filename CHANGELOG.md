@@ -7,8 +7,13 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ## [Unreleased]
 ### Changed
 - The scroll position of the map view now remains the same between the Connections tab and the Map/Events tabs.
+- The Move tool now behaves more like a traditional pan tool (with no momentum).
+- The Player View Rectangle is now visible on the Events tab, as is the Cursor Tile Outline for certain tools.
 
 ### Fixed
+- Fix click-drag map selections behaving unexpectedly when the cursor is outside the map grid.
+- Fix events being dragged in negative coordinates lagging behind the cursor.
+- Fix the shortcut for duplicating events working while on the Connections tab.
 - Fix warning not appearing when the log file exceeds maximum size.
 - Fix unnecessary resources being used to watch files.
 
