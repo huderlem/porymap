@@ -38,6 +38,8 @@ int Metatile::getIndexInTileset(int metatileId) {
 QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
     int x = static_cast<int>(pixelCoord.x()) / 16;
     int y = static_cast<int>(pixelCoord.y()) / 16;
+    if (pixelCoord.x() < 0) x--;
+    if (pixelCoord.y() < 0) y--;
     return QPoint(x, y);
 }
 

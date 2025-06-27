@@ -695,25 +695,19 @@ void LayoutPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
     if (pos != this->metatilePos) {
         this->metatilePos = pos;
-        emit this->hoveredMapMetatileChanged(pos);
-    }
-    if (this->settings->betterCursors && this->editsEnabled) {
-        setCursor(this->settings->mapCursor);
+        emit this->hoverChanged(pos);
     }
 }
 
-void LayoutPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
+void LayoutPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
     this->has_mouse = true;
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    emit this->hoveredMapMetatileChanged(pos);
+    this->metatilePos = Metatile::coordFromPixmapCoord(event->pos());
+    emit this->hoverEntered(this->metatilePos);
 }
 
 void LayoutPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    emit this->hoveredMapMetatileCleared();
-    if (this->settings->betterCursors && this->editsEnabled) {
-        unsetCursor();
-    }
     this->has_mouse = false;
+    emit this->hoverCleared();
 }
 
 void LayoutPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -730,7 +724,7 @@ void LayoutPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         return;
 
     this->metatilePos = pos;
-    emit hoveredMapMetatileChanged(pos);
+    emit hoverChanged(pos);
     emit mouseEvent(event, this);
 }
 

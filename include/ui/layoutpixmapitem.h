@@ -86,9 +86,6 @@ public:
     void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
     QPoint adjustCoords(QPoint pos);
 
-    void setEditsEnabled(bool enabled) { this->editsEnabled = enabled; }
-    bool getEditsEnabled() { return this->editsEnabled; }
-
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static QList<int> smartPathTable;
@@ -96,22 +93,21 @@ private:
 
     unsigned actionId_ = 0;
 
-    bool editsEnabled = true;
-
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
     void endPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
     void mouseEvent(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
-    void hoveredMapMetatileChanged(const QPoint &pos);
-    void hoveredMapMetatileCleared();
+    void hoverEntered(const QPoint &pos);
+    void hoverChanged(const QPoint &pos);
+    void hoverCleared();
 
 protected:
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
 };
 
 #endif // MAPPIXMAPITEM_H

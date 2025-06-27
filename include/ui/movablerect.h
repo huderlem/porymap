@@ -10,7 +10,7 @@
 class MovableRect : public QGraphicsRectItem
 {
 public:
-    MovableRect(bool *enabled, const QRectF &rect, const QRgb &color);
+    MovableRect(const QRectF &rect, const QRgb &color);
     QRectF boundingRect() const override {
         qreal penWidth = 4;
         return QRectF(-penWidth,
@@ -29,12 +29,7 @@ public:
     }
     void updateLocation(int x, int y);
 
-    void setActive(bool active);
-    bool getActive() const { return this->active; }
-
 protected:
-    bool *enabled = nullptr;
-    bool active = true;
     QRectF baseRect;
     QRgb color;
 
@@ -48,7 +43,7 @@ class ResizableRect : public QObject, public MovableRect
 {
     Q_OBJECT
 public:
-    ResizableRect(QObject *parent, bool *enabled, int width, int height, QRgb color);
+    ResizableRect(QObject *parent, int width, int height, QRgb color);
 
     QRectF boundingRect() const override {
         return QRectF(this->rect() + QMargins(lineWidth, lineWidth, lineWidth, lineWidth));
