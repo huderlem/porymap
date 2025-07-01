@@ -2641,7 +2641,10 @@ void Project::setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries
 QHash<QString, MapSectionEntry> Project::getRegionMapEntries() const {
     QHash<QString, MapSectionEntry> entries;
     for (auto it = this->locationData.constBegin(); it != this->locationData.constEnd(); it++) {
-        entries[it.key()] = it.value().map;
+        const MapSectionEntry regionMapData = it.value().map;
+        if (regionMapData.valid) {
+            entries[it.key()] = regionMapData;
+        }
     }
     return entries;
 }

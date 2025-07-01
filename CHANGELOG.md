@@ -14,6 +14,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix click-drag map selections behaving unexpectedly when the cursor is outside the map grid.
 - Fix events being dragged in negative coordinates lagging behind the cursor.
 - Fix the shortcut for duplicating events working while on the Connections tab.
+- Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
 - Fix warning not appearing when the log file exceeds maximum size.
 - Fix unnecessary resources being used to watch files.
 
