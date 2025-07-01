@@ -12,6 +12,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ### Fixed
 - Fix metatile images exporting at 2x scale.
+- Fix pasting Wild Pokémon data then changing maps resetting the pasted data.
 - Fix click-drag map selections behaving unexpectedly when the cursor is outside the map grid.
 - Fix events being dragged in negative coordinates lagging behind the cursor.
 - Fix the shortcut for duplicating events working while on the Connections tab.
