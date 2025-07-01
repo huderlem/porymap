@@ -17,12 +17,7 @@ QPixmap drawMetatileSelection(MetatileSelection selection, Layout *layout) {
             int index = j * selection.dimensions.x() + i;
             MetatileSelectionItem item = selection.metatileItems.at(index);
             if (item.enabled) {
-                QImage metatile_image = getMetatileImage(
-                            item.metatileId,
-                            layout->tileset_primary,
-                            layout->tileset_secondary,
-                            layout->metatileLayerOrder,
-                            layout->metatileLayerOpacity);
+                QImage metatile_image = getMetatileImage(item.metatileId, layout);
                 painter.drawImage(metatile_origin, metatile_image);
             }
         }

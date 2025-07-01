@@ -145,6 +145,10 @@ public:
     Q_INVOKABLE void setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE QJSValue getTilePixels(int tileId);
+    Q_INVOKABLE QList<int> getMetatileLayerOrder() const;
+    Q_INVOKABLE void setMetatileLayerOrder(const QList<int> &order);
+    Q_INVOKABLE QList<float> getMetatileLayerOpacity() const;
+    Q_INVOKABLE void setMetatileLayerOpacity(const QList<float> &opacities);
     Q_INVOKABLE QString getSong();
     Q_INVOKABLE void setSong(QString song);
     Q_INVOKABLE QString getLocation();

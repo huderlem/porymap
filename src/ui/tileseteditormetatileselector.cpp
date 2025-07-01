@@ -60,8 +60,8 @@ QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMet
                     metatileId,
                     this->primaryTileset,
                     this->secondaryTileset,
-                    this->layout->metatileLayerOrder,
-                    this->layout->metatileLayerOpacity,
+                    this->layout->metatileLayerOrder(),
+                    this->layout->metatileLayerOpacity(),
                     true)
                 .scaled(this->cellWidth, this->cellHeight);
         int map_y = i / this->numMetatilesWide;
@@ -81,8 +81,8 @@ void TilesetEditorMetatileSelector::drawMetatile(uint16_t metatileId) {
                 metatileId,
                 this->primaryTileset,
                 this->secondaryTileset,
-                this->layout->metatileLayerOrder,
-                this->layout->metatileLayerOpacity,
+                this->layout->metatileLayerOrder(),
+                this->layout->metatileLayerOpacity(),
                 true)
             .scaled(this->cellWidth, this->cellHeight);
     painter.drawImage(QPoint(pos.x() * this->cellWidth, pos.y() * this->cellHeight), metatile_image);

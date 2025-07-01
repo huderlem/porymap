@@ -1222,6 +1222,58 @@ All tileset functions are callable via the global ``map`` object.
    :returns: the pixel data
    :rtype: array
 
+.. |describe-metatile-layer-order|
+   replace:: where ``0`` is the bottom layer, ``1`` is the middle layer, and ``2`` is the top layer. The default order is ``[0, 1, 2]``
+
+.. |describe-metatile-layer-order-handling|
+   replace:: If no elements are provided the layer order will be reset to the default. Any layer not listed in the provided ``order`` will not be rendered. Any additional elements after the first 3 are ignored
+
+.. js:function:: map.getMetatileLayerOrder()
+
+   Gets the order that metatile layers are rendered for the current layout, |describe-metatile-layer-order|.
+
+   If you'd like to get the default metatile layer order for all layouts, see :js:func:`utility.getMetatileLayerOrder` instead.
+
+   :returns: array of layers
+   :rtype: array
+
+.. js:function:: map.setMetatileLayerOrder(order)
+
+   Sets the order that metatile layers are rendered for the current layout, |describe-metatile-layer-order|.
+
+   |describe-metatile-layer-order-handling|.
+
+   If you'd like to set the default metatile layer order for all layouts, see :js:func:`utility.setMetatileLayerOrder` instead.
+
+   :param order: array of layers
+   :type order: array
+
+.. |describe-metatile-layer-opacity|
+   replace:: where the first element is the bottom layer, the second element is the middle layer, and the third element is the top layer. The default opacities are ``[1.0, 1.0, 1.0]``
+
+.. |describe-metatile-layer-opacity-handling|
+   replace:: Any additional elements after the first 3 are ignored. Any elements not provided will be rendered with opacity ``1.0``
+
+.. js:function:: map.getMetatileLayerOpacity()
+
+   Gets the opacities that metatile layers are rendered with for the current layout, |describe-metatile-layer-opacity|.
+
+   If you'd like to get the default metatile layer opacities for all layouts, see :js:func:`utility.getMetatileLayerOpacity` instead.
+
+   :returns: array of opacities for each layer
+   :rtype: array
+
+.. js:function:: map.setMetatileLayerOpacity(opacities)
+
+   Sets the opacities that metatile layers are rendered with for the current layout, |describe-metatile-layer-opacity|.
+
+   |describe-metatile-layer-opacity-handling|.
+
+   If you'd like to set the default metatile layer opacities for all layouts, see :js:func:`utility.setMetatileLayerOpacity` instead.
+
+   :param opacities: array of opacities for each layer
+   :type opacities: array
+
 Overlay Functions
 ^^^^^^^^^^^^^^^^^
 
@@ -1811,30 +1863,42 @@ All settings functions are callable via the global ``utility`` object.
 
 .. js:function:: utility.getMetatileLayerOrder()
 
-   Gets the order that metatile layers are rendered.
+   Gets the order that metatile layers are rendered by default, |describe-metatile-layer-order|.
 
-   :returns: array of layers. The bottom layer is represented as 0.
+   If you'd like to get the metatile layer order for only the current layout, see :js:func:`map.getMetatileLayerOrder` instead.
+
+   :returns: array of layers
    :rtype: array
 
 .. js:function:: utility.setMetatileLayerOrder(order)
 
-   Sets the order that metatile layers are rendered.
+   Sets the order that metatile layers are rendered by default, |describe-metatile-layer-order|.
 
-   :param order: array of layers. The bottom layer is represented as 0.
+   |describe-metatile-layer-order-handling|.
+
+   If you'd like to set the metatile layer order for only the current layout, see :js:func:`map.setMetatileLayerOrder` instead.
+
+   :param order: array of layers
    :type order: array
 
 .. js:function:: utility.getMetatileLayerOpacity()
 
-   Gets the opacities that metatile layers are rendered with.
+   Gets the opacities that metatile layers are rendered with by default, |describe-metatile-layer-opacity|.
 
-   :returns: array of opacities for each layer. The bottom layer is the first element.
+   If you'd like to get the metatile layer opacities for only the current layout, see :js:func:`map.getMetatileLayerOpacity` instead.
+
+   :returns: array of opacities for each layer
    :rtype: array
 
 .. js:function:: utility.setMetatileLayerOpacity(opacities)
 
-   Sets the opacities that metatile layers are rendered with.
+   Sets the opacities that metatile layers are rendered with by default, |describe-metatile-layer-opacity|.
 
-   :param opacities: array of opacities for each layer. The bottom layer is the first element.
+   |describe-metatile-layer-opacity-handling|.
+
+   If you'd like to set the metatile layer opacities for only the current layout, see :js:func:`map.setMetatileLayerOpacity` instead.
+
+   :param opacities: array of opacities for each layer
    :type opacities: array
 
 

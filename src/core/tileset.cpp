@@ -220,14 +220,23 @@ bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tile
 
 QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
     QList<QList<QRgb>> palettes;
-    auto primaryPalettes = useTruePalettes ? primaryTileset->palettes : primaryTileset->palettePreviews;
+
+    QList<QList<QRgb>> primaryPalettes;
+    if (primaryTileset) {
+        primaryPalettes = useTruePalettes ? primaryTileset->palettes : primaryTileset->palettePreviews;
+    }
     for (int i = 0; i < Project::getNumPalettesPrimary(); i++) {
-        palettes.append(primaryPalettes.at(i));
+        palettes.append(primaryPalettes.value(i));
     }
-    auto secondaryPalettes = useTruePalettes ? secondaryTileset->palettes : secondaryTileset->palettePreviews;
+
+    QList<QList<QRgb>> secondaryPalettes;
+    if (secondaryTileset) {
+        secondaryPalettes = useTruePalettes ? secondaryTileset->palettes : secondaryTileset->palettePreviews;
+    }
     for (int i = Project::getNumPalettesPrimary(); i < Project::getNumPalettesTotal(); i++) {
-        palettes.append(secondaryPalettes.at(i));
+        palettes.append(secondaryPalettes.value(i));
     }
+
     return palettes;
 }
 

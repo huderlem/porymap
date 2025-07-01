@@ -53,8 +53,8 @@ export function onMapShifted(xDelta, yDelta) {
 
 }
 
-// Called when the currently loaded tileset is changed by switching to a new one or by saving changes to it in the Tileset Editor.
-export function onTilesetUpdated(tilesetName) {
+// Called when a currently loaded tileset is changed by switching to a new one or by saving changes in the Tileset Editor.
+export function onTilesetsChanged(primaryTilesetName, secondaryTilesetName) {
 
 }
 

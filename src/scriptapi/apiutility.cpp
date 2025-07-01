@@ -201,46 +201,36 @@ QList<QString> ScriptUtility::getCustomScripts() {
 }
 
 QList<int> ScriptUtility::getMetatileLayerOrder() {
-    if (!window || !window->editor || !window->editor->layout)
-        return QList<int>();
-    return window->editor->layout->metatileLayerOrder;
+    return Layout::defaultMetatileLayerOrder();
 }
 
-void ScriptUtility::setMetatileLayerOrder(QList<int> order) {
-    if (!window || !window->editor || !window->editor->layout)
-        return;
-
+bool ScriptUtility::validateMetatileLayerOrder(const QList<int> &order) {
     const int numLayers = 3;
-    int size = order.size();
-    if (size < numLayers) {
-        logError(QString("Metatile layer order has insufficient elements (%1), needs at least %2.").arg(size).arg(numLayers));
-        return;
-    }
-    bool invalid = false;
-    for (int i = 0; i < numLayers; i++) {
+    bool valid = true;
+    for (int i = 0; i < qMin(order.length(), numLayers); i++) {
         int layer = order.at(i);
         if (layer < 0 || layer >= numLayers) {
             logError(QString("'%1' is not a valid metatile layer order value, must be in range 0-%2.").arg(layer).arg(numLayers - 1));
-            invalid = true;
+            valid = false;
         }
     }
-    if (invalid) return;
+    return valid;
+}
 
-    window->editor->layout->metatileLayerOrder = order;
-    window->refreshAfterPalettePreviewChange();
+void ScriptUtility::setMetatileLayerOrder(const QList<int> &order) {
+    if (!validateMetatileLayerOrder(order))
+        return;
+    Layout::setDefaultMetatileLayerOrder(order);
+    if (window) window->refreshAfterPalettePreviewChange();
 }
 
 QList<float> ScriptUtility::getMetatileLayerOpacity() {
-    if (!window || !window->editor || !window->editor->layout)
-        return QList<float>();
-    return window->editor->layout->metatileLayerOpacity;
+    return Layout::defaultMetatileLayerOpacity();
 }
 
-void ScriptUtility::setMetatileLayerOpacity(QList<float> order) {
-    if (!window || !window->editor || !window->editor->layout)
-        return;
-    window->editor->layout->metatileLayerOpacity = order;
-    window->refreshAfterPalettePreviewChange();
+void ScriptUtility::setMetatileLayerOpacity(const QList<float> &opacities) {
+    Layout::setDefaultMetatileLayerOpacity(opacities);
+    if (window) window->refreshAfterPalettePreviewChange();
 }
 
 QList<QString> ScriptUtility::getMapNames() {

@@ -4,6 +4,7 @@
 #include "editcommands.h"
 #include "config.h"
 #include "imageproviders.h"
+#include "scriptutility.h"
 
 // TODO: "tilesetNeedsRedraw" is used when redrawing the map after
 // changing a metatile's tiles via script. It is unnecessarily
@@ -26,7 +27,7 @@ void MainWindow::tryRedrawMapArea(bool forceRedraw) {
         if (this->tilesetEditor)
             this->tilesetEditor->updateTilesets(this->editor->layout->tileset_primary_label, this->editor->layout->tileset_secondary_label);
         if (this->editor->metatile_selector_item)
-            this->editor->metatile_selector_item->draw();
+            this->editor->metatile_selector_item->refresh();
         if (this->editor->selected_border_metatiles_item)
             this->editor->selected_border_metatiles_item->draw();
         if (this->editor->current_metatile_selection_item)
@@ -332,7 +333,7 @@ void MainWindow::refreshAfterPaletteChange(Tileset *tileset) {
     if (this->tilesetEditor) {
         this->tilesetEditor->updateTilesets(this->editor->layout->tileset_primary_label, this->editor->layout->tileset_secondary_label);
     }
-    this->editor->metatile_selector_item->draw();
+    this->editor->metatile_selector_item->refresh();
     this->editor->selected_border_metatiles_item->draw();
     this->editor->map_item->draw(true);
     this->editor->updateMapBorder();
@@ -444,7 +445,7 @@ QJSValue MainWindow::getSecondaryTilesetPalettes() {
 }
 
 void MainWindow::refreshAfterPalettePreviewChange() {
-    this->editor->metatile_selector_item->draw();
+    this->editor->metatile_selector_item->refresh();
     this->editor->selected_border_metatiles_item->draw();
     this->editor->map_item->draw(true);
     this->editor->updateMapBorder();
@@ -805,6 +806,32 @@ QJSValue MainWindow::getTilePixels(int tileId) {
         pixelArray.setProperty(i, pixels[i]);
     }
     return pixelArray;
+}
+
+QList<int> MainWindow::getMetatileLayerOrder() const {
+    if (!this->editor || !this->editor->layout)
+        return QList<int>();
+    return this->editor->layout->metatileLayerOrder();
+}
+
+void MainWindow::setMetatileLayerOrder(const QList<int> &order) {
+    if (!this->editor || !this->editor->layout || !ScriptUtility::validateMetatileLayerOrder(order))
+        return;
+    this->editor->layout->setMetatileLayerOrder(order);
+    this->refreshAfterPalettePreviewChange();
+}
+
+QList<float> MainWindow::getMetatileLayerOpacity() const {
+    if (!this->editor || !this->editor->layout)
+        return QList<float>();
+    return this->editor->layout->metatileLayerOpacity();
+}
+
+void MainWindow::setMetatileLayerOpacity(const QList<float> &opacities) {
+    if (!this->editor || !this->editor->layout)
+        return;
+    this->editor->layout->setMetatileLayerOpacity(opacities);
+    this->refreshAfterPalettePreviewChange();
 }
 
 //=====================

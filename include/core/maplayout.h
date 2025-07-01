@@ -17,7 +17,7 @@ class BorderMetatilesPixmapItem;
 class Layout : public QObject {
     Q_OBJECT
 public:
-    Layout() {}
+    Layout() {};
     Layout(const Layout &other);
 
     static QString layoutConstantFromName(const QString &name);
@@ -64,8 +64,15 @@ public:
         QSize borderDimensions;
     } lastCommitBlocks; // to track map changes
 
-    QList<int> metatileLayerOrder;
-    QList<float> metatileLayerOpacity;
+    void setMetatileLayerOrder(const QList<int> &layerOrder) { m_metatileLayerOrder = layerOrder; }
+    QList<int> metatileLayerOrder() const;
+    static void setDefaultMetatileLayerOrder(const QList<int> &layerOrder) { s_defaultMetatileLayerOrder = layerOrder; }
+    static QList<int> defaultMetatileLayerOrder();
+
+    void setMetatileLayerOpacity(const QList<float> &layerOpacity) { m_metatileLayerOpacity = layerOpacity; }
+    QList<float> metatileLayerOpacity() const;
+    static void setDefaultMetatileLayerOpacity(const QList<float> &layerOpacity) { s_defaultMetatileLayerOpacity = layerOpacity; }
+    static QList<float> defaultMetatileLayerOpacity();
 
     LayoutPixmapItem *layoutItem = nullptr;
     CollisionPixmapItem *collisionItem = nullptr;
@@ -147,6 +154,8 @@ public:
     void setCollisionItem(CollisionPixmapItem *item) { collisionItem = item; }
     void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
 
+    bool metatileIsValid(uint16_t metatileId) { return Tileset::metatileIsValid(metatileId, this->tileset_primary, this->tileset_secondary); }
+
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
@@ -154,6 +163,11 @@ private:
     static Blockdata readBlockdata(const QString &path, QString *error);
 
     static int getBorderDrawDistance(int dimension, qreal minimum);
+
+    QList<int> m_metatileLayerOrder;
+    QList<float> m_metatileLayerOpacity;
+    static QList<int> s_defaultMetatileLayerOrder;
+    static QList<float> s_defaultMetatileLayerOpacity;
 
 signals:
     void dimensionsChanged(const QSize &size);

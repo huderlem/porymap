@@ -46,12 +46,7 @@ void BorderMetatilesPixmapItem::draw() {
         for (int j = 0; j < height; j++) {
             int x = i * 16;
             int y = j * 16;
-            QImage metatile_image = getMetatileImage(
-                        layout->getBorderMetatileId(i, j),
-                        layout->tileset_primary,
-                        layout->tileset_secondary,
-                        layout->metatileLayerOrder,
-                        layout->metatileLayerOpacity);
+            QImage metatile_image = getMetatileImage(layout->getBorderMetatileId(i, j), layout);
             QPoint metatile_origin = QPoint(x, y);
             painter.drawImage(metatile_origin, metatile_image);
         }

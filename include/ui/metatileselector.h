@@ -36,8 +36,6 @@ public:
         this->prefabSelection = false;
         this->numMetatilesWide = numMetatilesWide;
         this->layout = layout;
-        this->primaryTileset = layout->tileset_primary;
-        this->secondaryTileset = layout->tileset_secondary;
         this->selection = MetatileSelection{};
         this->cellPos = QPoint(-1, -1);
         setAcceptHoverEvents(true);
@@ -45,10 +43,10 @@ public:
 
     QPoint getSelectionDimensions() override;
     void draw() override;
+    void refresh();
 
     bool select(uint16_t metatile);
     void selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
-    void setTilesets(Tileset*, Tileset*);
     MetatileSelection getMetatileSelection();
     void setPrefabSelection(MetatileSelection selection);
     void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
@@ -56,8 +54,9 @@ public:
     void setLayout(Layout *layout);
     bool isInternalSelection() const { return (!this->externalSelection && !this->prefabSelection); }
 
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
+    Tileset *primaryTileset() const { return this->layout->tileset_primary; }
+    Tileset *secondaryTileset() const { return this->layout->tileset_secondary; }
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;

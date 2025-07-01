@@ -380,8 +380,8 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
                 metatileId,
                 fromLayout ? fromLayout->tileset_primary   : this->tileset_primary,
                 fromLayout ? fromLayout->tileset_secondary : this->tileset_secondary,
-                metatileLayerOrder,
-                metatileLayerOpacity
+                metatileLayerOrder(),
+                metatileLayerOpacity()
             );
             imageCache.insert(metatileId, metatileImage);
         }
@@ -457,7 +457,7 @@ QPixmap Layout::renderBorder(bool ignoreCache) {
         changed_any = true;
         Block block = this->border.at(i);
         uint16_t metatileId = block.metatileId();
-        QImage metatile_image = getMetatileImage(metatileId, this->tileset_primary, this->tileset_secondary, metatileLayerOrder, metatileLayerOpacity);
+        QImage metatile_image = getMetatileImage(metatileId, this);
         int map_y = width_ ? i / width_ : 0;
         int map_x = width_ ? i % width_ : 0;
         painter.drawImage(QPoint(map_x * 16, map_y * 16), metatile_image);
@@ -611,4 +611,24 @@ Blockdata Layout::readBlockdata(const QString &path, QString *error) {
     }
 
     return blockdata;
+}
+
+QList<int> Layout::metatileLayerOrder() const {
+    return !m_metatileLayerOrder.isEmpty() ? m_metatileLayerOrder : Layout::defaultMetatileLayerOrder();
+}
+
+QList<int> Layout::s_defaultMetatileLayerOrder;
+QList<int> Layout::defaultMetatileLayerOrder() {
+    static const QList<int> initialDefault = {0, 1, 2};
+    return !s_defaultMetatileLayerOrder.isEmpty() ? s_defaultMetatileLayerOrder : initialDefault;
+}
+
+QList<float> Layout::metatileLayerOpacity() const {
+    return !m_metatileLayerOpacity.isEmpty() ? m_metatileLayerOpacity : Layout::defaultMetatileLayerOpacity();
+}
+
+QList<float> Layout::s_defaultMetatileLayerOpacity;
+QList<float> Layout::defaultMetatileLayerOpacity() {
+    static const QList<float> initialDefault = {1.0, 1.0, 1.0};
+    return !s_defaultMetatileLayerOpacity.isEmpty() ? s_defaultMetatileLayerOpacity : initialDefault;
 }

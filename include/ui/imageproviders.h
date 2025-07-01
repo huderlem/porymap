@@ -6,8 +6,12 @@
 #include <QImage>
 #include <QPixmap>
 
+class Layout;
+
 QImage getCollisionMetatileImage(Block);
 QImage getCollisionMetatileImage(int, int);
+QImage getMetatileImage(uint16_t, Layout*, bool useTruePalettes = false);
+QImage getMetatileImage(Metatile*, Layout*, bool useTruePalettes = false);
 QImage getMetatileImage(uint16_t, Tileset*, Tileset*, const QList<int>&, const QList<float>&, bool useTruePalettes = false);
 QImage getMetatileImage(Metatile*, Tileset*, Tileset*, const QList<int>&, const QList<float>&, bool useTruePalettes = false);
 QImage getTileImage(uint16_t, Tileset*, Tileset*);

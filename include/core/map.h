@@ -133,9 +133,6 @@ private:
     QMap<Event::Group, QList<Event *>> m_events;
     QSet<Event *> m_ownedEvents; // for memory management
 
-    QList<int> m_metatileLayerOrder;
-    QList<float> m_metatileLayerOpacity;
-
     void trackConnection(MapConnection*);
 
     // MapConnections in 'ownedConnections' but not 'connections' persist in the edit history.

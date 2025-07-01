@@ -1357,12 +1357,13 @@ bool Editor::setLayout(QString layoutId) {
     map_ruler->setMapDimensions(QSize(this->layout->getWidth(), this->layout->getHeight()));
     connect(this->layout, &Layout::dimensionsChanged, map_ruler, &MapRuler::setMapDimensions);
 
-    ui->comboBox_PrimaryTileset->blockSignals(true);
-    ui->comboBox_SecondaryTileset->blockSignals(true);
+    QString prevPrimaryTileset = ui->comboBox_PrimaryTileset->currentText();
+    QString prevSecondaryTileset = ui->comboBox_SecondaryTileset->currentText();
+
+    const QSignalBlocker b_PrimaryTilest(ui->comboBox_PrimaryTileset);
+    const QSignalBlocker b_SecondaryTilest(ui->comboBox_SecondaryTileset);
     ui->comboBox_PrimaryTileset->setTextItem(this->layout->tileset_primary_label);
     ui->comboBox_SecondaryTileset->setTextItem(this->layout->tileset_secondary_label);
-    ui->comboBox_PrimaryTileset->blockSignals(false);
-    ui->comboBox_SecondaryTileset->blockSignals(false);
 
     const QSignalBlocker b0(this->ui->comboBox_LayoutSelector);
     int index = this->ui->comboBox_LayoutSelector->findText(layoutId);
@@ -1371,6 +1372,8 @@ bool Editor::setLayout(QString layoutId) {
 
     if (this->layout->name != prevLayoutName)
         Scripting::cb_LayoutOpened(this->layout->name);
+    if (this->layout->tileset_primary_label != prevPrimaryTileset || this->layout->tileset_secondary_label != prevSecondaryTileset)
+        Scripting::cb_TilesetsChanged(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
 
     return true;
 }
@@ -1651,13 +1654,6 @@ void Editor::displayMetatileSelector() {
         metatile_selector_item->select(0);
     } else {
         metatile_selector_item->setLayout(this->layout);
-        if (metatile_selector_item->primaryTileset
-         && metatile_selector_item->primaryTileset != this->layout->tileset_primary)
-            emit tilesetUpdated(this->layout->tileset_primary->name);
-        if (metatile_selector_item->secondaryTileset
-         && metatile_selector_item->secondaryTileset != this->layout->tileset_secondary)
-            emit tilesetUpdated(this->layout->tileset_secondary->name);
-        metatile_selector_item->setTilesets(this->layout->tileset_primary, this->layout->tileset_secondary);
     }
 
     scene_metatiles->addItem(metatile_selector_item);

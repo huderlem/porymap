@@ -16,7 +16,7 @@ const QMap<CallbackType, QString> callbackFunctions = {
     {OnMapResized, "onMapResized"},
     {OnBorderResized, "onBorderResized"},
     {OnMapShifted, "onMapShifted"},
-    {OnTilesetUpdated, "onTilesetUpdated"},
+    {OnTilesetsChanged, "onTilesetsChanged"},
     {OnMainTabChanged, "onMainTabChanged"},
     {OnMapViewTabChanged, "onMapViewTabChanged"},
     {OnBorderVisibilityToggled, "onBorderVisibilityToggled"},
@@ -301,13 +301,14 @@ void Scripting::cb_MapShifted(int xDelta, int yDelta) {
     instance->invokeCallback(OnMapShifted, args);
 }
 
-void Scripting::cb_TilesetUpdated(QString tilesetName) {
+void Scripting::cb_TilesetsChanged(const QString &primaryTilesetName, const QString &secondaryTilesetName) {
     if (!instance) return;
 
     QJSValueList args {
-        tilesetName,
+        primaryTilesetName,
+        secondaryTilesetName
     };
-    instance->invokeCallback(OnTilesetUpdated, args);
+    instance->invokeCallback(OnTilesetsChanged, args);
 }
 
 void Scripting::cb_MainTabChanged(int oldTab, int newTab) {

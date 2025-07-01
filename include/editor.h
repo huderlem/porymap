@@ -284,7 +284,6 @@ signals:
     void wildMonTableEdited();
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
-    void tilesetUpdated(QString);
     void gridToggled(bool);
     void editActionSet(EditAction newEditAction);
 };

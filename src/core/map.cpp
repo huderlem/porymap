@@ -30,8 +30,6 @@ Map::Map(const Map &other, QObject *parent) : Map(parent) {
     *m_header = *other.m_header;
     m_layout = other.m_layout;
     m_isPersistedToFile = false;
-    m_metatileLayerOrder = other.m_metatileLayerOrder;
-    m_metatileLayerOpacity = other.m_metatileLayerOpacity;
 
     // Copy events
     for (auto i = other.m_events.constBegin(); i != other.m_events.constEnd(); i++) {

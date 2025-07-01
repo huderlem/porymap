@@ -13,6 +13,25 @@ QImage getCollisionMetatileImage(int collision, int elevation) {
     return image ? *image : QImage();
 }
 
+QImage getMetatileImage(uint16_t metatileId, Layout *layout, bool useTruePalettes) {
+    Metatile* metatile = Tileset::getMetatile(metatileId,
+                                              layout ? layout->tileset_primary : nullptr,
+                                              layout ? layout->tileset_secondary : nullptr);
+    return getMetatileImage(metatile, layout, useTruePalettes);
+}
+
+QImage getMetatileImage(Metatile *metatile, Layout *layout, bool useTruePalettes) {
+    if (!layout) {
+        return getMetatileImage(metatile, nullptr, nullptr, {}, {}, useTruePalettes);
+    }
+    return getMetatileImage(metatile,
+                            layout->tileset_primary,
+                            layout->tileset_secondary,
+                            layout->metatileLayerOrder(),
+                            layout->metatileLayerOpacity(),
+                            useTruePalettes);
+}
+
 QImage getMetatileImage(
         uint16_t metatileId,
         Tileset *primaryTileset,
@@ -21,13 +40,12 @@ QImage getMetatileImage(
         const QList<float> &layerOpacity,
         bool useTruePalettes)
 {
-    Metatile* metatile = Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset);
-    if (!metatile) {
-        QImage metatile_image(16, 16, QImage::Format_RGBA8888);
-        metatile_image.fill(Qt::magenta);
-        return metatile_image;
-    }
-    return getMetatileImage(metatile, primaryTileset, secondaryTileset, layerOrder, layerOpacity, useTruePalettes);
+    return getMetatileImage(Tileset::getMetatile(metatileId, primaryTileset, secondaryTileset),
+                            primaryTileset,
+                            secondaryTileset,
+                            layerOrder,
+                            layerOpacity,
+                            useTruePalettes);
 }
 
 QImage getMetatileImage(
@@ -38,7 +56,9 @@ QImage getMetatileImage(
         const QList<float> &layerOpacity,
         bool useTruePalettes)
 {
-    QImage metatile_image(16, 16, QImage::Format_RGBA8888);
+    const int numTilesWide = 2;
+    const int numTilesTall = 2;
+    QImage metatile_image(8 * numTilesWide, 8 * numTilesTall, QImage::Format_RGBA8888);
     if (!metatile) {
         metatile_image.fill(Qt::magenta);
         return metatile_image;
@@ -54,18 +74,17 @@ QImage getMetatileImage(
     metatile_image.fill(projectConfig.setTransparentPixelsBlack ? QColor("black") : QColor(palettes.value(0).value(0)));
 
     QPainter metatile_painter(&metatile_image);
-    const int numLayers = 3; // When rendering, metatiles always have 3 layers
-    uint32_t layerType = metatile->layerType();
-    for (int layer = 0; layer < numLayers; layer++)
-    for (int y = 0; y < 2; y++)
-    for (int x = 0; x < 2; x++) {
-        int l = layerOrder.size() >= numLayers ? layerOrder[layer] : layer;
 
+    uint32_t layerType = metatile->layerType();
+    const int numTilesPerLayer = numTilesWide * numTilesTall;
+    for (const auto &layer : layerOrder)
+    for (int y = 0; y < numTilesTall; y++)
+    for (int x = 0; x < numTilesWide; x++) {
         // Get the tile to render next
         Tile tile;
-        int tileOffset = (y * 2) + x;
+        int tileOffset = (y * numTilesWide) + x;
         if (projectConfig.tripleLayerMetatilesEnabled) {
-            tile = metatile->tiles.value(tileOffset + (l * 4));
+            tile = metatile->tiles.value(tileOffset + (layer * numTilesPerLayer));
         } else {
             // "Vanilla" metatiles only have 8 tiles, but render 12.
             // The remaining 4 tiles are rendered using user-specified tiles depending on layer type.
@@ -73,22 +92,22 @@ QImage getMetatileImage(
             {
             default:
             case Metatile::LayerType::Normal:
-                if (l == 0)
+                if (layer == 0)
                     tile = Tile(projectConfig.unusedTileNormal);
                 else // Tiles are on layers 1 and 2
-                    tile = metatile->tiles.value(tileOffset + ((l - 1) * 4));
+                    tile = metatile->tiles.value(tileOffset + ((layer - 1) * numTilesPerLayer));
                 break;
             case Metatile::LayerType::Covered:
-                if (l == 2)
+                if (layer == 2)
                     tile = Tile(projectConfig.unusedTileCovered);
                 else // Tiles are on layers 0 and 1
-                    tile = metatile->tiles.value(tileOffset + (l * 4));
+                    tile = metatile->tiles.value(tileOffset + (layer * numTilesPerLayer));
                 break;
             case Metatile::LayerType::Split:
-                if (l == 1)
+                if (layer == 1)
                     tile = Tile(projectConfig.unusedTileSplit);
                 else // Tiles are on layers 0 and 2
-                    tile = metatile->tiles.value(tileOffset + ((l == 0 ? 0 : 1) * 4));
+                    tile = metatile->tiles.value(tileOffset + ((layer == 0 ? 0 : 1) * numTilesPerLayer));
                 break;
             }
         }
@@ -112,7 +131,7 @@ QImage getMetatileImage(
         }
 
         QPoint origin = QPoint(x*8, y*8);
-        float opacity = layerOpacity.size() >= numLayers ? layerOpacity[l] : 1.0;
+        float opacity = layerOpacity.value(layer, 1.0);
         if (opacity < 1.0) {
             int alpha = 255 * opacity;
             for (int c = 0; c < tile_image.colorCount(); c++) {

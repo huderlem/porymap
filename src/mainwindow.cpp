@@ -367,7 +367,6 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonTableEdited, [this] { markMapEdited(this->editor->map); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
-    connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(this->editor, &Editor::editActionSet, this, &MainWindow::setEditActionUi);
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
     connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
@@ -2604,20 +2603,20 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     bool updated = false;
     if (primaryTilesetLabel == this->editor->layout->tileset_primary_label) {
         this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
-        Scripting::cb_TilesetUpdated(primaryTilesetLabel);
         updated = true;
     } else {
         this->editor->project->getTileset(primaryTilesetLabel, true);
     }
     if (secondaryTilesetLabel == this->editor->layout->tileset_secondary_label)  {
         this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
-        Scripting::cb_TilesetUpdated(secondaryTilesetLabel);
         updated = true;
     } else {
         this->editor->project->getTileset(secondaryTilesetLabel, true);
     }
-    if (updated)
+    if (updated) {
         redrawMapScene();
+        Scripting::cb_TilesetsChanged(primaryTilesetLabel, secondaryTilesetLabel);
+    }
 }
 
 void MainWindow::onMapRulerStatusChanged(const QString &status) {
