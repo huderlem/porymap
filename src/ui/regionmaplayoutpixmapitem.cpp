@@ -8,7 +8,7 @@ void RegionMapLayoutPixmapItem::draw() {
     QPainter painter(&image);
     for (int i = 0; i < region_map->tilemapSize(); i++) {
         QImage bottom_img = this->tile_selector->tileImg(region_map->getTile(i));
-        QImage top_img(8, 8, QImage::Format_RGBA8888);
+        QImage top_img(this->cellWidth, this->cellHeight, QImage::Format_RGBA8888);
         if (region_map->squareHasMap(i)) {
             top_img.fill(Qt::gray);
         } else {
@@ -16,7 +16,7 @@ void RegionMapLayoutPixmapItem::draw() {
         }
         int x = i % region_map->tilemapWidth();
         int y = i / region_map->tilemapWidth();
-        QPoint pos = QPoint(x * 8, y * 8);
+        QPoint pos = QPoint(x * this->cellWidth, y * this->cellHeight);
         painter.setOpacity(1);
         painter.drawImage(pos, bottom_img);
         painter.save();

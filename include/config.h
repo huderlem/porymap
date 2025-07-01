@@ -82,7 +82,7 @@ public:
         this->collisionOpacity = 50;
         this->collisionZoom = 30;
         this->metatilesZoom = 30;
-        this->tilesetEditorMetatilesZoom = 30;
+        this->tilesetEditorMetatilesZoom = 45;
         this->tilesetEditorTilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;

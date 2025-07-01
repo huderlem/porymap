@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>733</width>
+    <width>748</width>
     <height>784</height>
    </rect>
   </property>
@@ -267,16 +267,10 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>66</width>
-                  <height>34</height>
-                 </size>
-                </property>
                 <property name="maximumSize">
                  <size>
-                  <width>96</width>
-                  <height>34</height>
+                  <width>1</width>
+                  <height>1</height>
                  </size>
                 </property>
                 <property name="verticalScrollBarPolicy">
@@ -561,8 +555,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>445</width>
-             <height>237</height>
+             <width>499</width>
+             <height>241</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
@@ -623,7 +617,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>733</width>
+     <width>748</width>
      <height>37</height>
     </rect>
    </property>

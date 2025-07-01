@@ -21,7 +21,7 @@ void MetatileSelector::updateBasePixmap() {
     if (length_ % this->numMetatilesWide != 0) {
         height_++;
     }
-    QImage image(this->numMetatilesWide * 16, height_ * 16, QImage::Format_RGBA8888);
+    QImage image(this->numMetatilesWide * this->cellWidth, height_ * this->cellHeight, QImage::Format_RGBA8888);
     image.fill(Qt::magenta);
     QPainter painter(&image);
     for (int i = 0; i < length_; i++) {
@@ -32,7 +32,7 @@ void MetatileSelector::updateBasePixmap() {
         QImage metatile_image = getMetatileImage(tile, this->primaryTileset, this->secondaryTileset, layout->metatileLayerOrder, layout->metatileLayerOpacity);
         int map_y = i / this->numMetatilesWide;
         int map_x = i % this->numMetatilesWide;
-        QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
+        QPoint metatile_origin = QPoint(map_x * this->cellWidth, map_y * this->cellHeight);
         painter.drawImage(metatile_origin, metatile_image);
     }
     painter.end();

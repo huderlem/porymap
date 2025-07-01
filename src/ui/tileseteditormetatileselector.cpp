@@ -4,7 +4,7 @@
 #include <QPainter>
 
 TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout)
-  : SelectablePixmapItem(32, 32, 1, 1) {
+  : SelectablePixmapItem(16, 16, 1, 1) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     this->numMetatilesWide = 8;

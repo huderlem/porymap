@@ -3,6 +3,17 @@
 #include "imageproviders.h"
 #include <QPainter>
 
+MetatileLayersItem::MetatileLayersItem(Metatile *metatile, Tileset *primaryTileset, Tileset *secondaryTileset)
+    : SelectablePixmapItem(16, 16, 2 * projectConfig.getNumLayersInMetatile(), 2),
+     metatile(metatile),
+     primaryTileset(primaryTileset),
+     secondaryTileset(secondaryTileset)
+{
+    clearLastModifiedCoords();
+    clearLastHoveredCoords();
+    setAcceptHoverEvents(true);
+}
+
 static const QList<QPoint> tilePositions = {
     QPoint(0, 0),
     QPoint(1, 0),
@@ -20,23 +31,31 @@ static const QList<QPoint> tilePositions = {
 
 void MetatileLayersItem::draw() {
     const int numLayers = projectConfig.getNumLayersInMetatile();
-    QPixmap pixmap(numLayers * 32, 32);
+    const int layerWidth = this->cellWidth * 2;
+    const int layerHeight = this->cellHeight * 2;
+    QPixmap pixmap(numLayers * layerWidth, layerHeight);
     QPainter painter(&pixmap);
 
     // Draw tile images
     int numTiles = qMin(projectConfig.getNumTilesInMetatile(), this->metatile ? this->metatile->tiles.length() : 0);
     for (int i = 0; i < numTiles; i++) {
         Tile tile = this->metatile->tiles.at(i);
-        QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(16, 16);
+        QImage tileImage = getPalettedTileImage(tile.tileId,
+                                                this->primaryTileset,
+                                                this->secondaryTileset,
+                                                tile.palette,
+                                                true
+                                                ).scaled(this->cellWidth, this->cellHeight);
         tile.flip(&tileImage);
-        painter.drawImage(tilePositions.at(i) * 16, tileImage);
+        QPoint pos = tilePositions.at(i);
+        painter.drawImage(pos.x() * this->cellWidth, pos.y() * this->cellHeight, tileImage);
     }
     if (this->showGrid) {
         // Draw grid
         painter.setPen(Qt::white);
         for (int i = 1; i < numLayers; i++) {
-            int x = i * 32;
-            painter.drawLine(x, 0, x, 32);
+            int x = i * layerWidth;
+            painter.drawLine(x, 0, x, layerHeight);
         }
     }
 
@@ -127,13 +146,8 @@ void MetatileLayersItem::clearLastHoveredCoords() {
 }
 
 QPoint MetatileLayersItem::getBoundedPos(const QPointF &pos) {
-    int x, y;
-    int maxX = (projectConfig.getNumLayersInMetatile() * 2) - 1;
-    x = static_cast<int>(pos.x()) / 16;
-    y = static_cast<int>(pos.y()) / 16;
-    if (x < 0) x = 0;
-    if (y < 0) y = 0;
-    if (x > maxX) x = maxX;
-    if (y > 1) y = 1;
-    return QPoint(x, y);
+    int x = static_cast<int>(pos.x()) / this->cellWidth;
+    int y = static_cast<int>(pos.y()) / this->cellHeight;
+    return QPoint( qMax(0, qMin(x, this->maxSelectionWidth - 1)),
+                   qMax(0, qMin(y, this->maxSelectionHeight - 1)) );
 }
