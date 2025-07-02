@@ -114,8 +114,8 @@ void ResizableRect::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void ResizableRect::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    int dx = Util::roundUp(event->scenePos().x() - this->clickedPos.x(), 16);
-    int dy = Util::roundUp(event->scenePos().y() - this->clickedPos.y(), 16);
+    int dx = Util::roundUpToMultiple(event->scenePos().x() - this->clickedPos.x(), 16);
+    int dy = Util::roundUpToMultiple(event->scenePos().y() - this->clickedPos.y(), 16);
 
     QRect resizedRect = this->clickedRect;
 

@@ -3,6 +3,7 @@
 #define TILE_H
 
 #include <QObject>
+#include <QSize>
 
 class Tile
 {
@@ -24,6 +25,10 @@ public:
     static int getIndexInTileset(int);
 
     static const uint16_t maxValue;
+
+    static int pixelWidth() { return 8; }
+    static int pixelHeight() { return 8; }
+    static QSize pixelSize() { return QSize(Tile::pixelWidth(), Tile::pixelHeight()); }
 };
 
 inline bool operator==(const Tile &a, const Tile &b) {

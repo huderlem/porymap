@@ -1618,7 +1618,7 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
         metatilesFilepath.append(projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
     }
     ignoreWatchedFilesTemporarily({headersFilepath, graphicsFilepath, metatilesFilepath});
-    name.remove(0, prefix.length()); // Strip prefix from name to get base name for use in other symbols.
+    name = Tileset::stripPrefix(name);
     tileset->appendToHeaders(headersFilepath, name, this->usingAsmTilesets);
     tileset->appendToGraphics(graphicsFilepath, name, this->usingAsmTilesets);
     tileset->appendToMetatiles(metatilesFilepath, name, this->usingAsmTilesets);
@@ -3462,12 +3462,12 @@ void Project::applyParsedLimits() {
     Block::setLayout();
     Metatile::setLayout(this);
 
-    Project::num_metatiles_primary = qMin(qMax(Project::num_metatiles_primary, 1), Block::getMaxMetatileId() + 1);
+    Project::num_metatiles_primary = qBound(1, Project::num_metatiles_primary, Block::getMaxMetatileId() + 1);
     projectConfig.defaultMetatileId = qMin(projectConfig.defaultMetatileId, Block::getMaxMetatileId());
     projectConfig.defaultElevation = qMin(projectConfig.defaultElevation, Block::getMaxElevation());
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
-    projectConfig.collisionSheetSize.setHeight(qMin(qMax(projectConfig.collisionSheetSize.height(), 1), Block::getMaxElevation() + 1));
-    projectConfig.collisionSheetSize.setWidth(qMin(qMax(projectConfig.collisionSheetSize.width(), 1), Block::getMaxCollision() + 1));
+    projectConfig.collisionSheetSize.setHeight(qBound(1, projectConfig.collisionSheetSize.height(), Block::getMaxElevation() + 1));
+    projectConfig.collisionSheetSize.setWidth(qBound(1, projectConfig.collisionSheetSize.width(), Block::getMaxCollision() + 1));
 }
 
 bool Project::hasUnsavedChanges() {

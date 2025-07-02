@@ -56,11 +56,9 @@ QImage getMetatileImage(
         const QList<float> &layerOpacity,
         bool useTruePalettes)
 {
-    const int numTilesWide = 2;
-    const int numTilesTall = 2;
-    QImage metatile_image(8 * numTilesWide, 8 * numTilesTall, QImage::Format_RGBA8888);
+    QImage metatile_image(Metatile::pixelWidth(), Metatile::pixelHeight(), QImage::Format_RGBA8888);
     if (!metatile) {
-        metatile_image.fill(Qt::magenta);
+        metatile_image.fill(projectConfig.transparencyColor == QColor(Qt::transparent) ? projectConfig.transparencyColor : QColor(Qt::magenta));
         return metatile_image;
     }
 
@@ -70,21 +68,20 @@ QImage getMetatileImage(
     // tile pixels line up across layers we will still have something to render.
     // The GBA renders transparent pixels using palette 0 color 0. We have this color,
     // but all 3 games actually overwrite it with black when loading the tileset palettes,
-    // so we have a setting to choose between these two behaviors.
-    metatile_image.fill(projectConfig.setTransparentPixelsBlack ? QColor("black") : QColor(palettes.value(0).value(0)));
+    // so we have a setting to specify an override transparency color.
+    metatile_image.fill(projectConfig.transparencyColor.isValid() ? projectConfig.transparencyColor : QColor(palettes.value(0).value(0)));
 
     QPainter metatile_painter(&metatile_image);
 
     uint32_t layerType = metatile->layerType();
-    const int numTilesPerLayer = numTilesWide * numTilesTall;
     for (const auto &layer : layerOrder)
-    for (int y = 0; y < numTilesTall; y++)
-    for (int x = 0; x < numTilesWide; x++) {
+    for (int y = 0; y < Metatile::tileHeight(); y++)
+    for (int x = 0; x < Metatile::tileWidth(); x++) {
         // Get the tile to render next
         Tile tile;
-        int tileOffset = (y * numTilesWide) + x;
+        int tileOffset = (y * Metatile::tileWidth()) + x;
         if (projectConfig.tripleLayerMetatilesEnabled) {
-            tile = metatile->tiles.value(tileOffset + (layer * numTilesPerLayer));
+            tile = metatile->tiles.value(tileOffset + (layer * Metatile::tilesPerLayer()));
         } else {
             // "Vanilla" metatiles only have 8 tiles, but render 12.
             // The remaining 4 tiles are rendered using user-specified tiles depending on layer type.
@@ -95,19 +92,19 @@ QImage getMetatileImage(
                 if (layer == 0)
                     tile = Tile(projectConfig.unusedTileNormal);
                 else // Tiles are on layers 1 and 2
-                    tile = metatile->tiles.value(tileOffset + ((layer - 1) * numTilesPerLayer));
+                    tile = metatile->tiles.value(tileOffset + ((layer - 1) * Metatile::tilesPerLayer()));
                 break;
             case Metatile::LayerType::Covered:
                 if (layer == 2)
                     tile = Tile(projectConfig.unusedTileCovered);
                 else // Tiles are on layers 0 and 1
-                    tile = metatile->tiles.value(tileOffset + (layer * numTilesPerLayer));
+                    tile = metatile->tiles.value(tileOffset + (layer * Metatile::tilesPerLayer()));
                 break;
             case Metatile::LayerType::Split:
                 if (layer == 1)
                     tile = Tile(projectConfig.unusedTileSplit);
                 else // Tiles are on layers 0 and 2
-                    tile = metatile->tiles.value(tileOffset + ((layer == 0 ? 0 : 1) * numTilesPerLayer));
+                    tile = metatile->tiles.value(tileOffset + ((layer == 0 ? 0 : 1) * Metatile::tilesPerLayer()));
                 break;
             }
         }
@@ -130,7 +127,7 @@ QImage getMetatileImage(
             logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile.tileId).arg(tile.palette));
         }
 
-        QPoint origin = QPoint(x*8, y*8);
+        QPoint origin = QPoint(x * Tile::pixelWidth(), y * Tile::pixelHeight());
         float opacity = layerOpacity.value(layer, 1.0);
         if (opacity < 1.0) {
             int alpha = 255 * opacity;
@@ -165,9 +162,9 @@ QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondary
 QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette) {
     QImage tileImage = getTileImage(tileId, primaryTileset, secondaryTileset);
     if (tileImage.isNull()) {
-        tileImage = QImage(8, 8, QImage::Format_RGBA8888);
+        tileImage = QImage(Tile::pixelWidth(), Tile::pixelHeight(), QImage::Format_RGBA8888);
         QPainter painter(&tileImage);
-        painter.fillRect(0, 0, 8, 8, palette.at(0));
+        painter.fillRect(0, 0, tileImage.width(), tileImage.height(), palette.at(0));
     } else {
         for (int i = 0; i < 16; i++) {
             tileImage.setColor(i, palette.at(i));
@@ -193,4 +190,58 @@ void flattenTo4bppImage(QImage * image) {
     uchar * pixel = image->bits();
     for (int i = 0; i < image->sizeInBytes(); i++, pixel++)
         *pixel %= 16;
+}
+
+QImage getMetatileSheetImage(Layout *layout, int numMetatilesWide, bool useTruePalettes) {
+    return getMetatileSheetImage(layout->tileset_primary,
+                                 layout->tileset_secondary,
+                                 0,
+                                 -1,
+                                 numMetatilesWide,
+                                 layout->metatileLayerOrder(),
+                                 layout->metatileLayerOpacity(),
+                                 Metatile::pixelSize(),
+                                 useTruePalettes);
+}
+
+QImage getMetatileSheetImage(Tileset *primaryTileset,
+                             Tileset *secondaryTileset,
+                             uint16_t metatileIdStart,
+                             int numMetatilesToDraw,
+                             int numMetatilesWide,
+                             const QList<int> &layerOrder,
+                             const QList<float> &layerOpacity,
+                             const QSize &metatileSize,
+                             bool useTruePalettes)
+{
+    // We round up the number of primary metatiles to keep the tilesets on separate rows.
+    int numPrimary = Util::roundUpToMultiple(primaryTileset ? primaryTileset->numMetatiles() : 0, numMetatilesWide);
+    int maxPrimary = Project::getNumMetatilesPrimary();
+    bool includesPrimary = metatileIdStart < maxPrimary;
+
+    // Negative values are used to indicate 'draw all metatiles'
+    if (numMetatilesToDraw < 0) {
+        numMetatilesToDraw = numPrimary + (secondaryTileset ? secondaryTileset->numMetatiles() : 0) - metatileIdStart;
+    }
+
+    // Round up height for incomplete last row
+    int numMetatilesTall = ceil((double)numMetatilesToDraw / numMetatilesWide);
+
+    QImage image(numMetatilesWide * metatileSize.width(), numMetatilesTall * metatileSize.height(), QImage::Format_RGBA8888);
+    image.fill(projectConfig.transparencyColor == QColor(Qt::transparent) ? projectConfig.transparencyColor : QColor(Qt::magenta));
+
+    QPainter painter(&image);
+    for (int i = 0; i < numMetatilesToDraw; i++) {
+        uint16_t metatileId = i + metatileIdStart;
+        if (includesPrimary && metatileId >= numPrimary)
+            metatileId += maxPrimary - numPrimary; // Skip over unused region of primary tileset
+        QImage metatile_image = getMetatileImage(metatileId, primaryTileset, secondaryTileset, layerOrder, layerOpacity, useTruePalettes)
+                                                .scaled(metatileSize.width(), metatileSize.height());
+        int map_y = i / numMetatilesWide;
+        int map_x = i % numMetatilesWide;
+        QPoint metatile_origin = QPoint(map_x * metatileSize.width(), map_y * metatileSize.height());
+        painter.drawImage(metatile_origin, metatile_image);
+    }
+    painter.end();
+    return image;
 }

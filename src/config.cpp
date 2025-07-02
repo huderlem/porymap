@@ -283,7 +283,7 @@ int KeyValueConfigBase::getConfigInteger(const QString &key, const QString &valu
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
         result = defaultValue;
     }
-    return qMin(max, qMax(min, result));
+    return qBound(min, result, max);
 }
 
 uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &value, uint32_t min, uint32_t max, uint32_t defaultValue) {
@@ -293,7 +293,7 @@ uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
         result = defaultValue;
     }
-    return qMin(max, qMax(min, result));
+    return qBound(min, result, max);
 }
 
 QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &value, const QColor &defaultValue) {
@@ -303,6 +303,10 @@ QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &val
         color = defaultValue;
     }
     return color;
+}
+
+QString KeyValueConfigBase::toConfigColor(const QColor &color) {
+    return color.name().remove("#"); // Our text config treats '#' as the start of a comment.
 }
 
 PorymapConfig porymapConfig;
@@ -571,7 +575,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("grid_x", QString::number(this->gridSettings.offsetX));
     map.insert("grid_y", QString::number(this->gridSettings.offsetY));
     map.insert("grid_style", GridSettings::getStyleName(this->gridSettings.style));
-    map.insert("grid_color", this->gridSettings.color.name().remove("#")); // Our text config treats '#' as the start of a comment.
+    map.insert("grid_color", toConfigColor(this->gridSettings.color));
 
     QStringList logTypesStrings;
     for (const auto &type : this->statusBarLogTypes) {
@@ -898,8 +902,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
-    } else if (key == "set_transparent_pixels_black") {
-        this->setTransparentPixelsBlack = getConfigBool(key, value);
+    } else if (key == "transparency_color") {
+        this->transparencyColor = getConfigColor(key, value);
     } else if (key == "preserve_matching_only_data") {
         this->preserveMatchingOnlyData = getConfigBool(key, value);
     } else if (key == "event_icon_path_object") {
@@ -1005,7 +1009,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     }
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
-    map.insert("set_transparent_pixels_black", QString::number(this->setTransparentPixelsBlack));
+    map.insert("transparency_color", toConfigColor(this->transparencyColor));
     map.insert("preserve_matching_only_data", QString::number(this->preserveMatchingOnlyData));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
     map.insert("metatile_behavior_mask", Util::toHexString(this->metatileBehaviorMask));

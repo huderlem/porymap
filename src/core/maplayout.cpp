@@ -6,6 +6,9 @@
 #include "imageproviders.h"
 #include "utility.h"
 
+QList<int> Layout::s_globalMetatileLayerOrder;
+QList<float> Layout::s_globalMetatileLayerOpacity;
+
 Layout::Layout(const Layout &other) : Layout() {
     copyFrom(&other);
 }
@@ -611,24 +614,4 @@ Blockdata Layout::readBlockdata(const QString &path, QString *error) {
     }
 
     return blockdata;
-}
-
-QList<int> Layout::metatileLayerOrder() const {
-    return !m_metatileLayerOrder.isEmpty() ? m_metatileLayerOrder : Layout::defaultMetatileLayerOrder();
-}
-
-QList<int> Layout::s_defaultMetatileLayerOrder;
-QList<int> Layout::defaultMetatileLayerOrder() {
-    static const QList<int> initialDefault = {0, 1, 2};
-    return !s_defaultMetatileLayerOrder.isEmpty() ? s_defaultMetatileLayerOrder : initialDefault;
-}
-
-QList<float> Layout::metatileLayerOpacity() const {
-    return !m_metatileLayerOpacity.isEmpty() ? m_metatileLayerOpacity : Layout::defaultMetatileLayerOpacity();
-}
-
-QList<float> Layout::s_defaultMetatileLayerOpacity;
-QList<float> Layout::defaultMetatileLayerOpacity() {
-    static const QList<float> initialDefault = {1.0, 1.0, 1.0};
-    return !s_defaultMetatileLayerOpacity.isEmpty() ? s_defaultMetatileLayerOpacity : initialDefault;
 }

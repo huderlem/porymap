@@ -200,9 +200,8 @@ QString Tileset::getMetatileLabelPrefix()
 QString Tileset::getMetatileLabelPrefix(const QString &name)
 {
     // Default is "gTileset_Name" --> "METATILE_Name_"
-    const QString tilesetPrefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
     const QString labelPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix);
-    return QString("%1%2_").arg(labelPrefix).arg(QString(name).replace(tilesetPrefix, ""));
+    return QString("%1%2_").arg(labelPrefix).arg(Tileset::stripPrefix(name));
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -382,8 +381,7 @@ QString Tileset::getExpectedDir(QString tilesetName, bool isSecondary)
                                          : projectConfig.getFilePath(ProjectFilePath::data_primary_tilesets_folders);
 
     static const QRegularExpression re("([a-z])([A-Z0-9])");
-    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
-    return basePath + tilesetName.replace(prefix, "").replace(re, "\\1_\\2").toLower();
+    return basePath + Tileset::stripPrefix(tilesetName).replace(re, "\\1_\\2").toLower();
 }
 
 // Get the expected positions of the members in struct Tileset.
@@ -599,4 +597,8 @@ bool Tileset::save() {
     if (!saveTilesImage()) success = false;
     if (!savePalettes()) success = false;
     return success;
+}
+
+QString Tileset::stripPrefix(const QString &fullName) {
+    return QString(fullName).replace(projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix), "");
 }

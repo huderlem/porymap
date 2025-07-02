@@ -148,6 +148,6 @@ void MetatileLayersItem::clearLastHoveredCoords() {
 QPoint MetatileLayersItem::getBoundedPos(const QPointF &pos) {
     int x = static_cast<int>(pos.x()) / this->cellWidth;
     int y = static_cast<int>(pos.y()) / this->cellHeight;
-    return QPoint( qMax(0, qMin(x, this->maxSelectionWidth - 1)),
-                   qMax(0, qMin(y, this->maxSelectionHeight - 1)) );
+    return QPoint(qBound(0, x, this->maxSelectionWidth - 1),
+                  qBound(0, y, this->maxSelectionHeight - 1));
 }

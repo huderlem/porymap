@@ -62,6 +62,14 @@ public:
     static void setLayout(Project*);
     static QString getMetatileIdString(uint16_t metatileId);
     static QString getMetatileIdStrings(const QList<uint16_t> metatileIds);
+    static QString getLayerName(int layerNum);
+
+    static int tileWidth() { return 2; }
+    static int tileHeight() { return 2; }
+    static int tilesPerLayer() { return Metatile::tileWidth() * Metatile::tileHeight(); }
+    static int pixelWidth() { return Metatile::tileWidth() * Tile::pixelWidth(); }
+    static int pixelHeight() { return Metatile::tileHeight() * Tile::pixelHeight(); }
+    static QSize pixelSize() { return QSize(pixelWidth(), pixelHeight()); }
 
     inline bool operator==(const Metatile &other) {
         return this->tiles == other.tiles && this->attributes == other.attributes;

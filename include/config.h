@@ -54,7 +54,8 @@ protected:
     static bool getConfigBool(const QString &key, const QString &value);
     static int getConfigInteger(const QString &key, const QString &value, int min = INT_MIN, int max = INT_MAX, int defaultValue = 0);
     static uint32_t getConfigUint32(const QString &key, const QString &value, uint32_t min = 0, uint32_t max = UINT_MAX, uint32_t defaultValue = 0);
-    static QColor getConfigColor(const QString &key, const QString &value, const QColor &defaultValue = Qt::black);
+    static QColor getConfigColor(const QString &key, const QString &value, const QColor &defaultValue = QColor(Qt::black));
+    static QString toConfigColor(const QColor &color);
 
     QString m_root;
     QString m_filename;
@@ -82,7 +83,7 @@ public:
         this->collisionOpacity = 50;
         this->collisionZoom = 30;
         this->metatilesZoom = 30;
-        this->tilesetEditorMetatilesZoom = 45;
+        this->tilesetEditorMetatilesZoom = 30;
         this->tilesetEditorTilesZoom = 30;
         this->showPlayerView = false;
         this->showCursorTile = true;
@@ -351,7 +352,7 @@ public:
         this->prefabImportPrompted = false;
         this->tilesetsHaveCallback = true;
         this->tilesetsHaveIsCompressed = true;
-        this->setTransparentPixelsBlack = true;
+        this->transparencyColor = QColor(Qt::black);
         this->preserveMatchingOnlyData = false;
         this->filePaths.clear();
         this->eventIconPaths.clear();
@@ -426,7 +427,7 @@ public:
     bool prefabImportPrompted;
     bool tilesetsHaveCallback;
     bool tilesetsHaveIsCompressed;
-    bool setTransparentPixelsBlack;
+    QColor transparencyColor;
     bool preserveMatchingOnlyData;
     int metatileAttributesSize;
     uint32_t metatileBehaviorMask;

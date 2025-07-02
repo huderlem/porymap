@@ -475,10 +475,11 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_PreserveMatchingOnlyData->setChecked(projectConfig.preserveMatchingOnlyData);
 
     // Radio buttons
-    if (projectConfig.setTransparentPixelsBlack)
+    // TODO: Replace
+    /*if (projectConfig.setTransparentPixelsBlack)
         ui->radioButton_RenderBlack->setChecked(true);
     else
-        ui->radioButton_RenderFirstPalColor->setChecked(true);
+        ui->radioButton_RenderFirstPalColor->setChecked(true);*/
 
     // Set spin box values
     ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
@@ -574,7 +575,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.tilesetsHaveCallback = ui->checkBox_OutputCallback->isChecked();
     projectConfig.tilesetsHaveIsCompressed = ui->checkBox_OutputIsCompressed->isChecked();
     porymapConfig.warpBehaviorWarningDisabled = ui->checkBox_DisableWarning->isChecked();
-    projectConfig.setTransparentPixelsBlack = ui->radioButton_RenderBlack->isChecked();
+    //projectConfig.setTransparentPixelsBlack = ui->radioButton_RenderBlack->isChecked(); // TODO
     projectConfig.preserveMatchingOnlyData = ui->checkBox_PreserveMatchingOnlyData->isChecked();
 
     // Save spin box settings

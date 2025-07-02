@@ -14,7 +14,7 @@ void Util::numericalModeSort(QStringList &list) {
     std::sort(list.begin(), list.end(), collator);
 }
 
-int Util::roundUp(int numToRound, int multiple) {
+int Util::roundUpToMultiple(int numToRound, int multiple) {
     if (multiple <= 0)
         return numToRound;
 

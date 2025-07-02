@@ -15,28 +15,7 @@ int MetatileSelector::numPrimaryMetatilesRounded() const {
 }
 
 void MetatileSelector::updateBasePixmap() {
-    int primaryLength = this->numPrimaryMetatilesRounded();
-    int length_ = primaryLength + this->secondaryTileset()->numMetatiles();
-    int height_ = length_ / this->numMetatilesWide;
-    if (length_ % this->numMetatilesWide != 0) {
-        height_++;
-    }
-    QImage image(this->numMetatilesWide * this->cellWidth, height_ * this->cellHeight, QImage::Format_RGBA8888);
-    image.fill(Qt::magenta);
-    QPainter painter(&image);
-    for (int i = 0; i < length_; i++) {
-        int metatileId = i;
-        if (i >= primaryLength) {
-            metatileId += Project::getNumMetatilesPrimary() - primaryLength;
-        }
-        QImage metatile_image = getMetatileImage(metatileId, this->layout);
-        int map_y = i / this->numMetatilesWide;
-        int map_x = i % this->numMetatilesWide;
-        QPoint metatile_origin = QPoint(map_x * this->cellWidth, map_y * this->cellHeight);
-        painter.drawImage(metatile_origin, metatile_image);
-    }
-    painter.end();
-    this->basePixmap = QPixmap::fromImage(image);
+    this->basePixmap = QPixmap::fromImage(getMetatileSheetImage(this->layout, this->numMetatilesWide));
 }
 
 void MetatileSelector::draw() {

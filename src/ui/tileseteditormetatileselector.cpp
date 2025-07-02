@@ -4,7 +4,7 @@
 #include <QPainter>
 
 TilesetEditorMetatileSelector::TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout)
-  : SelectablePixmapItem(16, 16, 1, 1) {
+  : SelectablePixmapItem(32, 32, 1, 1) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     this->numMetatilesWide = 8;
@@ -31,48 +31,6 @@ int TilesetEditorMetatileSelector::numPrimaryMetatilesRounded() const {
     return ceil((double)this->primaryTileset->numMetatiles() / this->numMetatilesWide) * this->numMetatilesWide;
 }
 
-QImage TilesetEditorMetatileSelector::buildAllMetatilesImage() {
-    return this->buildImage(0, this->numPrimaryMetatilesRounded() + this->secondaryTileset->numMetatiles());
-}
-
-QImage TilesetEditorMetatileSelector::buildPrimaryMetatilesImage() {
-    return this->buildImage(0, this->primaryTileset->numMetatiles());
-}
-
-QImage TilesetEditorMetatileSelector::buildSecondaryMetatilesImage() {
-    return this->buildImage(Project::getNumMetatilesPrimary(), this->secondaryTileset->numMetatiles());
-}
-
-QImage TilesetEditorMetatileSelector::buildImage(int metatileIdStart, int numMetatiles) {
-    int numMetatilesHigh = this->numRows(numMetatiles);
-    int numPrimary = this->numPrimaryMetatilesRounded();
-    int maxPrimary = Project::getNumMetatilesPrimary();
-    bool includesPrimary = metatileIdStart < maxPrimary;
-
-    QImage image(this->numMetatilesWide * this->cellWidth, numMetatilesHigh * this->cellHeight, QImage::Format_RGBA8888);
-    image.fill(Qt::magenta);
-    QPainter painter(&image);
-    for (int i = 0; i < numMetatiles; i++) {
-        int metatileId = i + metatileIdStart;
-        if (includesPrimary && metatileId >= numPrimary)
-            metatileId += maxPrimary - numPrimary; // Skip over unused region of primary tileset
-        QImage metatile_image = getMetatileImage(
-                    metatileId,
-                    this->primaryTileset,
-                    this->secondaryTileset,
-                    this->layout->metatileLayerOrder(),
-                    this->layout->metatileLayerOpacity(),
-                    true)
-                .scaled(this->cellWidth, this->cellHeight);
-        int map_y = i / this->numMetatilesWide;
-        int map_x = i % this->numMetatilesWide;
-        QPoint metatile_origin = QPoint(map_x * this->cellWidth, map_y * this->cellHeight);
-        painter.drawImage(metatile_origin, metatile_image);
-    }
-    painter.end();
-    return image;
-}
-
 void TilesetEditorMetatileSelector::drawMetatile(uint16_t metatileId) {
     QPoint pos = getMetatileIdCoords(metatileId);
 
@@ -97,7 +55,15 @@ void TilesetEditorMetatileSelector::drawSelectedMetatile() {
 }
 
 void TilesetEditorMetatileSelector::updateBasePixmap() {
-    this->baseImage = buildAllMetatilesImage();
+    this->baseImage = getMetatileSheetImage(this->primaryTileset,
+                                            this->secondaryTileset,
+                                            0,
+                                            this->numPrimaryMetatilesRounded() + this->secondaryTileset->numMetatiles(),
+                                            this->numMetatilesWide,
+                                            this->layout->metatileLayerOrder(),
+                                            this->layout->metatileLayerOpacity(),
+                                            QSize(this->cellWidth, this->cellHeight),
+                                            true);
     this->basePixmap = QPixmap::fromImage(this->baseImage);
 }
 

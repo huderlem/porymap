@@ -61,7 +61,7 @@ void BoundedPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
 QVariant BoundedPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         QPointF newPos = value.toPointF();
-        return QPointF(Util::roundUp(newPos.x(), 16), Util::roundUp(newPos.y(), 16));
+        return QPointF(Util::roundUpToMultiple(newPos.x(), 16), Util::roundUpToMultiple(newPos.y(), 16));
     }
     else
         return QGraphicsItem::itemChange(change, value);

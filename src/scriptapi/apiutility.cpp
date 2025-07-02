@@ -201,7 +201,7 @@ QList<QString> ScriptUtility::getCustomScripts() {
 }
 
 QList<int> ScriptUtility::getMetatileLayerOrder() {
-    return Layout::defaultMetatileLayerOrder();
+    return Layout::globalMetatileLayerOrder();
 }
 
 bool ScriptUtility::validateMetatileLayerOrder(const QList<int> &order) {
@@ -220,16 +220,16 @@ bool ScriptUtility::validateMetatileLayerOrder(const QList<int> &order) {
 void ScriptUtility::setMetatileLayerOrder(const QList<int> &order) {
     if (!validateMetatileLayerOrder(order))
         return;
-    Layout::setDefaultMetatileLayerOrder(order);
+    Layout::setGlobalMetatileLayerOrder(order);
     if (window) window->refreshAfterPalettePreviewChange();
 }
 
 QList<float> ScriptUtility::getMetatileLayerOpacity() {
-    return Layout::defaultMetatileLayerOpacity();
+    return Layout::globalMetatileLayerOpacity();
 }
 
 void ScriptUtility::setMetatileLayerOpacity(const QList<float> &opacities) {
-    Layout::setDefaultMetatileLayerOpacity(opacities);
+    Layout::setGlobalMetatileLayerOpacity(opacities);
     if (window) window->refreshAfterPalettePreviewChange();
 }
 

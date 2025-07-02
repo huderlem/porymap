@@ -1176,8 +1176,8 @@ void Editor::setPlayerViewRect(const QRectF &rect) {
 }
 
 void Editor::setCursorRectPos(const QPoint &pos) {
-    int x = qMax(0, qMin(pos.x(), this->layout ? this->layout->getWidth() - 1 : 0));
-    int y = qMax(0, qMin(pos.y(), this->layout ? this->layout->getHeight() - 1 : 0));
+    int x = qBound(0, pos.x(), this->layout ? this->layout->getWidth() - 1 : 0);
+    int y = qBound(0, pos.y(), this->layout ? this->layout->getHeight() - 1 : 0);
 
     if (this->playerViewRect)
         this->playerViewRect->updateLocation(x, y);

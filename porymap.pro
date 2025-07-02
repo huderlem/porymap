@@ -124,6 +124,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/regionmapeditor.cpp \
     src/ui/newmapdialog.cpp \
     src/ui/mapimageexporter.cpp \
+    src/ui/metatileimageexporter.cpp \
     src/ui/newtilesetdialog.cpp \
     src/ui/flowlayout.cpp \
     src/ui/mapruler.cpp \
@@ -240,6 +241,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/regionmapeditor.h \
     include/ui/newmapdialog.h \
     include/ui/mapimageexporter.h \
+    include/ui/metatileimageexporter.h \
     include/ui/newtilesetdialog.h \
     include/ui/overlay.h \
     include/ui/flowlayout.h \
@@ -289,6 +291,7 @@ FORMS    += forms/mainwindow.ui \
     forms/aboutporymap.ui \
     forms/newtilesetdialog.ui \
     forms/mapimageexporter.ui \
+    forms/metatileimageexporter.ui \
     forms/shortcutseditor.ui \
     forms/preferenceeditor.ui \
     forms/regionmappropertiesdialog.ui \

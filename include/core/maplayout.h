@@ -65,14 +65,24 @@ public:
     } lastCommitBlocks; // to track map changes
 
     void setMetatileLayerOrder(const QList<int> &layerOrder) { m_metatileLayerOrder = layerOrder; }
-    QList<int> metatileLayerOrder() const;
-    static void setDefaultMetatileLayerOrder(const QList<int> &layerOrder) { s_defaultMetatileLayerOrder = layerOrder; }
-    static QList<int> defaultMetatileLayerOrder();
+    const QList<int> &metatileLayerOrder() const {
+        return !m_metatileLayerOrder.isEmpty() ? m_metatileLayerOrder : Layout::globalMetatileLayerOrder();
+    }
+    static void setGlobalMetatileLayerOrder(const QList<int> &layerOrder) { s_globalMetatileLayerOrder = layerOrder; }
+    static const QList<int> &globalMetatileLayerOrder() {
+        static const QList<int> defaultLayerOrder = {0, 1, 2};
+        return !s_globalMetatileLayerOrder.isEmpty() ? s_globalMetatileLayerOrder : defaultLayerOrder;
+    }
 
     void setMetatileLayerOpacity(const QList<float> &layerOpacity) { m_metatileLayerOpacity = layerOpacity; }
-    QList<float> metatileLayerOpacity() const;
-    static void setDefaultMetatileLayerOpacity(const QList<float> &layerOpacity) { s_defaultMetatileLayerOpacity = layerOpacity; }
-    static QList<float> defaultMetatileLayerOpacity();
+    const QList<float> &metatileLayerOpacity() const {
+        return !m_metatileLayerOpacity.isEmpty() ? m_metatileLayerOpacity : Layout::globalMetatileLayerOpacity();
+    }
+    static void setGlobalMetatileLayerOpacity(const QList<float> &layerOpacity) { s_globalMetatileLayerOpacity = layerOpacity; }
+    static const QList<float> &globalMetatileLayerOpacity() {
+        static const QList<float> defaultLayerOpacity = {1.0, 1.0, 1.0};
+        return !s_globalMetatileLayerOpacity.isEmpty() ? s_globalMetatileLayerOpacity : defaultLayerOpacity;
+    }
 
     LayoutPixmapItem *layoutItem = nullptr;
     CollisionPixmapItem *collisionItem = nullptr;
@@ -166,8 +176,8 @@ private:
 
     QList<int> m_metatileLayerOrder;
     QList<float> m_metatileLayerOpacity;
-    static QList<int> s_defaultMetatileLayerOrder;
-    static QList<float> s_defaultMetatileLayerOpacity;
+    static QList<int> s_globalMetatileLayerOrder;
+    static QList<float> s_globalMetatileLayerOpacity;
 
 signals:
     void dimensionsChanged(const QSize &size);

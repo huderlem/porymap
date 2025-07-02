@@ -19,8 +19,8 @@ void SelectablePixmapItem::select(int x, int y, int width, int height)
 {
     this->selectionInitialX = x;
     this->selectionInitialY = y;
-    this->selectionOffsetX = qMax(0, qMin(width, this->maxSelectionWidth));
-    this->selectionOffsetY = qMax(0, qMin(height, this->maxSelectionHeight));
+    this->selectionOffsetX = qBound(0, width, this->maxSelectionWidth);
+    this->selectionOffsetY = qBound(0, height, this->maxSelectionHeight);
     this->draw();
     emit this->selectionChanged(x, y, width, height);
 }
