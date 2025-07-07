@@ -2905,6 +2905,11 @@ void MainWindow::on_actionOpen_Config_Folder_triggered() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)));
 }
 
+void MainWindow::on_actionOpen_Manual_triggered() {
+    static const QUrl url("https://huderlem.github.io/porymap/");
+    QDesktopServices::openUrl(url);
+}
+
 void MainWindow::on_actionPreferences_triggered() {
     if (!preferenceEditor) {
         preferenceEditor = new PreferenceEditor(this);

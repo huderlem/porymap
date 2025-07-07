@@ -2926,6 +2926,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout_Porymap"/>
+    <addaction name="actionOpen_Manual"/>
     <addaction name="actionOpen_Log_File"/>
     <addaction name="actionOpen_Config_Folder"/>
     <addaction name="actionCheck_for_Updates"/>
@@ -3265,6 +3266,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+Right</string>
+   </property>
+  </action>
+  <action name="actionOpen_Manual">
+   <property name="text">
+    <string>Open Manual</string>
    </property>
   </action>
  </widget>

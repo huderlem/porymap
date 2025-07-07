@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are **"Breaking Changes"** in the pret projects. For more on this, see [the manual page on breaking changes](https://huderlem.github.io/porymap/manual/breaking-changes.html).
 
 ## [Unreleased]
+### Added
+- A link to Porymap's manual is now available under `Help`.
+
 ### Changed
 - The scroll position of the map view now remains the same between the Connections tab and the Map/Events tabs.
 - The Move tool now behaves more like a traditional pan tool (with no momentum).

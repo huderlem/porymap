@@ -286,6 +286,7 @@ private slots:
     void on_spinBox_SelectedCollision_valueChanged(int collision);
     void on_actionRegion_Map_Editor_triggered();
     void on_actionPreferences_triggered();
+    void on_actionOpen_Manual_triggered();
     void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
     void on_actionProject_Settings_triggered();
