@@ -113,11 +113,16 @@ void UIntSpinBox::onEditFinished() {
         // Valid input
         newValue = this->valueFromText(input);
     } else if (state == QValidator::Intermediate) {
-        // User has deleted all the number text.
-        // If they did this by selecting all text and then hitting delete
-        // make sure to put the cursor back in front of the prefix.
-        newValue = m_minimum;
-        this->lineEdit()->setCursorPosition(m_prefix.length());
+        if (input == m_prefix) {
+            // User has deleted all the number text.
+            // If they did this by selecting all text and then hitting delete
+            // make sure to put the cursor back in front of the prefix.
+            newValue = m_minimum;
+            this->lineEdit()->setCursorPosition(m_prefix.length());
+        } else {
+            // Other intermediate inputs (values outside of acceptable range) should be ignored.
+            return;
+        }
     }
     if (newValue != m_value) {
         m_value = newValue;
@@ -160,10 +165,14 @@ QValidator::State UIntSpinBox::validate(QString &input, int &pos) const {
 
     bool ok;
     uint32_t num = copy.toUInt(&ok, m_displayIntegerBase);
-    if (!ok || num < m_minimum || num > m_maximum)
+    if (!ok)
         return QValidator::Invalid;
 
     input += copy.toUpper();
+
+    if (num < m_minimum || num > m_maximum)
+        return QValidator::Intermediate;
+
     return QValidator::Acceptable;
 }
 
