@@ -1,6 +1,5 @@
 #include "preferenceeditor.h"
 #include "ui_preferenceeditor.h"
-#include "config.h"
 #include "noscrollcombobox.h"
 #include "message.h"
 
@@ -76,7 +75,14 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_OpenRecentProject->setChecked(porymapConfig.reopenOnLaunch);
     ui->checkBox_CheckForUpdates->setChecked(porymapConfig.checkForUpdates);
     ui->checkBox_DisableEventWarning->setChecked(porymapConfig.eventDeleteWarningDisabled);
-    ui->checkBox_AutocompleteAllScripts->setChecked(porymapConfig.loadAllEventScripts);
+
+    if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::MapOnly) {
+        ui->radioButton_AutocompleteMapScripts->setChecked(true);
+    } else if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::MapAndCommon) {
+        ui->radioButton_AutocompleteCommonScripts->setChecked(true);
+    } else if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::All) {
+        ui->radioButton_AutocompleteAllScripts->setChecked(true);
+    }
 
     auto logTypeEnd = porymapConfig.statusBarLogTypes.end();
     ui->checkBox_StatusErrors->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_ERROR) != logTypeEnd);
@@ -95,11 +101,18 @@ void PreferenceEditor::saveFields() {
         porymapConfig.theme = themeSelector->currentText();
         changedTheme = true;
     }
-    bool loadAllEventScripts = ui->checkBox_AutocompleteAllScripts->isChecked();
-    if (loadAllEventScripts != porymapConfig.loadAllEventScripts) {
-        porymapConfig.loadAllEventScripts = loadAllEventScripts;
-        emit scriptSettingsChanged(loadAllEventScripts);
+
+    auto scriptAutocompleteMode = ScriptAutocompleteMode::MapOnly;
+    if (ui->radioButton_AutocompleteCommonScripts->isChecked()) {
+        scriptAutocompleteMode = ScriptAutocompleteMode::MapAndCommon;
+    } else if (ui->radioButton_AutocompleteAllScripts->isChecked()) {
+        scriptAutocompleteMode = ScriptAutocompleteMode::All;
     }
+    if (scriptAutocompleteMode != porymapConfig.scriptAutocompleteMode) {
+        porymapConfig.scriptAutocompleteMode = scriptAutocompleteMode;
+        emit scriptSettingsChanged(scriptAutocompleteMode);
+    }
+
     porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
     porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();

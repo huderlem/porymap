@@ -2355,21 +2355,29 @@ void Editor::openMapScripts() const {
     openInTextEditor(map->getScriptsFilepath());
 }
 
-void Editor::openScript(const QString &scriptLabel) const {
+bool Editor::openScript(const QString &scriptLabel) const {
     // Find the location of scriptLabel.
-    QStringList scriptPaths(map->getScriptsFilepath());
-    scriptPaths << project->getEventScriptsFilepaths();
-    int lineNum = 0;
-    QString scriptPath = scriptPaths.first();
-    for (const auto &path : scriptPaths) {
-        lineNum = ParseUtil::getScriptLineNumber(path, scriptLabel);
-        if (lineNum != 0) {
-            scriptPath = path;
-            break;
-        }
-    }
+    // First, try the current map's scripts file.
+    if (openScriptInFile(scriptLabel, map->getScriptsFilepath()))
+        return true;
 
-    openInTextEditor(scriptPath, lineNum);
+    // Script is not in the current map's scripts file.
+    // Search all possible script files.
+    const QStringList paths = project->getAllEventScriptsFilepaths();
+    for (const auto &path : paths) {
+        if (openScriptInFile(scriptLabel, path))
+            return true;
+    }
+    return false;
+}
+
+bool Editor::openScriptInFile(const QString &scriptLabel, const QString &filepath) const {
+    int lineNum = ParseUtil::getScriptLineNumber(filepath, scriptLabel);
+    if (lineNum == 0)
+        return false;
+
+    openInTextEditor(filepath, lineNum);
+    return true;
 }
 
 void Editor::openMapJson(const QString &mapName) const {
