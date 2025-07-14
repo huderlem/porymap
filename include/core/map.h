@@ -51,10 +51,12 @@ public:
     void setLayoutId(const QString &layoutId) { m_layoutId = layoutId; }
     QString layoutId() const { return layout() ? layout()->id : m_layoutId; }
 
-    int getWidth() const;
-    int getHeight() const;
-    int getBorderWidth() const;
-    int getBorderHeight() const;
+    int getWidth() const { return m_layout ? m_layout->getWidth() : 0; }
+    int getHeight() const { return m_layout ? m_layout->getHeight() : 0; }
+    int getBorderWidth() const { return m_layout ? m_layout->getBorderWidth() : 0; }
+    int getBorderHeight() const { return m_layout ? m_layout->getBorderHeight() : 0; }
+    int pixelWidth() const { return m_layout ? m_layout->pixelWidth() : 0; }
+    int pixelHeight() const { return m_layout ? m_layout->pixelHeight() : 0; }
 
     void setHeader(const MapHeader &header) { *m_header = header; }
     MapHeader* header() const { return m_header; }

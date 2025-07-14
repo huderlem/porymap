@@ -2400,12 +2400,11 @@ bool Project::readFieldmapProperties() {
         // We can determine whether triple-layer metatiles are in-use by reading this constant.
         // If the constant is missing (or is using a value other than 8 or 12) the user must tell
         // us whether they're using triple-layer metatiles under Project Settings.
-        static const int numTilesPerLayer = 4;
         int numTilesPerMetatile = it.value();
-        if (numTilesPerMetatile == 2 * numTilesPerLayer) {
+        if (numTilesPerMetatile == 2 * Metatile::tilesPerLayer()) {
             projectConfig.tripleLayerMetatilesEnabled = false;
             this->disabledSettingsNames.insert(numTilesPerMetatileName);
-        } else if (numTilesPerMetatile == 3 * numTilesPerLayer) {
+        } else if (numTilesPerMetatile == 3 * Metatile::tilesPerLayer()) {
             projectConfig.tripleLayerMetatilesEnabled = true;
             this->disabledSettingsNames.insert(numTilesPerMetatileName);
         }
@@ -3422,14 +3421,25 @@ QString Project::getEmptySpeciesName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_species_empty);
 }
 
-// Get the distance in metatiles (rounded up) that the player is able to see in each direction in-game.
+// Get the distance in pixels that the player is able to see in each direction in-game,
+// rounded up to a multiple of a metatile's pixel size.
+QMargins Project::getPixelViewDistance() {
+    QMargins viewDistance = projectConfig.playerViewDistance;
+    viewDistance.setTop(Util::roundUpToMultiple(viewDistance.top(), Metatile::pixelHeight()));
+    viewDistance.setBottom(Util::roundUpToMultiple(viewDistance.bottom(), Metatile::pixelHeight()));
+    viewDistance.setLeft(Util::roundUpToMultiple(viewDistance.left(), Metatile::pixelWidth()));
+    viewDistance.setRight(Util::roundUpToMultiple(viewDistance.right(), Metatile::pixelWidth()));
+    return viewDistance;
+}
+
+// Get the distance in metatiles that the player is able to see in each direction in-game.
 // For the default view distance (i.e. assuming the player is centered in a 240x160 pixel GBA screen) this is 7x5 metatiles.
 QMargins Project::getMetatileViewDistance() {
-    QMargins viewDistance = projectConfig.playerViewDistance;
-    viewDistance.setTop(qCeil(viewDistance.top() / 16.0));
-    viewDistance.setBottom(qCeil(viewDistance.bottom() / 16.0));
-    viewDistance.setLeft(qCeil(viewDistance.left() / 16.0));
-    viewDistance.setRight(qCeil(viewDistance.right() / 16.0));
+    QMargins viewDistance = getPixelViewDistance();
+    viewDistance.setTop(viewDistance.top() / Metatile::pixelHeight());
+    viewDistance.setBottom(viewDistance.bottom() / Metatile::pixelHeight());
+    viewDistance.setLeft(viewDistance.left() / Metatile::pixelWidth());
+    viewDistance.setRight(viewDistance.right() / Metatile::pixelWidth());
     return viewDistance;
 }
 

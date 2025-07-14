@@ -72,20 +72,20 @@ QPixmap MapConnection::render() const {
 // For right/down connections this is offset by the dimensions of the parent map.
 // For left/up connections this is offset by the dimensions of the target map.
 // If 'clipped' is true, only the rendered dimensions of the target map will be used, rather than its full dimensions.
-QPoint MapConnection::relativePos(bool clipped) const {
+QPoint MapConnection::relativePixelPos(bool clipped) const {
     int x = 0, y = 0;
     if (m_direction == "right") {
-        if (m_parentMap) x = m_parentMap->getWidth();
+        if (m_parentMap) x = m_parentMap->pixelWidth();
         y = m_offset;
     } else if (m_direction == "down") {
         x = m_offset;
-        if (m_parentMap) y = m_parentMap->getHeight();
+        if (m_parentMap) y = m_parentMap->pixelHeight();
     } else if (m_direction == "left") {
-        if (targetMap()) x = !clipped ? -targetMap()->getWidth() : -targetMap()->getConnectionRect(m_direction).width();
+        if (targetMap()) x = !clipped ? -targetMap()->pixelWidth() : -targetMap()->getConnectionRect(m_direction).width();
         y = m_offset;
     } else if (m_direction == "up") {
         x = m_offset;
-        if (targetMap()) y = !clipped ? -targetMap()->getHeight() : -targetMap()->getConnectionRect(m_direction).height();
+        if (targetMap()) y = !clipped ? -targetMap()->pixelHeight() : -targetMap()->getConnectionRect(m_direction).height();
     }
     return QPoint(x, y);
 }

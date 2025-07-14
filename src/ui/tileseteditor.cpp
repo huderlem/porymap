@@ -388,19 +388,21 @@ void TilesetEditor::drawSelectedTiles() {
         return;
     }
 
+    const int imgTileWidth = 16;
+    const int imgTileHeight = 16;
     this->selectedTileScene->clear();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     QPoint dimensions = this->tileSelector->getSelectionDimensions();
-    QImage selectionImage(16 * dimensions.x(), 16 * dimensions.y(), QImage::Format_RGBA8888);
+    QImage selectionImage(imgTileWidth * dimensions.x(), imgTileHeight * dimensions.y(), QImage::Format_RGBA8888);
     QPainter painter(&selectionImage);
     int tileIndex = 0;
     for (int j = 0; j < dimensions.y(); j++) {
         for (int i = 0; i < dimensions.x(); i++) {
             auto tile = tiles.at(tileIndex);
-            QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(16, 16);
+            QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(imgTileWidth, imgTileHeight);
             tile.flip(&tileImage);
             tileIndex++;
-            painter.drawImage(i * 16, j * 16, tileImage);
+            painter.drawImage(i * imgTileWidth, j * imgTileHeight, tileImage);
         }
     }
 
@@ -730,18 +732,20 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset) {
     } else {
         logError(QString("Failed to open image file: '%1'").arg(filepath));
     }
-    if (image.width() == 0 || image.height() == 0 || image.width() % 8 != 0 || image.height() % 8 != 0) {
+    if (image.width() == 0 || image.height() == 0 || image.width() % Tile::pixelWidth() != 0 || image.height() % Tile::pixelHeight() != 0) {
         ErrorMessage::show(QStringLiteral("Failed to import tiles."),
-                           QString("The image dimensions (%1 x %2) are invalid. Width and height must be multiples of 8 pixels.")
+                           QString("The image dimensions (%1x%2) are invalid. The dimensions must be a multiple of %3x%4 pixels.")
                                   .arg(image.width())
-                                  .arg(image.height()),
+                                  .arg(image.height())
+                                  .arg(Tile::pixelWidth())
+                                  .arg(Tile::pixelHeight()),
                             this);
         return;
     }
 
     // Validate total number of tiles in image.
-    int numTilesWide = image.width() / 8;
-    int numTilesHigh = image.height() / 8;
+    int numTilesWide = image.width() / Tile::pixelWidth();
+    int numTilesHigh = image.height() / Tile::pixelHeight();
     int totalTiles = numTilesHigh * numTilesWide;
     int maxAllowedTiles = primary ? Project::getNumTilesPrimary() : Project::getNumTilesTotal() - Project::getNumTilesPrimary();
     if (totalTiles > maxAllowedTiles) {

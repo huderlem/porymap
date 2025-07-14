@@ -30,7 +30,7 @@ Editor::Editor(Ui::MainWindow* ui)
 {
     this->ui = ui;
     this->settings = new Settings();
-    this->cursorMapTileRect = new CursorTileRect(QSize(16,16), qRgb(255, 255, 255));
+    this->cursorMapTileRect = new CursorTileRect(Metatile::pixelSize(), qRgb(255, 255, 255));
     this->map_ruler = new MapRuler(4);
     connect(this->map_ruler, &MapRuler::statusChanged, this, &Editor::mapRulerStatusChanged);
 
@@ -1171,7 +1171,7 @@ bool Editor::isMouseInMap() const {
 
 void Editor::setPlayerViewRect(const QRectF &rect) {
     delete this->playerViewRect;
-    this->playerViewRect = new MovableRect(rect, qRgb(255, 255, 255));
+    this->playerViewRect = new MovableRect(rect, Metatile::pixelSize(), qRgb(255, 255, 255));
     updateCursorRectVisibility();
 }
 
@@ -1913,8 +1913,8 @@ void Editor::displayMapBorder() {
     for (int y = -borderMargins.top(); y < this->layout->getHeight() + borderMargins.bottom(); y += this->layout->getBorderHeight())
     for (int x = -borderMargins.left(); x < this->layout->getWidth() + borderMargins.right(); x += this->layout->getBorderWidth()) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(pixmap);
-        item->setX(x * 16);
-        item->setY(y * 16);
+        item->setX(x * Metatile::pixelWidth());
+        item->setY(y * Metatile::pixelHeight());
         item->setZValue(ZValue::MapBorder);
         scene->addItem(item);
         borderItems.append(item);
@@ -1962,8 +1962,8 @@ void Editor::displayMapGrid() {
     //       elements of the scripting API, so they're painted manually in MapView::drawForeground.
     this->mapGrid = new QGraphicsItemGroup();
 
-    const int pixelMapWidth = this->layout->getWidth() * 16;
-    const int pixelMapHeight = this->layout->getHeight() * 16;
+    const int pixelMapWidth = this->layout->pixelWidth();
+    const int pixelMapHeight = this->layout->pixelHeight();
 
     // The grid can be moved with a user-specified x/y offset. The grid's dash patterns will only wrap in full pattern increments,
     // so we draw an additional row/column outside the map that can be revealed as the offset changes.
@@ -2476,7 +2476,7 @@ void Editor::setCollisionGraphics() {
 
     // Use the image sheet to create an icon for each collision/elevation combination.
     // Any icons for combinations that aren't provided by the image sheet are also created now using default graphics.
-    const int w = 16, h = 16;
+    const int w = Metatile::pixelWidth(), h = Metatile::pixelHeight();
     imgSheet = imgSheet.scaled(w * imgColumns, h * imgRows);
     for (int collision = 0; collision <= Block::getMaxCollision(); collision++) {
         // If (collision >= imgColumns) here, it's a valid collision value, but it is not represented with an icon on the image sheet.

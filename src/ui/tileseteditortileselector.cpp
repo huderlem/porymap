@@ -244,19 +244,16 @@ QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
 }
 
 QImage TilesetEditorTileSelector::buildImage(int tileIdStart, int numTiles) {
-    const int tileWidth = 8;
-    const int tileHeight = 8;
     int height = qCeil(numTiles / static_cast<double>(this->numTilesWide));
-    QImage image(this->numTilesWide * tileWidth, height * tileHeight, QImage::Format_RGBA8888);
+    QImage image(this->numTilesWide * Tile::pixelWidth(), height * Tile::pixelHeight(), QImage::Format_RGBA8888);
     image.fill(0);
 
     QPainter painter(&image);
     for (int i = 0; i < numTiles; i++) {
         QImage tileImage = getGreyscaleTileImage(tileIdStart + i, this->primaryTileset, this->secondaryTileset);
-        int y = i / this->numTilesWide;
-        int x = i % this->numTilesWide;
-        QPoint origin = QPoint(x * tileWidth, y * tileHeight);
-        painter.drawImage(origin, tileImage);
+        int x = (i % this->numTilesWide) * Tile::pixelWidth();
+        int y = (i / this->numTilesWide) * Tile::pixelHeight();
+        painter.drawImage(x, y, tileImage);
     }
     painter.end();
 

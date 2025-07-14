@@ -4,7 +4,7 @@
 #include <QPainter>
 
 MetatileLayersItem::MetatileLayersItem(Metatile *metatile, Tileset *primaryTileset, Tileset *secondaryTileset)
-    : SelectablePixmapItem(16, 16, 2 * projectConfig.getNumLayersInMetatile(), 2),
+    : SelectablePixmapItem(16, 16, Metatile::tileWidth() * projectConfig.getNumLayersInMetatile(), Metatile::tileHeight()),
      metatile(metatile),
      primaryTileset(primaryTileset),
      secondaryTileset(secondaryTileset)
@@ -31,8 +31,8 @@ static const QList<QPoint> tilePositions = {
 
 void MetatileLayersItem::draw() {
     const int numLayers = projectConfig.getNumLayersInMetatile();
-    const int layerWidth = this->cellWidth * 2;
-    const int layerHeight = this->cellHeight * 2;
+    const int layerWidth = this->cellWidth * Metatile::tileWidth();
+    const int layerHeight = this->cellHeight * Metatile::tileHeight();
     QPixmap pixmap(numLayers * layerWidth, layerHeight);
     QPainter painter(&pixmap);
 

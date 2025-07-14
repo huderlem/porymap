@@ -92,12 +92,11 @@ QMargins Layout::getBorderMargins() const {
     return distance;
 }
 
-// Get a rectangle that represents (in pixels) the layout's map area and the visible area of its border.
-// At maximum, this is equal to the map size plus the border margins.
-// If the border is large (and so beyond player the view) it may be smaller than that.
+// Get a rectangle that represents (in pixels) the layout's map area + the distance the player can see.
+// Note that this may be smaller than the map area + the size of the border for layouts with large border dimensions.
 QRect Layout::getVisibleRect() const {
-    QRect area = QRect(0, 0, this->width * 16, this->height * 16);
-    return area += (Project::getMetatileViewDistance() * 16);
+    QRect area = QRect(0, 0, this->pixelWidth(), this->pixelHeight());
+    return area += Project::getPixelViewDistance();
 }
 
 bool Layout::getBlock(int x, int y, Block *out) {
@@ -344,15 +343,13 @@ void Layout::magicFillCollisionElevation(int initialX, int initialY, uint16_t co
     }
 }
 
-QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
+QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, const QRect &bounds) {
     bool changed_any = false;
-    int width_ = getWidth();
-    int height_ = getHeight();
-    if (this->image.isNull() || this->image.width() != width_ * 16 || this->image.height() != height_ * 16) {
-        this->image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    if (this->image.isNull() || this->image.width() != pixelWidth() || this->image.height() != pixelHeight()) {
+        this->image = QImage(pixelWidth(), pixelHeight(), QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (this->blockdata.isEmpty() || !width_ || !height_) {
+    if (this->blockdata.isEmpty() || this->width == 0 || this->height == 0) {
         this->pixmap = this->pixmap.fromImage(this->image);
         return this->pixmap;
     }
@@ -368,9 +365,9 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
         if (!ignoreCache && !layoutBlockChanged(i, this->blockdata, this->cached_blockdata)) {
             continue;
         }
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        if (bounds.isValid() && !bounds.contains(map_x, map_y)) {
+        int x = this->width ? ((i % this->width) * Metatile::pixelWidth()) : 0;
+        int y = this->width ? ((i / this->width) * Metatile::pixelHeight()) : 0;
+        if (bounds.isValid() && !bounds.contains(x, y)) {
             continue;
         }
 
@@ -388,9 +385,7 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
             );
             imageCache.insert(metatileId, metatileImage);
         }
-
-        QPoint metatileOrigin = QPoint(map_x * 16, map_y * 16);
-        painter.drawImage(metatileOrigin, metatileImage);
+        painter.drawImage(x, y, metatileImage);
         changed_any = true;
     }
     painter.end();
@@ -404,13 +399,11 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
 
 QPixmap Layout::renderCollision(bool ignoreCache) {
     bool changed_any = false;
-    int width_ = getWidth();
-    int height_ = getHeight();
-    if (collision_image.isNull() || collision_image.width() != width_ * 16 || collision_image.height() != height_ * 16) {
-        collision_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    if (collision_image.isNull() || collision_image.width() != pixelWidth() || collision_image.height() != pixelHeight()) {
+        collision_image = QImage(pixelWidth(), pixelHeight(), QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (this->blockdata.isEmpty() || !width_ || !height_) {
+    if (this->blockdata.isEmpty() || this->width == 0 || this->height == 0) {
         collision_pixmap = collision_pixmap.fromImage(collision_image);
         return collision_pixmap;
     }
@@ -422,10 +415,9 @@ QPixmap Layout::renderCollision(bool ignoreCache) {
         changed_any = true;
         Block block = this->blockdata.at(i);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
-        painter.drawImage(metatile_origin, collision_metatile_image);
+        int x = this->width ? ((i % this->width) * Metatile::pixelWidth()) : 0;
+        int y = this->width ? ((i / this->width) * Metatile::pixelHeight()) : 0;
+        painter.drawImage(x, y, collision_metatile_image);
     }
     painter.end();
     cacheCollision();
@@ -437,14 +429,14 @@ QPixmap Layout::renderCollision(bool ignoreCache) {
 
 QPixmap Layout::renderBorder(bool ignoreCache) {
     bool changed_any = false, border_resized = false;
-    int width_ = getBorderWidth();
-    int height_ = getBorderHeight();
+    int pixelWidth = this->border_width * Metatile::pixelWidth();
+    int pixelHeight = this->border_height * Metatile::pixelHeight();
     if (this->border_image.isNull()) {
-        this->border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+        this->border_image = QImage(pixelWidth, pixelHeight, QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (this->border_image.width() != width_ * 16 || this->border_image.height() != height_ * 16) {
-        this->border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    if (this->border_image.width() != pixelWidth || this->border_image.height() != pixelHeight) {
+        this->border_image = QImage(pixelWidth, pixelHeight, QImage::Format_RGBA8888);
         border_resized = true;
     }
     if (this->border.isEmpty()) {
@@ -461,9 +453,9 @@ QPixmap Layout::renderBorder(bool ignoreCache) {
         Block block = this->border.at(i);
         uint16_t metatileId = block.metatileId();
         QImage metatile_image = getMetatileImage(metatileId, this);
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        painter.drawImage(QPoint(map_x * 16, map_y * 16), metatile_image);
+        int x = this->border_width ? ((i % this->border_width) * Metatile::pixelWidth()) : 0;
+        int y = this->border_width ? ((i / this->border_width) * Metatile::pixelHeight()) : 0;
+        painter.drawImage(x, y, metatile_image);
     }
     painter.end();
     if (changed_any) {

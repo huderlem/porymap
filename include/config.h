@@ -66,57 +66,7 @@ class PorymapConfig: public KeyValueConfigBase
 {
 public:
     PorymapConfig();
-    virtual void reset() override {
-        setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-        this->recentProjects.clear();
-        this->projectManuallyClosed = false;
-        this->reopenOnLaunch = true;
-        this->mapListTab = 0;
-        this->mapListEditGroupsEnabled = false;
-        this->mapListHideEmptyEnabled.clear();
-        this->prettyCursors = true;
-        this->mirrorConnectingMaps = true;
-        this->showDiveEmergeMaps = false;
-        this->diveEmergeMapOpacity = 30;
-        this->diveMapOpacity = 15;
-        this->emergeMapOpacity = 15;
-        this->collisionOpacity = 50;
-        this->collisionZoom = 30;
-        this->metatilesZoom = 30;
-        this->tilesetEditorMetatilesZoom = 30;
-        this->tilesetEditorTilesZoom = 30;
-        this->showPlayerView = false;
-        this->showCursorTile = true;
-        this->showBorder = true;
-        this->showGrid = false;
-        this->showTilesetEditorMetatileGrid = false;
-        this->showTilesetEditorLayerGrid = true;
-        this->showTilesetEditorDivider = false;
-        this->showTilesetEditorRawAttributes = false;
-        this->monitorFiles = true;
-        this->tilesetCheckerboardFill = true;
-        this->newMapHeaderSectionExpanded = false;
-        this->theme = "default";
-        this->wildMonChartTheme = "";
-        this->textEditorOpenFolder = "";
-        this->textEditorGotoLine = "";
-        this->paletteEditorBitDepth = 24;
-        this->projectSettingsTab = 0;
-        this->loadAllEventScripts = false;
-        this->warpBehaviorWarningDisabled = false;
-        this->eventDeleteWarningDisabled = false;
-        this->eventOverlayEnabled = false;
-        this->checkForUpdates = true;
-        this->lastUpdateCheckTime = QDateTime();
-        this->lastUpdateCheckVersion = porymapVersion;
-        this->rateLimitTimes.clear();
-        this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
-        this->shownInGameReloadMessage = false;
-        this->gridSettings = GridSettings();
-        this->statusBarLogTypes = { LogType::LOG_ERROR, LogType::LOG_WARN };
-        this->applicationFont = QFont();
-        this->mapListFont = PorymapConfig::defaultMapListFont();
-    }
+    virtual void reset() override;
     void addRecentProject(QString project);
     void setRecentProjects(QStringList projects);
     QString getRecentProject();

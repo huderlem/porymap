@@ -32,6 +32,9 @@ public:
     int height;
     int border_width;
     int border_height;
+    int pixelWidth() const { return this->width * Metatile::pixelWidth(); }
+    int pixelHeight() const { return this->height * Metatile::pixelHeight(); }
+    QSize pixelSize() const { return QSize(pixelWidth(), pixelHeight()); }
 
     QString border_path;
     QString blockdata_path;
@@ -153,7 +156,7 @@ public:
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
 
-    QPixmap render(bool ignoreCache = false, Layout *fromLayout = nullptr, QRect bounds = QRect(0, 0, -1, -1));
+    QPixmap render(bool ignoreCache = false, Layout *fromLayout = nullptr, const QRect &bounds = QRect(0, 0, -1, -1));
     QPixmap renderCollision(bool ignoreCache);
     // QPixmap renderConnection(MapConnection, Layout *);
     QPixmap renderBorder(bool ignoreCache = false);

@@ -45,10 +45,10 @@ private:
 
 /// PixmapItem subclass which allows for creating a boundary which determine whether
 /// the pixmap paints normally or with a black tint.
-/// This item is movable and snaps on a 16x16 grid.
+/// This item is movable and snaps on a 'cellSize' grid.
 class BoundedPixmapItem : public QGraphicsPixmapItem {
 public:
-    BoundedPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = nullptr);
+    BoundedPixmapItem(const QPixmap &pixmap, const QSize &cellSize, QGraphicsItem *parent = nullptr);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 
     void setBoundary(ResizableRect *rect) { this->boundary = rect; }
@@ -59,6 +59,7 @@ protected:
 private:
     ResizableRect *boundary = nullptr;
     QPointF clickedPos = QPointF();
+    QSize cellSize;
 };
 
 

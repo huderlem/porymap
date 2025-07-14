@@ -10,7 +10,7 @@
 class MovableRect : public QGraphicsRectItem
 {
 public:
-    MovableRect(const QRectF &rect, const QRgb &color);
+    MovableRect(const QRectF &rect, const QSize &cellSize, const QRgb &color);
     QRectF boundingRect() const override {
         qreal penWidth = 4;
         return QRectF(-penWidth,
@@ -31,6 +31,7 @@ public:
 
 protected:
     QRectF baseRect;
+    QSize cellSize;
     QRgb color;
 
     void updateVisibility();
@@ -43,7 +44,7 @@ class ResizableRect : public QObject, public MovableRect
 {
     Q_OBJECT
 public:
-    ResizableRect(QObject *parent, int width, int height, QRgb color);
+    ResizableRect(QObject *parent, const QSize &cellSize, const QSize &size, const QRgb &color);
 
     QRectF boundingRect() const override {
         return QRectF(this->rect() + QMargins(lineWidth, lineWidth, lineWidth, lineWidth));

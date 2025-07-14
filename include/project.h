@@ -251,6 +251,7 @@ public:
     static QString getDynamicMapDefineName();
     static QString getDynamicMapName();
     static QString getEmptySpeciesName();
+    static QMargins getPixelViewDistance();
     static QMargins getMetatileViewDistance();
     static int getNumTilesPrimary() { return num_tiles_primary; }
     static int getNumTilesTotal() { return num_tiles_total; }

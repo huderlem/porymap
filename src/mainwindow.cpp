@@ -1408,7 +1408,7 @@ bool MainWindow::setProjectUI() {
     ui->newEventToolButton->setEventTypeVisible(Event::Type::SecretBase, projectConfig.eventSecretBaseEnabled);
     ui->newEventToolButton->setEventTypeVisible(Event::Type::CloneObject, projectConfig.eventCloneObjectEnabled);
 
-    this->editor->setPlayerViewRect(QRectF(0, 0, 16, 16).marginsAdded(projectConfig.playerViewDistance));
+    this->editor->setPlayerViewRect(QRectF(QPoint(0,0), Metatile::pixelSize()).marginsAdded(projectConfig.playerViewDistance));
 
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
@@ -1809,7 +1809,7 @@ void MainWindow::scrollMetatileSelectorToSelection() {
 
     QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
     QPoint size = editor->metatile_selector_item->getSelectionDimensions();
-    pos += QPoint(size.x() - 1, size.y() - 1) * 16 / 2; // We want to focus on the center of the whole selection
+    pos += QPoint((size.x() - 1) * Metatile::pixelWidth(), (size.y() - 1) * Metatile::pixelHeight()) / 2; // We want to focus on the center of the whole selection
     pos *= getMetatilesZoomScale();
 
     auto viewport = ui->scrollArea_MetatileSelector->viewport();

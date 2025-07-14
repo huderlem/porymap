@@ -501,7 +501,7 @@ bool Tileset::loadTilesImage(QImage *importedImage) {
         image = QImage(this->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
     } else {
         // Use default image
-        image = QImage(8, 8, QImage::Format_Indexed8);
+        image = QImage(Tile::pixelWidth(), Tile::pixelHeight(), QImage::Format_Indexed8);
     }
 
     // Validate image contains 16 colors.
@@ -517,11 +517,9 @@ bool Tileset::loadTilesImage(QImage *importedImage) {
     }
 
     QList<QImage> tiles;
-    int w = 8;
-    int h = 8;
-    for (int y = 0; y < image.height(); y += h)
-    for (int x = 0; x < image.width(); x += w) {
-        QImage tile = image.copy(x, y, w, h);
+    for (int y = 0; y < image.height(); y += Tile::pixelHeight())
+    for (int x = 0; x < image.width(); x += Tile::pixelWidth()) {
+        QImage tile = image.copy(x, y, Tile::pixelWidth(), Tile::pixelHeight());
         tiles.append(tile);
     }
     this->tilesImage = image;

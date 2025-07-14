@@ -31,7 +31,7 @@ struct MetatileSelection
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileSelector(int numMetatilesWide, Layout *layout): SelectablePixmapItem(16, 16) {
+    MetatileSelector(int numMetatilesWide, Layout *layout): SelectablePixmapItem(Metatile::pixelWidth(), Metatile::pixelHeight()) {
         this->externalSelection = false;
         this->prefabSelection = false;
         this->numMetatilesWide = numMetatilesWide;
