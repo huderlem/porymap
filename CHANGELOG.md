@@ -6,6 +6,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ## [Unreleased]
 ### Added
+- Add an option under `Preferences` to include common scripts in the autocomplete for Script labels.
 - A link to Porymap's manual is now available under `Help`.
 
 ### Changed
