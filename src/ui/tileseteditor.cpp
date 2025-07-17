@@ -783,7 +783,10 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset) {
         image = image.convertToFormat(QImage::Format::Format_Indexed8, colorTable);
     }
 
-    tileset->loadTilesImage(&image);
+    if (!tileset->loadTilesImage(&image)) {
+        RecentErrorMessage::show(QStringLiteral("Failed to import tiles."), this);
+        return;
+    }
     this->refresh();
     this->hasUnsavedChanges = true;
 }

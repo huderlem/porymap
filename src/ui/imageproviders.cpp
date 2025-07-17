@@ -9,7 +9,7 @@ QImage getCollisionMetatileImage(Block block) {
 }
 
 QImage getCollisionMetatileImage(int collision, int elevation) {
-    const QImage * image = Editor::collisionIcons.at(collision).at(elevation);
+    const QImage * image = Editor::collisionIcons.value(collision).value(elevation);
     return image ? *image : QImage();
 }
 
@@ -158,11 +158,7 @@ QImage getMetatileImage(
 
 QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
     Tileset *tileset = Tileset::getTileTileset(tileId, primaryTileset, secondaryTileset);
-    int index = Tile::getIndexInTileset(tileId);
-    if (!tileset) {
-        return QImage();
-    }
-    return tileset->tiles.value(index, QImage());
+    return tileset ? tileset->tileImage(tileId) : QImage();
 }
 
 QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette) {
@@ -170,10 +166,10 @@ QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *se
     if (tileImage.isNull()) {
         tileImage = QImage(Tile::pixelWidth(), Tile::pixelHeight(), QImage::Format_RGBA8888);
         QPainter painter(&tileImage);
-        painter.fillRect(0, 0, tileImage.width(), tileImage.height(), palette.at(0));
+        painter.fillRect(0, 0, tileImage.width(), tileImage.height(), palette.value(0));
     } else {
         for (int i = 0; i < 16; i++) {
-            tileImage.setColor(i, palette.at(i));
+            tileImage.setColor(i, palette.value(i));
         }
     }
 
@@ -245,26 +241,26 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
                              const QSize &metatileSize,
                              bool useTruePalettes)
 {
-    QImage primaryImage = getMetatileSheetImage(primaryTileset,
-                                                secondaryTileset,
-                                                0,
-                                                primaryTileset ? primaryTileset->numMetatiles()-1 : 0,
-                                                numMetatilesWide,
-                                                layerOrder,
-                                                layerOpacity,
-                                                metatileSize,
-                                                useTruePalettes);
+    auto createSheetImage = [=](uint16_t start, Tileset *tileset) {
+        uint16_t end = start;
+        if (tileset) {
+            if (tileset->numMetatiles() == 0)
+                return QImage();
+            end += tileset->numMetatiles() - 1;
+        }
+        return getMetatileSheetImage(primaryTileset,
+                                     secondaryTileset,
+                                     start,
+                                     end,
+                                     numMetatilesWide,
+                                     layerOrder,
+                                     layerOpacity,
+                                     metatileSize,
+                                     useTruePalettes);
+    };
 
-    uint16_t secondaryMetatileIdStart = Project::getNumMetatilesPrimary();
-    QImage secondaryImage = getMetatileSheetImage(primaryTileset,
-                                                  secondaryTileset,
-                                                  secondaryMetatileIdStart,
-                                                  secondaryMetatileIdStart + (secondaryTileset ? secondaryTileset->numMetatiles()-1 : 0),
-                                                  numMetatilesWide,
-                                                  layerOrder,
-                                                  layerOpacity,
-                                                  metatileSize,
-                                                  useTruePalettes);
+    QImage primaryImage = createSheetImage(0, primaryTileset);
+    QImage secondaryImage = createSheetImage(Project::getNumMetatilesPrimary(), secondaryTileset);
 
     QImage image(qMax(primaryImage.width(), secondaryImage.width()), primaryImage.height() + secondaryImage.height(), QImage::Format_RGBA8888);
     image.fill(getInvalidImageColor());

@@ -20,15 +20,15 @@ Tileset::Tileset(const Tileset &other)
       metatile_attrs_label(other.metatile_attrs_label),
       metatile_attrs_path(other.metatile_attrs_path),
       tilesImagePath(other.tilesImagePath),
-      tilesImage(other.tilesImage.copy()),
       palettePaths(other.palettePaths),
       metatileLabels(other.metatileLabels),
       palettes(other.palettes),
       palettePreviews(other.palettePreviews),
+      m_tilesImage(other.m_tilesImage.copy()),
       m_hasUnsavedTilesImage(other.m_hasUnsavedTilesImage)
 {
-    for (auto tile : other.tiles) {
-        tiles.append(tile.copy());
+    for (auto tile : other.m_tiles) {
+        m_tiles.append(tile.copy());
     }
 
     for (auto *metatile : other.m_metatiles) {
@@ -46,15 +46,15 @@ Tileset &Tileset::operator=(const Tileset &other) {
     metatile_attrs_label = other.metatile_attrs_label;
     metatile_attrs_path = other.metatile_attrs_path;
     tilesImagePath = other.tilesImagePath;
-    tilesImage = other.tilesImage.copy();
+    m_tilesImage = other.m_tilesImage.copy();
     palettePaths = other.palettePaths;
     metatileLabels = other.metatileLabels;
     palettes = other.palettes;
     palettePreviews = other.palettePreviews;
 
-    tiles.clear();
-    for (auto tile : other.tiles) {
-        tiles.append(tile.copy());
+    m_tiles.clear();
+    for (auto tile : other.m_tiles) {
+        m_tiles.append(tile.copy());
     }
 
     clearMetatiles();
@@ -92,6 +92,14 @@ void Tileset::resizeMetatiles(int newNumMetatiles) {
     while (m_metatiles.length() < newNumMetatiles) {
         m_metatiles.append(new Metatile(numTiles));
     }
+}
+
+int Tileset::maxMetatiles() const {
+    return this->is_secondary ? Project::getNumMetatilesSecondary() : Project::getNumMetatilesPrimary();
+}
+
+int Tileset::maxTiles() const {
+    return this->is_secondary ? Project::getNumTilesSecondary() : Project::getNumTilesPrimary();
 }
 
 Tileset* Tileset::getTileTileset(int tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -407,17 +415,25 @@ QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
 bool Tileset::loadMetatiles() {
     clearMetatiles();
 
-    QFile metatiles_file(this->metatiles_path);
-    if (!metatiles_file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1' for reading: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+    QFile file(this->metatiles_path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatiles_path).arg(file.errorString()));
         return false;
     }
 
-    QByteArray data = metatiles_file.readAll();
+    QByteArray data = file.readAll();
     int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
-    int bytesPerMetatile = 2 * tilesPerMetatile;
-    int num_metatiles = data.length() / bytesPerMetatile;
-    for (int i = 0; i < num_metatiles; i++) {
+    int bytesPerMetatile = Tile::sizeInBytes() * tilesPerMetatile;
+    int numMetatiles = data.length() / bytesPerMetatile;
+    if (numMetatiles > maxMetatiles()) {
+        logWarn(QString("%1 metatile count %2 exceeds limit of %3. Additional metatiles will be ignored.")
+                        .arg(this->name)
+                        .arg(numMetatiles)
+                        .arg(maxMetatiles()));
+        numMetatiles = maxMetatiles();
+    }
+
+    for (int i = 0; i < numMetatiles; i++) {
         auto metatile = new Metatile;
         int index = i * bytesPerMetatile;
         for (int j = 0; j < tilesPerMetatile; j++) {
@@ -431,9 +447,9 @@ bool Tileset::loadMetatiles() {
 }
 
 bool Tileset::saveMetatiles() {
-    QFile metatiles_file(this->metatiles_path);
-    if (!metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        logError(QString("Could not open '%1' for writing: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+    QFile file(this->metatiles_path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatiles_path).arg(file.errorString()));
         return false;
     }
 
@@ -441,31 +457,40 @@ bool Tileset::saveMetatiles() {
     int numTiles = projectConfig.getNumTilesInMetatile();
     for (const auto &metatile : m_metatiles) {
         for (int i = 0; i < numTiles; i++) {
-            uint16_t tile = metatile->tiles.at(i).rawValue();
+            uint16_t tile = metatile->tiles.value(i).rawValue();
             data.append(static_cast<char>(tile));
             data.append(static_cast<char>(tile >> 8));
         }
     }
-    metatiles_file.write(data);
+    file.write(data);
     return true;
 }
 
 bool Tileset::loadMetatileAttributes() {
-    QFile attrs_file(this->metatile_attrs_path);
-    if (!attrs_file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1' for reading: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+    QFile file(this->metatile_attrs_path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatile_attrs_path).arg(file.errorString()));
         return false;
     }
 
-    QByteArray data = attrs_file.readAll();
+    QByteArray data = file.readAll();
     int attrSize = projectConfig.metatileAttributesSize;
     int numMetatiles = m_metatiles.length();
     int numMetatileAttrs = data.length() / attrSize;
-    if (numMetatiles != numMetatileAttrs) {
-        logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(numMetatiles).arg(numMetatileAttrs).arg(this->name));
+    if (numMetatileAttrs > numMetatiles) {
+        logWarn(QString("%1 metatile attributes count %2 exceeds metatile count of %3. Additional attributes will be ignored.")
+                            .arg(this->name)
+                            .arg(numMetatileAttrs)
+                            .arg(numMetatiles));
+        numMetatileAttrs = numMetatiles;
+    } else if (numMetatileAttrs < numMetatiles) {
+        logWarn(QString("%1 metatile attributes count %2 is fewer than the metatile count of %3. Missing attributes will default to 0.")
+                            .arg(this->name)
+                            .arg(numMetatileAttrs)
+                            .arg(numMetatiles));
     }
 
-    for (int i = 0; i < qMin(numMetatiles, numMetatileAttrs); i++) {
+    for (int i = 0; i < numMetatileAttrs; i++) {
         uint32_t attributes = 0;
         for (int j = 0; j < attrSize; j++)
             attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
@@ -475,9 +500,9 @@ bool Tileset::loadMetatileAttributes() {
 }
 
 bool Tileset::saveMetatileAttributes() {
-    QFile attrs_file(this->metatile_attrs_path);
-    if (!attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        logError(QString("Could not open '%1' for writing: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+    QFile file(this->metatile_attrs_path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatile_attrs_path).arg(file.errorString()));
         return false;
     }
 
@@ -487,21 +512,36 @@ bool Tileset::saveMetatileAttributes() {
         for (int i = 0; i < projectConfig.metatileAttributesSize; i++)
             data.append(static_cast<char>(attributes >> (8 * i)));
     }
-    attrs_file.write(data);
+    file.write(data);
     return true;
 }
 
 bool Tileset::loadTilesImage(QImage *importedImage) {
     QImage image;
+    bool imported = false;
     if (importedImage) {
         image = *importedImage;
-        m_hasUnsavedTilesImage = true;
+        imported = true;
     } else if (QFile::exists(this->tilesImagePath)) {
         // No image provided, load from file path.
         image = QImage(this->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
-    } else {
-        // Use default image
+    }
+
+    if (image.isNull()) {
+        logWarn(QString("Failed to load tiles image for %1. Using default tiles image.").arg(this->name));
         image = QImage(Tile::pixelWidth(), Tile::pixelHeight(), QImage::Format_Indexed8);
+        image.fill(0);
+    }
+
+    // Validate image dimensions
+    if (image.width() % Tile::pixelWidth() || image.height() % Tile::pixelHeight()) {
+        logError(QString("%1 tiles image has invalid dimensions %2x%3. Dimensions must be a multiple of %4x%5.")
+                            .arg(this->name)
+                            .arg(image.width())
+                            .arg(image.height())
+                            .arg(Tile::pixelWidth())
+                            .arg(Tile::pixelHeight()));
+        return false;
     }
 
     // Validate image contains 16 colors.
@@ -515,15 +555,31 @@ bool Tileset::loadTilesImage(QImage *importedImage) {
         }
         image.setColorTable(colorTable);
     }
+    m_tilesImage = image;
 
-    QList<QImage> tiles;
+    // Cut up the full tiles image into individual tile images.
+    m_tiles.clear();
     for (int y = 0; y < image.height(); y += Tile::pixelHeight())
     for (int x = 0; x < image.width(); x += Tile::pixelWidth()) {
-        QImage tile = image.copy(x, y, Tile::pixelWidth(), Tile::pixelHeight());
-        tiles.append(tile);
+        m_tiles.append(image.copy(x, y, Tile::pixelWidth(), Tile::pixelHeight()));
     }
-    this->tilesImage = image;
-    this->tiles = tiles;
+
+    if (m_tiles.length() > maxTiles()) {
+        logWarn(QString("%1 tile count of %2 exceeds limit of %3. Additional tiles will not be displayed.")
+                            .arg(this->name)
+                            .arg(m_tiles.length())
+                            .arg(maxTiles()));
+
+        // Just resize m_tiles so that numTiles() reports the correct tile count.
+        // We'll leave m_tilesImage alone (it doesn't get displayed, and we don't want to delete the user's image data).
+        m_tiles = m_tiles.mid(0, maxTiles());
+    }
+
+    if (imported) {
+        // Only set this flag once we've successfully loaded the tiles image.
+        m_hasUnsavedTilesImage = true;
+    }
+
     return true;
 }
 
@@ -533,7 +589,7 @@ bool Tileset::saveTilesImage() {
     if (!m_hasUnsavedTilesImage)
         return true;
 
-    if (!this->tilesImage.save(this->tilesImagePath, "PNG")) {
+    if (!m_tilesImage.save(this->tilesImagePath, "PNG")) {
         logError(QString("Failed to save tiles image '%1'").arg(this->tilesImagePath));
         return false;
     }

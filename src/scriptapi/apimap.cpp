@@ -546,13 +546,13 @@ int MainWindow::getNumSecondaryTilesetMetatiles() {
 int MainWindow::getNumPrimaryTilesetTiles() {
     if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary)
         return 0;
-    return this->editor->layout->tileset_primary->tiles.length();
+    return this->editor->layout->tileset_primary->numTiles();
 }
 
 int MainWindow::getNumSecondaryTilesetTiles() {
     if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_secondary)
         return 0;
-    return this->editor->layout->tileset_secondary->tiles.length();
+    return this->editor->layout->tileset_secondary->numTiles();
 }
 
 QString MainWindow::getPrimaryTileset() {
@@ -797,12 +797,15 @@ void MainWindow::setMetatileTile(int metatileId, int tileIndex, QJSValue tileObj
 QJSValue MainWindow::getTilePixels(int tileId) {
     if (tileId < 0 || !this->editor || !this->editor->layout)
         return QJSValue();
+
+    const int numPixels = Tile::pixelWidth() * Tile::pixelHeight();
     QImage tileImage = getTileImage(tileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
-    if (tileImage.isNull() || tileImage.sizeInBytes() < 64)
+    if (tileImage.isNull() || tileImage.sizeInBytes() < numPixels)
         return QJSValue();
+
     const uchar * pixels = tileImage.constBits();
-    QJSValue pixelArray = Scripting::getEngine()->newArray(64);
-    for (int i = 0; i < 64; i++) {
+    QJSValue pixelArray = Scripting::getEngine()->newArray(numPixels);
+    for (int i = 0; i < numPixels; i++) {
         pixelArray.setProperty(i, pixels[i]);
     }
     return pixelArray;

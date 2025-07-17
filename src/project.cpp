@@ -2461,6 +2461,7 @@ bool Project::readFieldmapMasks() {
         projectConfig.blockCollisionMask = blockMask;
     if (readBlockMask(elevationMaskName, &blockMask))
         projectConfig.blockElevationMask = blockMask;
+    Block::setLayout();
 
     // Read RSE metatile attribute masks
     auto it = defines.find(behaviorMaskName);
@@ -3469,7 +3470,6 @@ void Project::applyParsedLimits() {
     projectConfig.metatileEncounterTypeMask &= maxMask;
     projectConfig.metatileLayerTypeMask &= maxMask;
 
-    Block::setLayout();
     Metatile::setLayout(this);
 
     Project::num_metatiles_primary = qBound(1, Project::num_metatiles_primary, Block::getMaxMetatileId() + 1);

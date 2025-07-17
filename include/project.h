@@ -255,10 +255,13 @@ public:
     static QMargins getMetatileViewDistance();
     static int getNumTilesPrimary() { return num_tiles_primary; }
     static int getNumTilesTotal() { return num_tiles_total; }
+    static int getNumTilesSecondary() { return getNumTilesTotal() - getNumTilesPrimary(); }
     static int getNumMetatilesPrimary() { return num_metatiles_primary; }
     static int getNumMetatilesTotal() { return Block::getMaxMetatileId() + 1; }
+    static int getNumMetatilesSecondary() { return getNumMetatilesTotal() - getNumMetatilesPrimary(); }
     static int getNumPalettesPrimary(){ return num_pals_primary; }
     static int getNumPalettesTotal() { return num_pals_total; }
+    static int getNumPalettesSecondary() { return getNumPalettesTotal() - getNumPalettesPrimary(); }
     static QString getEmptyMapsecName();
     static QString getMapGroupPrefix();
 

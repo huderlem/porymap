@@ -43,6 +43,7 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
 
 private:
+    QPixmap basePixmap;
     bool externalSelection;
     int externalSelectionWidth;
     int externalSelectionHeight;
@@ -63,7 +64,7 @@ private:
     QList<QRgb> getCurPaletteTable();
     QList<Tile> buildSelectedTiles(int, int, QList<Tile>);
     QImage buildImage(int tileIdStart, int numTiles);
-
+    void updateBasePixmap();
     void drawUnused();
 
 signals:

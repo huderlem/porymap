@@ -2844,7 +2844,9 @@ void MainWindow::on_actionTileset_Editor_triggered()
     openSubWindow(this->tilesetEditor);
 
     MetatileSelection selection = this->editor->metatile_selector_item->getMetatileSelection();
-    this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+    if (!selection.metatileItems.isEmpty()) {
+        this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+    }
 }
 
 void MainWindow::initTilesetEditor() {
