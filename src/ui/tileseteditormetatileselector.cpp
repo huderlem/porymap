@@ -57,8 +57,6 @@ void TilesetEditorMetatileSelector::drawSelectedMetatile() {
 void TilesetEditorMetatileSelector::updateBasePixmap() {
     this->baseImage = getMetatileSheetImage(this->primaryTileset,
                                             this->secondaryTileset,
-                                            0,
-                                            this->numPrimaryMetatilesRounded() + this->secondaryTileset->numMetatiles(),
                                             this->numMetatilesWide,
                                             this->layout->metatileLayerOrder(),
                                             this->layout->metatileLayerOpacity(),

@@ -48,6 +48,12 @@ QImage getMetatileImage(
                             useTruePalettes);
 }
 
+// The color to use when we want to show some portion of the image request was invalid.
+// Normally this is Qt::magenta, but we'll use Qt::transparent if we think the image allows it.
+QColor getInvalidImageColor() {
+    return (projectConfig.transparencyColor == QColor(Qt::transparent)) ? QColor(Qt::transparent) : QColor(Qt::magenta);
+}
+
 QImage getMetatileImage(
         Metatile *metatile,
         Tileset *primaryTileset,
@@ -58,7 +64,7 @@ QImage getMetatileImage(
 {
     QImage metatile_image(Metatile::pixelWidth(), Metatile::pixelHeight(), QImage::Format_RGBA8888);
     if (!metatile) {
-        metatile_image.fill(projectConfig.transparencyColor == QColor(Qt::transparent) ? projectConfig.transparencyColor : QColor(Qt::magenta));
+        metatile_image.fill(getInvalidImageColor());
         return metatile_image;
     }
 
@@ -192,56 +198,93 @@ void flattenTo4bppImage(QImage * image) {
         *pixel %= 16;
 }
 
-QImage getMetatileSheetImage(Layout *layout, int numMetatilesWide, bool useTruePalettes) {
-    return getMetatileSheetImage(layout->tileset_primary,
-                                 layout->tileset_secondary,
-                                 0,
-                                 -1,
-                                 numMetatilesWide,
-                                 layout->metatileLayerOrder(),
-                                 layout->metatileLayerOpacity(),
-                                 Metatile::pixelSize(),
-                                 useTruePalettes);
-}
-
+// Constructs a grid image of the metatiles in the specified ID range.
 QImage getMetatileSheetImage(Tileset *primaryTileset,
                              Tileset *secondaryTileset,
                              uint16_t metatileIdStart,
-                             int numMetatilesToDraw,
+                             uint16_t metatileIdEnd,
                              int numMetatilesWide,
                              const QList<int> &layerOrder,
                              const QList<float> &layerOpacity,
                              const QSize &metatileSize,
                              bool useTruePalettes)
 {
-    // We round up the number of primary metatiles to keep the tilesets on separate rows.
-    int numPrimary = Util::roundUpToMultiple(primaryTileset ? primaryTileset->numMetatiles() : 0, numMetatilesWide);
-    int maxPrimary = Project::getNumMetatilesPrimary();
-    bool includesPrimary = metatileIdStart < maxPrimary;
+    if (metatileIdEnd < metatileIdStart || numMetatilesWide == 0)
+        return QImage();
 
-    // Negative values are used to indicate 'draw all metatiles'
-    if (numMetatilesToDraw < 0) {
-        numMetatilesToDraw = numPrimary + (secondaryTileset ? secondaryTileset->numMetatiles() : 0) - metatileIdStart;
-    }
+    int numMetatilesToDraw = metatileIdEnd - metatileIdStart + 1;
 
-    // Round up height for incomplete last row
-    int numMetatilesTall = ceil((double)numMetatilesToDraw / numMetatilesWide);
+    // Round up image height for incomplete last row.
+    int numMetatilesTall = Util::roundUpToMultiple(numMetatilesToDraw, numMetatilesWide) / numMetatilesWide;
 
     QImage image(numMetatilesWide * metatileSize.width(), numMetatilesTall * metatileSize.height(), QImage::Format_RGBA8888);
-    image.fill(projectConfig.transparencyColor == QColor(Qt::transparent) ? projectConfig.transparencyColor : QColor(Qt::magenta));
+    image.fill(getInvalidImageColor());
 
     QPainter painter(&image);
     for (int i = 0; i < numMetatilesToDraw; i++) {
         uint16_t metatileId = i + metatileIdStart;
-        if (includesPrimary && metatileId >= numPrimary)
-            metatileId += maxPrimary - numPrimary; // Skip over unused region of primary tileset
-        QImage metatile_image = getMetatileImage(metatileId, primaryTileset, secondaryTileset, layerOrder, layerOpacity, useTruePalettes)
-                                                .scaled(metatileSize.width(), metatileSize.height());
-        int map_y = i / numMetatilesWide;
-        int map_x = i % numMetatilesWide;
-        QPoint metatile_origin = QPoint(map_x * metatileSize.width(), map_y * metatileSize.height());
-        painter.drawImage(metatile_origin, metatile_image);
+        QImage metatileImage = getMetatileImage(metatileId, primaryTileset, secondaryTileset, layerOrder, layerOpacity, useTruePalettes)
+                                                .scaled(metatileSize);
+
+        int x = (i % numMetatilesWide) * metatileSize.width();
+        int y = (i / numMetatilesWide) * metatileSize.height();
+        painter.drawImage(x, y, metatileImage);
     }
     painter.end();
     return image;
+}
+
+// Constructs a grid image of the metatiles in the primary and secondary tileset,
+// rounding as necessary to keep the two tilesets on separate rows.
+// The unused metatiles (if any) between the primary and secondary tilesets are skipped.
+QImage getMetatileSheetImage(Tileset *primaryTileset,
+                             Tileset *secondaryTileset,
+                             int numMetatilesWide,
+                             const QList<int> &layerOrder,
+                             const QList<float> &layerOpacity,
+                             const QSize &metatileSize,
+                             bool useTruePalettes)
+{
+    QImage primaryImage = getMetatileSheetImage(primaryTileset,
+                                                secondaryTileset,
+                                                0,
+                                                primaryTileset ? primaryTileset->numMetatiles()-1 : 0,
+                                                numMetatilesWide,
+                                                layerOrder,
+                                                layerOpacity,
+                                                metatileSize,
+                                                useTruePalettes);
+
+    uint16_t secondaryMetatileIdStart = Project::getNumMetatilesPrimary();
+    QImage secondaryImage = getMetatileSheetImage(primaryTileset,
+                                                  secondaryTileset,
+                                                  secondaryMetatileIdStart,
+                                                  secondaryMetatileIdStart + (secondaryTileset ? secondaryTileset->numMetatiles()-1 : 0),
+                                                  numMetatilesWide,
+                                                  layerOrder,
+                                                  layerOpacity,
+                                                  metatileSize,
+                                                  useTruePalettes);
+
+    QImage image(qMax(primaryImage.width(), secondaryImage.width()), primaryImage.height() + secondaryImage.height(), QImage::Format_RGBA8888);
+    image.fill(getInvalidImageColor());
+
+    QPainter painter(&image);
+    painter.drawImage(0, 0, primaryImage);
+    painter.drawImage(0, primaryImage.height(), secondaryImage);
+    painter.end();
+
+    return image;
+}
+
+QImage getMetatileSheetImage(Layout *layout, int numMetatilesWide, bool useTruePalettes) {
+    if (!layout)
+        return QImage();
+    return getMetatileSheetImage(layout->tileset_primary,
+                                 layout->tileset_secondary,
+                                 numMetatilesWide,
+                                 layout->metatileLayerOrder(),
+                                 layout->metatileLayerOpacity(),
+                                 Metatile::pixelSize(),
+                                 useTruePalettes);
 }

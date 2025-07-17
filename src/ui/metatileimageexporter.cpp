@@ -211,10 +211,6 @@ void MetatileImageExporter::tryUpdatePreview() {
 void MetatileImageExporter::updatePreview() {
     copyRenderSettings();
 
-    int numMetatilesWide = ui->spinBox_WidthMetatiles->value();
-    int metatileStart = ui->spinBox_MetatileStart->value();
-    int numMetatiles = Util::roundUpToMultiple(ui->spinBox_MetatileEnd->value() - metatileStart + 1, numMetatilesWide);
-
     m_layerOrder.clear();
     for (int i = 0; i < ui->listWidget_Layers->count(); i++) {
         auto item = ui->listWidget_Layers->item(i);
@@ -224,12 +220,22 @@ void MetatileImageExporter::updatePreview() {
         }
     }
 
-    QImage previewImage = getMetatileSheetImage(m_primaryTileset,
-                                                m_secondaryTileset,
-                                                metatileStart,
-                                                numMetatiles,
-                                                numMetatilesWide,
-                                                m_layerOrder);
+    QImage previewImage;
+    if (ui->checkBox_PrimaryTileset->isChecked() && ui->checkBox_SecondaryTileset->isChecked()) {
+        // Special behavior to combine the two tilesets while skipping the unused region between tilesets.
+        previewImage = getMetatileSheetImage(m_primaryTileset,
+                                             m_secondaryTileset,
+                                             ui->spinBox_WidthMetatiles->value(),
+                                             m_layerOrder);
+    } else {
+        previewImage = getMetatileSheetImage(m_primaryTileset,
+                                             m_secondaryTileset,
+                                             ui->spinBox_MetatileStart->value(),
+                                             ui->spinBox_MetatileEnd->value(),
+                                             ui->spinBox_WidthMetatiles->value(),
+                                             m_layerOrder);
+    }
+
     m_preview->setPixmap(QPixmap::fromImage(previewImage));
     m_scene->setSceneRect(m_scene->itemsBoundingRect());
     m_previewUpdateQueued = false;
@@ -255,7 +261,6 @@ uint16_t MetatileImageExporter::getExpectedMetatileStart() {
     return ui->spinBox_MetatileStart->value();
 }
 
-// TODO: Combining tilesets is not rendering the correct range of metatiles
 uint16_t MetatileImageExporter::getExpectedMetatileEnd() {
     if (ui->checkBox_SecondaryTileset->isChecked()) return Project::getNumMetatilesPrimary() + (m_secondaryTileset ? (m_secondaryTileset->numMetatiles() - 1) : 0);
     if (ui->checkBox_PrimaryTileset->isChecked()) return m_primaryTileset ? (m_primaryTileset->numMetatiles() - 1) : 0;
