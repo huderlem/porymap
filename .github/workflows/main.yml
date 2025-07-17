@@ -37,6 +37,27 @@ jobs:
       - name: Compile
         run: make
 
+      # New steps to package and release the Linux build
+      - name: Prep Release Directory
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir porymap-linux-${{ github.ref_name }}
+          cp porymap porymap-linux-${{ github.ref_name }}/porymap
+          cp RELEASE-README.txt porymap-linux-${{ github.ref_name }}/README.txt
+
+      - name: Bundle Release Directory
+        if: startsWith(github.ref, 'refs/tags/')
+        run: zip -r porymap-linux-${{ github.ref_name }}.zip porymap-linux-${{ github.ref_name }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: porymap-linux-${{ github.ref_name }}.zip
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
   build-macos:
     strategy:
      matrix:
