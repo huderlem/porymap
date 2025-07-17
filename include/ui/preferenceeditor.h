@@ -2,6 +2,7 @@
 #define PREFERENCES_H
 
 #include <QMainWindow>
+#include "config.h"
 
 class NoScrollComboBox;
 class QAbstractButton;
@@ -23,7 +24,7 @@ public:
 signals:
     void preferencesSaved();
     void themeChanged(const QString &theme);
-    void scriptSettingsChanged(bool on);
+    void scriptSettingsChanged(ScriptAutocompleteMode mode);
     void reloadProjectRequested();
 
 private:

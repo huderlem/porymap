@@ -201,8 +201,8 @@ void EventFrame::populateScriptDropdown(NoScrollComboBox * combo, Project * proj
     QStringList scripts = map->getScriptLabels(this->event->getEventGroup());
     populateDropdown(combo, scripts);
 
-    // Depending on the settings, the autocomplete may also contain all global scripts.
-    if (project && porymapConfig.loadAllEventScripts) {
+    // Depending on the settings, the autocomplete may also contain scripts from outside the map.
+    if (project && porymapConfig.scriptAutocompleteMode != ScriptAutocompleteMode::MapOnly) {
         project->insertGlobalScriptLabels(scripts);
     }
 
