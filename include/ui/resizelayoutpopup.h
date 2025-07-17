@@ -24,11 +24,21 @@ class CheckeredBgScene : public QGraphicsScene {
     Q_OBJECT
 
 public:
-    CheckeredBgScene(QObject *parent = nullptr);
+    CheckeredBgScene(const QSize &gridSize, QObject *parent = nullptr)
+        : QGraphicsScene(parent),
+          gridSize(gridSize)
+        {};
+    CheckeredBgScene(int width, int height, QObject *parent = nullptr)
+        : CheckeredBgScene(QSize(width, height), parent)
+        {};
+
     void setValidRect(int x, int y, int width, int height) {
-        this->validRect = QRect(x * this->gridSize, y * this->gridSize, width * this->gridSize, height * this->gridSize);
+        this->validRect = QRect(x * this->gridSize.width(),
+                                y * this->gridSize.height(),
+                                width * this->gridSize.width(),
+                                height * this->gridSize.height());
     }
-    void setValidRect(QRect rect) {
+    void setValidRect(const QRect &rect) {
         this->validRect = rect;
     }
     QRect getValidRect() { return this->validRect; }
@@ -37,8 +47,8 @@ protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
 
 private:
-    int gridSize = 16; // virtual pixels
-    QRect validRect = QRect();
+    QSize gridSize;
+    QRect validRect;
 };
 
 

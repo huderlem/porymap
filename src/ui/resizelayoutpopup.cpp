@@ -7,32 +7,31 @@
 
 #include "ui_resizelayoutpopup.h"
 
-CheckeredBgScene::CheckeredBgScene(QObject *parent) : QGraphicsScene(parent) { }
-
 void CheckeredBgScene::drawBackground(QPainter *painter, const QRectF &rect) {
     QRect r = rect.toRect();
-    int xMin = r.left() - r.left() % this->gridSize - this->gridSize;
-    int yMin = r.top() - r.top() % this->gridSize - this->gridSize;
-    int xMax = r.right() - r.right() % this->gridSize + this->gridSize;
-    int yMax = r.bottom() - r.bottom() % this->gridSize + this->gridSize;
+    int w = this->gridSize.width();
+    int h = this->gridSize.height();
+    int xMin = r.left() - (r.left() % w) - w;
+    int yMin = r.top() - (r.top() % h) - h;
+    int xMax = r.right() - (r.right() % w) + w;
+    int yMax = r.bottom() - (r.bottom() % h) + h;
 
-    // draw grid 16x16 from top to bottom of scene
-    QColor paintColor(0x00ff00);
-    for (int x = xMin, xTile = 0; x <= xMax; x += this->gridSize, xTile++) {
-        for (int y = yMin, yTile = 0; y <= yMax; y += this->gridSize, yTile++) {
-            if (!((xTile ^ yTile) & 1)) { // tile numbers have same parity (evenness)
+    // draw grid from top to bottom of scene
+    QColor paintColor;
+    for (int x = xMin; x <= xMax; x += w) {
+        for (int y = yMin; y <= yMax; y += h) {
+            if ((x/w + y/h) % 2) {
                 if (this->validRect.contains(x, y))
                     paintColor = QColor(132, 217, 165); // green light color
                 else
                     paintColor = 0xbcbcbc; // normal light color
-            }
-            else {
+            } else {
                 if (this->validRect.contains(x, y))
                     paintColor = QColor(76, 178, 121); // green dark color
                 else
                     paintColor = 0x969696; // normal dark color
             }
-            painter->fillRect(QRect(x, y, this->gridSize, this->gridSize), paintColor);
+            painter->fillRect(QRect(x, y, w, h), paintColor);
         }
     }
 }
@@ -85,7 +84,7 @@ ResizeLayoutPopup::ResizeLayoutPopup(QWidget *parent, Layout *layout, Project *p
     this->setWindowFlags(this->windowFlags() | Qt::FramelessWindowHint);
     this->setWindowModality(Qt::ApplicationModal);
 
-    this->scene = new CheckeredBgScene(this);
+    this->scene = new CheckeredBgScene(Metatile::pixelSize(), this);
     this->ui->graphicsView->setScene(this->scene);
     this->ui->graphicsView->setRenderHints(QPainter::Antialiasing);
     this->ui->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
