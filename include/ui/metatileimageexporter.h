@@ -2,7 +2,6 @@
 #define METATILEIMAGEEXPORTER_H
 
 #include <QDialog>
-#include <QGraphicsScene>
 #include <QShowEvent>
 #include <QCloseEvent>
 #include <QListWidget>
@@ -10,6 +9,7 @@
 #include <QRadioButton>
 
 #include "config.h"
+#include "checkeredbgscene.h"
 
 class Tileset;
 
@@ -73,7 +73,7 @@ private:
     Tileset *m_secondaryTileset;
     Settings *m_savedSettings;
 
-    QGraphicsScene *m_scene = nullptr;
+    CheckeredBgScene *m_scene = nullptr;
     QGraphicsPixmapItem *m_preview = nullptr;
     bool m_previewUpdateQueued = false;
     QList<int> m_layerOrder;

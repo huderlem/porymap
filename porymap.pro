@@ -66,6 +66,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/checkeredbgscene.cpp \
     src/ui/colorinputwidget.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customattributesdialog.cpp \
@@ -181,6 +182,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/checkeredbgscene.h \
     include/ui/connectionslistitem.h \
     include/ui/customattributesdialog.h \
     include/ui/customattributestable.h \

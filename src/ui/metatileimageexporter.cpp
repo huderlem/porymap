@@ -23,7 +23,7 @@ MetatileImageExporter::MetatileImageExporter(QWidget *parent, Tileset *primaryTi
         ui->radioButton_TransparencyFirst,
     };
 
-    m_scene = new QGraphicsScene(this);
+    m_scene = new CheckeredBgScene(QSize(8,8), this);
     m_preview = m_scene->addPixmap(QPixmap());
     ui->graphicsView_Preview->setScene(m_scene);
 

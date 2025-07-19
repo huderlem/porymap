@@ -46,7 +46,7 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
 
-    m_scene = new QGraphicsScene(this);
+    m_scene = new CheckeredBgScene(QSize(8,8), this);
     m_preview = m_scene->addPixmap(QPixmap());
     ui->graphicsView_Preview->setScene(m_scene);
 
