@@ -255,23 +255,20 @@ void MetatileImageExporter::validateMetatileEnd() {
                                            ui->spinBox_MetatileEnd->value()));
 }
 
-uint16_t MetatileImageExporter::getExpectedMetatileStart() {
-    if (ui->checkBox_PrimaryTileset->isChecked()) return 0;
-    if (ui->checkBox_SecondaryTileset->isChecked()) return Project::getNumMetatilesPrimary();
-    return ui->spinBox_MetatileStart->value();
-}
-
-uint16_t MetatileImageExporter::getExpectedMetatileEnd() {
-    if (ui->checkBox_SecondaryTileset->isChecked()) return Project::getNumMetatilesPrimary() + (m_secondaryTileset ? (m_secondaryTileset->numMetatiles() - 1) : 0);
-    if (ui->checkBox_PrimaryTileset->isChecked()) return m_primaryTileset ? (m_primaryTileset->numMetatiles() - 1) : 0;
-    return ui->spinBox_MetatileEnd->value();
-}
-
 void MetatileImageExporter::updateMetatileRange() {
+    Tileset *tileset = nullptr;
+    if (ui->checkBox_PrimaryTileset->isChecked()) {
+        tileset = m_primaryTileset;
+    } else if (ui->checkBox_PrimaryTileset->isChecked()) {
+        tileset = m_secondaryTileset;
+    }
+    if (!tileset)
+        return;
+
     const QSignalBlocker b_MetatileStart(ui->spinBox_MetatileStart);
     const QSignalBlocker b_MetatileEnd(ui->spinBox_MetatileEnd);
-    ui->spinBox_MetatileStart->setValue(getExpectedMetatileStart());
-    ui->spinBox_MetatileEnd->setValue(getExpectedMetatileEnd());
+    ui->spinBox_MetatileStart->setValue(tileset->firstMetatileId());
+    ui->spinBox_MetatileEnd->setValue(tileset->lastMetatileId());
 }
 
 void MetatileImageExporter::updateTilesetUI() {

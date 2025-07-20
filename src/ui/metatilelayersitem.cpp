@@ -129,7 +129,7 @@ void MetatileLayersItem::hoverMoveEvent(QGraphicsSceneHoverEvent * event) {
     if (tileIndex < 0 || tileIndex >= this->metatile->tiles.length())
         return;
 
-    emit this->hoveredTileChanged(this->metatile->tiles.at(tileIndex).tileId);
+    emit this->hoveredTileChanged(this->metatile->tiles.at(tileIndex));
 }
 
 void MetatileLayersItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {

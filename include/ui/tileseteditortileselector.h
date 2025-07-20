@@ -18,8 +18,8 @@ public:
         this->paletteChanged = false;
         setAcceptHoverEvents(true);
     }
-    QPoint getSelectionDimensions();
-    void draw();
+    QPoint getSelectionDimensions() const override;
+    void draw() override;
     void select(uint16_t metatileId);
     void highlight(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
@@ -36,11 +36,11 @@ public:
     bool showDivider = false;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
 
 private:
     QPixmap basePixmap;

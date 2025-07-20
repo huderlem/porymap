@@ -1,6 +1,5 @@
 #include "config.h"
 #include "imageproviders.h"
-#include "log.h"
 #include "editor.h"
 #include <QPainter>
 
@@ -62,10 +61,10 @@ QImage getMetatileImage(
         const QList<float> &layerOpacity,
         bool useTruePalettes)
 {
-    QImage metatile_image(Metatile::pixelWidth(), Metatile::pixelHeight(), QImage::Format_RGBA8888);
+    QImage metatileImage(Metatile::pixelSize(), QImage::Format_RGBA8888);
     if (!metatile) {
-        metatile_image.fill(getInvalidImageColor());
-        return metatile_image;
+        metatileImage.fill(getInvalidImageColor());
+        return metatileImage;
     }
 
     QList<QList<QRgb>> palettes = Tileset::getBlockPalettes(primaryTileset, secondaryTileset, useTruePalettes);
@@ -75,9 +74,9 @@ QImage getMetatileImage(
     // The GBA renders transparent pixels using palette 0 color 0. We have this color,
     // but all 3 games actually overwrite it with black when loading the tileset palettes,
     // so we have a setting to specify an override transparency color.
-    metatile_image.fill(projectConfig.transparencyColor.isValid() ? projectConfig.transparencyColor : QColor(palettes.value(0).value(0)));
+    metatileImage.fill(projectConfig.transparencyColor.isValid() ? projectConfig.transparencyColor : QColor(palettes.value(0).value(0)));
 
-    QPainter metatile_painter(&metatile_image);
+    QPainter painter(&metatileImage);
 
     uint32_t layerType = metatile->layerType();
     for (const auto &layer : layerOrder)
@@ -115,45 +114,31 @@ QImage getMetatileImage(
             }
         }
 
-        QImage tile_image = getTileImage(tile.tileId, primaryTileset, secondaryTileset);
-        if (tile_image.isNull()) {
-            // Some metatiles specify tiles that are outside the valid range.
-            // The way the GBA will render these depends on what's in memory (which Porymap can't know)
-            // so we treat them as if they were transparent.
-            continue;
-        }
+        QImage tileImage = getColoredTileImage(tile.tileId, primaryTileset, secondaryTileset, palettes.value(tile.palette));
 
-        // Colorize the metatile tiles with its palette.
-        if (tile.palette < palettes.length()) {
-            const QList<QRgb> palette = palettes.value(tile.palette);
-            for (int j = 0; j < palette.length(); j++) {
-                tile_image.setColor(j, palette.value(j));
-            }
-        } else {
-            logWarn(QString("Tile '%1' is referring to invalid palette number: '%2'").arg(tile.tileId).arg(tile.palette));
-        }
-
-        QPoint origin = QPoint(x * Tile::pixelWidth(), y * Tile::pixelHeight());
         float opacity = layerOpacity.value(layer, 1.0);
         if (opacity < 1.0) {
             int alpha = 255 * opacity;
-            for (int c = 0; c < tile_image.colorCount(); c++) {
-                QColor color(tile_image.color(c));
+            for (int c = 0; c < tileImage.colorCount(); c++) {
+                QColor color(tileImage.color(c));
                 color.setAlpha(alpha);
-                tile_image.setColor(c, color.rgba());
+                tileImage.setColor(c, color.rgba());
             }
         }
 
         // Color 0 is displayed as transparent.
-        QColor color(tile_image.color(0));
-        color.setAlpha(0);
-        tile_image.setColor(0, color.rgba());
-        tile.flip(&tile_image);
-        metatile_painter.drawImage(origin, tile_image);
-    }
-    metatile_painter.end();
+        if (tileImage.colorCount()) {
+            QColor color(tileImage.color(0));
+            color.setAlpha(0);
+            tileImage.setColor(0, color.rgba());
+        }
 
-    return metatile_image;
+        tile.flip(&tileImage);
+        painter.drawImage(x * Tile::pixelWidth(), y * Tile::pixelHeight(), tileImage);
+    }
+    painter.end();
+
+    return metatileImage;
 }
 
 QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
@@ -164,15 +149,16 @@ QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondary
 QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette) {
     QImage tileImage = getTileImage(tileId, primaryTileset, secondaryTileset);
     if (tileImage.isNull()) {
-        tileImage = QImage(Tile::pixelWidth(), Tile::pixelHeight(), QImage::Format_RGBA8888);
-        QPainter painter(&tileImage);
-        painter.fillRect(0, 0, tileImage.width(), tileImage.height(), palette.value(0));
+        // Some tiles specify tile IDs or palette IDs that are outside the valid range.
+        // The way the GBA will render these depends on what's in memory (which Porymap can't know)
+        // so we render them using the invalid color
+        tileImage = QImage(Tile::pixelSize(), QImage::Format_RGBA8888);
+        tileImage.fill(getInvalidImageColor());
     } else {
         for (int i = 0; i < 16; i++) {
-            tileImage.setColor(i, palette.value(i));
+            tileImage.setColor(i, palette.value(i, getInvalidImageColor().rgb()));
         }
     }
-
     return tileImage;
 }
 

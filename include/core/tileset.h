@@ -76,12 +76,16 @@ public:
     void addMetatile(Metatile* metatile);
 
     const QList<Metatile*> &metatiles() const { return m_metatiles; }
-    Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
+    const Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
 
     void clearMetatiles();
     void resizeMetatiles(int newNumMetatiles);
     int numMetatiles() const { return m_metatiles.length(); }
     int maxMetatiles() const;
+
+    uint16_t firstMetatileId() const;
+    uint16_t lastMetatileId() const;
+    bool contains(uint16_t metatileId) const { return metatileId >= firstMetatileId() && metatileId <= lastMetatileId(); }
 
     int numTiles() const { return m_tiles.length(); }
     int maxTiles() const;

@@ -94,6 +94,14 @@ void Tileset::resizeMetatiles(int newNumMetatiles) {
     }
 }
 
+uint16_t Tileset::firstMetatileId() const {
+    return this->is_secondary ? Project::getNumMetatilesPrimary() : 0;
+}
+
+uint16_t Tileset::lastMetatileId() const {
+    return firstMetatileId() + qMax(m_metatiles.length(), 1) - 1;
+}
+
 int Tileset::maxMetatiles() const {
     return this->is_secondary ? Project::getNumMetatilesSecondary() : Project::getNumMetatilesPrimary();
 }
@@ -213,16 +221,8 @@ QString Tileset::getMetatileLabelPrefix(const QString &name)
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    if (metatileId >= Project::getNumMetatilesTotal())
-        return false;
-
-    if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->numMetatiles())
-        return false;
-
-    if (metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->numMetatiles())
-        return false;
-
-    return true;
+    return (primaryTileset && primaryTileset->contains(metatileId))
+        || (secondaryTileset && secondaryTileset->contains(metatileId));
 }
 
 QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
@@ -252,10 +252,12 @@ QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset 
     Tileset *tileset = paletteId < Project::getNumPalettesPrimary()
             ? primaryTileset
             : secondaryTileset;
-    auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
+    if (!tileset) {
+        return paletteTable;
+    }
 
-    if (paletteId < 0 || paletteId >= palettes.length()){
-        logError(QString("Invalid tileset palette id '%1' requested.").arg(paletteId));
+    auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
+    if (paletteId < 0 || paletteId >= palettes.length()) {
         return paletteTable;
     }
 
@@ -636,20 +638,20 @@ bool Tileset::savePalettes() {
 
 bool Tileset::load() {
     bool success = true;
+    if (!loadPalettes()) success = false;
+    if (!loadTilesImage()) success = false;
     if (!loadMetatiles()) success = false;
     if (!loadMetatileAttributes()) success = false;
-    if (!loadTilesImage()) success = false;
-    if (!loadPalettes()) success = false;
     return success;
 }
 
 // Because metatile labels are global (and handled by the project) we don't save them here.
 bool Tileset::save() {
     bool success = true;
+    if (!savePalettes()) success = false;
+    if (!saveTilesImage()) success = false;
     if (!saveMetatiles()) success = false;
     if (!saveMetatileAttributes()) success = false;
-    if (!saveTilesImage()) success = false;
-    if (!savePalettes()) success = false;
     return success;
 }
 

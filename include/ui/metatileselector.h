@@ -31,7 +31,7 @@ struct MetatileSelection
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileSelector(int numMetatilesWide, Layout *layout): SelectablePixmapItem(Metatile::pixelWidth(), Metatile::pixelHeight()) {
+    MetatileSelector(int numMetatilesWide, Layout *layout): SelectablePixmapItem(Metatile::pixelSize()) {
         this->externalSelection = false;
         this->prefabSelection = false;
         this->numMetatilesWide = numMetatilesWide;
@@ -41,16 +41,16 @@ public:
         setAcceptHoverEvents(true);
     }
 
-    QPoint getSelectionDimensions() override;
+    QPoint getSelectionDimensions() const override;
     void draw() override;
     void refresh();
 
     bool select(uint16_t metatile);
     void selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
-    MetatileSelection getMetatileSelection();
+    MetatileSelection getMetatileSelection() const { return this->selection; }
     void setPrefabSelection(MetatileSelection selection);
-    void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
-    QPoint getMetatileIdCoordsOnWidget(uint16_t);
+    void setExternalSelection(int, int, const QList<uint16_t>&, const QList<QPair<uint16_t, uint16_t>>&);
+    QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId) const;
     void setLayout(Layout *layout);
     bool isInternalSelection() const { return (!this->externalSelection && !this->prefabSelection); }
 
@@ -79,8 +79,9 @@ private:
     void updateBasePixmap();
     void updateSelectedMetatiles();
     void updateExternalSelectedMetatiles();
-    uint16_t getMetatileId(int x, int y) const;
-    QPoint getMetatileIdCoords(uint16_t);
+    uint16_t posToMetatileId(int x, int y, bool *ok = nullptr) const;
+    uint16_t posToMetatileId(const QPoint &pos, bool *ok = nullptr) const;
+    QPoint metatileIdToPos(uint16_t metatileId, bool *ok = nullptr) const;
     bool positionIsValid(const QPoint &pos) const;
     bool selectionIsValid();
     void hoverChanged();

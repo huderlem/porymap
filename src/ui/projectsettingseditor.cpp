@@ -232,7 +232,7 @@ QList<uint16_t> ProjectSettingsEditor::getBorderMetatileIds(bool customSize) {
         // Custom border size, read metatiles from line edit
         for (auto s : ui->lineEdit_BorderMetatiles->text().split(",")) {
             uint16_t metatileId = s.toUInt(nullptr, 0);
-            metatileIds.append(qMin(metatileId, static_cast<uint16_t>(Project::getNumMetatilesTotal() - 1)));
+            metatileIds.append(qMin(metatileId, Block::getMaxMetatileId()));
         }
     } else {
         // Default border size, read metatiles from spin boxes
@@ -475,11 +475,10 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_PreserveMatchingOnlyData->setChecked(projectConfig.preserveMatchingOnlyData);
 
     // Radio buttons
-    // TODO: Replace
-    /*if (projectConfig.setTransparentPixelsBlack)
+    if (projectConfig.transparencyColor == QColor(Qt::black))
         ui->radioButton_RenderBlack->setChecked(true);
     else
-        ui->radioButton_RenderFirstPalColor->setChecked(true);*/
+        ui->radioButton_RenderFirstPalColor->setChecked(true);
 
     // Set spin box values
     ui->spinBox_Elevation->setValue(projectConfig.defaultElevation);
@@ -575,7 +574,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.tilesetsHaveCallback = ui->checkBox_OutputCallback->isChecked();
     projectConfig.tilesetsHaveIsCompressed = ui->checkBox_OutputIsCompressed->isChecked();
     porymapConfig.warpBehaviorWarningDisabled = ui->checkBox_DisableWarning->isChecked();
-    //projectConfig.setTransparentPixelsBlack = ui->radioButton_RenderBlack->isChecked(); // TODO
+    projectConfig.transparencyColor = ui->radioButton_RenderBlack->isChecked() ? QColor(Qt::black) : QColor();
     projectConfig.preserveMatchingOnlyData = ui->checkBox_PreserveMatchingOnlyData->isChecked();
 
     // Save spin box settings

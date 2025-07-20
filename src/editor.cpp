@@ -1372,8 +1372,10 @@ bool Editor::setLayout(QString layoutId) {
 
     if (this->layout->name != prevLayoutName)
         Scripting::cb_LayoutOpened(this->layout->name);
-    if (this->layout->tileset_primary_label != prevPrimaryTileset || this->layout->tileset_secondary_label != prevSecondaryTileset)
-        Scripting::cb_TilesetsChanged(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
+    if (this->layout->tileset_primary_label != prevPrimaryTileset)
+        Scripting::cb_TilesetUpdated(this->layout->tileset_primary_label);
+    if (this->layout->tileset_secondary_label != prevSecondaryTileset)
+        Scripting::cb_TilesetUpdated(this->layout->tileset_secondary_label);
 
     return true;
 }

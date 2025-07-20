@@ -19,7 +19,7 @@ public:
           selectionOffsetX(0),
           selectionOffsetY(0)
         {}
-    virtual QPoint getSelectionDimensions();
+    virtual QPoint getSelectionDimensions() const;
     virtual void draw() = 0;
 
 protected:
@@ -33,7 +33,8 @@ protected:
     int selectionOffsetY;
 
     QPoint getSelectionStart();
-    void select(int, int, int, int);
+    void select(int x, int y, int width = 0, int height = 0);
+    void select(const QPoint &pos, const QSize &size = QSize(0,0)) { select(pos.x(), pos.y(), size.width(), size.height()); }
     void updateSelection(int, int);
     QPoint getCellPos(QPointF);
     virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;

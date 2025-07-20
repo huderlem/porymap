@@ -241,8 +241,9 @@ void TilesetEditor::initMetatileLayersItem() {
             this, &TilesetEditor::onMetatileLayerTileChanged);
     connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged,
             this, &TilesetEditor::onMetatileLayerSelectionChanged);
-    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileChanged,
-            this, &TilesetEditor::onHoveredTileChanged);
+    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileChanged, [this](const Tile &tile) {
+        onHoveredTileChanged(tile);
+    });
     connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileCleared,
             this, &TilesetEditor::onHoveredTileCleared);
 
@@ -258,8 +259,9 @@ void TilesetEditor::initMetatileLayersItem() {
 void TilesetEditor::initTileSelector()
 {
     this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset, projectConfig.getNumLayersInMetatile());
-    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged,
-            this, &TilesetEditor::onHoveredTileChanged);
+    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged, [this](uint16_t tileId) {
+        onHoveredTileChanged(tileId);
+    });
     connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileCleared,
             this, &TilesetEditor::onHoveredTileCleared);
     connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged,
@@ -453,8 +455,17 @@ void TilesetEditor::queueMetatileReload(uint16_t metatileId) {
     this->metatileReloadQueue.insert(metatileId);
 }
 
-void TilesetEditor::onHoveredTileChanged(uint16_t tile) {
-    this->ui->statusbar->showMessage(QString("Tile: %1").arg(Util::toHexString(tile, 3)));
+void TilesetEditor::onHoveredTileChanged(const Tile &tile) {
+    this->ui->statusbar->showMessage(QString("Tile: %1, Palette: %2%3%4")
+                                        .arg(Util::toHexString(tile.tileId, 3))
+                                        .arg(QString::number(tile.palette))
+                                        .arg(tile.xflip ? ", X-flipped" : "")
+                                        .arg(tile.yflip ? ", Y-flipped" : "")
+                                    );
+}
+
+void TilesetEditor::onHoveredTileChanged(uint16_t tileId) {
+    this->ui->statusbar->showMessage(QString("Tile: %1").arg(Util::toHexString(tileId, 3)));
 }
 
 void TilesetEditor::onHoveredTileCleared() {
@@ -834,7 +845,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
     primarySpinBox->setMinimum(1);
     secondarySpinBox->setMinimum(1);
     primarySpinBox->setMaximum(Project::getNumMetatilesPrimary());
-    secondarySpinBox->setMaximum(Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary());
+    secondarySpinBox->setMaximum(Project::getNumMetatilesSecondary());
     primarySpinBox->setValue(this->primaryTileset->numMetatiles());
     secondarySpinBox->setValue(this->secondaryTileset->numMetatiles());
     form.addRow(new QLabel("Primary Tileset"), primarySpinBox);
@@ -1018,7 +1029,7 @@ void TilesetEditor::importAdvanceMapMetatiles(Tileset *tileset) {
 
     // TODO: This is crude because it makes a history entry for every newly-imported metatile.
     //       Revisit this when tiles and num metatiles are added to tileset editory history.
-    int metatileIdBase = primary ? 0 : Project::getNumMetatilesPrimary();
+    uint16_t metatileIdBase = tileset->firstMetatileId();
     for (int i = 0; i < metatiles.length(); i++) {
         if (i >= tileset->numMetatiles()) {
             break;

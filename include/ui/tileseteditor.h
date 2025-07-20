@@ -62,6 +62,7 @@ private slots:
     void onWindowActivated();
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
+    void onHoveredTileChanged(const Tile&);
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
     void onSelectedTilesChanged();

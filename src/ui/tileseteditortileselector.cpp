@@ -4,7 +4,7 @@
 #include <QPainter>
 #include <QVector>
 
-QPoint TilesetEditorTileSelector::getSelectionDimensions() {
+QPoint TilesetEditorTileSelector::getSelectionDimensions() const {
     if (this->externalSelection) {
         return QPoint(this->externalSelectionWidth, this->externalSelectionHeight);
     } else {

@@ -37,7 +37,8 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
 
 QImage getTileImage(uint16_t, Tileset*, Tileset*);
 QImage getPalettedTileImage(uint16_t, Tileset*, Tileset*, int, bool useTruePalettes = false);
-QImage getGreyscaleTileImage(uint16_t tile, Tileset *primaryTileset, Tileset *secondaryTileset);
+QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette);
+QImage getGreyscaleTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset);
 
 void flattenTo4bppImage(QImage * image);
 

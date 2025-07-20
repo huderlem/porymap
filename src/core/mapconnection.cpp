@@ -76,15 +76,15 @@ QPoint MapConnection::relativePixelPos(bool clipped) const {
     int x = 0, y = 0;
     if (m_direction == "right") {
         if (m_parentMap) x = m_parentMap->pixelWidth();
-        y = m_offset;
+        y = m_offset * Metatile::pixelHeight();
     } else if (m_direction == "down") {
-        x = m_offset;
+        x = m_offset * Metatile::pixelWidth();
         if (m_parentMap) y = m_parentMap->pixelHeight();
     } else if (m_direction == "left") {
         if (targetMap()) x = !clipped ? -targetMap()->pixelWidth() : -targetMap()->getConnectionRect(m_direction).width();
-        y = m_offset;
+        y = m_offset * Metatile::pixelHeight();
     } else if (m_direction == "up") {
-        x = m_offset;
+        x = m_offset * Metatile::pixelWidth();
         if (targetMap()) y = !clipped ? -targetMap()->pixelHeight() : -targetMap()->getConnectionRect(m_direction).height();
     }
     return QPoint(x, y);

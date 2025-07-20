@@ -26,7 +26,7 @@ private:
 signals:
     void tileChanged(int, int);
     void selectedTilesChanged(QPoint, int, int);
-    void hoveredTileChanged(uint16_t);
+    void hoveredTileChanged(const Tile &tile);
     void hoveredTileCleared();
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*);

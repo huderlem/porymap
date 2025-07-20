@@ -1558,9 +1558,8 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
     tileset->loadTilesImage(&tilesImage);
 
     // Create default metatiles
-    const int numMetatiles = tileset->is_secondary ? (Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary()) : Project::getNumMetatilesPrimary();
     const int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
-    for (int i = 0; i < numMetatiles; ++i) {
+    for (int i = 0; i < tileset->maxMetatiles(); ++i) {
         auto metatile = new Metatile();
         for(int j = 0; j < tilesPerMetatile; ++j){
             Tile tile = Tile();

@@ -158,7 +158,6 @@ public:
 
     QPixmap render(bool ignoreCache = false, Layout *fromLayout = nullptr, const QRect &bounds = QRect(0, 0, -1, -1));
     QPixmap renderCollision(bool ignoreCache);
-    // QPixmap renderConnection(MapConnection, Layout *);
     QPixmap renderBorder(bool ignoreCache = false);
 
     QPixmap getLayoutItemPixmap();

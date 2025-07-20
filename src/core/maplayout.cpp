@@ -530,6 +530,7 @@ bool Layout::loadBorder(const QString &root) {
         logError(QString("Failed to load border for %1 from '%2': %3").arg(this->name).arg(path).arg(error));
         return false;
     }
+    this->border = blockdata;
 
     // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
     if (this->border_width <= 0) {
@@ -538,10 +539,6 @@ bool Layout::loadBorder(const QString &root) {
     if (this->border_height <= 0) {
         this->border_height = DEFAULT_BORDER_HEIGHT;
     }
-
-    this->border = blockdata;
-    this->lastCommitBlocks.border = blockdata;
-    this->lastCommitBlocks.borderDimensions = QSize(this->border_width, this->border_height);
 
     int expectedSize = this->border_width * this->border_height;
     if (this->border.count() != expectedSize) {
@@ -553,6 +550,10 @@ bool Layout::loadBorder(const QString &root) {
                 .arg(expectedSize));
         this->border.resize(expectedSize);
     }
+
+    this->lastCommitBlocks.border = this->border;
+    this->lastCommitBlocks.borderDimensions = QSize(this->border_width, this->border_height);
+
     return true;
 }
 
@@ -569,10 +570,7 @@ bool Layout::loadBlockdata(const QString &root) {
         logError(QString("Failed to load blockdata for %1 from '%2': %3").arg(this->name).arg(path).arg(error));
         return false;
     }
-
     this->blockdata = blockdata;
-    this->lastCommitBlocks.blocks = blockdata;
-    this->lastCommitBlocks.layoutDimensions = QSize(this->width, this->height);
 
     int expectedSize = this->width * this->height;
     if (expectedSize <= 0) {
@@ -588,6 +586,10 @@ bool Layout::loadBlockdata(const QString &root) {
                 .arg(expectedSize));
         this->blockdata.resize(expectedSize);
     }
+
+    this->lastCommitBlocks.blocks = this->blockdata;
+    this->lastCommitBlocks.layoutDimensions = QSize(this->width, this->height);
+
     return true;
 }
 

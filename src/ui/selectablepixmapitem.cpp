@@ -1,7 +1,7 @@
 #include "selectablepixmapitem.h"
 #include <QPainter>
 
-QPoint SelectablePixmapItem::getSelectionDimensions()
+QPoint SelectablePixmapItem::getSelectionDimensions() const
 {
     return QPoint(abs(this->selectionOffsetX) + 1, abs(this->selectionOffsetY) + 1);
 }

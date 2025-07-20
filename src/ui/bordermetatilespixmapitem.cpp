@@ -44,11 +44,10 @@ void BorderMetatilesPixmapItem::draw() {
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
+            QImage metatile_image = getMetatileImage(layout->getBorderMetatileId(i, j), layout);
             int x = i * Metatile::pixelWidth();
             int y = j * Metatile::pixelHeight();
-            QImage metatile_image = getMetatileImage(layout->getBorderMetatileId(i, j), layout);
-            QPoint metatile_origin = QPoint(x, y);
-            painter.drawImage(metatile_origin, metatile_image);
+            painter.drawImage(x, y, metatile_image);
         }
     }
 

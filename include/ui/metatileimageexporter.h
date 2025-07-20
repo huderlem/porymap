@@ -89,8 +89,6 @@ private:
     void syncMetatileWidth();
     void validateMetatileStart();
     void validateMetatileEnd();
-    uint16_t getExpectedMetatileStart();
-    uint16_t getExpectedMetatileEnd();
     void updateMetatileRange();
     void copyRenderSettings();
     void restoreRenderSettings();

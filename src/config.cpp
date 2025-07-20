@@ -298,6 +298,9 @@ uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &
 }
 
 QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &value, const QColor &defaultValue) {
+    if (value.isEmpty())
+        return QColor();
+
     QColor color = QColor("#" + value);
     if (!color.isValid()) {
         logWarn(QString("Invalid config value for %1: '%2'. Must be a color in the format 'RRGGBB'. Using default value '%3'.").arg(key).arg(value).arg(defaultValue.name()));
@@ -307,7 +310,7 @@ QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &val
 }
 
 QString KeyValueConfigBase::toConfigColor(const QColor &color) {
-    return color.name().remove("#"); // Our text config treats '#' as the start of a comment.
+    return color.isValid() ? color.name().remove("#") : QString(); // Our text config treats '#' as the start of a comment.
 }
 
 PorymapConfig porymapConfig;

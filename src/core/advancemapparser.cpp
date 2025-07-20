@@ -131,7 +131,7 @@ QList<Metatile*> AdvanceMapParser::parseMetatiles(const QString &filepath, bool 
     }
 
     int attrSize = Metatile::getDefaultAttributesSize(version);
-    int maxMetatiles = primaryTileset ? Project::getNumMetatilesPrimary() : Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary();
+    int maxMetatiles = primaryTileset ? Project::getNumMetatilesPrimary() : Project::getNumMetatilesSecondary();
     int numMetatiles = static_cast<unsigned char>(in.at(0)) |
                                 (static_cast<unsigned char>(in.at(1)) << 8) |
                                 (static_cast<unsigned char>(in.at(2)) << 16) |

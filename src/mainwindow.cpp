@@ -1820,7 +1820,9 @@ void MainWindow::currentMetatilesSelectionChanged() {
     redrawMetatileSelection();
     if (this->tilesetEditor) {
         MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
-        this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+        if (!selection.metatileItems.isEmpty()) {
+            this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+        }
     }
 
     // Don't scroll to internal selections here, it will disrupt the user while they make their selection.
@@ -2603,20 +2605,20 @@ void MainWindow::onTilesetsSaved(QString primaryTilesetLabel, QString secondaryT
     bool updated = false;
     if (primaryTilesetLabel == this->editor->layout->tileset_primary_label) {
         this->editor->updatePrimaryTileset(primaryTilesetLabel, true);
+        Scripting::cb_TilesetUpdated(primaryTilesetLabel);
         updated = true;
     } else {
         this->editor->project->getTileset(primaryTilesetLabel, true);
     }
     if (secondaryTilesetLabel == this->editor->layout->tileset_secondary_label)  {
         this->editor->updateSecondaryTileset(secondaryTilesetLabel, true);
+        Scripting::cb_TilesetUpdated(secondaryTilesetLabel);
         updated = true;
     } else {
         this->editor->project->getTileset(secondaryTilesetLabel, true);
     }
-    if (updated) {
+    if (updated)
         redrawMapScene();
-        Scripting::cb_TilesetsChanged(primaryTilesetLabel, secondaryTilesetLabel);
-    }
 }
 
 void MainWindow::onMapRulerStatusChanged(const QString &status) {

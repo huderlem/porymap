@@ -18,9 +18,9 @@ public:
 
     bool select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
-    uint16_t getSelectedMetatileId();
+    uint16_t getSelectedMetatileId() const { return this->selectedMetatileId; }
     void updateSelectedMetatile();
-    QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId);
+    QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId) const;
 
     QVector<uint16_t> usedMetatiles;
     bool selectorShowUnused = false;
@@ -44,11 +44,12 @@ private:
     int numMetatilesWide;
     int numMetatilesHigh;
     void updateBasePixmap();
-    uint16_t getMetatileId(int x, int y);
-    QPoint getMetatileIdCoords(uint16_t);
+    uint16_t posToMetatileId(int x, int y, bool *ok = nullptr) const;
+    uint16_t posToMetatileId(const QPoint &pos, bool *ok = nullptr) const;
+    QPoint metatileIdToPos(uint16_t metatileId, bool *ok = nullptr) const;
     bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
-    int numRows(int numMetatiles);
-    int numRows();
+    int numRows(int numMetatiles) const;
+    int numRows() const;
     void drawGrid();
     void drawDivider();
     void drawFilters();
