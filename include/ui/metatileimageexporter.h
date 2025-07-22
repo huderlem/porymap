@@ -62,6 +62,12 @@ public:
     explicit MetatileImageExporter(QWidget *parent, Tileset *primaryTileset, Tileset *secondaryTileset, Settings *savedSettings = nullptr);
     ~MetatileImageExporter();
 
+    bool saveImage(QString filepath = QString());
+    QImage getImage();
+    QString getDefaultFileName() const;
+    void applySettings(const Settings &settings);
+    void reset();
+
 protected:
     virtual void showEvent(QShowEvent *) override;
     virtual void closeEvent(QCloseEvent *) override;
@@ -80,11 +86,11 @@ private:
     ProjectConfig m_savedConfig;
     QList<QRadioButton*> m_transparencyButtons;
 
-    void applySettings(const Settings &settings);
+    void populate(const Settings &settings);
     void updatePreview();
     void tryUpdatePreview();
     void queuePreviewUpdate();
-    void updateTilesetUI();
+    void tryEnforceMetatileRange();
     void syncPixelWidth();
     void syncMetatileWidth();
     void validateMetatileStart();
@@ -92,8 +98,6 @@ private:
     void updateMetatileRange();
     void copyRenderSettings();
     void restoreRenderSettings();
-    void saveImage();
-    void reset();
 };
 
 #endif // METATILEIMAGEEXPORTER_H

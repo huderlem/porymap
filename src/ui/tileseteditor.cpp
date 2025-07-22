@@ -43,8 +43,11 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     connect(ui->actionImport_Primary_AdvanceMap_Metatiles,   &QAction::triggered, [this] { importAdvanceMapMetatiles(this->primaryTileset); });
     connect(ui->actionImport_Secondary_AdvanceMap_Metatiles, &QAction::triggered, [this] { importAdvanceMapMetatiles(this->secondaryTileset); });
 
-    connect(ui->actionExport_Primary_Tiles_Image, &QAction::triggered, [this] { exportTilesImage(this->primaryTileset); });
+    connect(ui->actionExport_Primary_Tiles_Image,   &QAction::triggered, [this] { exportTilesImage(this->primaryTileset); });
     connect(ui->actionExport_Secondary_Tiles_Image, &QAction::triggered, [this] { exportTilesImage(this->secondaryTileset); });
+
+    connect(ui->actionExport_Primary_Porytiles_Layer_Images,   &QAction::triggered, [this] { exportPorytilesLayerImages(this->primaryTileset); });
+    connect(ui->actionExport_Secondary_Porytiles_Layer_Images, &QAction::triggered, [this] { exportPorytilesLayerImages(this->secondaryTileset); });
 
     connect(ui->actionExport_Metatiles_Image, &QAction::triggered, [this] { exportMetatilesImage(); });
 
@@ -1007,7 +1010,50 @@ void TilesetEditor::exportMetatilesImage() {
         this->metatileImageExportSettings = new MetatileImageExporter::Settings;
     }
     auto dialog = new MetatileImageExporter(this, this->primaryTileset, this->secondaryTileset, this->metatileImageExportSettings);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->open();
+}
+
+void TilesetEditor::exportPorytilesLayerImages(Tileset *tileset) {
+    QString dir = FileDialog::getExistingDirectory(this, QStringLiteral("Choose Folder to Export Images"));
+    if (dir.isEmpty()) {
+        return;
+    }
+
+    MetatileImageExporter layerExporter(this, this->primaryTileset, this->secondaryTileset);
+    MetatileImageExporter::Settings settings = {};
+    settings.usePrimaryTileset = !tileset->is_secondary;
+    settings.useSecondaryTileset = tileset->is_secondary;
+
+    QMap<QString,QImage> images;
+    QStringList pathCollisions;
+    for (int i = 0; i < 3; i++) {
+        settings.layerOrder.clear();
+        settings.layerOrder[i] = true;
+        layerExporter.applySettings(settings);
+
+        QString filename = layerExporter.getDefaultFileName();
+        QString path = QString("%1/%2").arg(dir).arg(filename);
+        if (QFileInfo::exists(path)) {
+            pathCollisions.append(filename);
+        }
+        images[path] = layerExporter.getImage();
+    }
+
+    if (!pathCollisions.isEmpty()) {
+        QString message = QString("The following files will be overwritten, are you sure you want to export?\n\n%1").arg(pathCollisions.join("\n"));
+        auto reply = QuestionMessage::show(message, this);
+        if (reply != QMessageBox::Yes) {
+            return;
+        }
+    }
+
+    for (auto it = images.constBegin(); it != images.constEnd(); it++) {
+        QString path = it.key();
+        if (!it.value().save(path)) {
+            logError(QString("Failed to save Porytiles layer image '%1'.").arg(path));
+        }
+    }
 }
 
 void TilesetEditor::importAdvanceMapMetatiles(Tileset *tileset) {

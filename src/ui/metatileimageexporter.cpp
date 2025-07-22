@@ -15,7 +15,6 @@ MetatileImageExporter::MetatileImageExporter(QWidget *parent, Tileset *primaryTi
     m_secondaryTileset(secondaryTileset),
     m_savedSettings(savedSettings)
 {
-    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     m_transparencyButtons = {
         ui->radioButton_TransparencyNormal,
@@ -47,15 +46,15 @@ MetatileImageExporter::MetatileImageExporter(QWidget *parent, Tileset *primaryTi
     }
 
     if (m_savedSettings) {
-        applySettings(*m_savedSettings);
+        populate(*m_savedSettings);
     } else {
-        applySettings({});
+        populate({});
     }
     
     connect(ui->listWidget_Layers, &ReorderableListWidget::itemChanged, this, &MetatileImageExporter::updatePreview);
     connect(ui->listWidget_Layers, &ReorderableListWidget::reordered, this, &MetatileImageExporter::updatePreview);
 
-    connect(ui->pushButton_Save,  &QPushButton::pressed, this, &MetatileImageExporter::saveImage);
+    connect(ui->pushButton_Save,  &QPushButton::pressed, [this] { saveImage(); });
     connect(ui->pushButton_Close, &QPushButton::pressed, this, &MetatileImageExporter::close);
     connect(ui->pushButton_Reset, &QPushButton::pressed, this, &MetatileImageExporter::reset);
 
@@ -82,9 +81,9 @@ MetatileImageExporter::MetatileImageExporter(QWidget *parent, Tileset *primaryTi
     connect(ui->radioButton_TransparencyFirst,  &QRadioButton::clicked, this, &MetatileImageExporter::updatePreview);
 
     connect(ui->checkBox_Placeholders,     &QCheckBox::toggled, this, &MetatileImageExporter::updatePreview);
-    connect(ui->checkBox_PrimaryTileset,   &QCheckBox::toggled, this, &MetatileImageExporter::updateTilesetUI);
+    connect(ui->checkBox_PrimaryTileset,   &QCheckBox::toggled, this, &MetatileImageExporter::tryEnforceMetatileRange);
     connect(ui->checkBox_PrimaryTileset,   &QCheckBox::toggled, this, &MetatileImageExporter::updatePreview);
-    connect(ui->checkBox_SecondaryTileset, &QCheckBox::toggled, this, &MetatileImageExporter::updateTilesetUI);
+    connect(ui->checkBox_SecondaryTileset, &QCheckBox::toggled, this, &MetatileImageExporter::tryEnforceMetatileRange);
     connect(ui->checkBox_SecondaryTileset, &QCheckBox::toggled, this, &MetatileImageExporter::updatePreview);
 
     ui->graphicsView_Preview->setFocus();
@@ -128,19 +127,36 @@ void MetatileImageExporter::closeEvent(QCloseEvent *event) {
     QDialog::closeEvent(event);
 }
 
-void MetatileImageExporter::applySettings(const Settings &settings) {
+void MetatileImageExporter::populate(const Settings &settings) {
+    const QSignalBlocker b_MetatileStart(ui->spinBox_MetatileStart);
     ui->spinBox_MetatileStart->setValue(settings.metatileStart);
+
+    const QSignalBlocker b_MetatileEnd(ui->spinBox_MetatileStart);
     ui->spinBox_MetatileEnd->setValue(settings.metatileEnd);
+
+    const QSignalBlocker b_WidthMetatiles(ui->spinBox_MetatileStart);
     ui->spinBox_WidthMetatiles->setValue(settings.numMetatilesWide);
+
+    const QSignalBlocker b_WidthPixels(ui->spinBox_MetatileStart);
     ui->spinBox_WidthPixels->setValue(settings.numMetatilesWide * Metatile::pixelWidth());
+
+    const QSignalBlocker b_PrimaryTileset(ui->spinBox_MetatileStart);
     ui->checkBox_PrimaryTileset->setChecked(settings.usePrimaryTileset);
+
+    const QSignalBlocker b_SecondaryTileset(ui->spinBox_MetatileStart);
     ui->checkBox_SecondaryTileset->setChecked(settings.useSecondaryTileset);
+
+    const QSignalBlocker b_Placeholders(ui->spinBox_MetatileStart);
     ui->checkBox_Placeholders->setChecked(settings.renderPlaceholders);
+
     if (m_transparencyButtons.value(settings.transparencyMode)) {
-        m_transparencyButtons[settings.transparencyMode]->setChecked(true);
+        auto button = m_transparencyButtons[settings.transparencyMode];
+        const QSignalBlocker b_Transparency(button);
+        button->setChecked(true);
     }
 
     // Build layer list from settings
+    const QSignalBlocker b_Layers(ui->listWidget_Layers);
     ui->listWidget_Layers->clear();
     for (auto it = settings.layerOrder.cbegin(); it != settings.layerOrder.cend(); it++) {
         int layerNum = it.key();
@@ -155,45 +171,58 @@ void MetatileImageExporter::applySettings(const Settings &settings) {
     // Don't give extra unnecessary space to the list
     ui->listWidget_Layers->setFixedHeight(ui->listWidget_Layers->sizeHintForRow(0) * ui->listWidget_Layers->count() + 4);
 
-    updateTilesetUI();
+    tryEnforceMetatileRange();
+}
+
+void MetatileImageExporter::applySettings(const Settings &settings) {
+    populate(settings);
+    updatePreview();
 }
 
 void MetatileImageExporter::reset() {
     applySettings({});
-    updatePreview();
 }
 
-void MetatileImageExporter::saveImage() {
-    // Ensure the image in the preview is up-to-date before exporting.
-    updatePreview();
+QImage MetatileImageExporter::getImage() {
+    tryUpdatePreview();
+    return m_preview->pixmap().toImage();
+}
 
-    QString defaultFilename;
+bool MetatileImageExporter::saveImage(QString filepath) {
+    tryUpdatePreview();
+    if (filepath.isEmpty()) {
+        QString defaultFilepath = QString("%1/%2").arg(FileDialog::getDirectory()).arg(getDefaultFileName());
+        filepath = FileDialog::getSaveFileName(this, windowTitle(), defaultFilepath, QStringLiteral("Image Files (*.png *.jpg *.bmp)"));
+        if (filepath.isEmpty()) {
+            return false;
+        }
+    }
+    return m_preview->pixmap().save(filepath);
+}
+
+QString MetatileImageExporter::getDefaultFileName() const {
     if (m_layerOrder.length() == 1) {
         // Exporting a metatile layer image is an expected use case for Porytiles, which expects certain file names.
         // We can make the process a little easier by setting the default file name to those expected file names.
         static const QStringList layerFilenames = { "bottom", "middle", "top" };
-        defaultFilename = (layerFilenames.at(m_layerOrder.constFirst()));
-    } else {
-        if (ui->checkBox_PrimaryTileset->isChecked() && m_primaryTileset) {
-            defaultFilename.append(QString("%1_").arg(Tileset::stripPrefix(m_primaryTileset->name)));
-        }
-        if (ui->checkBox_SecondaryTileset->isChecked() && m_secondaryTileset) {
-            defaultFilename.append(QString("%1_").arg(Tileset::stripPrefix(m_secondaryTileset->name)));
-        }
-        if (!m_layerOrder.isEmpty() && m_layerOrder != QList<int>({0,1,2})) {
-            for (int i = m_layerOrder.length() - 1; i >= 0; i--) {
-                defaultFilename.append(Metatile::getLayerName(m_layerOrder.at(i)));
-            }
-            defaultFilename.append("_");
-        }
-        defaultFilename.append("Metatiles");
+        return layerFilenames.at(m_layerOrder.constFirst()) + ".png";
     }
 
-    QString defaultFilepath = QString("%1/%2.png").arg(FileDialog::getDirectory()).arg(defaultFilename);
-    QString filepath = FileDialog::getSaveFileName(this, windowTitle(), defaultFilepath, QStringLiteral("Image Files (*.png *.jpg *.bmp)"));
-    if (!filepath.isEmpty()) {
-        m_preview->pixmap().save(filepath);
+    QString defaultFilename;
+    if (ui->checkBox_PrimaryTileset->isChecked() && m_primaryTileset) {
+        defaultFilename.append(QString("%1_").arg(Tileset::stripPrefix(m_primaryTileset->name)));
     }
+    if (ui->checkBox_SecondaryTileset->isChecked() && m_secondaryTileset) {
+        defaultFilename.append(QString("%1_").arg(Tileset::stripPrefix(m_secondaryTileset->name)));
+    }
+    if (!m_layerOrder.isEmpty() && m_layerOrder != QList<int>({0,1,2})) {
+        for (int i = m_layerOrder.length() - 1; i >= 0; i--) {
+            defaultFilename.append(Metatile::getLayerName(m_layerOrder.at(i)));
+        }
+        defaultFilename.append("_");
+    }
+    defaultFilename.append("Metatiles.png");
+    return defaultFilename;
 }
 
 void MetatileImageExporter::queuePreviewUpdate() {
@@ -256,22 +285,34 @@ void MetatileImageExporter::validateMetatileEnd() {
 }
 
 void MetatileImageExporter::updateMetatileRange() {
-    Tileset *tileset = nullptr;
-    if (ui->checkBox_PrimaryTileset->isChecked()) {
-        tileset = m_primaryTileset;
-    } else if (ui->checkBox_PrimaryTileset->isChecked()) {
-        tileset = m_secondaryTileset;
-    }
-    if (!tileset)
+    uint16_t min;
+    uint16_t max;
+    if (ui->checkBox_PrimaryTileset->isChecked() && m_primaryTileset) {
+        if (ui->checkBox_SecondaryTileset->isChecked() && m_secondaryTileset) {
+            // Both tilesets enforced
+            min = qMin(m_primaryTileset->firstMetatileId(), m_secondaryTileset->firstMetatileId());
+            max = qMax(m_primaryTileset->lastMetatileId(), m_secondaryTileset->lastMetatileId());
+        } else {
+            // Primary enforced
+            min = m_primaryTileset->firstMetatileId();
+            max = m_primaryTileset->lastMetatileId();
+        }
+    } else if (ui->checkBox_SecondaryTileset->isChecked() && m_secondaryTileset) {
+        // Secondary enforced
+        min = m_secondaryTileset->firstMetatileId();
+        max = m_secondaryTileset->lastMetatileId();
+    } else {
+        // No tilesets enforced
         return;
+    }
 
     const QSignalBlocker b_MetatileStart(ui->spinBox_MetatileStart);
     const QSignalBlocker b_MetatileEnd(ui->spinBox_MetatileEnd);
-    ui->spinBox_MetatileStart->setValue(tileset->firstMetatileId());
-    ui->spinBox_MetatileEnd->setValue(tileset->lastMetatileId());
+    ui->spinBox_MetatileStart->setValue(min);
+    ui->spinBox_MetatileEnd->setValue(max);
 }
 
-void MetatileImageExporter::updateTilesetUI() {
+void MetatileImageExporter::tryEnforceMetatileRange() {
     // Users can either specify which tileset(s) to render, or specify a range of metatiles, but not both.
     if (ui->checkBox_PrimaryTileset->isChecked() || ui->checkBox_SecondaryTileset->isChecked()) {
         updateMetatileRange();

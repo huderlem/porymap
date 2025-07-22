@@ -99,7 +99,7 @@ uint16_t Tileset::firstMetatileId() const {
 }
 
 uint16_t Tileset::lastMetatileId() const {
-    return firstMetatileId() + qMax(m_metatiles.length(), 1) - 1;
+    return qMax(1, firstMetatileId() + m_metatiles.length()) - 1;
 }
 
 int Tileset::maxMetatiles() const {
