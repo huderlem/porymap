@@ -148,7 +148,7 @@ signals:
     void modified();
     void scriptsModified();
     void mapDimensionsChanged(const QSize &size);
-    void openScriptRequested(QString label);
+    void openScriptRequested(const QString &label);
     void connectionAdded(MapConnection*);
     void connectionRemoved(MapConnection*);
     void layoutChanged();

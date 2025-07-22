@@ -27,6 +27,12 @@ extern const QVersionNumber porymapVersion;
 
 #define CONFIG_BACKWARDS_COMPATABILITY
 
+enum ScriptAutocompleteMode {
+    MapOnly,
+    MapAndCommon,
+    All,
+};
+
 class KeyValueConfigBase
 {
 public:
@@ -119,7 +125,7 @@ public:
     QString textEditorGotoLine;
     int paletteEditorBitDepth;
     int projectSettingsTab;
-    bool loadAllEventScripts;
+    ScriptAutocompleteMode scriptAutocompleteMode;
     bool warpBehaviorWarningDisabled;
     bool eventDeleteWarningDisabled;
     bool eventOverlayEnabled;

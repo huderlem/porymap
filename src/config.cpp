@@ -355,7 +355,7 @@ void PorymapConfig::reset() {
     this->textEditorGotoLine = "";
     this->paletteEditorBitDepth = 24;
     this->projectSettingsTab = 0;
-    this->loadAllEventScripts = false;
+    this->scriptAutocompleteMode = ScriptAutocompleteMode::MapOnly;
     this->warpBehaviorWarningDisabled = false;
     this->eventDeleteWarningDisabled = false;
     this->eventOverlayEnabled = false;
@@ -490,8 +490,13 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         }
     } else if (key == "project_settings_tab") {
         this->projectSettingsTab = getConfigInteger(key, value, 0);
+#ifdef CONFIG_BACKWARDS_COMPATABILITY
+    // Old setting replaced by script_autocomplete_mode
     } else if (key == "load_all_event_scripts") {
-        this->loadAllEventScripts = getConfigBool(key, value);
+        this->scriptAutocompleteMode = getConfigBool(key, value) ? ScriptAutocompleteMode::All : ScriptAutocompleteMode::MapOnly;
+#endif
+    } else if (key == "script_autocomplete_mode") {
+        this->scriptAutocompleteMode = static_cast<ScriptAutocompleteMode>(getConfigInteger(key, value, ScriptAutocompleteMode::MapOnly, ScriptAutocompleteMode::All));
     } else if (key == "warp_behavior_warning_disabled") {
         this->warpBehaviorWarningDisabled = getConfigBool(key, value);
     } else if (key == "event_delete_warning_disabled") {
@@ -613,7 +618,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("text_editor_goto_line", this->textEditorGotoLine);
     map.insert("palette_editor_bit_depth", QString::number(this->paletteEditorBitDepth));
     map.insert("project_settings_tab", QString::number(this->projectSettingsTab));
-    map.insert("load_all_event_scripts", QString::number(this->loadAllEventScripts));
+    map.insert("script_autocomplete_mode", QString::number(this->scriptAutocompleteMode));
     map.insert("warp_behavior_warning_disabled", QString::number(this->warpBehaviorWarningDisabled));
     map.insert("event_delete_warning_disabled", QString::number(this->eventDeleteWarningDisabled));
     map.insert("event_overlay_enabled", QString::number(this->eventOverlayEnabled));
