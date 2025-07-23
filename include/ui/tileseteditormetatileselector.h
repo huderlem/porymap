@@ -9,7 +9,7 @@ class Layout;
 class TilesetEditorMetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout);
+    TilesetEditorMetatileSelector(int numMetatilesWide, Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout);
     Layout *layout = nullptr;
 
     void draw() override;
@@ -36,13 +36,12 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
 
 private:
+    const int numMetatilesWide;
     QImage baseImage;
     QPixmap basePixmap;
     Tileset *primaryTileset = nullptr;
     Tileset *secondaryTileset = nullptr;
     uint16_t selectedMetatileId;
-    int numMetatilesWide;
-    int numMetatilesHigh;
     void updateBasePixmap();
     uint16_t posToMetatileId(int x, int y, bool *ok = nullptr) const;
     uint16_t posToMetatileId(const QPoint &pos, bool *ok = nullptr) const;

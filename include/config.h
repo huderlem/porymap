@@ -325,6 +325,7 @@ public:
         this->unusedTileSplit = 0x0000;
         this->maxEventsPerGroup = 255;
         this->forcedMajorVersion = 0;
+        this->metatileSelectorWidth = 8;
         this->globalConstantsFilepaths.clear();
         this->globalConstants.clear();
         this->identifiers.clear();
@@ -404,6 +405,7 @@ public:
     QList<uint32_t> warpBehaviors;
     int maxEventsPerGroup;
     int forcedMajorVersion;
+    int metatileSelectorWidth;
     QStringList globalConstantsFilepaths;
     QMap<QString,QString> globalConstants;
 

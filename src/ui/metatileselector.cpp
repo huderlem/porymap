@@ -213,7 +213,7 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
     // then the metatiles we used to round the primary tileset would have the index of valid secondary metatiles.
     // These need to be ignored, or they'll appear to be duplicates of the subseqeunt secondary metatiles.
     int numPrimaryRounded = numPrimaryMetatilesRounded();
-    int firstSecondaryRow = numPrimaryRounded / qMax(this->numMetatilesWide, 1);
+    int firstSecondaryRow = numPrimaryRounded / this->numMetatilesWide;
     metatileId = static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - numPrimaryRounded);
     if (secondaryTileset() && secondaryTileset()->contains(metatileId) && y >= firstSecondaryRow) {
         return metatileId;
@@ -224,11 +224,6 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
 }
 
 QPoint MetatileSelector::metatileIdToPos(uint16_t metatileId, bool *ok) const {
-    if (this->numMetatilesWide == 0) {
-        if (ok) *ok = false;
-        return QPoint(0,0);
-    }
-
     if (primaryTileset() && primaryTileset()->contains(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId;

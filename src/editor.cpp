@@ -1646,7 +1646,7 @@ void Editor::displayMetatileSelector() {
 
     scene_metatiles = new QGraphicsScene;
     if (!metatile_selector_item) {
-        metatile_selector_item = new MetatileSelector(8, this->layout);
+        metatile_selector_item = new MetatileSelector(projectConfig.metatileSelectorWidth, this->layout);
         connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionChanged,
                 this, &Editor::onHoveredMetatileSelectionChanged);
         connect(metatile_selector_item, &MetatileSelector::hoveredMetatileSelectionCleared,

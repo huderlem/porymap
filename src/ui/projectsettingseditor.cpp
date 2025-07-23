@@ -161,6 +161,7 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_PlayerViewDistance_North->setMaximum(INT_MAX);
     ui->spinBox_PlayerViewDistance_East->setMaximum(INT_MAX);
     ui->spinBox_PlayerViewDistance_South->setMaximum(INT_MAX);
+    ui->spinBox_MetatileSelectorWidth->setMaximum(maxMetatileId + 1);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -503,6 +504,7 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_PlayerViewDistance_North->setValue(projectConfig.playerViewDistance.top());
     ui->spinBox_PlayerViewDistance_East->setValue(projectConfig.playerViewDistance.right());
     ui->spinBox_PlayerViewDistance_South->setValue(projectConfig.playerViewDistance.bottom());
+    ui->spinBox_MetatileSelectorWidth->setValue(projectConfig.metatileSelectorWidth);
 
     // Set (and sync) border metatile IDs
     this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
@@ -598,6 +600,7 @@ void ProjectSettingsEditor::save() {
                                                 ui->spinBox_PlayerViewDistance_North->value(),
                                                 ui->spinBox_PlayerViewDistance_East->value(),
                                                 ui->spinBox_PlayerViewDistance_South->value());
+    projectConfig.metatileSelectorWidth = ui->spinBox_MetatileSelectorWidth->value();
 
     // Save line edit settings
     projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();

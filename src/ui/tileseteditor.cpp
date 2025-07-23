@@ -215,7 +215,7 @@ void TilesetEditor::setRawAttributesVisible(bool visible) {
 
 void TilesetEditor::initMetatileSelector()
 {
-    this->metatileSelector = new TilesetEditorMetatileSelector(this->primaryTileset, this->secondaryTileset, this->layout);
+    this->metatileSelector = new TilesetEditorMetatileSelector(projectConfig.metatileSelectorWidth, this->primaryTileset, this->secondaryTileset, this->layout);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,
             this, &TilesetEditor::onHoveredMetatileChanged);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,

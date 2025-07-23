@@ -31,10 +31,12 @@ struct MetatileSelection
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileSelector(int numMetatilesWide, Layout *layout): SelectablePixmapItem(Metatile::pixelSize()) {
+    MetatileSelector(int numMetatilesWide, Layout *layout)
+        : SelectablePixmapItem(Metatile::pixelSize()),
+          numMetatilesWide(qMax(numMetatilesWide, 1))
+    {
         this->externalSelection = false;
         this->prefabSelection = false;
-        this->numMetatilesWide = numMetatilesWide;
         this->layout = layout;
         this->selection = MetatileSelection{};
         this->cellPos = QPoint(-1, -1);
@@ -65,10 +67,10 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
     void drawSelection() override;
 private:
+    const int numMetatilesWide;
     QPixmap basePixmap;
     bool externalSelection;
     bool prefabSelection;
-    int numMetatilesWide;
     Layout *layout;
     int externalSelectionWidth;
     int externalSelectionHeight;

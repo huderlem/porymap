@@ -1007,6 +1007,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->maxEventsPerGroup = getConfigInteger(key, value, 1, INT_MAX, 255);
     } else if (key == "forced_major_version") {
         this->forcedMajorVersion = getConfigInteger(key, value);
+    } else if (key == "metatile_selector_width") {
+        this->metatileSelectorWidth = getConfigInteger(key, value, 1, INT_MAX, 8);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
     }
@@ -1116,6 +1118,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
     map.insert("max_events_per_group", QString::number(this->maxEventsPerGroup));
     map.insert("forced_major_version", QString::number(this->forcedMajorVersion));
+    map.insert("metatile_selector_width", QString::number(this->metatileSelectorWidth));
 
     return map;
 }

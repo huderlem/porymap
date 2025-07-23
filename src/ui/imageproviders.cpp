@@ -191,7 +191,7 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
                              const QSize &metatileSize,
                              bool useTruePalettes)
 {
-    if (metatileIdEnd < metatileIdStart || numMetatilesWide == 0)
+    if (metatileIdEnd < metatileIdStart || numMetatilesWide <= 0)
         return QImage();
 
     int numMetatilesToDraw = metatileIdEnd - metatileIdStart + 1;

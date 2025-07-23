@@ -52,7 +52,7 @@ public:
         };
         uint16_t metatileStart = 0;
         uint16_t metatileEnd = 0xFFFF;
-        uint16_t numMetatilesWide = 8;
+        uint16_t numMetatilesWide = projectConfig.metatileSelectorWidth;
         bool usePrimaryTileset = true;
         bool useSecondaryTileset = false;
         bool renderPlaceholders = false;
