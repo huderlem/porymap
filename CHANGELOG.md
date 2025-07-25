@@ -6,22 +6,35 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ## [Unreleased]
 ### Added
+- Add an `Export Metatiles Image` option to the Tileset Editor that provides many more options for customizing metatile images.
+- Add an `Export Porytiles Layer Images` option to the Tileset Editor, which is a shortcut for individually exporting layer images that Porytiles can use.
 - Add an option under `Preferences` to include common scripts in the autocomplete for Script labels.
+- Add a setting under `Project Settings` to change the width of the metatile selectors.
+- Add versions of the API functions `[get|set]MetatileLayerOrder` and `[get|set]MetatileLayerOpacity` that work globally, rather than on individual layouts.
 - A link to Porymap's manual is now available under `Help`.
 
 ### Changed
+- The Player View Rectangle is now visible on the Events tab, as is the Cursor Tile Outline for certain tools.
+- When hovering over tiles in the Tileset Editor their palette and x/yflip are now listed alongside the tile ID.
 - The scroll position of the map view now remains the same between the Connections tab and the Map/Events tabs.
 - The Move tool now behaves more like a traditional pan tool (with no momentum).
-- The Player View Rectangle is now visible on the Events tab, as is the Cursor Tile Outline for certain tools.
+- The map image exporter now uses a checkered background to indicate transparency.
 
 ### Fixed
+- Fix crash when rendering tiles with invalid palette numbers.
+- Fix crash when opening the Tileset Editor for tilesets with no metatiles.
 - Fix metatile images exporting at 2x scale.
+- Fix display errors when a project's metatile limits are not divisible by 8.
+- Fix incorrect dividing line position for primary tiles images that are smaller than the maximum size.
+- Fix the checkered background of the `Change Dimensions` popup shifting while scrolling around.
 - Fix pasting Wild Pokémon data then changing maps resetting the pasted data.
 - Fix click-drag map selections behaving unexpectedly when the cursor is outside the map grid.
 - Fix events being dragged in negative coordinates lagging behind the cursor.
 - Fix the shortcut for duplicating events working while on the Connections tab.
+- Fix Undo/Redo ignoring the automatic resizing that occurs if a layout/border was an unexpected size.
 - Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
 - Fix warning not appearing when the log file exceeds maximum size.
+- Fix possible lag while using the Tileset Editor's tile selector.
 - Fix unnecessary resources being used to watch files.
 
 ## [6.1.0] - 2025-06-09
