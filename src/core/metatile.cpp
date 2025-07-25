@@ -48,7 +48,7 @@ QString Metatile::getMetatileIdString(uint16_t metatileId) {
     return Util::toHexString(metatileId, numMetatileIdChars);
 };
 
-QString Metatile::getMetatileIdStrings(const QList<uint16_t> metatileIds) {
+QString Metatile::getMetatileIdStrings(const QList<uint16_t> &metatileIds) {
     QStringList metatiles;
     for (auto metatileId : metatileIds)
         metatiles << Metatile::getMetatileIdString(metatileId);

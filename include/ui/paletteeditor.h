@@ -2,10 +2,12 @@
 #define PALETTEEDITOR_H
 
 #include <QMainWindow>
+#include <QPointer>
 
 #include "colorinputwidget.h"
 #include "project.h"
 #include "history.h"
+#include "palettecolorsearch.h"
 
 namespace Ui {
 class PaletteEditor;
@@ -32,27 +34,31 @@ public:
 
     bool showingUnusedColors() const;
 
+signals:
+    void metatileSelected(uint16_t metatileId);
+
 private:
     Ui::PaletteEditor *ui;
-    Project *project = nullptr;
-    QList<ColorInputWidget*> colorInputs;
-
+    Project *project;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
 
+    QList<ColorInputWidget*> colorInputs;
     QList<History<PaletteHistoryItem*>> palettesHistory;
     QMap<int,QSet<int>> unusedColorCache;
+    QPointer<PaletteColorSearch> colorSearchWindow;
 
     Tileset* getTileset(int paletteId) const;
     void refreshColorInputs();
+    void refreshPaletteId();
     void commitEditHistory();
     void commitEditHistory(int paletteId);
     void restoreWindowState();
-    void onWindowActivated();
     void invalidateCache();
     void closeEvent(QCloseEvent*);
     void setColorInputTitles(bool show);
-    QSet<int> getUnusedColorIds() const;
+    QSet<int> getUnusedColorIds();
+    void openColorSearch();
 
     void setRgb(int index, QRgb rgb);
     void setPalette(int paletteId, const QList<QRgb> &palette);
@@ -67,7 +73,6 @@ signals:
     void changedPaletteColor();
     void changedPalette(int);
 private slots:
-    void on_spinBox_PaletteId_valueChanged(int arg1);
     void on_actionUndo_triggered();
     void on_actionRedo_triggered();
     void on_actionImport_Palette_triggered();

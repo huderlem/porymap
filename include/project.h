@@ -104,12 +104,11 @@ public:
     bool load();
 
     QMap<QString, Tileset*> tilesetCache;
-    Tileset* loadTileset(QString, Tileset *tileset = nullptr);
-    Tileset* getTileset(QString, bool forceLoad = false);
+    Tileset* getTileset(const QString&, bool forceLoad = false);
     QStringList primaryTilesetLabels;
     QStringList secondaryTilesetLabels;
     QStringList tilesetLabelsOrdered;
-    QSet<QString> getPairedTilesetLabels(Tileset *tileset) const;
+    QSet<QString> getPairedTilesetLabels(const Tileset *tileset) const;
 
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);
@@ -343,6 +342,7 @@ private:
     void resetFileCache();
     void resetFileWatcher();
     void logFileWatchStatus();
+    void cacheTileset(const QString &label, Tileset *tileset);
 
     bool saveMapLayouts();
     bool saveMapGroups();

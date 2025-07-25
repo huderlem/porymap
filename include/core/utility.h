@@ -16,6 +16,7 @@ namespace Util {
     QString replaceExtension(const QString &path, const QString &newExtension);
     void setErrorStylesheet(QLineEdit *lineEdit, bool isError);
     QString toStylesheetString(const QFont &font);
+    void show(QWidget *w);
 }
 
 #endif // UTILITY_H

@@ -6,20 +6,19 @@
 #include "filedialog.h"
 #include "message.h"
 #include "eventfilters.h"
+#include "utility.h"
 
 
 PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::PaletteEditor)
+    ui(new Ui::PaletteEditor),
+    project(project),
+    primaryTileset(primaryTileset),
+    secondaryTileset(secondaryTileset)
 {
-    this->project = project;
-    this->primaryTileset = primaryTileset;
-    this->secondaryTileset = secondaryTileset;
+    setAttribute(Qt::WA_DeleteOnClose);
     this->ui->setupUi(this);
-    this->ui->spinBox_PaletteId->setMinimum(0);
-    this->ui->spinBox_PaletteId->setMaximum(Project::getNumPalettesTotal() - 1);
 
-    this->colorInputs.clear();
     const int numColorsPerRow = 4;
     for (int i = 0; i < this->numColors; i++) {
         auto colorInput = new ColorInputWidget;
@@ -43,33 +42,40 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     setBitDepth(bitDepth);
 
     // Connect bit depth buttons
-    connect(this->ui->bit_depth_15, &QRadioButton::toggled, [this](bool checked){ if (checked) this->setBitDepth(15); });
-    connect(this->ui->bit_depth_24, &QRadioButton::toggled, [this](bool checked){ if (checked) this->setBitDepth(24); });
+    connect(this->ui->bit_depth_15, &QRadioButton::toggled, [this](bool checked){ if (checked) setBitDepth(15); });
+    connect(this->ui->bit_depth_24, &QRadioButton::toggled, [this](bool checked){ if (checked) setBitDepth(24); });
 
     this->ui->actionShow_Unused_Colors->setChecked(porymapConfig.showPaletteEditorUnusedColors);
     connect(this->ui->actionShow_Unused_Colors, &QAction::toggled, this, &PaletteEditor::setColorInputTitles);
 
+    connect(this->ui->toolButton_ColorSearch, &QToolButton::clicked, this, &PaletteEditor::openColorSearch);
+    connect(this->ui->actionFind_Color_Usage, &QAction::triggered, this, &PaletteEditor::openColorSearch);
+
+    // Rather than try to keep track of metatile/tile changes that affect which colors are used,
+    // we'll just refresh when the window is activated.
     ActiveWindowFilter *filter = new ActiveWindowFilter(this);
-    connect(filter, &ActiveWindowFilter::activated, this, &PaletteEditor::onWindowActivated);
+    connect(filter, &ActiveWindowFilter::activated, this, &PaletteEditor::invalidateCache);
     this->installEventFilter(filter);
 
-    this->setPaletteId(paletteId);
-    this->commitEditHistory();
-    this->restoreWindowState();
+    this->ui->spinBox_PaletteId->setRange(0, Project::getNumPalettesTotal() - 1);
+    this->ui->spinBox_PaletteId->setValue(paletteId);
+    connect(this->ui->spinBox_PaletteId, QOverload<int>::of(&QSpinBox::valueChanged), this, &PaletteEditor::refreshPaletteId);
+    connect(this->ui->spinBox_PaletteId, QOverload<int>::of(&QSpinBox::valueChanged), this, &PaletteEditor::changedPalette);
+
+    refreshPaletteId();
+    restoreWindowState();
 }
 
 PaletteEditor::~PaletteEditor() {
     delete ui;
 }
 
-void PaletteEditor::onWindowActivated() {
-    // Rather than try to keep track of metatile/tile changes that affect which colors are used,
-    // we'll just refresh when the window is activated.
-    invalidateCache();
-}
-
 int PaletteEditor::currentPaletteId() const {
     return ui->spinBox_PaletteId->value();
+}
+
+void PaletteEditor::setPaletteId(int paletteId) {
+    ui->spinBox_PaletteId->setValue(paletteId);
 }
 
 bool PaletteEditor::showingUnusedColors() const {
@@ -77,9 +83,7 @@ bool PaletteEditor::showingUnusedColors() const {
 }
 
 Tileset* PaletteEditor::getTileset(int paletteId) const {
-    return (paletteId < Project::getNumPalettesPrimary())
-          ? this->primaryTileset
-          : this->secondaryTileset;
+    return Tileset::getPaletteTileset(paletteId, this->primaryTileset, this->secondaryTileset);
 }
 
 void PaletteEditor::setBitDepth(int bits) {
@@ -95,7 +99,6 @@ void PaletteEditor::setRgb(int colorIndex, QRgb rgb) {
     Tileset *tileset = getTileset(paletteId);
     tileset->palettes[paletteId][colorIndex] = rgb;
     tileset->palettePreviews[paletteId][colorIndex] = rgb;
-
     emit changedPaletteColor();
 }
 
@@ -120,25 +123,26 @@ void PaletteEditor::refreshColorInputs() {
     setColorInputTitles(showingUnusedColors());
 }
 
-void PaletteEditor::setPaletteId(int paletteId) {
-    const QSignalBlocker b(ui->spinBox_PaletteId);
-    this->ui->spinBox_PaletteId->setValue(paletteId);
-    this->refreshColorInputs();
+void PaletteEditor::refreshPaletteId() {
+    refreshColorInputs();
+
+    int paletteId = currentPaletteId();
+    if (!this->palettesHistory[paletteId].current()) {
+        commitEditHistory(paletteId);
+    }
+    if (this->colorSearchWindow) {
+        this->colorSearchWindow->setPaletteId(paletteId);
+    }
 }
 
 void PaletteEditor::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
-    this->invalidateCache();
-    this->refreshColorInputs();
-}
-
-void PaletteEditor::on_spinBox_PaletteId_valueChanged(int paletteId) {
-    this->refreshColorInputs();
-    if (!this->palettesHistory[paletteId].current()) {
-        this->commitEditHistory(paletteId);
+    invalidateCache();
+    if (this->colorSearchWindow) {
+        this->colorSearchWindow->setTilesets(primaryTileset, secondaryTileset);
     }
-    emit this->changedPalette(paletteId);
+    refreshColorInputs();
 }
 
 void PaletteEditor::commitEditHistory() {
@@ -157,8 +161,8 @@ void PaletteEditor::commitEditHistory(int paletteId) {
 void PaletteEditor::restoreWindowState() {
     logInfo("Restoring palette editor geometry from previous session.");
     QMap<QString, QByteArray> geometry = porymapConfig.getPaletteEditorGeometry();
-    this->restoreGeometry(geometry.value("palette_editor_geometry"));
-    this->restoreState(geometry.value("palette_editor_state"));
+    restoreGeometry(geometry.value("palette_editor_geometry"));
+    restoreState(geometry.value("palette_editor_state"));
 }
 
 void PaletteEditor::on_actionUndo_triggered() {
@@ -195,6 +199,16 @@ void PaletteEditor::on_actionImport_Palette_triggered() {
     commitEditHistory(paletteId);
 }
 
+void PaletteEditor::openColorSearch() {
+    if (!this->colorSearchWindow) {
+        this->colorSearchWindow = new PaletteColorSearch(this->project, this->primaryTileset, this->secondaryTileset, this);
+        this->colorSearchWindow->setPaletteId(currentPaletteId());
+        connect(this->colorSearchWindow, &PaletteColorSearch::metatileSelected, this, &PaletteEditor::metatileSelected);
+        connect(this->colorSearchWindow, &PaletteColorSearch::paletteIdChanged, this, &PaletteEditor::setPaletteId);
+    }
+    Util::show(this->colorSearchWindow);
+}
+
 void PaletteEditor::invalidateCache() {
     this->unusedColorCache.clear();
     if (showingUnusedColors()) {
@@ -202,7 +216,7 @@ void PaletteEditor::invalidateCache() {
     }
 }
 
-QSet<int> PaletteEditor::getUnusedColorIds() const {
+QSet<int> PaletteEditor::getUnusedColorIds() {
     const int paletteId = currentPaletteId();
 
     if (this->unusedColorCache.contains(paletteId)) {
@@ -256,7 +270,7 @@ void PaletteEditor::setColorInputTitles(bool showUnused) {
 
 void PaletteEditor::closeEvent(QCloseEvent*) {
     porymapConfig.setPaletteEditorGeometry(
-        this->saveGeometry(),
-        this->saveState()
+        saveGeometry(),
+        saveState()
     );
 }

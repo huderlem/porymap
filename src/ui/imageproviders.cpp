@@ -12,14 +12,14 @@ QImage getCollisionMetatileImage(int collision, int elevation) {
     return image ? *image : QImage();
 }
 
-QImage getMetatileImage(uint16_t metatileId, Layout *layout, bool useTruePalettes) {
+QImage getMetatileImage(uint16_t metatileId, const Layout *layout, bool useTruePalettes) {
     Metatile* metatile = Tileset::getMetatile(metatileId,
                                               layout ? layout->tileset_primary : nullptr,
                                               layout ? layout->tileset_secondary : nullptr);
     return getMetatileImage(metatile, layout, useTruePalettes);
 }
 
-QImage getMetatileImage(Metatile *metatile, Layout *layout, bool useTruePalettes) {
+QImage getMetatileImage(const Metatile *metatile, const Layout *layout, bool useTruePalettes) {
     if (!layout) {
         return getMetatileImage(metatile, nullptr, nullptr, {}, {}, useTruePalettes);
     }
@@ -33,8 +33,8 @@ QImage getMetatileImage(Metatile *metatile, Layout *layout, bool useTruePalettes
 
 QImage getMetatileImage(
         uint16_t metatileId,
-        Tileset *primaryTileset,
-        Tileset *secondaryTileset,
+        const Tileset *primaryTileset,
+        const Tileset *secondaryTileset,
         const QList<int> &layerOrder,
         const QList<float> &layerOpacity,
         bool useTruePalettes)
@@ -54,9 +54,9 @@ QColor getInvalidImageColor() {
 }
 
 QImage getMetatileImage(
-        Metatile *metatile,
-        Tileset *primaryTileset,
-        Tileset *secondaryTileset,
+        const Metatile *metatile,
+        const Tileset *primaryTileset,
+        const Tileset *secondaryTileset,
         const QList<int> &layerOrder,
         const QList<float> &layerOpacity,
         bool useTruePalettes)
@@ -146,7 +146,7 @@ QImage getTileImage(uint16_t tileId, const Tileset *primaryTileset, const Tilese
     return tileset ? tileset->tileImage(tileId) : QImage();
 }
 
-QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette) {
+QImage getColoredTileImage(uint16_t tileId, const Tileset *primaryTileset, const Tileset *secondaryTileset, const QList<QRgb> &palette) {
     QImage tileImage = getTileImage(tileId, primaryTileset, secondaryTileset);
     if (tileImage.isNull()) {
         // Some tiles specify tile IDs or palette IDs that are outside the valid range.
@@ -162,12 +162,12 @@ QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *se
     return tileImage;
 }
 
-QImage getPalettedTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, int paletteId, bool useTruePalettes) {
+QImage getPalettedTileImage(uint16_t tileId, const Tileset *primaryTileset, const Tileset *secondaryTileset, int paletteId, bool useTruePalettes) {
     QList<QRgb> palette = Tileset::getPalette(paletteId, primaryTileset, secondaryTileset, useTruePalettes);
     return getColoredTileImage(tileId, primaryTileset, secondaryTileset, palette);
 }
 
-QImage getGreyscaleTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+QImage getGreyscaleTileImage(uint16_t tileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
     return getColoredTileImage(tileId, primaryTileset, secondaryTileset, greyscalePalette);
 }
 
@@ -181,8 +181,8 @@ void flattenTo4bppImage(QImage * image) {
 }
 
 // Constructs a grid image of the metatiles in the specified ID range.
-QImage getMetatileSheetImage(Tileset *primaryTileset,
-                             Tileset *secondaryTileset,
+QImage getMetatileSheetImage(const Tileset *primaryTileset,
+                             const Tileset *secondaryTileset,
                              uint16_t metatileIdStart,
                              uint16_t metatileIdEnd,
                              int numMetatilesWide,
@@ -219,15 +219,15 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
 // Constructs a grid image of the metatiles in the primary and secondary tileset,
 // rounding as necessary to keep the two tilesets on separate rows.
 // The unused metatiles (if any) between the primary and secondary tilesets are skipped.
-QImage getMetatileSheetImage(Tileset *primaryTileset,
-                             Tileset *secondaryTileset,
+QImage getMetatileSheetImage(const Tileset *primaryTileset,
+                             const Tileset *secondaryTileset,
                              int numMetatilesWide,
                              const QList<int> &layerOrder,
                              const QList<float> &layerOpacity,
                              const QSize &metatileSize,
                              bool useTruePalettes)
 {
-    auto createSheetImage = [=](uint16_t start, Tileset *tileset) {
+    auto createSheetImage = [=](uint16_t start, const Tileset *tileset) {
         uint16_t end = start;
         if (tileset) {
             if (tileset->numMetatiles() == 0)
@@ -259,7 +259,7 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
     return image;
 }
 
-QImage getMetatileSheetImage(Layout *layout, int numMetatilesWide, bool useTruePalettes) {
+QImage getMetatileSheetImage(const Layout *layout, int numMetatilesWide, bool useTruePalettes) {
     if (!layout)
         return QImage();
     return getMetatileSheetImage(layout->tileset_primary,

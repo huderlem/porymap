@@ -385,7 +385,6 @@ private:
     void openDuplicateMapOrLayoutDialog();
     void openNewMapGroupDialog();
     void openNewLocationDialog();
-    void openSubWindow(QWidget * window);
     void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
     void scrollMapListToCurrentLayout(MapTree *list);

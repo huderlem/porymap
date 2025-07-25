@@ -186,6 +186,8 @@ bool Project::load() {
     this->parser.setUpdatesSplashScreen(true);
     resetFileWatcher();
     resetFileCache();
+    QPixmapCache::clear();
+
     this->disabledSettingsNames.clear();
     bool success = readGlobalConstants()
                 && readMapLayouts()
@@ -271,6 +273,17 @@ void Project::clearMaps() {
 void Project::clearTilesetCache() {
     qDeleteAll(this->tilesetCache);
     this->tilesetCache.clear();
+}
+
+void Project::cacheTileset(const QString &name, Tileset *tileset) {
+    auto it = this->tilesetCache.constFind(name);
+    if (it != this->tilesetCache.constEnd() && it.value() && tileset != it.value()) {
+        // Callers of this function should ensure this doesn't happen,
+        // but in case it does we should avoid leaking memory.
+        logWarn(QString("New tileset %1 overwrote existing tileset.").arg(name));
+        delete it.value();
+    }
+    this->tilesetCache.insert(name, tileset);
 }
 
 Map* Project::loadMap(const QString &mapName) {
@@ -1180,7 +1193,21 @@ bool Project::loadLayoutTilesets(Layout *layout) {
     return layout->tileset_primary && layout->tileset_secondary;
 }
 
-Tileset* Project::loadTileset(QString label, Tileset *tileset) {
+Tileset* Project::getTileset(const QString &label, bool forceLoad) {
+    Tileset *tileset = nullptr;
+
+    auto it = this->tilesetCache.constFind(label);
+    if (it != this->tilesetCache.constEnd()) {
+        tileset = it.value();
+        if (!forceLoad) {
+            return tileset;
+        }
+    } else {
+        // Create a cache entry even if we don't end up loading the tileset successfully.
+        // This will prevent repeated file reads if the tileset fails to load.
+        cacheTileset(label, nullptr);
+    }
+
     auto memberMap = Tileset::getHeaderMemberMap(this->usingAsmTilesets);
     if (this->usingAsmTilesets) {
         // Read asm tileset header. Backwards compatibility
@@ -1225,7 +1252,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         return nullptr;
     }
 
-    tilesetCache.insert(label, tileset);
+    cacheTileset(tileset->name, tileset);
     return tileset;
 }
 
@@ -1617,15 +1644,14 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
         metatilesFilepath.append(projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
     }
     ignoreWatchedFilesTemporarily({headersFilepath, graphicsFilepath, metatilesFilepath});
-    name = Tileset::stripPrefix(name);
-    tileset->appendToHeaders(headersFilepath, name, this->usingAsmTilesets);
-    tileset->appendToGraphics(graphicsFilepath, name, this->usingAsmTilesets);
-    tileset->appendToMetatiles(metatilesFilepath, name, this->usingAsmTilesets);
+    QString baseName = Tileset::stripPrefix(name);
+    tileset->appendToHeaders(headersFilepath, baseName, this->usingAsmTilesets);
+    tileset->appendToGraphics(graphicsFilepath, baseName, this->usingAsmTilesets);
+    tileset->appendToMetatiles(metatilesFilepath, baseName, this->usingAsmTilesets);
 
     tileset->save();
 
-    this->tilesetCache.insert(tileset->name, tileset);
-
+    cacheTileset(tileset->name, tileset);
     emit tilesetCreated(tileset);
     return tileset;
 }
@@ -1677,20 +1703,6 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     for (auto it = this->metatileLabelsMap[tileset->name].constBegin(); it != this->metatileLabelsMap[tileset->name].constEnd(); it++) {
         QString labelName = it.key();
         tileset->metatileLabels[it.value()] = labelName.replace(metatileLabelPrefix, "");
-    }
-}
-
-Tileset* Project::getTileset(QString label, bool forceLoad) {
-    Tileset *existingTileset = nullptr;
-    if (tilesetCache.contains(label)) {
-        existingTileset = tilesetCache.value(label);
-    }
-
-    if (existingTileset && !forceLoad) {
-        return existingTileset;
-    } else {
-        Tileset *tileset = loadTileset(label, existingTileset);
-        return tileset;
     }
 }
 
@@ -2266,6 +2278,7 @@ bool Project::readTilesetLabels() {
     this->primaryTilesetLabels.clear();
     this->secondaryTilesetLabels.clear();
     this->tilesetLabelsOrdered.clear();
+    clearTilesetCache();
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
     QFileInfo fileInfo(this->root + "/" + filename);
@@ -3520,7 +3533,7 @@ bool Project::hasUnsavedChanges() {
 }
 
 // Searches the project's map layouts to find the names of the tilesets that the provided tileset gets paired with.
-QSet<QString> Project::getPairedTilesetLabels(Tileset *tileset) const {
+QSet<QString> Project::getPairedTilesetLabels(const Tileset *tileset) const {
     QSet<QString> pairedLabels;
     for (const auto &layout : this->mapLayouts) {
         if (tileset->is_secondary) {
