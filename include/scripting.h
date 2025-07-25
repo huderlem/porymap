@@ -51,7 +51,7 @@ public:
     static void cb_MapResized(int oldWidth, int oldHeight, const QMargins &delta);
     static void cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
     static void cb_MapShifted(int xDelta, int yDelta);
-    static void cb_TilesetUpdated(QString tilesetName);
+    static void cb_TilesetUpdated(const QString &tilesetName);
     static void cb_MainTabChanged(int oldTab, int newTab);
     static void cb_MapViewTabChanged(int oldTab, int newTab);
     static void cb_BorderVisibilityToggled(bool visible);

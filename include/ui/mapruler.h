@@ -3,6 +3,7 @@
 
 #include <QGraphicsObject>
 #include <QLine>
+#include "metatile.h"
 
 
 class MapRuler : public QGraphicsObject, private QLine
@@ -63,8 +64,8 @@ private:
     QPoint snapToWithinBounds(QPoint pos) const;
     void updateGeometry();
     void updateStatus(Qt::Corner corner);
-    int pixWidth() const { return width() * 16; } 
-    int pixHeight() const { return height() * 16; }
+    int pixWidth() const { return width() * Metatile::pixelWidth(); } 
+    int pixHeight() const { return height() * Metatile::pixelHeight(); }
 };
 
 #endif // MAPRULER_H

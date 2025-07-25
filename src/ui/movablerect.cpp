@@ -5,16 +5,17 @@
 #include "movablerect.h"
 #include "utility.h"
 
-MovableRect::MovableRect(const QRectF &rect, const QRgb &color)
+MovableRect::MovableRect(const QRectF &rect, const QSize &cellSize, const QRgb &color)
   : QGraphicsRectItem(rect),
     baseRect(rect),
+    cellSize(cellSize),
     color(color)
 { }
 
 /// Center rect on grid position (x, y)
 void MovableRect::updateLocation(int x, int y) {
-    setRect(this->baseRect.x() + (x * 16),
-            this->baseRect.y() + (y * 16),
+    setRect(this->baseRect.x() + (x * this->cellSize.width()),
+            this->baseRect.y() + (y * this->cellSize.height()),
             this->baseRect.width(),
             this->baseRect.height());
 }
@@ -24,9 +25,9 @@ void MovableRect::updateLocation(int x, int y) {
     ************************************************************************
  ******************************************************************************/
 
-ResizableRect::ResizableRect(QObject *parent, int width, int height, QRgb color)
+ResizableRect::ResizableRect(QObject *parent, const QSize &cellSize, const QSize &size, const QRgb &color)
   : QObject(parent),
-    MovableRect(QRect(0, 0, width * 16, height * 16), color)
+    MovableRect(QRect(0, 0, size.width(), size.height()), cellSize, color)
 {
     setAcceptHoverEvents(true);
     setFlags(this->flags() | QGraphicsItem::ItemIsMovable);
@@ -114,8 +115,8 @@ void ResizableRect::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void ResizableRect::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    int dx = Util::roundUp(event->scenePos().x() - this->clickedPos.x(), 16);
-    int dy = Util::roundUp(event->scenePos().y() - this->clickedPos.y(), 16);
+    int dx = Util::roundUpToMultiple(event->scenePos().x() - this->clickedPos.x(), this->cellSize.width());
+    int dy = Util::roundUpToMultiple(event->scenePos().y() - this->clickedPos.y(), this->cellSize.height());
 
     QRect resizedRect = this->clickedRect;
 
@@ -149,20 +150,20 @@ void ResizableRect::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         break;
     }
 
-    // Lower limits: smallest possible size is 16x16 square
-    if (resizedRect.width() < 16) {
+    // Lower limits: smallest possible size is 1 cell
+    if (resizedRect.width() < this->cellSize.width()) {
         if (dx < 0) { // right sided adjustment made
-            resizedRect.setWidth(16);
+            resizedRect.setWidth(this->cellSize.width());
         } else { // left sided adjustment slightly more complicated
-            int dxMax = this->clickedRect.right() - this->clickedRect.left() - 16;
+            int dxMax = this->clickedRect.right() - this->clickedRect.left() - this->cellSize.width();
             resizedRect.adjust(dxMax - dx, 0, 0, 0);
         }
     }
-    if (resizedRect.height() < 16) {
+    if (resizedRect.height() < this->cellSize.height()) {
         if (dy < 0) { // bottom
-            resizedRect.setHeight(16);
+            resizedRect.setHeight(this->cellSize.height());
         } else { // top
-            int dyMax = this->clickedRect.bottom() - this->clickedRect.top() - 16;
+            int dyMax = this->clickedRect.bottom() - this->clickedRect.top() - this->cellSize.height();
             resizedRect.adjust(0, dyMax - dy, 0, 0);
         }
     }

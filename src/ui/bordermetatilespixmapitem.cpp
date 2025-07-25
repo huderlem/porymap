@@ -39,21 +39,15 @@ void BorderMetatilesPixmapItem::draw() {
 
     int width = layout->getBorderWidth();
     int height = layout->getBorderHeight();
-    QImage image(16 * width, 16 * height, QImage::Format_RGBA8888);
+    QImage image(width * Metatile::pixelWidth(), height * Metatile::pixelHeight(), QImage::Format_RGBA8888);
     QPainter painter(&image);
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
-            int x = i * 16;
-            int y = j * 16;
-            QImage metatile_image = getMetatileImage(
-                        layout->getBorderMetatileId(i, j),
-                        layout->tileset_primary,
-                        layout->tileset_secondary,
-                        layout->metatileLayerOrder,
-                        layout->metatileLayerOpacity);
-            QPoint metatile_origin = QPoint(x, y);
-            painter.drawImage(metatile_origin, metatile_image);
+            QImage metatile_image = getMetatileImage(layout->getBorderMetatileId(i, j), layout);
+            int x = i * Metatile::pixelWidth();
+            int y = j * Metatile::pixelHeight();
+            painter.drawImage(x, y, metatile_image);
         }
     }
 

@@ -65,6 +65,6 @@ void CursorTileRect::updateLocation(int coordX, int coordY) {
         }
     }
 
-    this->setX(coordX * 16);
-    this->setY(coordY * 16);
+    this->setX(coordX * m_tileSize.width());
+    this->setY(coordY * m_tileSize.height());
 }

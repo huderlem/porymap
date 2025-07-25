@@ -1558,9 +1558,8 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
     tileset->loadTilesImage(&tilesImage);
 
     // Create default metatiles
-    const int numMetatiles = tileset->is_secondary ? (Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary()) : Project::getNumMetatilesPrimary();
     const int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
-    for (int i = 0; i < numMetatiles; ++i) {
+    for (int i = 0; i < tileset->maxMetatiles(); ++i) {
         auto metatile = new Metatile();
         for(int j = 0; j < tilesPerMetatile; ++j){
             Tile tile = Tile();
@@ -1618,7 +1617,7 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
         metatilesFilepath.append(projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
     }
     ignoreWatchedFilesTemporarily({headersFilepath, graphicsFilepath, metatilesFilepath});
-    name.remove(0, prefix.length()); // Strip prefix from name to get base name for use in other symbols.
+    name = Tileset::stripPrefix(name);
     tileset->appendToHeaders(headersFilepath, name, this->usingAsmTilesets);
     tileset->appendToGraphics(graphicsFilepath, name, this->usingAsmTilesets);
     tileset->appendToMetatiles(metatilesFilepath, name, this->usingAsmTilesets);
@@ -2400,12 +2399,11 @@ bool Project::readFieldmapProperties() {
         // We can determine whether triple-layer metatiles are in-use by reading this constant.
         // If the constant is missing (or is using a value other than 8 or 12) the user must tell
         // us whether they're using triple-layer metatiles under Project Settings.
-        static const int numTilesPerLayer = 4;
         int numTilesPerMetatile = it.value();
-        if (numTilesPerMetatile == 2 * numTilesPerLayer) {
+        if (numTilesPerMetatile == 2 * Metatile::tilesPerLayer()) {
             projectConfig.tripleLayerMetatilesEnabled = false;
             this->disabledSettingsNames.insert(numTilesPerMetatileName);
-        } else if (numTilesPerMetatile == 3 * numTilesPerLayer) {
+        } else if (numTilesPerMetatile == 3 * Metatile::tilesPerLayer()) {
             projectConfig.tripleLayerMetatilesEnabled = true;
             this->disabledSettingsNames.insert(numTilesPerMetatileName);
         }
@@ -2462,6 +2460,7 @@ bool Project::readFieldmapMasks() {
         projectConfig.blockCollisionMask = blockMask;
     if (readBlockMask(elevationMaskName, &blockMask))
         projectConfig.blockElevationMask = blockMask;
+    Block::setLayout();
 
     // Read RSE metatile attribute masks
     auto it = defines.find(behaviorMaskName);
@@ -3444,14 +3443,25 @@ QString Project::getEmptySpeciesName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_species_empty);
 }
 
-// Get the distance in metatiles (rounded up) that the player is able to see in each direction in-game.
+// Get the distance in pixels that the player is able to see in each direction in-game,
+// rounded up to a multiple of a metatile's pixel size.
+QMargins Project::getPixelViewDistance() {
+    QMargins viewDistance = projectConfig.playerViewDistance;
+    viewDistance.setTop(Util::roundUpToMultiple(viewDistance.top(), Metatile::pixelHeight()));
+    viewDistance.setBottom(Util::roundUpToMultiple(viewDistance.bottom(), Metatile::pixelHeight()));
+    viewDistance.setLeft(Util::roundUpToMultiple(viewDistance.left(), Metatile::pixelWidth()));
+    viewDistance.setRight(Util::roundUpToMultiple(viewDistance.right(), Metatile::pixelWidth()));
+    return viewDistance;
+}
+
+// Get the distance in metatiles that the player is able to see in each direction in-game.
 // For the default view distance (i.e. assuming the player is centered in a 240x160 pixel GBA screen) this is 7x5 metatiles.
 QMargins Project::getMetatileViewDistance() {
-    QMargins viewDistance = projectConfig.playerViewDistance;
-    viewDistance.setTop(qCeil(viewDistance.top() / 16.0));
-    viewDistance.setBottom(qCeil(viewDistance.bottom() / 16.0));
-    viewDistance.setLeft(qCeil(viewDistance.left() / 16.0));
-    viewDistance.setRight(qCeil(viewDistance.right() / 16.0));
+    QMargins viewDistance = getPixelViewDistance();
+    viewDistance.setTop(viewDistance.top() / Metatile::pixelHeight());
+    viewDistance.setBottom(viewDistance.bottom() / Metatile::pixelHeight());
+    viewDistance.setLeft(viewDistance.left() / Metatile::pixelWidth());
+    viewDistance.setRight(viewDistance.right() / Metatile::pixelWidth());
     return viewDistance;
 }
 
@@ -3481,15 +3491,14 @@ void Project::applyParsedLimits() {
     projectConfig.metatileEncounterTypeMask &= maxMask;
     projectConfig.metatileLayerTypeMask &= maxMask;
 
-    Block::setLayout();
     Metatile::setLayout(this);
 
-    Project::num_metatiles_primary = qMin(qMax(Project::num_metatiles_primary, 1), Block::getMaxMetatileId() + 1);
+    Project::num_metatiles_primary = qBound(1, Project::num_metatiles_primary, Block::getMaxMetatileId() + 1);
     projectConfig.defaultMetatileId = qMin(projectConfig.defaultMetatileId, Block::getMaxMetatileId());
     projectConfig.defaultElevation = qMin(projectConfig.defaultElevation, Block::getMaxElevation());
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
-    projectConfig.collisionSheetSize.setHeight(qMin(qMax(projectConfig.collisionSheetSize.height(), 1), Block::getMaxElevation() + 1));
-    projectConfig.collisionSheetSize.setWidth(qMin(qMax(projectConfig.collisionSheetSize.width(), 1), Block::getMaxCollision() + 1));
+    projectConfig.collisionSheetSize.setHeight(qBound(1, projectConfig.collisionSheetSize.height(), Block::getMaxElevation() + 1));
+    projectConfig.collisionSheetSize.setWidth(qBound(1, projectConfig.collisionSheetSize.width(), Block::getMaxCollision() + 1));
 }
 
 bool Project::hasUnsavedChanges() {

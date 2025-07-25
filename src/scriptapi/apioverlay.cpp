@@ -294,11 +294,7 @@ void MapView::addTileImage(int x, int y, const Tile &tile, bool setTransparency,
 void MapView::addMetatileImage(int x, int y, int metatileId, bool setTransparency, int layer) {
     if (!this->editor || !this->editor->layout || !this->editor->layout->tileset_primary || !this->editor->layout->tileset_secondary)
         return;
-    QImage image = getMetatileImage(static_cast<uint16_t>(metatileId),
-                                    this->editor->layout->tileset_primary,
-                                    this->editor->layout->tileset_secondary,
-                                    this->editor->layout->metatileLayerOrder,
-                                    this->editor->layout->metatileLayerOpacity);
+    QImage image = getMetatileImage(static_cast<uint16_t>(metatileId), this->editor->layout);
     if (setTransparency)
         image.setColor(0, qRgba(0, 0, 0, 0));
     if (this->getOverlay(layer)->addImage(x, y, image))

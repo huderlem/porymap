@@ -7,42 +7,9 @@
 
 #include "ui_resizelayoutpopup.h"
 
-CheckeredBgScene::CheckeredBgScene(QObject *parent) : QGraphicsScene(parent) { }
-
-void CheckeredBgScene::drawBackground(QPainter *painter, const QRectF &rect) {
-    QRect r = rect.toRect();
-    int xMin = r.left() - r.left() % this->gridSize - this->gridSize;
-    int yMin = r.top() - r.top() % this->gridSize - this->gridSize;
-    int xMax = r.right() - r.right() % this->gridSize + this->gridSize;
-    int yMax = r.bottom() - r.bottom() % this->gridSize + this->gridSize;
-
-    // draw grid 16x16 from top to bottom of scene
-    QColor paintColor(0x00ff00);
-    for (int x = xMin, xTile = 0; x <= xMax; x += this->gridSize, xTile++) {
-        for (int y = yMin, yTile = 0; y <= yMax; y += this->gridSize, yTile++) {
-            if (!((xTile ^ yTile) & 1)) { // tile numbers have same parity (evenness)
-                if (this->validRect.contains(x, y))
-                    paintColor = QColor(132, 217, 165); // green light color
-                else
-                    paintColor = 0xbcbcbc; // normal light color
-            }
-            else {
-                if (this->validRect.contains(x, y))
-                    paintColor = QColor(76, 178, 121); // green dark color
-                else
-                    paintColor = 0x969696; // normal dark color
-            }
-            painter->fillRect(QRect(x, y, this->gridSize, this->gridSize), paintColor);
-        }
-    }
-}
-
-/******************************************************************************
-    ************************************************************************
- ******************************************************************************/
-
-BoundedPixmapItem::BoundedPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent) : QGraphicsPixmapItem(pixmap, parent) {
+BoundedPixmapItem::BoundedPixmapItem(const QPixmap &pixmap, const QSize &cellSize, QGraphicsItem *parent) : QGraphicsPixmapItem(pixmap, parent) {
     setFlags(this->flags() | QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemSendsGeometryChanges | QGraphicsItem::ItemIsSelectable);
+    this->cellSize = cellSize;
 }
 
 void BoundedPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -61,7 +28,8 @@ void BoundedPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
 QVariant BoundedPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         QPointF newPos = value.toPointF();
-        return QPointF(Util::roundUp(newPos.x(), 16), Util::roundUp(newPos.y(), 16));
+        return QPointF(Util::roundUpToMultiple(newPos.x(), this->cellSize.width()),
+                       Util::roundUpToMultiple(newPos.y(), this->cellSize.height()));
     }
     else
         return QGraphicsItem::itemChange(change, value);
@@ -83,7 +51,7 @@ ResizeLayoutPopup::ResizeLayoutPopup(QWidget *parent, Layout *layout, Project *p
     this->setWindowFlags(this->windowFlags() | Qt::FramelessWindowHint);
     this->setWindowModality(Qt::ApplicationModal);
 
-    this->scene = new CheckeredBgScene(this);
+    this->scene = new CheckeredBgScene(Metatile::pixelSize(), this);
     this->ui->graphicsView->setScene(this->scene);
     this->ui->graphicsView->setRenderHints(QPainter::Antialiasing);
     this->ui->graphicsView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -124,11 +92,13 @@ void ResizeLayoutPopup::setupLayoutView() {
     this->ui->spinBox_borderHeight->setValue(this->layout->getBorderHeight());
 
     // Layout stuff
-    this->layoutPixmap = new BoundedPixmapItem(this->layout->pixmap);
+    this->layoutPixmap = new BoundedPixmapItem(this->layout->pixmap, Metatile::pixelSize());
     this->scene->addItem(layoutPixmap);
     int maxWidth = this->project->getMaxMapWidth();
     int maxHeight = this->project->getMaxMapHeight();
-    QGraphicsRectItem *cover = new QGraphicsRectItem(-maxWidth * 8, -maxHeight * 8, maxWidth * 16, maxHeight * 16);
+    int maxPixelWidth = maxWidth * Metatile::pixelWidth() * 2; // *2 to allow reaching max dimension by expanding from 0,0 in either direction
+    int maxPixelHeight = maxHeight * Metatile::pixelHeight() * 2;
+    QGraphicsRectItem *cover = new QGraphicsRectItem(-(maxPixelWidth / 2), -(maxPixelHeight / 2), maxPixelWidth, maxPixelHeight);
     this->scene->addItem(cover);
 
     this->ui->spinBox_width->setMinimum(1);
@@ -136,12 +106,14 @@ void ResizeLayoutPopup::setupLayoutView() {
     this->ui->spinBox_height->setMinimum(1);
     this->ui->spinBox_height->setMaximum(maxHeight);
 
-    this->outline = new ResizableRect(this, this->layout->getWidth(), this->layout->getHeight(), qRgb(255, 0, 255));
+    this->outline = new ResizableRect(this, Metatile::pixelSize(), this->layout->pixelSize(), qRgb(255, 0, 255));
     this->outline->setZValue(Editor::ZValue::ResizeLayoutPopup); // Ensure on top of view
     this->outline->setLimit(cover->rect().toAlignedRect());
     connect(outline, &ResizableRect::rectUpdated, [=](QRect rect){
         // Note: this extra limit check needs access to the project values, so it is done here and not ResizableRect::mouseMoveEvent
-        int size = this->project->getMapDataSize(rect.width() / 16, rect.height() / 16);
+        int metatilesWide = rect.width() / Metatile::pixelWidth();
+        int metatilesTall = rect.height() / Metatile::pixelHeight();
+        int size = this->project->getMapDataSize(metatilesWide, metatilesTall);
         int maxSize = this->project->getMaxMapDataSize();
         if (size > maxSize) {
             QSize addition = this->project->getMapSizeAddition();
@@ -151,8 +123,8 @@ void ResizeLayoutPopup::setupLayoutView() {
                                             .arg(addition.width())
                                             .arg(addition.height())
                                             .arg(maxSize)
-                                            .arg(rect.width() / 16)
-                                            .arg(rect.height() / 16)
+                                            .arg(metatilesWide)
+                                            .arg(metatilesTall)
                                             .arg(size),
                                 this);
             // adjust rect to last accepted size
@@ -160,8 +132,11 @@ void ResizeLayoutPopup::setupLayoutView() {
         }
         this->scene->setValidRect(rect);
         this->outline->setRect(rect);
-        this->ui->spinBox_width->setValue(rect.width() / 16);
-        this->ui->spinBox_height->setValue(rect.height() / 16);
+
+        const QSignalBlocker b_Width(this->ui->spinBox_width);
+        const QSignalBlocker b_Height(this->ui->spinBox_height);
+        this->ui->spinBox_width->setValue(metatilesWide);
+        this->ui->spinBox_height->setValue(metatilesTall);
     });
     scene->addItem(outline);
 
@@ -171,7 +146,7 @@ void ResizeLayoutPopup::setupLayoutView() {
     this->scale = 1.0;
 
     QRectF rect = this->outline->rect();
-    const int marginSize = 10 * 16; // Leave a margin of 10 metatiles around the map
+    const int marginSize = 10 * Metatile::pixelWidth(); // Leave a margin of 10 metatiles around the map
     rect += QMargins(marginSize, marginSize, marginSize, marginSize);
     this->ui->graphicsView->fitInView(rect, Qt::KeepAspectRatio);
 }
@@ -179,25 +154,23 @@ void ResizeLayoutPopup::setupLayoutView() {
 void ResizeLayoutPopup::on_spinBox_width_valueChanged(int value) {
     if (!this->outline) return;
     QRectF rect = this->outline->rect();
-    this->outline->updatePosFromRect(QRect(rect.x(), rect.y(), value * 16, rect.height()));
+    this->outline->updatePosFromRect(QRect(rect.x(), rect.y(), value * Metatile::pixelWidth(), rect.height()));
 }
 
 void ResizeLayoutPopup::on_spinBox_height_valueChanged(int value) {
     if (!this->outline) return;
     QRectF rect = this->outline->rect();
-    this->outline->updatePosFromRect(QRect(rect.x(), rect.y(), rect.width(), value * 16));
+    this->outline->updatePosFromRect(QRect(rect.x(), rect.y(), rect.width(), value * Metatile::pixelHeight()));
 }
 
 /// Result is the number of metatiles to add (or subtract) to each side of the map after dimension changes
 QMargins ResizeLayoutPopup::getResult() {
     QMargins result = QMargins();
-
-    result.setLeft(this->layoutPixmap->x() - this->outline->rect().left());
-    result.setTop(this->layoutPixmap->y() - this->outline->rect().top());
-    result.setRight(this->outline->rect().right() - (this->layoutPixmap->x() + this->layoutPixmap->pixmap().width()));
-    result.setBottom(this->outline->rect().bottom() - (this->layoutPixmap->y() + this->layoutPixmap->pixmap().height()));
-
-    return result / 16;
+    result.setLeft((this->layoutPixmap->x() - this->outline->rect().left()) / Metatile::pixelWidth());
+    result.setTop((this->layoutPixmap->y() - this->outline->rect().top()) / Metatile::pixelHeight());
+    result.setRight((this->outline->rect().right() - (this->layoutPixmap->x() + this->layoutPixmap->pixmap().width())) / Metatile::pixelWidth());
+    result.setBottom((this->outline->rect().bottom() - (this->layoutPixmap->y() + this->layoutPixmap->pixmap().height())) / Metatile::pixelHeight());
+    return result;
 }
 
 QSize ResizeLayoutPopup::getBorderResult() {

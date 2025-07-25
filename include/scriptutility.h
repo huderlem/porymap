@@ -38,9 +38,9 @@ public:
     Q_INVOKABLE bool getSmartPathsEnabled();
     Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE QList<int> getMetatileLayerOrder();
-    Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
+    Q_INVOKABLE void setMetatileLayerOrder(const QList<int> &order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
-    Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
+    Q_INVOKABLE void setMetatileLayerOpacity(const QList<float> &order);
     Q_INVOKABLE QList<QString> getMapNames();
     Q_INVOKABLE QList<QString> getMapConstants();
     Q_INVOKABLE QList<QString> getLayoutNames();
@@ -56,6 +56,8 @@ public:
     Q_INVOKABLE QList<QString> getBattleSceneNames();
     Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
     Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
+
+    static bool validateMetatileLayerOrder(const QList<int> &order);
 
 private:
     void callTimeoutFunction(QJSValue callback);

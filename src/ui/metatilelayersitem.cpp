@@ -4,7 +4,7 @@
 #include <QPainter>
 
 MetatileLayersItem::MetatileLayersItem(Metatile *metatile, Tileset *primaryTileset, Tileset *secondaryTileset)
-    : SelectablePixmapItem(16, 16, 2 * projectConfig.getNumLayersInMetatile(), 2),
+    : SelectablePixmapItem(16, 16, Metatile::tileWidth() * projectConfig.getNumLayersInMetatile(), Metatile::tileHeight()),
      metatile(metatile),
      primaryTileset(primaryTileset),
      secondaryTileset(secondaryTileset)
@@ -31,8 +31,8 @@ static const QList<QPoint> tilePositions = {
 
 void MetatileLayersItem::draw() {
     const int numLayers = projectConfig.getNumLayersInMetatile();
-    const int layerWidth = this->cellWidth * 2;
-    const int layerHeight = this->cellHeight * 2;
+    const int layerWidth = this->cellWidth * Metatile::tileWidth();
+    const int layerHeight = this->cellHeight * Metatile::tileHeight();
     QPixmap pixmap(numLayers * layerWidth, layerHeight);
     QPainter painter(&pixmap);
 
@@ -129,7 +129,7 @@ void MetatileLayersItem::hoverMoveEvent(QGraphicsSceneHoverEvent * event) {
     if (tileIndex < 0 || tileIndex >= this->metatile->tiles.length())
         return;
 
-    emit this->hoveredTileChanged(this->metatile->tiles.at(tileIndex).tileId);
+    emit this->hoveredTileChanged(this->metatile->tiles.at(tileIndex));
 }
 
 void MetatileLayersItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
@@ -148,6 +148,6 @@ void MetatileLayersItem::clearLastHoveredCoords() {
 QPoint MetatileLayersItem::getBoundedPos(const QPointF &pos) {
     int x = static_cast<int>(pos.x()) / this->cellWidth;
     int y = static_cast<int>(pos.y()) / this->cellHeight;
-    return QPoint( qMax(0, qMin(x, this->maxSelectionWidth - 1)),
-                   qMax(0, qMin(y, this->maxSelectionHeight - 1)) );
+    return QPoint(qBound(0, x, this->maxSelectionWidth - 1),
+                  qBound(0, y, this->maxSelectionHeight - 1));
 }

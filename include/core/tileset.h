@@ -30,14 +30,13 @@ public:
     QString metatile_attrs_label;
     QString metatile_attrs_path;
     QString tilesImagePath;
-    QImage tilesImage;
     QStringList palettePaths;
 
-    QList<QImage> tiles;
     QHash<int, QString> metatileLabels;
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
+    static QString stripPrefix(const QString &fullName);
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
@@ -76,15 +75,28 @@ public:
     void setMetatiles(const QList<Metatile*> &metatiles);
     void addMetatile(Metatile* metatile);
 
-    QList<Metatile*> metatiles() const { return m_metatiles; }
-    Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
+    const QList<Metatile*> &metatiles() const { return m_metatiles; }
+    const Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
 
     void clearMetatiles();
     void resizeMetatiles(int newNumMetatiles);
     int numMetatiles() const { return m_metatiles.length(); }
+    int maxMetatiles() const;
+
+    uint16_t firstMetatileId() const;
+    uint16_t lastMetatileId() const;
+    bool contains(uint16_t metatileId) const { return metatileId >= firstMetatileId() && metatileId <= lastMetatileId(); }
+
+    int numTiles() const { return m_tiles.length(); }
+    int maxTiles() const;
+
+    QImage tileImage(uint16_t tileId) const { return m_tiles.value(Tile::getIndexInTileset(tileId)); }
 
 private:
     QList<Metatile*> m_metatiles;
+
+    QList<QImage> m_tiles;
+    QImage m_tilesImage;
     bool m_hasUnsavedTilesImage = false;
 };
 

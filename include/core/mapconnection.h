@@ -42,7 +42,7 @@ public:
     MapConnection* createMirror();
 
     QPixmap render() const;
-    QPoint relativePos(bool clipped = false) const;
+    QPoint relativePixelPos(bool clipped = false) const;
 
     static QPointer<Project> project;
     static const QMap<QString, QString> oppositeDirections;

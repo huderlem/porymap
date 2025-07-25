@@ -367,7 +367,7 @@ QChart* WildMonChart::createLevelDistributionChart() {
     series->attachAxis(axisY);
 
     // We round the y-axis max up to a multiple of 5.
-    axisY->setMax(Util::roundUp(qCeil(axisY->max()), 5));
+    axisY->setMax(Util::roundUpToMultiple(qCeil(axisY->max()), 5));
 
     return chart;
 }

@@ -37,9 +37,11 @@ QPainterPath MapRuler::shape() const {
     ruler.addRect(xRuler);
     ruler.addRect(yRuler);
     ruler = ruler.simplified();
-    for (int x = 16; x < pixWidth(); x += 16)
+    int w = Metatile::pixelWidth();
+    int h = Metatile::pixelHeight();
+    for (int x = w; x < pixWidth(); x += w)
         ruler.addRect(x, xRuler.y(), 0, thickness);
-    for (int y = 16; y < pixHeight(); y += 16)
+    for (int y = h; y < pixHeight(); y += h)
         ruler.addRect(yRuler.x(), y, thickness, 0);
     if (deltaX() && deltaY())
         ruler.addPolygon(QVector<QPointF>({ cornerTick.p1(), cornerTick.p2() }));
@@ -131,7 +133,9 @@ QPoint MapRuler::snapToWithinBounds(QPoint pos) const {
 
 void MapRuler::updateGeometry() {
     prepareGeometryChange();
-    setPos(QPoint(left() * 16 + 8, top() * 16 + 8));
+    int w = Metatile::pixelWidth();
+    int h = Metatile::pixelHeight();
+    setPos(QPoint(left() * w + w/2, top() * h + h/2));
     /* Determine what quadrant the end point is in relative to the anchor point. The anchor
      * point is the top-left corner of the metatile the ruler starts in, so a zero-length
      * ruler is considered to be in the bottom-right quadrant from the anchor point. */

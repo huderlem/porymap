@@ -4,6 +4,7 @@
 #include "map.h"
 #include "validator.h"
 #include "utility.h"
+#include "metatile.h"
 #include <QDir>
 #include <QFile>
 #include <QFormLayout>
@@ -283,7 +284,7 @@ int KeyValueConfigBase::getConfigInteger(const QString &key, const QString &valu
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
         result = defaultValue;
     }
-    return qMin(max, qMax(min, result));
+    return qBound(min, result, max);
 }
 
 uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &value, uint32_t min, uint32_t max, uint32_t defaultValue) {
@@ -293,10 +294,13 @@ uint32_t KeyValueConfigBase::getConfigUint32(const QString &key, const QString &
         logWarn(QString("Invalid config value for %1: '%2'. Must be an integer. Using default value '%3'.").arg(key).arg(value).arg(defaultValue));
         result = defaultValue;
     }
-    return qMin(max, qMax(min, result));
+    return qBound(min, result, max);
 }
 
 QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &value, const QColor &defaultValue) {
+    if (value.isEmpty())
+        return QColor();
+
     QColor color = QColor("#" + value);
     if (!color.isValid()) {
         logWarn(QString("Invalid config value for %1: '%2'. Must be a color in the format 'RRGGBB'. Using default value '%3'.").arg(key).arg(value).arg(defaultValue.name()));
@@ -305,10 +309,68 @@ QColor KeyValueConfigBase::getConfigColor(const QString &key, const QString &val
     return color;
 }
 
+QString KeyValueConfigBase::toConfigColor(const QColor &color) {
+    return color.isValid() ? color.name().remove("#") : QString(); // Our text config treats '#' as the start of a comment.
+}
+
 PorymapConfig porymapConfig;
 
 PorymapConfig::PorymapConfig() : KeyValueConfigBase(QStringLiteral("porymap.cfg")) {
     reset();
+}
+
+void PorymapConfig::reset() {
+    setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    this->recentProjects.clear();
+    this->projectManuallyClosed = false;
+    this->reopenOnLaunch = true;
+    this->mapListTab = 0;
+    this->mapListEditGroupsEnabled = false;
+    this->mapListHideEmptyEnabled.clear();
+    this->prettyCursors = true;
+    this->mirrorConnectingMaps = true;
+    this->showDiveEmergeMaps = false;
+    this->diveEmergeMapOpacity = 30;
+    this->diveMapOpacity = 15;
+    this->emergeMapOpacity = 15;
+    this->collisionOpacity = 50;
+    this->collisionZoom = 30;
+    this->metatilesZoom = 30;
+    this->tilesetEditorMetatilesZoom = 30;
+    this->tilesetEditorTilesZoom = 30;
+    this->showPlayerView = false;
+    this->showCursorTile = true;
+    this->showBorder = true;
+    this->showGrid = false;
+    this->showTilesetEditorMetatileGrid = false;
+    this->showTilesetEditorLayerGrid = true;
+    this->showTilesetEditorDivider = false;
+    this->showTilesetEditorRawAttributes = false;
+    this->monitorFiles = true;
+    this->tilesetCheckerboardFill = true;
+    this->newMapHeaderSectionExpanded = false;
+    this->theme = "default";
+    this->wildMonChartTheme = "";
+    this->textEditorOpenFolder = "";
+    this->textEditorGotoLine = "";
+    this->paletteEditorBitDepth = 24;
+    this->projectSettingsTab = 0;
+    this->scriptAutocompleteMode = ScriptAutocompleteMode::MapOnly;
+    this->warpBehaviorWarningDisabled = false;
+    this->eventDeleteWarningDisabled = false;
+    this->eventOverlayEnabled = false;
+    this->checkForUpdates = true;
+    this->lastUpdateCheckTime = QDateTime();
+    this->lastUpdateCheckVersion = porymapVersion;
+    this->rateLimitTimes.clear();
+    this->eventSelectionShapeMode = QGraphicsPixmapItem::MaskShape;
+    this->shownInGameReloadMessage = false;
+    this->gridSettings = GridSettings();
+    this->gridSettings.width = Metatile::pixelWidth();
+    this->gridSettings.height = Metatile::pixelHeight();
+    this->statusBarLogTypes = { LogType::LOG_ERROR, LogType::LOG_WARN };
+    this->applicationFont = QFont();
+    this->mapListFont = PorymapConfig::defaultMapListFont();
 }
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
@@ -576,7 +638,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("grid_x", QString::number(this->gridSettings.offsetX));
     map.insert("grid_y", QString::number(this->gridSettings.offsetY));
     map.insert("grid_style", GridSettings::getStyleName(this->gridSettings.style));
-    map.insert("grid_color", this->gridSettings.color.name().remove("#")); // Our text config treats '#' as the start of a comment.
+    map.insert("grid_color", toConfigColor(this->gridSettings.color));
 
     QStringList logTypesStrings;
     for (const auto &type : this->statusBarLogTypes) {
@@ -903,8 +965,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
-    } else if (key == "set_transparent_pixels_black") {
-        this->setTransparentPixelsBlack = getConfigBool(key, value);
+    } else if (key == "transparency_color") {
+        this->transparencyColor = getConfigColor(key, value);
     } else if (key == "preserve_matching_only_data") {
         this->preserveMatchingOnlyData = getConfigBool(key, value);
     } else if (key == "event_icon_path_object") {
@@ -945,6 +1007,8 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->maxEventsPerGroup = getConfigInteger(key, value, 1, INT_MAX, 255);
     } else if (key == "forced_major_version") {
         this->forcedMajorVersion = getConfigInteger(key, value);
+    } else if (key == "metatile_selector_width") {
+        this->metatileSelectorWidth = getConfigInteger(key, value, 1, INT_MAX, 8);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
     }
@@ -1010,7 +1074,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     }
     map.insert("tilesets_have_callback", QString::number(this->tilesetsHaveCallback));
     map.insert("tilesets_have_is_compressed", QString::number(this->tilesetsHaveIsCompressed));
-    map.insert("set_transparent_pixels_black", QString::number(this->setTransparentPixelsBlack));
+    map.insert("transparency_color", toConfigColor(this->transparencyColor));
     map.insert("preserve_matching_only_data", QString::number(this->preserveMatchingOnlyData));
     map.insert("metatile_attributes_size", QString::number(this->metatileAttributesSize));
     map.insert("metatile_behavior_mask", Util::toHexString(this->metatileBehaviorMask));
@@ -1054,6 +1118,7 @@ QMap<QString, QString> ProjectConfig::getKeyValueMap() {
     map.insert("warp_behaviors", warpBehaviorStrs.join(","));
     map.insert("max_events_per_group", QString::number(this->maxEventsPerGroup));
     map.insert("forced_major_version", QString::number(this->forcedMajorVersion));
+    map.insert("metatile_selector_width", QString::number(this->metatileSelectorWidth));
 
     return map;
 }
@@ -1187,7 +1252,7 @@ int ProjectConfig::getNumLayersInMetatile() {
 }
 
 int ProjectConfig::getNumTilesInMetatile() {
-    return this->tripleLayerMetatilesEnabled ? 12 : 8;
+    return getNumLayersInMetatile() * Metatile::tilesPerLayer();
 }
 
 void ProjectConfig::setEventIconPath(Event::Group group, const QString &path) {

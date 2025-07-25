@@ -8,6 +8,7 @@
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
+#include "metatileimageexporter.h"
 
 class NoScrollComboBox;
 class Layout;
@@ -61,6 +62,7 @@ private slots:
     void onWindowActivated();
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
+    void onHoveredTileChanged(const Tile&);
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
     void onSelectedTilesChanged();
@@ -70,10 +72,6 @@ private slots:
     void onPaletteEditorChangedPalette(int);
 
     void on_spinBox_paletteSelector_valueChanged(int arg1);
-
-    void on_actionImport_Primary_Tiles_triggered();
-
-    void on_actionImport_Secondary_Tiles_triggered();
 
     void on_actionChange_Metatiles_Count_triggered();
 
@@ -90,14 +88,6 @@ private slots:
     void on_actionRedo_triggered();
 
     void on_lineEdit_metatileLabel_editingFinished();
-
-    void on_actionExport_Primary_Tiles_Image_triggered();
-    void on_actionExport_Secondary_Tiles_Image_triggered();
-    void on_actionExport_Primary_Metatiles_Image_triggered();
-    void on_actionExport_Secondary_Metatiles_Image_triggered();
-
-    void on_actionImport_Primary_Metatiles_triggered();
-    void on_actionImport_Secondary_Metatiles_triggered();
 
     void on_copyButton_metatileLabel_clicked();
 
@@ -122,8 +112,11 @@ private:
     void drawSelectedTiles();
     void redrawTileSelector();
     void redrawMetatileSelector();
-    void importTilesetTiles(Tileset*, bool);
-    void importTilesetMetatiles(Tileset*, bool);
+    void importTilesetTiles(Tileset*);
+    void importAdvanceMapMetatiles(Tileset*);
+    void exportTilesImage(Tileset*);
+    void exportPorytilesLayerImages(Tileset*);
+    void exportMetatilesImage();
     void refresh();
     void commitMetatileLabel();
     void closeEvent(QCloseEvent*);
@@ -170,6 +163,7 @@ private:
     QGraphicsScene *metatileLayersScene = nullptr;
     bool lockSelection = false;
     QSet<uint16_t> metatileReloadQueue;
+    MetatileImageExporter::Settings *metatileImageExportSettings = nullptr;
 
     bool save();
 

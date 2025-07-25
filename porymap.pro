@@ -66,6 +66,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/checkeredbgscene.cpp \
     src/ui/colorinputwidget.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customattributesdialog.cpp \
@@ -124,6 +125,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/regionmapeditor.cpp \
     src/ui/newmapdialog.cpp \
     src/ui/mapimageexporter.cpp \
+    src/ui/metatileimageexporter.cpp \
     src/ui/newtilesetdialog.cpp \
     src/ui/flowlayout.cpp \
     src/ui/mapruler.cpp \
@@ -180,6 +182,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/checkeredbgscene.h \
     include/ui/connectionslistitem.h \
     include/ui/customattributesdialog.h \
     include/ui/customattributestable.h \
@@ -240,6 +243,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/regionmapeditor.h \
     include/ui/newmapdialog.h \
     include/ui/mapimageexporter.h \
+    include/ui/metatileimageexporter.h \
     include/ui/newtilesetdialog.h \
     include/ui/overlay.h \
     include/ui/flowlayout.h \
@@ -289,6 +293,7 @@ FORMS    += forms/mainwindow.ui \
     forms/aboutporymap.ui \
     forms/newtilesetdialog.ui \
     forms/mapimageexporter.ui \
+    forms/metatileimageexporter.ui \
     forms/shortcutseditor.ui \
     forms/preferenceeditor.ui \
     forms/regionmappropertiesdialog.ui \

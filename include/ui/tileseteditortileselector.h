@@ -8,7 +8,7 @@ class TilesetEditorTileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
     TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, int numLayers)
-        : SelectablePixmapItem(16, 16, numLayers * 2, 2) {
+        : SelectablePixmapItem(16, 16, numLayers * Metatile::tileWidth(), Metatile::tileHeight()) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
@@ -18,8 +18,8 @@ public:
         this->paletteChanged = false;
         setAcceptHoverEvents(true);
     }
-    QPoint getSelectionDimensions();
-    void draw();
+    QPoint getSelectionDimensions() const override;
+    void draw() override;
     void select(uint16_t metatileId);
     void highlight(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
@@ -36,13 +36,14 @@ public:
     bool showDivider = false;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
 
 private:
+    QPixmap basePixmap;
     bool externalSelection;
     int externalSelectionWidth;
     int externalSelectionHeight;
@@ -63,7 +64,7 @@ private:
     QList<QRgb> getCurPaletteTable();
     QList<Tile> buildSelectedTiles(int, int, QList<Tile>);
     QImage buildImage(int tileIdStart, int numTiles);
-
+    void updateBasePixmap();
     void drawUnused();
 
 signals:

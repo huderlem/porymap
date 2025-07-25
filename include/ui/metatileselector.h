@@ -31,33 +31,34 @@ struct MetatileSelection
 class MetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileSelector(int numMetatilesWide, Layout *layout): SelectablePixmapItem(16, 16) {
+    MetatileSelector(int numMetatilesWide, Layout *layout)
+        : SelectablePixmapItem(Metatile::pixelSize()),
+          numMetatilesWide(qMax(numMetatilesWide, 1))
+    {
         this->externalSelection = false;
         this->prefabSelection = false;
-        this->numMetatilesWide = numMetatilesWide;
         this->layout = layout;
-        this->primaryTileset = layout->tileset_primary;
-        this->secondaryTileset = layout->tileset_secondary;
         this->selection = MetatileSelection{};
         this->cellPos = QPoint(-1, -1);
         setAcceptHoverEvents(true);
     }
 
-    QPoint getSelectionDimensions() override;
+    QPoint getSelectionDimensions() const override;
     void draw() override;
+    void refresh();
 
     bool select(uint16_t metatile);
     void selectFromMap(uint16_t metatileId, uint16_t collision, uint16_t elevation);
-    void setTilesets(Tileset*, Tileset*);
-    MetatileSelection getMetatileSelection();
+    MetatileSelection getMetatileSelection() const { return this->selection; }
     void setPrefabSelection(MetatileSelection selection);
-    void setExternalSelection(int, int, QList<uint16_t>, QList<QPair<uint16_t, uint16_t>>);
-    QPoint getMetatileIdCoordsOnWidget(uint16_t);
+    void setExternalSelection(int, int, const QList<uint16_t>&, const QList<QPair<uint16_t, uint16_t>>&);
+    QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId) const;
     void setLayout(Layout *layout);
     bool isInternalSelection() const { return (!this->externalSelection && !this->prefabSelection); }
 
-    Tileset *primaryTileset;
-    Tileset *secondaryTileset;
+    Tileset *primaryTileset() const { return this->layout->tileset_primary; }
+    Tileset *secondaryTileset() const { return this->layout->tileset_secondary; }
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
@@ -66,10 +67,10 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
     void drawSelection() override;
 private:
+    const int numMetatilesWide;
     QPixmap basePixmap;
     bool externalSelection;
     bool prefabSelection;
-    int numMetatilesWide;
     Layout *layout;
     int externalSelectionWidth;
     int externalSelectionHeight;
@@ -80,8 +81,9 @@ private:
     void updateBasePixmap();
     void updateSelectedMetatiles();
     void updateExternalSelectedMetatiles();
-    uint16_t getMetatileId(int x, int y) const;
-    QPoint getMetatileIdCoords(uint16_t);
+    uint16_t posToMetatileId(int x, int y, bool *ok = nullptr) const;
+    uint16_t posToMetatileId(const QPoint &pos, bool *ok = nullptr) const;
+    QPoint metatileIdToPos(uint16_t metatileId, bool *ok = nullptr) const;
     bool positionIsValid(const QPoint &pos) const;
     bool selectionIsValid();
     void hoverChanged();

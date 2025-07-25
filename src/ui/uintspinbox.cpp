@@ -2,24 +2,24 @@
 #include <QWheelEvent>
 
 UIntSpinBox::UIntSpinBox(QWidget *parent)
-   : QAbstractSpinBox(parent)
+   : QAbstractSpinBox(parent),
+     m_minimum(0),
+     m_maximum(99),
+     m_value(m_minimum),
+     m_singleStep(1),
+     m_displayIntegerBase(10),
+     m_hasPadding(false),
+     m_numChars(2)
 {
     // Don't let scrolling hijack focus.
     setFocusPolicy(Qt::StrongFocus);
-
-    m_minimum = 0;
-    m_maximum = 99;
-    m_value = m_minimum;
-    m_displayIntegerBase = 10;
-    m_numChars = 2;
-    m_hasPadding = false;
 
     this->updateEdit();
     connect(lineEdit(), SIGNAL(textEdited(QString)), this, SLOT(onEditFinished()));
 };
 
 void UIntSpinBox::setValue(uint32_t val) {
-    val = qMax(m_minimum, qMin(m_maximum, val));
+    val = qBound(m_minimum, val, m_maximum);
     if (m_value != val) {
         m_value = val;
         emit valueChanged(m_value);
@@ -67,6 +67,12 @@ void UIntSpinBox::setRange(uint32_t min, uint32_t max) {
     else if (m_value > max)
         m_value %= max;
     this->updateEdit();
+}
+
+void UIntSpinBox::setSingleStep(uint32_t val) {
+    if (m_singleStep != val) {
+        m_singleStep = val;
+    }
 }
 
 void UIntSpinBox::setPrefix(const QString &prefix) { 
@@ -132,6 +138,7 @@ void UIntSpinBox::onEditFinished() {
 }
 
 void UIntSpinBox::stepBy(int steps) {
+    steps *= m_singleStep;
     auto newValue = m_value;
     if (steps < 0 && newValue + steps > newValue) {
         newValue = 0;

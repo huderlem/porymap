@@ -65,7 +65,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>239</width>
+             <width>253</width>
              <height>659</height>
             </rect>
            </property>
@@ -555,7 +555,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>499</width>
+             <width>446</width>
              <height>241</height>
             </rect>
            </property>
@@ -625,18 +625,42 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuExport_Tiles_Image">
+     <property name="title">
+      <string>Export Tiles Image</string>
+     </property>
+     <addaction name="actionExport_Primary_Tiles_Image"/>
+     <addaction name="actionExport_Secondary_Tiles_Image"/>
+    </widget>
+    <widget class="QMenu" name="menuImport_AdvanceMap_Metatiles">
+     <property name="title">
+      <string>Import Metatiles from Advance Map 1.92</string>
+     </property>
+     <addaction name="actionImport_Primary_AdvanceMap_Metatiles"/>
+     <addaction name="actionImport_Secondary_AdvanceMap_Metatiles"/>
+    </widget>
+    <widget class="QMenu" name="menuImport_Tiles_Image">
+     <property name="title">
+      <string>Import Tiles Image</string>
+     </property>
+     <addaction name="actionImport_Primary_Tiles_Image"/>
+     <addaction name="actionImport_Secondary_Tiles_Image"/>
+    </widget>
+    <widget class="QMenu" name="menuExport_porytiles_Layer_Images">
+     <property name="title">
+      <string>Export Porytiles Layer Images...</string>
+     </property>
+     <addaction name="actionExport_Primary_Porytiles_Layer_Images"/>
+     <addaction name="actionExport_Secondary_Porytiles_Layer_Images"/>
+    </widget>
     <addaction name="actionSave_Tileset"/>
     <addaction name="separator"/>
-    <addaction name="actionImport_Primary_Tiles"/>
-    <addaction name="actionImport_Secondary_Tiles"/>
+    <addaction name="menuImport_Tiles_Image"/>
+    <addaction name="menuImport_AdvanceMap_Metatiles"/>
     <addaction name="separator"/>
-    <addaction name="actionImport_Primary_Metatiles"/>
-    <addaction name="actionImport_Secondary_Metatiles"/>
-    <addaction name="separator"/>
-    <addaction name="actionExport_Primary_Tiles_Image"/>
-    <addaction name="actionExport_Secondary_Tiles_Image"/>
-    <addaction name="actionExport_Primary_Metatiles_Image"/>
-    <addaction name="actionExport_Secondary_Metatiles_Image"/>
+    <addaction name="menuExport_Tiles_Image"/>
+    <addaction name="actionExport_Metatiles_Image"/>
+    <addaction name="menuExport_porytiles_Layer_Images"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -683,16 +707,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionImport_Primary_Tiles">
-   <property name="text">
-    <string>Import Primary Tiles Image...</string>
-   </property>
-  </action>
-  <action name="actionImport_Secondary_Tiles">
-   <property name="text">
-    <string>Import Secondary Tiles Image...</string>
    </property>
   </action>
   <action name="actionChange_Metatiles_Count">
@@ -743,36 +757,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
-   </property>
-  </action>
-  <action name="actionExport_Primary_Tiles_Image">
-   <property name="text">
-    <string>Export Primary Tiles Image...</string>
-   </property>
-  </action>
-  <action name="actionExport_Secondary_Tiles_Image">
-   <property name="text">
-    <string>Export Secondary Tiles Image...</string>
-   </property>
-  </action>
-  <action name="actionImport_Primary_Metatiles">
-   <property name="text">
-    <string>Import Primary Metatiles from Advance Map 1.92...</string>
-   </property>
-  </action>
-  <action name="actionImport_Secondary_Metatiles">
-   <property name="text">
-    <string>Import Secondary Metatiles from Advance Map 1.92...</string>
-   </property>
-  </action>
-  <action name="actionExport_Primary_Metatiles_Image">
-   <property name="text">
-    <string>Export Primary Metatiles Image...</string>
-   </property>
-  </action>
-  <action name="actionExport_Secondary_Metatiles_Image">
-   <property name="text">
-    <string>Export Secondary Metatiles Image...</string>
    </property>
   </action>
   <action name="actionCut">
@@ -832,6 +816,51 @@
    </property>
    <property name="text">
     <string>Show Raw Metatile Attributes</string>
+   </property>
+  </action>
+  <action name="actionExport_Primary_Tiles_Image">
+   <property name="text">
+    <string>Primary...</string>
+   </property>
+  </action>
+  <action name="actionExport_Secondary_Tiles_Image">
+   <property name="text">
+    <string>Secondary...</string>
+   </property>
+  </action>
+  <action name="actionImport_Primary_AdvanceMap_Metatiles">
+   <property name="text">
+    <string>Primary...</string>
+   </property>
+  </action>
+  <action name="actionImport_Secondary_AdvanceMap_Metatiles">
+   <property name="text">
+    <string>Secondary...</string>
+   </property>
+  </action>
+  <action name="actionImport_Primary_Tiles_Image">
+   <property name="text">
+    <string>Primary...</string>
+   </property>
+  </action>
+  <action name="actionImport_Secondary_Tiles_Image">
+   <property name="text">
+    <string>Secondary...</string>
+   </property>
+  </action>
+  <action name="actionExport_Metatiles_Image">
+   <property name="text">
+    <string>Export Metatiles Image...</string>
+   </property>
+  </action>
+  <action name="actionExport_Primary_Porytiles_Layer_Images">
+   <property name="text">
+    <string>Primary...</string>
+   </property>
+  </action>
+  <action name="actionExport_Secondary_Porytiles_Layer_Images">
+   <property name="text">
+    <string>Secondary...</string>
    </property>
   </action>
  </widget>
