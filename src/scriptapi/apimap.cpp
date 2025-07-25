@@ -346,10 +346,7 @@ void MainWindow::setTilesetPalette(Tileset *tileset, int paletteIndex, QList<QLi
         return;
     if (paletteIndex >= tileset->palettes.size())
         return;
-    if (colors.size() != 16)
-        return;
-
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < qMin(colors.length(), Tileset::numColorsPerPalette()); i++) {
         if (colors[i].size() != 3)
             continue;
         tileset->palettes[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
@@ -457,10 +454,7 @@ void MainWindow::setTilesetPalettePreview(Tileset *tileset, int paletteIndex, QL
         return;
     if (paletteIndex >= tileset->palettePreviews.size())
         return;
-    if (colors.size() != 16)
-        return;
-
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < qMin(colors.length(), Tileset::numColorsPerPalette()); i++) {
         if (colors[i].size() != 3)
             continue;
         tileset->palettePreviews[paletteIndex][i] = qRgb(colors[i][0], colors[i][1], colors[i][2]);
@@ -798,14 +792,13 @@ QJSValue MainWindow::getTilePixels(int tileId) {
     if (tileId < 0 || !this->editor || !this->editor->layout)
         return QJSValue();
 
-    const int numPixels = Tile::pixelWidth() * Tile::pixelHeight();
     QImage tileImage = getTileImage(tileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
-    if (tileImage.isNull() || tileImage.sizeInBytes() < numPixels)
+    if (tileImage.isNull() || tileImage.sizeInBytes() < Tile::numPixels())
         return QJSValue();
 
     const uchar * pixels = tileImage.constBits();
-    QJSValue pixelArray = Scripting::getEngine()->newArray(numPixels);
-    for (int i = 0; i < numPixels; i++) {
+    QJSValue pixelArray = Scripting::getEngine()->newArray(Tile::numPixels());
+    for (int i = 0; i < Tile::numPixels(); i++) {
         pixelArray.setProperty(i, pixels[i]);
     }
     return pixelArray;

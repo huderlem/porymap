@@ -24,8 +24,13 @@ class PaletteEditor :  public QMainWindow {
 public:
     explicit PaletteEditor(Project*, Tileset*, Tileset*, int paletteId, QWidget *parent = nullptr);
     ~PaletteEditor();
+
     void setPaletteId(int);
+    int currentPaletteId() const;
+
     void setTilesets(Tileset*, Tileset*);
+
+    bool showingUnusedColors() const;
 
 private:
     Ui::PaletteEditor *ui;
@@ -36,13 +41,18 @@ private:
     Tileset *secondaryTileset;
 
     QList<History<PaletteHistoryItem*>> palettesHistory;
+    QMap<int,QSet<int>> unusedColorCache;
 
-    Tileset* getTileset(int paletteId);
+    Tileset* getTileset(int paletteId) const;
     void refreshColorInputs();
     void commitEditHistory();
     void commitEditHistory(int paletteId);
     void restoreWindowState();
+    void onWindowActivated();
+    void invalidateCache();
     void closeEvent(QCloseEvent*);
+    void setColorInputTitles(bool show);
+    QSet<int> getUnusedColorIds() const;
 
     void setRgb(int index, QRgb rgb);
     void setPalette(int paletteId, const QList<QRgb> &palette);
@@ -50,7 +60,7 @@ private:
     void setBitDepth(int bits);
     int bitDepth = 24;
 
-    static const int numColors = 16;
+    static const int numColors = Tileset::numColorsPerPalette();
 
 signals:
     void closed();

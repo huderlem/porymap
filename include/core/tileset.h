@@ -39,6 +39,7 @@ public:
     static QString stripPrefix(const QString &fullName);
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
+    static const Tileset* getTileTileset(int, const Tileset*, const Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
     static Tileset* getMetatileLabelTileset(int, Tileset*, Tileset*);
     static QString getMetatileLabel(int, Tileset *, Tileset *);
@@ -91,6 +92,11 @@ public:
     int maxTiles() const;
 
     QImage tileImage(uint16_t tileId) const { return m_tiles.value(Tile::getIndexInTileset(tileId)); }
+
+    QSet<int> getUnusedColorIds(int paletteId, Tileset *pairedTileset, const QSet<int> &searchColors = {}) const;
+
+    static constexpr int maxPalettes() { return 16; }
+    static constexpr int numColorsPerPalette() { return 16; }
 
 private:
     QList<Metatile*> m_metatiles;

@@ -35,7 +35,7 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
                              bool useTruePalettes = false);
 
 
-QImage getTileImage(uint16_t, Tileset*, Tileset*);
+QImage getTileImage(uint16_t, const Tileset*, const Tileset*);
 QImage getPalettedTileImage(uint16_t, Tileset*, Tileset*, int, bool useTruePalettes = false);
 QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette);
 QImage getGreyscaleTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset);

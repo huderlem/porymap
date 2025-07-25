@@ -3,6 +3,7 @@
 #include "eventframes.h"
 #include "project.h"
 #include "config.h"
+#include "metatile.h"
 
 Event* Event::create(Event::Type type) {
     switch (type) {
@@ -21,6 +22,14 @@ Event* Event::create(Event::Type type) {
 
 Event::~Event() {
     delete this->eventFrame;
+}
+
+int Event::getPixelX() const {
+    return (this->x * Metatile::pixelWidth()) - qMax(0, (this->pixmap.width() - Metatile::pixelWidth()) / 2);
+}
+
+int Event::getPixelY() const {
+    return (this->y * Metatile::pixelHeight()) - qMax(0, this->pixmap.height() - Metatile::pixelHeight());
 }
 
 EventFrame *Event::getEventFrame() {

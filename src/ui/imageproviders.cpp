@@ -141,8 +141,8 @@ QImage getMetatileImage(
     return metatileImage;
 }
 
-QImage getTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    Tileset *tileset = Tileset::getTileTileset(tileId, primaryTileset, secondaryTileset);
+QImage getTileImage(uint16_t tileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
+    const Tileset *tileset = Tileset::getTileTileset(tileId, primaryTileset, secondaryTileset);
     return tileset ? tileset->tileImage(tileId) : QImage();
 }
 
@@ -155,7 +155,7 @@ QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *se
         tileImage = QImage(Tile::pixelSize(), QImage::Format_RGBA8888);
         tileImage.fill(getInvalidImageColor());
     } else {
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < Tileset::numColorsPerPalette(); i++) {
             tileImage.setColor(i, palette.value(i, getInvalidImageColor().rgb()));
         }
     }

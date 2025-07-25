@@ -111,6 +111,11 @@ int Tileset::maxTiles() const {
 }
 
 Tileset* Tileset::getTileTileset(int tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    return const_cast<Tileset*>(getTileTileset(tileId, static_cast<const Tileset*>(primaryTileset), static_cast<const Tileset*>(secondaryTileset)));
+}
+
+// Get the tileset *expected* to contain the given 'tileId'. Note that this does not mean the tile actually exists in that tileset.
+const Tileset* Tileset::getTileTileset(int tileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
     if (tileId < Project::getNumTilesPrimary()) {
         return primaryTileset;
     } else if (tileId < Project::getNumTilesTotal()) {
@@ -120,6 +125,7 @@ Tileset* Tileset::getTileTileset(int tileId, Tileset *primaryTileset, Tileset *s
     }
 }
 
+// Get the tileset *expected* to contain the given 'metatileId'. Note that this does not mean the metatile actually exists in that tileset.
 Tileset* Tileset::getMetatileTileset(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
     if (metatileId < Project::getNumMetatilesPrimary()) {
         return primaryTileset;
@@ -334,7 +340,7 @@ bool Tileset::appendToGraphics(const QString &filepath, const QString &friendlyN
         dataString.append(QString("\t.incbin \"%1\"\n").arg(tilesPath));
     } else {
         // Append to C file
-        dataString.append(QString("const u16 gTilesetPalettes_%1[][16] =\n{\n").arg(friendlyName));
+        dataString.append(QString("const u16 gTilesetPalettes_%1[][%2] =\n{\n").arg(friendlyName).arg(Tileset::numColorsPerPalette()));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
             dataString.append(QString("    INCBIN_U16(\"%1%2%3\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')).arg(palettesExt));
         dataString.append("};\n");
@@ -546,13 +552,13 @@ bool Tileset::loadTilesImage(QImage *importedImage) {
         return false;
     }
 
-    // Validate image contains 16 colors.
+    // Validate the number of colors in the image.
     int colorCount = image.colorCount();
-    if (colorCount > 16) {
+    if (colorCount > Tileset::numColorsPerPalette()) {
         flattenTo4bppImage(&image);
-    } else if (colorCount < 16) {
+    } else if (colorCount < Tileset::numColorsPerPalette()) {
         QVector<QRgb> colorTable = image.colorTable();
-        for (int i = colorTable.length(); i < 16; i++) {
+        for (int i = colorTable.length(); i < Tileset::numColorsPerPalette(); i++) {
             colorTable.append(0);
         }
         image.setColorTable(colorTable);
@@ -616,8 +622,9 @@ bool Tileset::loadPalettes() {
             // Either the palette failed to load, or no palette exists.
             // We expect tilesets to have a certain number of palettes,
             // so fill this palette with dummy colors.
-            for (int j = 0; j < 16; j++) {
-                palette.append(qRgb(j * 16, j * 16, j * 16));
+            for (int j = 0; j < Tileset::numColorsPerPalette(); j++) {
+                int colorComponent = j * (256 / Tileset::numColorsPerPalette());
+                palette.append(qRgb(colorComponent, colorComponent, colorComponent));
             }
         }
         this->palettes.append(palette);
@@ -630,7 +637,7 @@ bool Tileset::savePalettes() {
     bool success = true;
     int numPalettes = qMin(this->palettePaths.length(), this->palettes.length());
     for (int i = 0; i < numPalettes; i++) {
-        if (!PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, 16))
+        if (!PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, Tileset::numColorsPerPalette()))
             success = false;
     }
     return success;
@@ -657,4 +664,46 @@ bool Tileset::save() {
 
 QString Tileset::stripPrefix(const QString &fullName) {
     return QString(fullName).replace(projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix), "");
+}
+
+// Find which of the specified color IDs in 'searchColors' are not used by any of this tileset's metatiles.
+// The 'pairedTileset' may be used to get the tile images for any tiles that don't belong to this tileset.
+// If 'searchColors' is empty, it will for search for all unused colors.
+QSet<int> Tileset::getUnusedColorIds(int paletteId, Tileset *pairedTileset, const QSet<int> &searchColors) const {
+    QSet<int> unusedColors = searchColors;
+    if (unusedColors.isEmpty()) {
+        // Search for all colors
+        for (int i = 0; i < Tileset::numColorsPerPalette(); i++) {
+            unusedColors.insert(i);
+        }
+    }
+    const Tileset *primaryTileset = this->is_secondary ? pairedTileset : this;
+    const Tileset *secondaryTileset = this->is_secondary ? this : pairedTileset;
+    QSet<uint16_t> seenTileIds;
+    for (const auto &metatile : m_metatiles)
+    for (const auto &tile : metatile->tiles) {
+        if (tile.palette != paletteId)
+            continue;
+
+        // Save time by ignoring tiles we've already inspected.
+        if (seenTileIds.contains(tile.tileId))
+            continue;
+        seenTileIds.insert(tile.tileId);
+
+        QImage image = getTileImage(tile.tileId, primaryTileset, secondaryTileset);
+        if (image.isNull() || image.sizeInBytes() < Tile::numPixels())
+            continue;
+
+        const uchar * pixels = image.constBits();
+        for (int i = 0; i < Tile::numPixels(); i++) {
+            auto it = unusedColors.constFind(pixels[i]);
+            if (it != unusedColors.constEnd()) {
+                unusedColors.erase(it);
+                if (unusedColors.isEmpty()) {
+                    return {};
+                }
+            }
+        }
+    }
+    return unusedColors;
 }

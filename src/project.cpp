@@ -1517,7 +1517,7 @@ void Project::readTilesetPaths(Tileset* tileset) {
         tileset->metatile_attrs_path = defaultPath + "/metatile_attributes.bin";
     if (tileset->palettePaths.isEmpty()) {
         QString palettes_dir_path = defaultPath + "/palettes/";
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < Tileset::maxPalettes(); i++) {
             tileset->palettePaths.append(palettes_dir_path + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
         }
     }
@@ -1579,9 +1579,9 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
     }
 
     // Create default palettes
-    for(int i = 0; i < 16; ++i) {
+    for(int i = 0; i < Tileset::maxPalettes(); ++i) {
         QList<QRgb> currentPal;
-        for(int i = 0; i < 16;++i) {
+        for(int i = 0; i < Tileset::numColorsPerPalette();++i) {
             currentPal.append(qRgb(0,0,0));
         }
         tileset->palettes.append(currentPal);
@@ -2347,7 +2347,7 @@ bool Project::readFieldmapProperties() {
             logWarn(QString("Value for '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
         }
     };
-    loadDefine(numPalsTotalName,        &Project::num_pals_total, 2, INT_MAX); // In reality the max would be 16, but as far as Porymap is concerned it doesn't matter.
+    loadDefine(numPalsTotalName,        &Project::num_pals_total, 2, Tileset::maxPalettes());
     loadDefine(numTilesTotalName,       &Project::num_tiles_total, 2, 1024); // 1024 is fixed because we store tile IDs in a 10-bit field.
     loadDefine(numPalsPrimaryName,      &Project::num_pals_primary, 1, Project::num_pals_total - 1);
     loadDefine(numTilesPrimaryName,     &Project::num_tiles_primary, 1, Project::num_tiles_total - 1);
@@ -3517,4 +3517,19 @@ bool Project::hasUnsavedChanges() {
             return true;
     }
     return false;
+}
+
+// Searches the project's map layouts to find the names of the tilesets that the provided tileset gets paired with.
+QSet<QString> Project::getPairedTilesetLabels(Tileset *tileset) const {
+    QSet<QString> pairedLabels;
+    for (const auto &layout : this->mapLayouts) {
+        if (tileset->is_secondary) {
+            if (layout->tileset_secondary_label == tileset->name) {
+                pairedLabels.insert(layout->tileset_primary_label);
+            }
+        } else if (layout->tileset_primary_label == tileset->name) {
+            pairedLabels.insert(layout->tileset_secondary_label);
+        }
+    }
+    return pairedLabels;
 }

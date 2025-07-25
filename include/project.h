@@ -109,6 +109,7 @@ public:
     QStringList primaryTilesetLabels;
     QStringList secondaryTilesetLabels;
     QStringList tilesetLabelsOrdered;
+    QSet<QString> getPairedTilesetLabels(Tileset *tileset) const;
 
     bool readMapGroups();
     void addNewMapGroup(const QString &groupName);

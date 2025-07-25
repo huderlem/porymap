@@ -122,8 +122,8 @@ public:
     int getZ() const { return this->elevation; }
     int getElevation() const { return this->elevation; }
 
-    int getPixelX() const { return (this->x * 16) - qMax(0, (pixmap.width() - 16) / 2); }
-    int getPixelY() const { return (this->y * 16) - qMax(0, pixmap.height() - 16); }
+    int getPixelX() const;
+    int getPixelY() const;
 
     virtual EventFrame *getEventFrame();
     virtual EventFrame *createEventFrame() = 0;
