@@ -1787,7 +1787,7 @@ void MainWindow::redrawMetatileSelection() {
 
 void MainWindow::scrollMetatileSelectorToSelection() {
     // Internal selections or 1x1 external selections can be scrolled to
-    if (!editor->metatile_selector_item->isInternalSelection() && editor->metatile_selector_item->getSelectionDimensions() != QPoint(1, 1))
+    if (!editor->metatile_selector_item->isInternalSelection() && editor->metatile_selector_item->getSelectionDimensions() != QSize(1, 1))
         return;
 
     MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
@@ -1795,8 +1795,8 @@ void MainWindow::scrollMetatileSelectorToSelection() {
         return;
 
     QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
-    QPoint size = editor->metatile_selector_item->getSelectionDimensions();
-    pos += QPoint((size.x() - 1) * Metatile::pixelWidth(), (size.y() - 1) * Metatile::pixelHeight()) / 2; // We want to focus on the center of the whole selection
+    QSize size = editor->metatile_selector_item->getSelectionDimensions();
+    pos += QPoint((size.width() - 1) * Metatile::pixelWidth(), (size.height() - 1) * Metatile::pixelHeight()) / 2; // We want to focus on the center of the whole selection
     pos *= getMetatilesZoomScale();
 
     auto viewport = ui->scrollArea_MetatileSelector->viewport();
@@ -1970,8 +1970,8 @@ void MainWindow::copy() {
             }
             copyObject["metatile_selection"] = metatiles;
             copyObject["collision_selection"] = collisions;
-            copyObject["width"] = editor->metatile_selector_item->getSelectionDimensions().x();
-            copyObject["height"] = editor->metatile_selector_item->getSelectionDimensions().y();
+            copyObject["width"] = editor->metatile_selector_item->getSelectionDimensions().width();
+            copyObject["height"] = editor->metatile_selector_item->getSelectionDimensions().height();
             setClipboardData(copyObject);
             logInfo("Copied metatile selection to clipboard");
         }

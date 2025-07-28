@@ -4,9 +4,9 @@
 #include <QPainter>
 #include <QVector>
 
-QPoint TilesetEditorTileSelector::getSelectionDimensions() const {
+QSize TilesetEditorTileSelector::getSelectionDimensions() const {
     if (this->externalSelection) {
-        return QPoint(this->externalSelectionWidth, this->externalSelectionHeight);
+        return QSize(this->externalSelectionWidth, this->externalSelectionHeight);
     } else {
         return SelectablePixmapItem::getSelectionDimensions();
     }
@@ -90,9 +90,9 @@ void TilesetEditorTileSelector::updateSelectedTiles() {
     this->externalSelection = false;
     this->selectedTiles.clear();
     QPoint origin = this->getSelectionStart();
-    QPoint dimensions = this->getSelectionDimensions();
-    for (int j = 0; j < dimensions.y(); j++) {
-        for (int i = 0; i < dimensions.x(); i++) {
+    QSize dimensions = this->getSelectionDimensions();
+    for (int j = 0; j < dimensions.height(); j++) {
+        for (int i = 0; i < dimensions.width(); i++) {
             uint16_t metatileId = this->getTileId(origin.x() + i, origin.y() + j);
             this->selectedTiles.append(metatileId);
         }
@@ -103,13 +103,13 @@ QList<Tile> TilesetEditorTileSelector::getSelectedTiles() {
     if (this->externalSelection) {
         return buildSelectedTiles(this->externalSelectionWidth, this->externalSelectionHeight, this->externalSelectedTiles);
     } else {
-        QPoint dimensions = this->getSelectionDimensions();
+        QSize dimensions = this->getSelectionDimensions();
         QList<Tile> tiles;
         for (int i = 0; i < this->selectedTiles.length(); i++) {
             uint16_t tile = this->selectedTiles.at(i);
             tiles.append(Tile(tile, false, false, this->paletteId));
         }
-        return buildSelectedTiles(dimensions.x(), dimensions.y(), tiles);
+        return buildSelectedTiles(dimensions.width(), dimensions.height(), tiles);
     }
 }
 

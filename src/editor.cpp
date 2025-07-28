@@ -1120,8 +1120,7 @@ void Editor::onHoveredMetatileSelectionCleared() {
 }
 
 void Editor::onSelectedMetatilesChanged() {
-    QPoint size = this->metatile_selector_item->getSelectionDimensions();
-    this->cursorMapTileRect->updateSelectionSize(size.x(), size.y());
+    this->cursorMapTileRect->updateSelectionSize(this->metatile_selector_item->getSelectionDimensions());
     this->redrawCurrentMetatilesSelection();
 }
 

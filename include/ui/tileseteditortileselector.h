@@ -18,7 +18,7 @@ public:
         this->paletteChanged = false;
         setAcceptHoverEvents(true);
     }
-    QPoint getSelectionDimensions() const override;
+    QSize getSelectionDimensions() const override;
     void draw() override;
     void select(uint16_t metatileId);
     void highlight(uint16_t metatileId);

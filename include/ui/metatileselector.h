@@ -22,7 +22,7 @@ struct CollisionSelectionItem
 
 struct MetatileSelection
 {
-    QPoint dimensions;
+    QSize dimensions;
     bool hasCollision;
     QList<MetatileSelectionItem> metatileItems;
     QList<CollisionSelectionItem> collisionItems;
@@ -43,7 +43,7 @@ public:
         setAcceptHoverEvents(true);
     }
 
-    QPoint getSelectionDimensions() const override;
+    QSize getSelectionDimensions() const override;
     void draw() override;
     void refresh();
 

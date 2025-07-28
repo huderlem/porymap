@@ -392,12 +392,12 @@ void TilesetEditor::drawSelectedTiles() {
     const int imgTileHeight = 16;
     this->selectedTileScene->clear();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
-    QPoint dimensions = this->tileSelector->getSelectionDimensions();
-    QImage selectionImage(imgTileWidth * dimensions.x(), imgTileHeight * dimensions.y(), QImage::Format_RGBA8888);
+    QSize dimensions = this->tileSelector->getSelectionDimensions();
+    QImage selectionImage(imgTileWidth * dimensions.width(), imgTileHeight * dimensions.height(), QImage::Format_RGBA8888);
     QPainter painter(&selectionImage);
     int tileIndex = 0;
-    for (int j = 0; j < dimensions.y(); j++) {
-        for (int i = 0; i < dimensions.x(); i++) {
+    for (int j = 0; j < dimensions.height(); j++) {
+        for (int i = 0; i < dimensions.width(); i++) {
             auto tile = tiles.at(tileIndex);
             QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(imgTileWidth, imgTileHeight);
             tile.flip(&tileImage);
@@ -486,12 +486,12 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
         QPoint(5, 1),
     };
     Metatile *prevMetatile = new Metatile(*this->metatile);
-    QPoint dimensions = this->tileSelector->getSelectionDimensions();
+    QSize dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     int selectedTileIndex = 0;
     int maxTileIndex = projectConfig.getNumTilesInMetatile();
-    for (int j = 0; j < dimensions.y(); j++) {
-        for (int i = 0; i < dimensions.x(); i++) {
+    for (int j = 0; j < dimensions.height(); j++) {
+        for (int i = 0; i < dimensions.width(); i++) {
             int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
             if (tileIndex < maxTileIndex
              && tileCoords.at(tileIndex).x() >= x

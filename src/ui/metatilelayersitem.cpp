@@ -80,8 +80,8 @@ void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mousePressEvent(event);
         QPoint selectionOrigin = this->getSelectionStart();
-        QPoint dimensions = this->getSelectionDimensions();
-        emit this->selectedTilesChanged(selectionOrigin, dimensions.x(), dimensions.y());
+        QSize dimensions = this->getSelectionDimensions();
+        emit this->selectedTilesChanged(selectionOrigin, dimensions.width(), dimensions.height());
         this->drawSelection();
     } else {
         const QPoint pos = this->getBoundedPos(event->pos());
@@ -95,8 +95,8 @@ void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mouseMoveEvent(event);
         QPoint selectionOrigin = this->getSelectionStart();
-        QPoint dimensions = this->getSelectionDimensions();
-        emit this->selectedTilesChanged(selectionOrigin, dimensions.x(), dimensions.y());
+        QSize dimensions = this->getSelectionDimensions();
+        emit this->selectedTilesChanged(selectionOrigin, dimensions.width(), dimensions.height());
         this->drawSelection();
     } else {
        const QPoint pos = this->getBoundedPos(event->pos());
@@ -112,8 +112,8 @@ void MetatileLayersItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mouseReleaseEvent(event);
         QPoint selectionOrigin = this->getSelectionStart();
-        QPoint dimensions = this->getSelectionDimensions();
-        emit this->selectedTilesChanged(selectionOrigin, dimensions.x(), dimensions.y());
+        QSize dimensions = this->getSelectionDimensions();
+        emit this->selectedTilesChanged(selectionOrigin, dimensions.width(), dimensions.height());
     }
 
     this->draw();

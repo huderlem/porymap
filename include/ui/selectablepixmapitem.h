@@ -19,7 +19,7 @@ public:
           selectionOffsetX(0),
           selectionOffsetY(0)
         {}
-    virtual QPoint getSelectionDimensions() const;
+    virtual QSize getSelectionDimensions() const;
     virtual void draw() = 0;
 
 protected:

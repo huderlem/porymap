@@ -20,9 +20,9 @@ void BorderMetatilesPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     Blockdata oldBorder = layout->border;
 
-    for (int i = 0; i < selection.dimensions.x() && (i + pos.x()) < width; i++) {
-        for (int j = 0; j < selection.dimensions.y() && (j + pos.y()) < height; j++) {
-            MetatileSelectionItem item = selection.metatileItems.at(j * selection.dimensions.x() + i);
+    for (int i = 0; i < selection.dimensions.width() && (i + pos.x()) < width; i++) {
+        for (int j = 0; j < selection.dimensions.height() && (j + pos.y()) < height; j++) {
+            MetatileSelectionItem item = selection.metatileItems.at(j * selection.dimensions.width() + i);
             layout->setBorderMetatileId(pos.x() + i, pos.y() + j, item.metatileId, true);
         }
     }

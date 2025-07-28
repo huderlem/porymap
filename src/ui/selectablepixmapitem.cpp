@@ -1,9 +1,9 @@
 #include "selectablepixmapitem.h"
 #include <QPainter>
 
-QPoint SelectablePixmapItem::getSelectionDimensions() const
+QSize SelectablePixmapItem::getSelectionDimensions() const
 {
-    return QPoint(abs(this->selectionOffsetX) + 1, abs(this->selectionOffsetY) + 1);
+    return QSize(abs(this->selectionOffsetX) + 1, abs(this->selectionOffsetY) + 1);
 }
 
 QPoint SelectablePixmapItem::getSelectionStart()
@@ -93,8 +93,8 @@ QPoint SelectablePixmapItem::getCellPos(QPointF pos)
 void SelectablePixmapItem::drawSelection()
 {
     QPoint origin = this->getSelectionStart();
-    QPoint dimensions = this->getSelectionDimensions();
-    QRect selectionRect(origin.x() * this->cellWidth, origin.y() * this->cellHeight, dimensions.x() * this->cellWidth, dimensions.y() * this->cellHeight);
+    QSize dimensions = this->getSelectionDimensions();
+    QRect selectionRect(origin.x() * this->cellWidth, origin.y() * this->cellHeight, dimensions.width() * this->cellWidth, dimensions.height() * this->cellHeight);
 
     // If a selection is fully outside the bounds of the selectable area, don't draw anything.
     // This prevents the border of the selection rectangle potentially being visible on an otherwise invisible selection.
