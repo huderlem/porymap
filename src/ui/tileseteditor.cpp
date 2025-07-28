@@ -237,15 +237,11 @@ void TilesetEditor::initMetatileSelector()
 void TilesetEditor::initMetatileLayersItem() {
     Metatile *metatile = Tileset::getMetatile(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
-    connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged,
-            this, &TilesetEditor::onMetatileLayerTileChanged);
-    connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged,
-            this, &TilesetEditor::onMetatileLayerSelectionChanged);
-    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileChanged, [this](const Tile &tile) {
-        onHoveredTileChanged(tile);
-    });
-    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileCleared,
-            this, &TilesetEditor::onHoveredTileCleared);
+    connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged, [this](const QPoint &pos) { paintSelectedLayerTiles(pos); });
+    connect(this->metatileLayersItem, &MetatileLayersItem::paletteChanged, [this](const QPoint &pos) { paintSelectedLayerTiles(pos, true); });
+    connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged, this, &TilesetEditor::onMetatileLayerSelectionChanged);
+    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileChanged, [this](const Tile &tile) { onHoveredTileChanged(tile); });
+    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileCleared, this, &TilesetEditor::onHoveredTileCleared);
 
     bool showGrid = porymapConfig.showTilesetEditorLayerGrid;
     this->ui->actionLayer_Grid->setChecked(showGrid);
@@ -470,7 +466,7 @@ void TilesetEditor::onHoveredTileCleared() {
     this->ui->statusbar->clearMessage();
 }
 
-void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
+void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly) {
     static const QList<QPoint> tileCoords = QList<QPoint>{
         QPoint(0, 0),
         QPoint(1, 0),
@@ -485,6 +481,7 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
         QPoint(4, 1),
         QPoint(5, 1),
     };
+    bool changed = false;
     Metatile *prevMetatile = new Metatile(*this->metatile);
     QSize dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
@@ -492,22 +489,34 @@ void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     int maxTileIndex = projectConfig.getNumTilesInMetatile();
     for (int j = 0; j < dimensions.height(); j++) {
         for (int i = 0; i < dimensions.width(); i++) {
-            int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
-            if (tileIndex < maxTileIndex
-             && tileCoords.at(tileIndex).x() >= x
-             && tileCoords.at(tileIndex).y() >= y){
-                Tile &tile = this->metatile->tiles[tileIndex];
-                tile.tileId = tiles.at(selectedTileIndex).tileId;
-                tile.xflip = tiles.at(selectedTileIndex).xflip;
-                tile.yflip = tiles.at(selectedTileIndex).yflip;
-                tile.palette = tiles.at(selectedTileIndex).palette;
-                if (this->tileSelector->showUnused) {
-                    this->tileSelector->usedTiles[tile.tileId] += 1;
-                    this->tileSelector->usedTiles[prevMetatile->tiles[tileIndex].tileId] -= 1;
+            int tileIndex = ((pos.x() + i) / 2 * 4) + ((pos.y() + j) * 2) + ((pos.x() + i) % 2);
+            QPoint tilePos = tileCoords.at(tileIndex);
+            if (tileIndex < maxTileIndex && tilePos.x() >= pos.x() && tilePos.y() >= pos.y()){
+                Tile &destTile = this->metatile->tiles[tileIndex];
+                const Tile srcTile = tiles.at(selectedTileIndex);
+                if (paletteOnly) {
+                    if (srcTile.palette == destTile.palette)
+                        continue; // Ignore no-ops for edit history
+                    destTile.palette = srcTile.palette;
+                } else {
+                    if (srcTile == destTile)
+                        continue; // Ignore no-ops for edit history
+
+                    // Update tile usage count
+                    if (this->tileSelector->showUnused && destTile.tileId != srcTile.tileId) {
+                        this->tileSelector->usedTiles[srcTile.tileId] += 1;
+                        this->tileSelector->usedTiles[destTile.tileId] -= 1;
+                    }
+                    destTile = srcTile;
                 }
+                changed = true;
             }
             selectedTileIndex++;
         }
+    }
+    if (!changed) {
+        delete prevMetatile;
+        return;
     }
 
     this->metatileSelector->drawSelectedMetatile();

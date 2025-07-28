@@ -76,34 +76,49 @@ void MetatileLayersItem::setTilesets(Tileset *primaryTileset, Tileset *secondary
     this->clearLastHoveredCoords();
 }
 
+// We request our current selection to be painted,
+// this class doesn't handle changing the metatile data.
+void MetatileLayersItem::requestTileChange(const QPoint &pos) {
+    this->prevChangedPos = pos;
+    this->clearLastHoveredCoords();
+    emit this->tileChanged(pos);
+}
+void MetatileLayersItem::requestPaletteChange(const QPoint &pos) {
+    this->prevChangedPos = pos;
+    this->clearLastHoveredCoords();
+    emit this->paletteChanged(pos);
+}
+
+void MetatileLayersItem::updateSelection() {
+    QPoint selectionOrigin = this->getSelectionStart();
+    QSize dimensions = this->getSelectionDimensions();
+    emit this->selectedTilesChanged(selectionOrigin, dimensions.width(), dimensions.height());
+    this->drawSelection();
+}
+
 void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mousePressEvent(event);
-        QPoint selectionOrigin = this->getSelectionStart();
-        QSize dimensions = this->getSelectionDimensions();
-        emit this->selectedTilesChanged(selectionOrigin, dimensions.width(), dimensions.height());
-        this->drawSelection();
+        updateSelection();
+    } else if (event->modifiers() & Qt::ControlModifier) {
+        requestPaletteChange(getBoundedPos(event->pos()));
     } else {
-        const QPoint pos = this->getBoundedPos(event->pos());
-        this->prevChangedPos = pos;
-        this->clearLastHoveredCoords();
-        emit this->tileChanged(pos.x(), pos.y());
+        requestTileChange(getBoundedPos(event->pos()));
     }
 }
 
 void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mouseMoveEvent(event);
-        QPoint selectionOrigin = this->getSelectionStart();
-        QSize dimensions = this->getSelectionDimensions();
-        emit this->selectedTilesChanged(selectionOrigin, dimensions.width(), dimensions.height());
-        this->drawSelection();
+        updateSelection();
     } else {
        const QPoint pos = this->getBoundedPos(event->pos());
-        if (prevChangedPos != pos) {
-            this->prevChangedPos = pos;
-            this->clearLastHoveredCoords();
-            emit this->tileChanged(pos.x(), pos.y());
+        if (this->prevChangedPos != pos) {
+            if (event->modifiers() & Qt::ControlModifier) {
+                requestPaletteChange(pos);
+            } else {
+                requestTileChange(pos);
+            }
         }
     }
 }
@@ -111,11 +126,10 @@ void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 void MetatileLayersItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mouseReleaseEvent(event);
-        QPoint selectionOrigin = this->getSelectionStart();
-        QSize dimensions = this->getSelectionDimensions();
-        emit this->selectedTilesChanged(selectionOrigin, dimensions.width(), dimensions.height());
+        updateSelection();
     }
 
+    // Clear selection rectangle
     this->draw();
 }
 

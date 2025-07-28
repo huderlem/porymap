@@ -69,7 +69,6 @@ private slots:
     void onHoveredTileChanged(const Tile&);
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
-    void onMetatileLayerTileChanged(int, int);
     void onMetatileLayerSelectionChanged(QPoint, int, int);
     void onPaletteEditorChangedPaletteColor();
 
@@ -138,6 +137,7 @@ private:
     void setRawAttributesVisible(bool visible);
     void refreshTileFlips();
     void refreshPaletteId();
+    void paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly = false);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;

@@ -22,9 +22,14 @@ private:
     Tileset *secondaryTileset;
     QPoint prevChangedPos;
     QPoint prevHoveredPos;
+
     QPoint getBoundedPos(const QPointF &);
+    void requestTileChange(const QPoint &pos);
+    void requestPaletteChange(const QPoint &pos);
+    void updateSelection();
 signals:
-    void tileChanged(int, int);
+    void tileChanged(const QPoint &pos);
+    void paletteChanged(const QPoint &pos);
     void selectedTilesChanged(QPoint, int, int);
     void hoveredTileChanged(const Tile &tile);
     void hoveredTileCleared();
