@@ -1187,6 +1187,18 @@ bool Project::loadLayoutTilesets(Layout *layout) {
         logError(QString("Failed to load %1: missing secondary tileset label.").arg(layout->name));
         return false;
     }
+    if (!this->primaryTilesetLabels.contains(layout->tileset_primary_label)) {
+        logError(QString("Failed to load %1: unknown primary tileset label '%2'.")
+                            .arg(layout->name)
+                            .arg(layout->tileset_primary_label));
+        return false;
+    }
+    if (!this->secondaryTilesetLabels.contains(layout->tileset_secondary_label)) {
+        logError(QString("Failed to load %1: unknown secondary tileset label '%2'.")
+                            .arg(layout->name)
+                            .arg(layout->tileset_secondary_label));
+        return false;
+    }
 
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
@@ -1194,6 +1206,11 @@ bool Project::loadLayoutTilesets(Layout *layout) {
 }
 
 Tileset* Project::getTileset(const QString &label, bool forceLoad) {
+    if (!this->tilesetLabelsOrdered.contains(label)) {
+        logError(QString("Unknown tileset name '%1'.").arg(label));
+        return nullptr;
+    }
+
     Tileset *tileset = nullptr;
 
     auto it = this->tilesetCache.constFind(label);

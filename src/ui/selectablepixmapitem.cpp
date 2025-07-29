@@ -1,11 +1,6 @@
 #include "selectablepixmapitem.h"
 #include <QPainter>
 
-QSize SelectablePixmapItem::getSelectionDimensions() const
-{
-    return QSize(abs(this->selectionOffsetX) + 1, abs(this->selectionOffsetY) + 1);
-}
-
 QPoint SelectablePixmapItem::getSelectionStart()
 {
     int x = this->selectionInitialX;
@@ -15,47 +10,62 @@ QPoint SelectablePixmapItem::getSelectionStart()
     return QPoint(x, y);
 }
 
-void SelectablePixmapItem::select(int x, int y, int width, int height)
+void SelectablePixmapItem::select(const QPoint &pos, const QSize &size)
 {
-    this->selectionInitialX = x;
-    this->selectionInitialY = y;
-    this->selectionOffsetX = qBound(0, width, this->maxSelectionWidth);
-    this->selectionOffsetY = qBound(0, height, this->maxSelectionHeight);
-    this->draw();
-    emit this->selectionChanged(x, y, width, height);
+    this->selectionInitialX = pos.x();
+    this->selectionInitialY = pos.y();
+    this->selectionOffsetX = qBound(0, size.width(), this->maxSelectionWidth - 1);
+    this->selectionOffsetY = qBound(0, size.height(), this->maxSelectionHeight - 1);
+    draw();
+    emit selectionChanged(pos, getSelectionDimensions());
 }
 
 void SelectablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    QPoint pos = this->getCellPos(event->pos());
+    QPoint pos = getCellPos(event->pos());
     this->selectionInitialX = pos.x();
     this->selectionInitialY = pos.y();
     this->selectionOffsetX = 0;
     this->selectionOffsetY = 0;
-    this->updateSelection(pos.x(), pos.y());
+    this->prevCellPos = pos;
+    updateSelection(pos);
 }
 
 void SelectablePixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    QPoint pos = this->getCellPos(event->pos());
-    this->updateSelection(pos.x(), pos.y());
+    QPoint pos = getCellPos(event->pos());
+    if (pos == this->prevCellPos)
+        return;
+    this->prevCellPos = pos;
+    updateSelection(pos);
 }
 
 void SelectablePixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    QPoint pos = this->getCellPos(event->pos());
-    this->updateSelection(pos.x(), pos.y());
+    updateSelection(getCellPos(event->pos()));
 }
 
-void SelectablePixmapItem::updateSelection(int x, int y)
-{
+void SelectablePixmapItem::setMaxSelectionSize(int width, int height) {
+    this->maxSelectionWidth = qMax(width, 1);
+    this->maxSelectionHeight = qMax(height, 1);
+
+    // Update the selection if we shrank below the current selection size.
+    QSize size = getSelectionDimensions();
+    if (size.width() > this->maxSelectionWidth || size.height() > this->maxSelectionHeight) {
+        QPoint origin = getSelectionStart();
+        this->selectionInitialX = origin.x();
+        this->selectionInitialY = origin.y();
+        this->selectionOffsetX = qMin(size.width(), this->maxSelectionWidth) - 1;
+        this->selectionOffsetY = qMin(size.height(), this->maxSelectionHeight) - 1;
+        draw();
+        emit selectionChanged(getSelectionStart(), getSelectionDimensions());
+    }
+}
+
+void SelectablePixmapItem::updateSelection(const QPoint &pos) {
     // Snap to a valid position inside the selection area.
-    int width = pixmap().width() / this->cellWidth;
-    int height = pixmap().height() / this->cellHeight;
-    if (x < 0) x = 0;
-    if (x >= width) x = width - 1;
-    if (y < 0) y = 0;
-    if (y >= height) y = height - 1;
+    int x = qBound(0, pos.x(), cellsWide() - 1);
+    int y = qBound(0, pos.y(), cellsTall() - 1);
 
     this->selectionOffsetX = x - this->selectionInitialX;
     this->selectionOffsetY = y - this->selectionInitialY;
@@ -76,22 +86,20 @@ void SelectablePixmapItem::updateSelection(int x, int y)
         this->selectionOffsetY = -this->maxSelectionHeight + 1;
     }
 
-    this->draw();
-    emit this->selectionChanged(x, y, width, height);
+    draw();
+    emit selectionChanged(QPoint(x, y), getSelectionDimensions());
 }
 
-QPoint SelectablePixmapItem::getCellPos(QPointF pos)
-{
-    if (pos.x() < 0) pos.setX(0);
-    if (pos.y() < 0) pos.setY(0);
-    if (pos.x() >= this->pixmap().width()) pos.setX(this->pixmap().width() - 1);
-    if (pos.y() >= this->pixmap().height()) pos.setY(this->pixmap().height() - 1);
-    return QPoint(static_cast<int>(pos.x()) / this->cellWidth,
-                  static_cast<int>(pos.y()) / this->cellHeight);
+QPoint SelectablePixmapItem::getCellPos(QPointF pos) {
+    if (this->cellWidth == 0 || this->cellHeight == 0 || pixmap().isNull())
+        return QPoint(0,0);
+
+    int x = qBound(0, static_cast<int>(pos.x()), pixmap().width() - 1);
+    int y = qBound(0, static_cast<int>(pos.y()), pixmap().height() - 1);
+    return QPoint(x / this->cellWidth, y / this->cellHeight);
 }
 
-void SelectablePixmapItem::drawSelection()
-{
+void SelectablePixmapItem::drawSelection() {
     QPoint origin = this->getSelectionStart();
     QSize dimensions = this->getSelectionDimensions();
     QRect selectionRect(origin.x() * this->cellWidth, origin.y() * this->cellHeight, dimensions.width() * this->cellWidth, dimensions.height() * this->cellHeight);

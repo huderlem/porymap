@@ -338,6 +338,7 @@ void PorymapConfig::reset() {
     this->metatilesZoom = 30;
     this->tilesetEditorMetatilesZoom = 30;
     this->tilesetEditorTilesZoom = 30;
+    this->tilesetEditorLayerOrientation = Qt::Horizontal;
     this->showPlayerView = false;
     this->showCursorTile = true;
     this->showBorder = true;
@@ -454,6 +455,9 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetEditorMetatilesZoom = getConfigInteger(key, value, 10, 100, 30);
     } else if (key == "tileset_editor_tiles_zoom") {
         this->tilesetEditorTilesZoom = getConfigInteger(key, value, 10, 100, 30);
+     } else if (key == "tileset_editor_layer_orientation") {
+        // Being explicit here to avoid casting out-of-range values.
+        this->tilesetEditorLayerOrientation = (getConfigInteger(key, value) == static_cast<int>(Qt::Horizontal)) ? Qt::Horizontal : Qt::Vertical;
     } else if (key == "show_player_view") {
         this->showPlayerView = getConfigBool(key, value);
     } else if (key == "show_cursor_tile") {
@@ -604,6 +608,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("metatiles_zoom", QString::number(this->metatilesZoom));
     map.insert("tileset_editor_metatiles_zoom", QString::number(this->tilesetEditorMetatilesZoom));
     map.insert("tileset_editor_tiles_zoom", QString::number(this->tilesetEditorTilesZoom));
+    map.insert("tileset_editor_layer_orientation", QString::number(this->tilesetEditorLayerOrientation));
     map.insert("show_player_view", this->showPlayerView ? "1" : "0");
     map.insert("show_cursor_tile", this->showCursorTile ? "1" : "0");
     map.insert("show_border", this->showBorder ? "1" : "0");

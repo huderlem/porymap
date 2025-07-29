@@ -62,12 +62,16 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
 
     connect(ui->spinBox_paletteSelector, QOverload<int>::of(&QSpinBox::valueChanged), this, &TilesetEditor::refreshPaletteId);
 
+    connect(ui->actionLayer_Arrangement_Horizontal, &QAction::triggered, [this] { setMetatileLayerOrientation(Qt::Horizontal); });
+    connect(ui->actionLayer_Arrangement_Vertical,   &QAction::triggered, [this] { setMetatileLayerOrientation(Qt::Vertical); });
+
     initAttributesUi();
     initMetatileSelector();
     initMetatileLayersItem();
     initTileSelector();
     initSelectedTileItem();
     initShortcuts();
+    setMetatileLayerOrientation(porymapConfig.tilesetEditorLayerOrientation);
     this->metatileSelector->select(0);
     restoreWindowState();
 }
@@ -234,6 +238,53 @@ void TilesetEditor::initMetatileSelector()
     this->ui->horizontalSlider_MetatilesZoom->setValue(porymapConfig.tilesetEditorMetatilesZoom);
 }
 
+void TilesetEditor::setMetatileLayerOrientation(Qt::Orientation orientation) {
+    // Sync settings
+    bool horizontal = (orientation == Qt::Horizontal);
+    porymapConfig.tilesetEditorLayerOrientation = orientation;
+    const QSignalBlocker b_Horizontal(ui->actionLayer_Arrangement_Horizontal);
+    const QSignalBlocker b_Vertical(ui->actionLayer_Arrangement_Vertical);
+    ui->actionLayer_Arrangement_Horizontal->setChecked(horizontal);
+    ui->actionLayer_Arrangement_Vertical->setChecked(!horizontal);
+
+    this->metatileLayersItem->setOrientation(orientation);
+
+    int numTilesWide = Metatile::tileWidth();
+    int numTilesTall = Metatile::tileHeight();
+    int numLayers = projectConfig.getNumLayersInMetatile();
+    if (horizontal) {
+        numTilesWide *= numLayers;
+    } else {
+        numTilesTall *= numLayers;
+    }
+    this->tileSelector->setMaxSelectionSize(numTilesWide, numTilesTall);
+
+    const int scale = 2;
+    int w = Tile::pixelWidth() * numTilesWide * scale + 2;
+    int h = Tile::pixelHeight() * numTilesTall * scale + 2;
+    ui->graphicsView_selectedTile->setFixedSize(w, h);
+    ui->graphicsView_metatileLayers->setFixedSize(w, h);
+
+    // If the layers are laid out vertically then the orientation is obvious, no need to label them.
+    ui->label_BottomTop->setVisible(horizontal);
+
+    // Let the graphics view take over the label's vertical space (or conversely, give the space back).
+    // (This is a bit of a process, apparently there's no quick way to set a widget's row / row span once they're added to the layout
+    int row, col, rowSpan, colSpan;
+    int index = ui->gridLayout_MetatileProperties->indexOf(ui->label_BottomTop);
+    ui->gridLayout_MetatileProperties->getItemPosition(index, &row, &col, &rowSpan, &colSpan);
+
+    // TODO: Rearrange the rest of the metatile properties panel. The vertical triple-layer metatiles layout esp. looks terrible.
+    ui->gridLayout_MetatileProperties->removeWidget(ui->graphicsView_metatileLayers);
+    if (horizontal) {
+        // Give space from graphics view back to label
+        ui->gridLayout_MetatileProperties->addWidget(ui->graphicsView_metatileLayers, row + 1, col, rowSpan, colSpan);
+    } else {
+        // Take space from label and give it to graphics view
+        ui->gridLayout_MetatileProperties->addWidget(ui->graphicsView_metatileLayers, row, col, rowSpan + 1, colSpan);
+    }
+}
+
 void TilesetEditor::initMetatileLayersItem() {
     Metatile *metatile = Tileset::getMetatile(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
     this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
@@ -252,9 +303,8 @@ void TilesetEditor::initMetatileLayersItem() {
     this->ui->graphicsView_metatileLayers->setScene(this->metatileLayersScene);
 }
 
-void TilesetEditor::initTileSelector()
-{
-    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset, projectConfig.getNumLayersInMetatile());
+void TilesetEditor::initTileSelector() {
+    this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset);
     connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged, [this](uint16_t tileId) {
         onHoveredTileChanged(tileId);
     });
@@ -277,7 +327,6 @@ void TilesetEditor::initSelectedTileItem() {
     this->selectedTileScene = new QGraphicsScene;
     this->drawSelectedTiles();
     this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
-    this->ui->graphicsView_selectedTile->setFixedSize(this->selectedTilePixmapItem->pixmap().width() + 2, this->selectedTilePixmapItem->pixmap().height() + 2);
 }
 
 void TilesetEditor::initShortcuts() {
@@ -392,13 +441,12 @@ void TilesetEditor::drawSelectedTiles() {
     QImage selectionImage(imgTileWidth * dimensions.width(), imgTileHeight * dimensions.height(), QImage::Format_RGBA8888);
     QPainter painter(&selectionImage);
     int tileIndex = 0;
-    for (int j = 0; j < dimensions.height(); j++) {
-        for (int i = 0; i < dimensions.width(); i++) {
-            auto tile = tiles.at(tileIndex);
+    for (int y = 0; y < dimensions.height(); y++) {
+        for (int x = 0; x < dimensions.width(); x++) {
+            auto tile = tiles.at(tileIndex++);
             QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(imgTileWidth, imgTileHeight);
             tile.flip(&tileImage);
-            tileIndex++;
-            painter.drawImage(i * imgTileWidth, j * imgTileHeight, tileImage);
+            painter.drawImage(x * imgTileWidth, y * imgTileHeight, tileImage);
         }
     }
 
@@ -407,7 +455,6 @@ void TilesetEditor::drawSelectedTiles() {
 
     QSize size(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
     this->ui->graphicsView_selectedTile->setSceneRect(0, 0, size.width(), size.height());
-    this->ui->graphicsView_selectedTile->setFixedSize(size.width() + 2, size.height() + 2);
 }
 
 void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
@@ -436,7 +483,6 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
 
     this->metatileLayersItem->setMetatile(metatile);
     this->metatileLayersItem->draw();
-    this->ui->graphicsView_metatileLayers->setFixedSize(this->metatileLayersItem->pixmap().width() + 2, this->metatileLayersItem->pixmap().height() + 2);
 
     MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset);
     this->ui->lineEdit_metatileLabel->setText(labels.owned);
@@ -467,33 +513,18 @@ void TilesetEditor::onHoveredTileCleared() {
 }
 
 void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly) {
-    static const QList<QPoint> tileCoords = QList<QPoint>{
-        QPoint(0, 0),
-        QPoint(1, 0),
-        QPoint(0, 1),
-        QPoint(1, 1),
-        QPoint(2, 0),
-        QPoint(3, 0),
-        QPoint(2, 1),
-        QPoint(3, 1),
-        QPoint(4, 0),
-        QPoint(5, 0),
-        QPoint(4, 1),
-        QPoint(5, 1),
-    };
     bool changed = false;
     Metatile *prevMetatile = new Metatile(*this->metatile);
     QSize dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
-    int selectedTileIndex = 0;
+    int srcTileIndex = 0;
     int maxTileIndex = projectConfig.getNumTilesInMetatile();
-    for (int j = 0; j < dimensions.height(); j++) {
-        for (int i = 0; i < dimensions.width(); i++) {
-            int tileIndex = ((pos.x() + i) / 2 * 4) + ((pos.y() + j) * 2) + ((pos.x() + i) % 2);
-            QPoint tilePos = tileCoords.at(tileIndex);
-            if (tileIndex < maxTileIndex && tilePos.x() >= pos.x() && tilePos.y() >= pos.y()){
-                Tile &destTile = this->metatile->tiles[tileIndex];
-                const Tile srcTile = tiles.at(selectedTileIndex);
+    for (int y = 0; y < dimensions.height(); y++) {
+        for (int x = 0; x < dimensions.width(); x++) {
+            int destTileIndex = this->metatileLayersItem->posToTileIndex(pos.x() + x, pos.y() + y);
+            if (destTileIndex < maxTileIndex) {
+                Tile &destTile = this->metatile->tiles[destTileIndex];
+                const Tile srcTile = tiles.at(srcTileIndex++);
                 if (paletteOnly) {
                     if (srcTile.palette == destTile.palette)
                         continue; // Ignore no-ops for edit history
@@ -511,7 +542,6 @@ void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly)
                 }
                 changed = true;
             }
-            selectedTileIndex++;
         }
     }
     if (!changed) {
@@ -525,26 +555,24 @@ void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly)
     this->commitMetatileChange(prevMetatile);
 }
 
-void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int width, int height) {
+void TilesetEditor::onMetatileLayerSelectionChanged(const QPoint &selectionOrigin, const QSize &size) {
     QList<Tile> tiles;
     QList<int> tileIdxs;
-    int x = selectionOrigin.x();
-    int y = selectionOrigin.y();
     int maxTileIndex = projectConfig.getNumTilesInMetatile();
-    for (int j = 0; j < height; j++) {
-        for (int i = 0; i < width; i++) {
-            int tileIndex = ((x + i) / 2 * 4) + ((y + j) * 2) + ((x + i) % 2);
+    for (int j = 0; j < size.height(); j++) {
+        for (int i = 0; i < size.width(); i++) {
+            int tileIndex = this->metatileLayersItem->posToTileIndex(selectionOrigin.x() + i, selectionOrigin.y() + j);
             if (tileIndex < maxTileIndex) {
-                tiles.append(this->metatile->tiles.at(tileIndex));
+                tiles.append(this->metatile->tiles.value(tileIndex));
                 tileIdxs.append(tileIndex);
             }
         }
     }
 
-    this->tileSelector->setExternalSelection(width, height, tiles, tileIdxs);
-    if (width == 1 && height == 1) {
+    this->tileSelector->setExternalSelection(size.width(), size.height(), tiles, tileIdxs);
+    if (size == QSize(1,1)) {
         setPaletteId(tiles[0].palette);
-        this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tileId));
+        this->tileSelector->highlight(tiles[0].tileId);
         this->redrawTileSelector();
     }
     this->metatileLayersItem->clearLastModifiedCoords();

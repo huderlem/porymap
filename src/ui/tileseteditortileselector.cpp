@@ -12,6 +12,11 @@ QSize TilesetEditorTileSelector::getSelectionDimensions() const {
     }
 }
 
+void TilesetEditorTileSelector::setMaxSelectionSize(int width, int height) {
+    SelectablePixmapItem::setMaxSelectionSize(width, height);
+    updateSelectedTiles();
+}
+
 void TilesetEditorTileSelector::updateBasePixmap() {
     if (!this->primaryTileset || !this->secondaryTileset || this->numTilesWide == 0) {
         this->basePixmap = QPixmap();
@@ -134,7 +139,7 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
             // If we've completed a layer row, or its the last tile of an incompletely
             // selected layer, then append the layer row to the full row
             // If not an external selection, treat the whole row as 1 "layer"
-            if (i == width - 1 || (this->externalSelection && (this->externalSelectedPos.at(index) % 4) & 1)) {
+            if (i == width - 1 || (this->externalSelection && (this->externalSelectedPos.at(index) % Metatile::tilesPerLayer()) & 1)) {
                 row.append(layerRow);
                 layerRow.clear();
             }
@@ -170,16 +175,20 @@ uint16_t TilesetEditorTileSelector::getTileId(int x, int y) {
 }
 
 void TilesetEditorTileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    this->prevCellPos = getCellPos(event->pos());
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedTiles();
     emit selectedTilesChanged();
 }
 
 void TilesetEditorTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    QPoint pos = getCellPos(event->pos());
+    if (this->prevCellPos == pos)
+        return;
+    this->prevCellPos = pos;
+
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedTiles();
-
-    QPoint pos = this->getCellPos(event->pos());
     uint16_t tile = this->getTileId(pos.x(), pos.y());
     emit hoveredTileChanged(tile);
     emit selectedTilesChanged();

@@ -108,6 +108,7 @@ public:
     int metatilesZoom;
     int tilesetEditorMetatilesZoom;
     int tilesetEditorTilesZoom;
+    Qt::Orientation tilesetEditorLayerOrientation;
     bool showPlayerView;
     bool showCursorTile;
     bool showBorder;

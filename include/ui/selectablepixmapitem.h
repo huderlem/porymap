@@ -19,8 +19,12 @@ public:
           selectionOffsetX(0),
           selectionOffsetY(0)
         {}
-    virtual QSize getSelectionDimensions() const;
+    virtual QSize getSelectionDimensions() const { return QSize(abs(this->selectionOffsetX) + 1, abs(this->selectionOffsetY) + 1); }
     virtual void draw() = 0;
+
+    virtual void setMaxSelectionSize(const QSize &size) { setMaxSelectionSize(size.width(), size.height()); }
+    virtual void setMaxSelectionSize(int width, int height);
+    QSize maxSelectionSize() { return QSize(this->maxSelectionWidth, this->maxSelectionHeight); }
 
 protected:
     int cellWidth;
@@ -33,17 +37,22 @@ protected:
     int selectionOffsetY;
 
     QPoint getSelectionStart();
-    void select(int x, int y, int width = 0, int height = 0);
-    void select(const QPoint &pos, const QSize &size = QSize(0,0)) { select(pos.x(), pos.y(), size.width(), size.height()); }
-    void updateSelection(int, int);
+    void select(const QPoint &pos, const QSize &size = QSize(1,1));
+    void select(int x, int y, int width = 1, int height = 1) { select(QPoint(x, y), QSize(width, height)); }
+    void updateSelection(const QPoint &pos);
     QPoint getCellPos(QPointF);
     virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
     virtual void drawSelection();
+    virtual int cellsWide() const { return this->cellWidth ? (pixmap().width() / this->cellWidth) : 0; }
+    virtual int cellsTall() const { return this->cellHeight ? (pixmap().height() / this->cellHeight) : 0; }
 
 signals:
-    void selectionChanged(int, int, int, int);
+    void selectionChanged(const QPoint&, const QSize&);
+
+private:
+    QPoint prevCellPos = QPoint(-1,-1);
 };
 
 #endif // SELECTABLEPIXMAPITEM_H

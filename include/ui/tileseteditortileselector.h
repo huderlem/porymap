@@ -7,8 +7,8 @@
 class TilesetEditorTileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, int numLayers)
-        : SelectablePixmapItem(16, 16, numLayers * Metatile::tileWidth(), Metatile::tileHeight()) {
+    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset)
+        : SelectablePixmapItem(16, 16, Metatile::tileWidth(), Metatile::tileWidth()) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
@@ -19,6 +19,7 @@ public:
         setAcceptHoverEvents(true);
     }
     QSize getSelectionDimensions() const override;
+    void setMaxSelectionSize(int width, int height) override;
     void draw() override;
     void select(uint16_t metatileId);
     void highlight(uint16_t metatileId);
@@ -30,6 +31,7 @@ public:
     QPoint getTileCoordsOnWidget(uint16_t);
     QImage buildPrimaryTilesIndexedImage();
     QImage buildSecondaryTilesIndexedImage();
+
 
     QVector<uint16_t> usedTiles;
     bool showUnused = false;
@@ -49,6 +51,7 @@ private:
     int externalSelectionHeight;
     QList<Tile> externalSelectedTiles;
     QList<int> externalSelectedPos;
+    QPoint prevCellPos = QPoint(-1,-1);
 
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
