@@ -142,17 +142,27 @@ QStringList Map::getScriptLabels(Event::Group group) {
                             .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
                             .arg(m_name)
                             .arg(error));
+
+            // Setting this flag here (and below) lets us skip some steps and logging if we already know it failed.
+            // Script labels may be re-requested often, so we don't want to fill the log with warnings.
             m_loggedScriptsFileError = true;
         }
 
-        if (porymapConfig.monitorFiles) {
+        if (porymapConfig.monitorFiles && !m_loggedScriptsFileError) {
             if (!m_scriptFileWatcher) {
                 // Only create the file watcher when it's first needed (even an empty QFileSystemWatcher will consume system resources).
                 // The other option would be for Porymap to have a single global QFileSystemWatcher, but that has complications of its own.
                 m_scriptFileWatcher = new QFileSystemWatcher(this);
                 connect(m_scriptFileWatcher, &QFileSystemWatcher::fileChanged, this, &Map::invalidateScripts);
             }
-            if (!m_scriptFileWatcher->files().contains(scriptsFilepath) && !m_scriptFileWatcher->addPath(scriptsFilepath) && !m_loggedScriptsFileError) {
+            // m_scriptFileWatcher can stil be nullptr here if the inotify limit was reached on Linux.
+            // Porymap isn't using enough resources in general for this to be a problem, but the user may have lowered the inotify limit.
+            if (!m_scriptFileWatcher) {
+                logWarn(QString("Failed to add scripts file '%1' to file watcher for %2: Reached system resource limit.")
+                                .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
+                                .arg(m_name));
+                m_loggedScriptsFileError = true;
+            } else if (!m_scriptFileWatcher->files().contains(scriptsFilepath) && !m_scriptFileWatcher->addPath(scriptsFilepath)) {
                 logWarn(QString("Failed to add scripts file '%1' to file watcher for %2.")
                                 .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
                                 .arg(m_name));

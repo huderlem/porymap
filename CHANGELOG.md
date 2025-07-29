@@ -36,6 +36,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix warning not appearing when the log file exceeds maximum size.
 - Fix possible lag while using the Tileset Editor's tile selector.
 - Fix unnecessary resources being used to watch files.
+- Fix possible crash on Linux if too many inotify instances are requested.
 
 ## [6.1.0] - 2025-06-09
 ### Added
