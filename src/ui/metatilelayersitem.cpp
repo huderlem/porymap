@@ -163,7 +163,7 @@ void MetatileLayersItem::hover(const QPoint &pos) {
     this->prevHoveredPos = pos;
 
     int tileIndex = posToTileIndex(pos);
-    if (tileIndex < 0 || tileIndex >= this->metatile->tiles.length())
+    if (tileIndex < 0 || !this->metatile || tileIndex >= this->metatile->tiles.length())
         return;
 
     emit this->hoveredTileChanged(this->metatile->tiles.at(tileIndex));

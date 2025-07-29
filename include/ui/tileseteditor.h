@@ -20,6 +20,7 @@ class TilesetEditor;
 
 class MetatileHistoryItem {
 public:
+    MetatileHistoryItem() {};
     MetatileHistoryItem(uint16_t metatileId, Metatile *prevMetatile, Metatile *newMetatile, QString prevLabel, QString newLabel) {
         this->metatileId = metatileId;
         this->prevMetatile = prevMetatile;
@@ -27,15 +28,24 @@ public:
         this->prevLabel = prevLabel;
         this->newLabel = newLabel;
     }
+    MetatileHistoryItem(uint16_t metatileIdA, uint16_t metatileIdB) {
+        this->metatileId = metatileIdA;
+        this->swapMetatileId = metatileIdB;
+        this->isSwap = true;
+    }
     ~MetatileHistoryItem() {
         delete this->prevMetatile;
         delete this->newMetatile;
     }
-    uint16_t metatileId;
-    Metatile *prevMetatile;
-    Metatile *newMetatile;
+
+    uint16_t metatileId = 0;
+    Metatile *prevMetatile = nullptr;
+    Metatile *newMetatile = nullptr;
     QString prevLabel;
     QString newLabel;
+
+    uint16_t swapMetatileId = 0;
+    bool isSwap = false;
 };
 
 class TilesetEditor : public QMainWindow
@@ -122,8 +132,8 @@ private:
     void countMetatileUsage();
     void countTileUsage();
     void copyMetatile(bool cut);
-    void pasteMetatile(const Metatile * toPaste, QString label);
-    bool replaceMetatile(uint16_t metatileId, const Metatile * src, QString label);
+    void pasteMetatile(const Metatile &toPaste, QString label);
+    bool replaceMetatile(uint16_t metatileId, const Metatile &src, QString label);
     void commitMetatileChange(Metatile * prevMetatile);
     void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
     uint32_t attributeNameToValue(Metatile::Attr attribute, const QString &text, bool *ok);
@@ -134,11 +144,17 @@ private:
     void commitEncounterType();
     void commitTerrainType();
     void commitLayerType();
+    void commit(MetatileHistoryItem *item);
+    void updateEditHistoryActions();
     void setRawAttributesVisible(bool visible);
     void refreshTileFlips();
     void refreshPaletteId();
     void paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly = false);
     void setMetatileLayerOrientation(Qt::Orientation orientation);
+    void commitMetatileSwap(uint16_t metatileIdA, uint16_t metatileIdB);
+    bool swapMetatiles(uint16_t metatileIdA, uint16_t metatileIdB);
+    void applyMetatileSwapToLayouts(uint16_t metatileIdA, uint16_t metatileIdB);
+    void applyMetatileSwapsToLayouts();
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
@@ -162,6 +178,7 @@ private:
     bool lockSelection = false;
     QSet<uint16_t> metatileReloadQueue;
     MetatileImageExporter::Settings *metatileImageExportSettings = nullptr;
+    QList<QPair<uint16_t,uint16_t>> metatileIdSwaps;
 
     bool save();
 

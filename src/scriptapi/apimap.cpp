@@ -96,21 +96,15 @@ void MainWindow::setBlocksFromSelection(int x, int y, bool forceRedraw, bool com
 int MainWindow::getMetatileId(int x, int y) {
     if (!this->editor || !this->editor->layout)
         return 0;
-    Block block;
-    if (!this->editor->layout->getBlock(x, y, &block)) {
-        return 0;
-    }
-    return block.metatileId();
+    return this->editor->layout->getMetatileId(x, y);
 }
 
 void MainWindow::setMetatileId(int x, int y, int metatileId, bool forceRedraw, bool commitChanges) {
     if (!this->editor || !this->editor->layout)
         return;
-    Block block;
-    if (!this->editor->layout->getBlock(x, y, &block)) {
+    if (!this->editor->layout->setMetatileId(x, y, metatileId)) {
         return;
     }
-    this->editor->layout->setBlock(x, y, Block(metatileId, block.collision(), block.elevation()));
     this->tryCommitMapChanges(commitChanges);
     this->tryRedrawMapArea(forceRedraw);
 }

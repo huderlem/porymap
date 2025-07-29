@@ -26,6 +26,8 @@ public:
     virtual void setMaxSelectionSize(int width, int height);
     QSize maxSelectionSize() { return QSize(this->maxSelectionWidth, this->maxSelectionHeight); }
 
+    void setSelectionStyle(Qt::PenStyle style);
+
 protected:
     int cellWidth;
     int cellHeight;
@@ -40,10 +42,13 @@ protected:
     void select(const QPoint &pos, const QSize &size = QSize(1,1));
     void select(int x, int y, int width = 1, int height = 1) { select(QPoint(x, y), QSize(width, height)); }
     void updateSelection(const QPoint &pos);
-    QPoint getCellPos(QPointF);
+    QPoint getCellPos(const QPointF &itemPos);
+    int getBoundedWidth(int width) const { return qBound(1, width, this->maxSelectionWidth); }
+    int getBoundedHeight(int height) const { return qBound(1, height, this->maxSelectionHeight); }
     virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void drawSelectionRect(const QPoint &, const QSize &, Qt::PenStyle style = Qt::SolidLine);
     virtual void drawSelection();
     virtual int cellsWide() const { return this->cellWidth ? (pixmap().width() / this->cellWidth) : 0; }
     virtual int cellsTall() const { return this->cellHeight ? (pixmap().height() / this->cellHeight) : 0; }
@@ -53,6 +58,9 @@ signals:
 
 private:
     QPoint prevCellPos = QPoint(-1,-1);
+    Qt::PenStyle selectionStyle = Qt::SolidLine;
+
+    void setSelection(const QPoint &pos, const QSize &size);
 };
 
 #endif // SELECTABLEPIXMAPITEM_H

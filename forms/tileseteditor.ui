@@ -681,6 +681,7 @@
     <addaction name="actionPaste"/>
     <addaction name="separator"/>
     <addaction name="actionChange_Metatiles_Count"/>
+    <addaction name="actionSwap_Metatiles"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -752,6 +753,9 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Undo</string>
    </property>
@@ -760,6 +764,9 @@
    </property>
   </action>
   <action name="actionRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Redo</string>
    </property>
@@ -784,6 +791,9 @@
    </property>
   </action>
   <action name="actionPaste">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Paste</string>
    </property>
@@ -885,6 +895,17 @@
    </property>
    <property name="text">
     <string>Vertical</string>
+   </property>
+  </action>
+  <action name="actionSwap_Metatiles">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Swap Metatiles</string>
+   </property>
+   <property name="shortcut">
+    <string>X</string>
    </property>
   </action>
  </widget>

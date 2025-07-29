@@ -44,7 +44,7 @@ private:
     Tileset *secondaryTileset;
 
     QList<ColorInputWidget*> colorInputs;
-    QList<History<PaletteHistoryItem*>> palettesHistory;
+    QMap<int, History<PaletteHistoryItem*>> palettesHistory;
     QMap<int,QSet<int>> unusedColorCache;
     QPointer<PaletteColorSearch> colorSearchWindow;
 
@@ -53,6 +53,7 @@ private:
     void refreshPaletteId();
     void commitEditHistory();
     void commitEditHistory(int paletteId);
+    void updateEditHistoryActions();
     void restoreWindowState();
     void invalidateCache();
     void closeEvent(QCloseEvent*);

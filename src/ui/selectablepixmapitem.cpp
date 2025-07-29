@@ -10,12 +10,15 @@ QPoint SelectablePixmapItem::getSelectionStart()
     return QPoint(x, y);
 }
 
-void SelectablePixmapItem::select(const QPoint &pos, const QSize &size)
-{
+void SelectablePixmapItem::setSelection(const QPoint &pos, const QSize &size) {
     this->selectionInitialX = pos.x();
     this->selectionInitialY = pos.y();
-    this->selectionOffsetX = qBound(0, size.width(), this->maxSelectionWidth - 1);
-    this->selectionOffsetY = qBound(0, size.height(), this->maxSelectionHeight - 1);
+    this->selectionOffsetX = getBoundedWidth(size.width()) - 1;
+    this->selectionOffsetY = getBoundedHeight(size.height()) - 1;
+}
+
+void SelectablePixmapItem::select(const QPoint &pos, const QSize &size) {
+    setSelection(pos, size);
     draw();
     emit selectionChanged(pos, getSelectionDimensions());
 }
@@ -23,10 +26,7 @@ void SelectablePixmapItem::select(const QPoint &pos, const QSize &size)
 void SelectablePixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     QPoint pos = getCellPos(event->pos());
-    this->selectionInitialX = pos.x();
-    this->selectionInitialY = pos.y();
-    this->selectionOffsetX = 0;
-    this->selectionOffsetY = 0;
+    setSelection(pos, QSize(1,1));
     this->prevCellPos = pos;
     updateSelection(pos);
 }
@@ -52,12 +52,10 @@ void SelectablePixmapItem::setMaxSelectionSize(int width, int height) {
     // Update the selection if we shrank below the current selection size.
     QSize size = getSelectionDimensions();
     if (size.width() > this->maxSelectionWidth || size.height() > this->maxSelectionHeight) {
-        QPoint origin = getSelectionStart();
-        this->selectionInitialX = origin.x();
-        this->selectionInitialY = origin.y();
-        this->selectionOffsetX = qMin(size.width(), this->maxSelectionWidth) - 1;
-        this->selectionOffsetY = qMin(size.height(), this->maxSelectionHeight) - 1;
+        setSelection(getSelectionStart(), size);
         draw();
+        // 'draw' is allowed to change the selection position/size,
+        // so call these again rather than keep values from above.
         emit selectionChanged(getSelectionStart(), getSelectionDimensions());
     }
 }
@@ -90,18 +88,25 @@ void SelectablePixmapItem::updateSelection(const QPoint &pos) {
     emit selectionChanged(QPoint(x, y), getSelectionDimensions());
 }
 
-QPoint SelectablePixmapItem::getCellPos(QPointF pos) {
+void SelectablePixmapItem::setSelectionStyle(Qt::PenStyle style) {
+    this->selectionStyle = style;
+    draw();
+}
+
+QPoint SelectablePixmapItem::getCellPos(const QPointF &itemPos) {
     if (this->cellWidth == 0 || this->cellHeight == 0 || pixmap().isNull())
         return QPoint(0,0);
 
-    int x = qBound(0, static_cast<int>(pos.x()), pixmap().width() - 1);
-    int y = qBound(0, static_cast<int>(pos.y()), pixmap().height() - 1);
+    int x = qBound(0, static_cast<int>(itemPos.x()), pixmap().width() - 1);
+    int y = qBound(0, static_cast<int>(itemPos.y()), pixmap().height() - 1);
     return QPoint(x / this->cellWidth, y / this->cellHeight);
 }
 
 void SelectablePixmapItem::drawSelection() {
-    QPoint origin = this->getSelectionStart();
-    QSize dimensions = this->getSelectionDimensions();
+    drawSelectionRect(getSelectionStart(), getSelectionDimensions(), this->selectionStyle);
+}
+
+void SelectablePixmapItem::drawSelectionRect(const QPoint &origin, const QSize &dimensions, Qt::PenStyle style) {
     QRect selectionRect(origin.x() * this->cellWidth, origin.y() * this->cellHeight, dimensions.width() * this->cellWidth, dimensions.height() * this->cellHeight);
 
     // If a selection is fully outside the bounds of the selectable area, don't draw anything.
@@ -110,12 +115,27 @@ void SelectablePixmapItem::drawSelection() {
     if (!selectionRect.intersects(pixmap.rect()))
         return;
 
+    auto fillPen = QPen(QColor(Qt::white));
+    auto borderPen = QPen(QColor(Qt::black));
+    borderPen.setStyle(style);
+
     QPainter painter(&pixmap);
-    painter.setPen(QColor(0xff, 0xff, 0xff));
-    painter.drawRect(selectionRect.x(), selectionRect.y(), selectionRect.width() - 1, selectionRect.height() - 1);
-    painter.setPen(QColor(0, 0, 0));
-    painter.drawRect(selectionRect.x() - 1, selectionRect.y() - 1, selectionRect.width() + 1, selectionRect.height() + 1);
-    painter.drawRect(selectionRect.x() + 1, selectionRect.y() + 1, selectionRect.width() - 3, selectionRect.height() - 3);
+    if (style == Qt::SolidLine) {
+        painter.setPen(fillPen);
+        painter.drawRect(selectionRect - QMargins(1,1,1,1));
+        painter.setPen(borderPen);
+        painter.drawRect(selectionRect);
+        painter.drawRect(selectionRect - QMargins(2,2,2,2));
+    } else {
+        // Having separately sized rectangles with anything but a
+        // solid line looks a little wonky because the dashes wont align.
+        // For non-solid styles we'll draw a base white rectangle, then draw
+        // a styled black rectangle on top
+        painter.setPen(fillPen);
+        painter.drawRect(selectionRect);
+        painter.setPen(borderPen);
+        painter.drawRect(selectionRect);
+    }
 
     this->setPixmap(pixmap);
 }

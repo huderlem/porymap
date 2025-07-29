@@ -124,9 +124,12 @@ public:
     bool isWithinBounds(const QRect &rect) const;
     bool isWithinBorderBounds(int x, int y) const;
 
-    bool getBlock(int x, int y, Block *out);
+    bool getBlock(int x, int y, Block *out) const;
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void setBlockdata(Blockdata blockdata, bool enableScriptCallback = false);
+
+    uint16_t getMetatileId(int x, int y) const;
+    bool setMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback = false);
 
     void adjustDimensions(const QMargins &margins, bool setNewBlockdata = true);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
