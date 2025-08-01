@@ -73,15 +73,21 @@ Layout *AdvanceMapParser::parseLayout(const QString &filepath, bool *error, cons
 
     const QList<QString> tilesets = project->tilesetLabelsOrdered;
 
-    if (mapPrimaryTilesetNum > tilesets.size())
-        mapLayout->tileset_primary_label = project->getDefaultPrimaryTilesetLabel();
-    else
-        mapLayout->tileset_primary_label = tilesets.at(mapPrimaryTilesetNum);
+    const QString defaultPrimaryTileset = project->getDefaultPrimaryTilesetLabel();
+    QString primaryTilesetLabel = tilesets.value(mapPrimaryTilesetNum, defaultPrimaryTileset);
+    if (!project->primaryTilesetLabels.contains(primaryTilesetLabel)) {
+        // AdvanceMap's primary tileset value points to a secondary tileset. Ignore it.
+        primaryTilesetLabel = defaultPrimaryTileset;
+    }
+    const QString defaultSecondaryTileset = project->getDefaultSecondaryTilesetLabel();
+    QString secondaryTilesetLabel = tilesets.value(mapSecondaryTilesetNum, defaultSecondaryTileset);
+    if (!project->secondaryTilesetLabels.contains(secondaryTilesetLabel)) {
+        // AdvanceMap's secondary tileset value points to a primary tileset. Ignore it.
+        secondaryTilesetLabel = defaultSecondaryTileset;
+    }
 
-    if (mapSecondaryTilesetNum > tilesets.size())
-        mapLayout->tileset_secondary_label = project->getDefaultSecondaryTilesetLabel();
-    else
-        mapLayout->tileset_secondary_label = tilesets.at(mapSecondaryTilesetNum);
+    mapLayout->tileset_primary_label = primaryTilesetLabel;
+    mapLayout->tileset_secondary_label = secondaryTilesetLabel;
 
     mapLayout->blockdata = blockdata;
 

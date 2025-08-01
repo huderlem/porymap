@@ -33,6 +33,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix the shortcut for duplicating events working while on the Connections tab.
 - Fix Undo/Redo ignoring the automatic resizing that occurs if a layout/border was an unexpected size.
 - Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
+- Fix broken error message for the primary tileset on the new map/layout dialogs.
+- Fix the dialog for duplicating/importing a map layout not allowing the tilesets to be changed.
 - Fix warning not appearing when the log file exceeds maximum size.
 - Fix possible lag while using the Tileset Editor's tile selector.
 - Fix unnecessary resources being used to watch files.
