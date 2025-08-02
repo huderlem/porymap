@@ -32,7 +32,6 @@ public:
     QImage buildPrimaryTilesIndexedImage();
     QImage buildSecondaryTilesIndexedImage();
 
-
     QVector<uint16_t> usedTiles;
     bool showUnused = false;
     bool showDivider = false;

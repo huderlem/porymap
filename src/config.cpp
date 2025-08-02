@@ -338,7 +338,7 @@ void PorymapConfig::reset() {
     this->metatilesZoom = 30;
     this->tilesetEditorMetatilesZoom = 30;
     this->tilesetEditorTilesZoom = 30;
-    this->tilesetEditorLayerOrientation = Qt::Horizontal;
+    this->tilesetEditorLayerOrientation = Qt::Vertical;
     this->showPlayerView = false;
     this->showCursorTile = true;
     this->showBorder = true;

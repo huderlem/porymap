@@ -65,7 +65,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>253</width>
+             <width>241</width>
              <height>659</height>
             </rect>
            </property>
@@ -195,170 +195,290 @@
               <bool>false</bool>
              </property>
              <layout class="QGridLayout" name="gridLayout_MetatileProperties">
-              <item row="15" column="0" colspan="4">
-               <widget class="QLineEdit" name="lineEdit_metatileLabel">
-                <property name="clearButtonEnabled">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2" colspan="3">
-               <widget class="NoScrollComboBox" name="comboBox_layerType">
+              <item row="5" column="0" colspan="2">
+               <widget class="QFrame" name="frame_RawAttributesValue">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>185</width>
-                  <height>0</height>
-                 </size>
-                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_8">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_RawAttributesValue">
+                   <property name="text">
+                    <string>Raw Attributes Value</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="UIntHexSpinBox" name="spinBox_RawAttributesValue"/>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_10">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </widget>
               </item>
-              <item row="14" column="0" colspan="5">
-               <widget class="QLabel" name="label_metatileLabel">
-                <property name="text">
-                 <string>Metatile Label (Optional)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_BottomTop">
-                <property name="text">
-                 <string>Bottom/Top</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="0" colspan="5">
-               <widget class="QLabel" name="label_terrainType">
-                <property name="text">
-                 <string>Terrain Type</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2" colspan="3">
-               <widget class="QLabel" name="label_layerType">
-                <property name="text">
-                 <string>Layer Type</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0" colspan="5">
-               <widget class="NoScrollComboBox" name="comboBox_metatileBehaviors">
+              <item row="0" column="1" rowspan="2">
+               <widget class="QFrame" name="frame_LayerType">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="insertPolicy">
-                 <enum>QComboBox::InsertPolicy::NoInsert</enum>
-                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_4">
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_LayerType">
+                   <property name="text">
+                    <string>Layer Type</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="NoScrollComboBox" name="comboBox_LayerType">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>185</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_4">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QGraphicsView" name="graphicsView_metatileLayers">
+              <item row="6" column="0" colspan="2">
+               <widget class="QFrame" name="frame_MetatileLabel">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>1</width>
-                  <height>1</height>
-                 </size>
-                </property>
-                <property name="verticalScrollBarPolicy">
-                 <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-                </property>
-                <property name="horizontalScrollBarPolicy">
-                 <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-                </property>
+                <layout class="QGridLayout" name="gridLayout_3">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>2</number>
+                 </property>
+                 <item row="1" column="1">
+                  <widget class="QToolButton" name="copyButton_MetatileLabel">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copies the full metatile label to the clipboard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string>...</string>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="../resources/images.qrc">
+                     <normaloff>:/icons/clipboard.ico</normaloff>:/icons/clipboard.ico</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLineEdit" name="lineEdit_MetatileLabel">
+                   <property name="clearButtonEnabled">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_MetatileLabel">
+                   <property name="text">
+                    <string>Metatile Label (Optional)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <spacer name="verticalSpacer_11">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </widget>
               </item>
-              <item row="11" column="0" colspan="5">
-               <widget class="NoScrollComboBox" name="comboBox_terrainType">
+              <item row="4" column="0" colspan="2">
+               <widget class="QFrame" name="frame_TerrainType">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="insertPolicy">
-                 <enum>QComboBox::InsertPolicy::NoInsert</enum>
-                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_7">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_TerrainType">
+                   <property name="text">
+                    <string>Terrain Type</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="NoScrollComboBox" name="comboBox_TerrainType">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="insertPolicy">
+                    <enum>QComboBox::InsertPolicy::NoInsert</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_9">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </widget>
               </item>
-              <item row="1" column="1">
-               <spacer name="horizontalSpacer_5">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Policy::Maximum</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>10</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="9" column="0" colspan="5">
-               <widget class="NoScrollComboBox" name="comboBox_encounterType">
+              <item row="3" column="0" colspan="2">
+               <widget class="QFrame" name="frame_EncounterType">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="insertPolicy">
-                 <enum>QComboBox::InsertPolicy::NoInsert</enum>
-                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_6">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_EncounterType">
+                   <property name="text">
+                    <string>Encounter Type</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="NoScrollComboBox" name="comboBox_EncounterType">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="insertPolicy">
+                    <enum>QComboBox::InsertPolicy::NoInsert</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_8">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </widget>
               </item>
-              <item row="2" column="0" colspan="5">
-               <widget class="QLabel" name="label_metatileBehavior">
-                <property name="text">
-                 <string>Metatile Behavior</string>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="0" colspan="5">
-               <widget class="QLabel" name="label_rawAttributesValue">
-                <property name="text">
-                 <string>Raw Attributes Value</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0" colspan="5">
-               <widget class="QLabel" name="label_encounterType">
-                <property name="text">
-                 <string>Encounter Type</string>
-                </property>
-               </widget>
-              </item>
-              <item row="15" column="4">
-               <widget class="QToolButton" name="copyButton_metatileLabel">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copies the full metatile label to the clipboard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="../resources/images.qrc">
-                  <normaloff>:/icons/clipboard.ico</normaloff>:/icons/clipboard.ico</iconset>
-                </property>
-               </widget>
-              </item>
-              <item row="16" column="0">
+              <item row="10" column="0">
                <spacer name="verticalSpacer_7">
                 <property name="orientation">
                  <enum>Qt::Orientation::Vertical</enum>
@@ -371,8 +491,119 @@
                 </property>
                </spacer>
               </item>
-              <item row="13" column="0" colspan="5">
-               <widget class="UIntHexSpinBox" name="spinBox_rawAttributesValue"/>
+              <item row="2" column="0" colspan="2">
+               <widget class="QFrame" name="frame_MetatileBehavior">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_5">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_MetatileBehavior">
+                   <property name="text">
+                    <string>Metatile Behavior</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="NoScrollComboBox" name="comboBox_MetatileBehaviors">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="insertPolicy">
+                    <enum>QComboBox::InsertPolicy::NoInsert</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_6">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="0" column="0" rowspan="2">
+               <widget class="QFrame" name="frame_Layers">
+                <layout class="QVBoxLayout" name="verticalLayout_Layers">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_BottomTop">
+                   <property name="text">
+                    <string>Bottom/Top</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QGraphicsView" name="graphicsView_MetatileLayers">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>1</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                   <property name="verticalScrollBarPolicy">
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+                   </property>
+                   <property name="horizontalScrollBarPolicy">
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_12">
+                   <property name="orientation">
+                    <enum>Qt::Orientation::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>1</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -512,12 +743,6 @@
                    <property name="frameShape">
                     <enum>QFrame::Shape::StyledPanel</enum>
                    </property>
-                   <property name="verticalScrollBarPolicy">
-                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-                   </property>
-                   <property name="horizontalScrollBarPolicy">
-                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-                   </property>
                   </widget>
                  </item>
                  <item>
@@ -555,8 +780,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>446</width>
-             <height>241</height>
+             <width>458</width>
+             <height>203</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">

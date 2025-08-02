@@ -96,9 +96,7 @@ private slots:
     void on_actionUndo_triggered();
     void on_actionRedo_triggered();
 
-    void on_lineEdit_metatileLabel_editingFinished();
-
-    void on_copyButton_metatileLabel_clicked();
+    void on_copyButton_MetatileLabel_clicked();
 
     void on_actionCut_triggered();
     void on_actionCopy_triggered();
@@ -155,6 +153,8 @@ private:
     bool swapMetatiles(uint16_t metatileIdA, uint16_t metatileIdB);
     void applyMetatileSwapToLayouts(uint16_t metatileIdA, uint16_t metatileIdB);
     void applyMetatileSwapsToLayouts();
+    void rebuildMetatilePropertiesFrame();
+    void addWidgetToMetatileProperties(QWidget *w, int *row, int rowSpan);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
@@ -179,6 +179,7 @@ private:
     QSet<uint16_t> metatileReloadQueue;
     MetatileImageExporter::Settings *metatileImageExportSettings = nullptr;
     QList<QPair<uint16_t,uint16_t>> metatileIdSwaps;
+    int numLayerViewRows;
 
     bool save();
 

@@ -30,7 +30,7 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
 
     auto validator = new IdentifierValidator(this);
     validator->setAllowEmpty(true);
-    ui->lineEdit_metatileLabel->setValidator(validator);
+    ui->lineEdit_MetatileLabel->setValidator(validator);
 
     ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
     ui->actionShow_Raw_Metatile_Attributes->setChecked(porymapConfig.showTilesetEditorRawAttributes);
@@ -64,6 +64,8 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
 
     connect(ui->actionLayer_Arrangement_Horizontal, &QAction::triggered, [this] { setMetatileLayerOrientation(Qt::Horizontal); });
     connect(ui->actionLayer_Arrangement_Vertical,   &QAction::triggered, [this] { setMetatileLayerOrientation(Qt::Vertical); });
+
+    connect(ui->lineEdit_MetatileLabel, &QLineEdit::editingFinished, this, &TilesetEditor::commitMetatileLabel);
 
     initAttributesUi();
     initMetatileSelector();
@@ -141,77 +143,71 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
 }
 
 void TilesetEditor::initAttributesUi() {
-    connect(ui->comboBox_metatileBehaviors, &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitMetatileBehavior);
-    connect(ui->comboBox_encounterType,     &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitEncounterType);
-    connect(ui->comboBox_terrainType,       &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitTerrainType);
-    connect(ui->comboBox_layerType,         &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitLayerType);
+    connect(ui->comboBox_MetatileBehaviors, &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitMetatileBehavior);
+    connect(ui->comboBox_EncounterType,     &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitEncounterType);
+    connect(ui->comboBox_TerrainType,       &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitTerrainType);
+    connect(ui->comboBox_LayerType,         &NoScrollComboBox::editingFinished, this, &TilesetEditor::commitLayerType);
 
     // Behavior
     if (projectConfig.metatileBehaviorMask) {
         for (auto i = project->metatileBehaviorMapInverse.constBegin(); i != project->metatileBehaviorMapInverse.constEnd(); i++) {
-            this->ui->comboBox_metatileBehaviors->addItem(i.value(), i.key());
+            this->ui->comboBox_MetatileBehaviors->addItem(i.value(), i.key());
         }
-        this->ui->comboBox_metatileBehaviors->setMinimumContentsLength(0);
+        this->ui->comboBox_MetatileBehaviors->setMinimumContentsLength(0);
     } else {
-        this->ui->comboBox_metatileBehaviors->setVisible(false);
-        this->ui->label_metatileBehavior->setVisible(false);
+        this->ui->frame_MetatileBehavior->setVisible(false);
     }
 
     // Terrain Type
     if (projectConfig.metatileTerrainTypeMask) {
         for (auto i = project->terrainTypeToName.constBegin(); i != project->terrainTypeToName.constEnd(); i++) {
-            this->ui->comboBox_terrainType->addItem(i.value(), i.key());
+            this->ui->comboBox_TerrainType->addItem(i.value(), i.key());
         }
-        this->ui->comboBox_terrainType->setMinimumContentsLength(0);
+        this->ui->comboBox_TerrainType->setMinimumContentsLength(0);
     } else {
-        this->ui->comboBox_terrainType->setVisible(false);
-        this->ui->label_terrainType->setVisible(false);
+        this->ui->frame_TerrainType->setVisible(false);
     }
 
     // Encounter Type
     if (projectConfig.metatileEncounterTypeMask) {
         for (auto i = project->encounterTypeToName.constBegin(); i != project->encounterTypeToName.constEnd(); i++) {
-            this->ui->comboBox_encounterType->addItem(i.value(), i.key());
+            this->ui->comboBox_EncounterType->addItem(i.value(), i.key());
         }
-        this->ui->comboBox_encounterType->setMinimumContentsLength(0);
+        this->ui->comboBox_EncounterType->setMinimumContentsLength(0);
     } else {
-        this->ui->comboBox_encounterType->setVisible(false);
-        this->ui->label_encounterType->setVisible(false);
+        this->ui->frame_EncounterType->setVisible(false);
     }
 
     // Layer Type
     if (!projectConfig.tripleLayerMetatilesEnabled) {
-        this->ui->comboBox_layerType->addItem("Normal - Middle/Top",     Metatile::LayerType::Normal);
-        this->ui->comboBox_layerType->addItem("Covered - Bottom/Middle", Metatile::LayerType::Covered);
-        this->ui->comboBox_layerType->addItem("Split - Bottom/Top",      Metatile::LayerType::Split);
-        this->ui->comboBox_layerType->setEditable(false);
-        this->ui->comboBox_layerType->setMinimumContentsLength(0);
+        this->ui->comboBox_LayerType->addItem("Normal - Middle/Top",     Metatile::LayerType::Normal);
+        this->ui->comboBox_LayerType->addItem("Covered - Bottom/Middle", Metatile::LayerType::Covered);
+        this->ui->comboBox_LayerType->addItem("Split - Bottom/Top",      Metatile::LayerType::Split);
+        this->ui->comboBox_LayerType->setEditable(false);
+        this->ui->comboBox_LayerType->setMinimumContentsLength(0);
         if (!projectConfig.metatileLayerTypeMask) {
             // User doesn't have triple layer metatiles, but has no layer type attribute.
             // Porymap is still using the layer type value to render metatiles, and with
             // no mask set every metatile will be "Middle/Top", so just display the combo
             // box but prevent the user from changing the value.
-            this->ui->comboBox_layerType->setEnabled(false);
+            this->ui->comboBox_LayerType->setEnabled(false);
         }
     } else {
-        this->ui->comboBox_layerType->setVisible(false);
-        this->ui->label_layerType->setVisible(false);
+        this->ui->frame_LayerType->setVisible(false);
         this->ui->label_BottomTop->setText("Bottom/Middle/Top");
     }
 
     // Raw attributes value
-    ui->spinBox_rawAttributesValue->setMaximum(Metatile::getMaxAttributesMask());
+    ui->spinBox_RawAttributesValue->setMaximum(Metatile::getMaxAttributesMask());
     setRawAttributesVisible(ui->actionShow_Raw_Metatile_Attributes->isChecked());
-    connect(ui->spinBox_rawAttributesValue, &UIntHexSpinBox::editingFinished, this, &TilesetEditor::onRawAttributesEdited);
+    connect(ui->spinBox_RawAttributesValue, &UIntHexSpinBox::editingFinished, this, &TilesetEditor::onRawAttributesEdited);
     connect(ui->actionShow_Raw_Metatile_Attributes, &QAction::toggled, this, &TilesetEditor::setRawAttributesVisible);
-
-    this->ui->frame_Properties->adjustSize();
 }
 
 void TilesetEditor::setRawAttributesVisible(bool visible) {
     porymapConfig.showTilesetEditorRawAttributes = visible;
-    ui->label_rawAttributesValue->setVisible(visible);
-    ui->spinBox_rawAttributesValue->setVisible(visible);
+    ui->frame_RawAttributesValue->setVisible(visible);
+    rebuildMetatilePropertiesFrame();
 }
 
 void TilesetEditor::initMetatileSelector()
@@ -262,25 +258,51 @@ void TilesetEditor::setMetatileLayerOrientation(Qt::Orientation orientation) {
     int w = Tile::pixelWidth() * numTilesWide * scale + 2;
     int h = Tile::pixelHeight() * numTilesTall * scale + 2;
     ui->graphicsView_selectedTile->setFixedSize(w, h);
-    ui->graphicsView_metatileLayers->setFixedSize(w, h);
+    ui->graphicsView_MetatileLayers->setFixedSize(w, h);
 
     // If the layers are laid out vertically then the orientation is obvious, no need to label them.
+    // This also lets us give the vertical space of the label over to the layer view.
     ui->label_BottomTop->setVisible(horizontal);
 
-    // Let the graphics view take over the label's vertical space (or conversely, give the space back).
-    // (This is a bit of a process, apparently there's no quick way to set a widget's row / row span once they're added to the layout
-    int row, col, rowSpan, colSpan;
-    int index = ui->gridLayout_MetatileProperties->indexOf(ui->label_BottomTop);
-    ui->gridLayout_MetatileProperties->getItemPosition(index, &row, &col, &rowSpan, &colSpan);
+    rebuildMetatilePropertiesFrame();
+}
 
-    // TODO: Rearrange the rest of the metatile properties panel. The vertical triple-layer metatiles layout esp. looks terrible.
-    ui->gridLayout_MetatileProperties->removeWidget(ui->graphicsView_metatileLayers);
-    if (horizontal) {
-        // Give space from graphics view back to label
-        ui->gridLayout_MetatileProperties->addWidget(ui->graphicsView_metatileLayers, row + 1, col, rowSpan, colSpan);
+// We rearrange the metatile properties panel depending on the orientation and size of the metatile layer view.
+// If triple layer metatiles are in-use then layer type field is hidden, so there's an awkward amount of space
+// next to the layer view, especially in the vertical orientation.
+// We shift 1-2 widgets up to fill this space next to the layer view. This gets a little complicated because which
+// widgets are available to move changes depending on the user's settings.
+void TilesetEditor::rebuildMetatilePropertiesFrame() {
+    if (porymapConfig.tilesetEditorLayerOrientation == Qt::Horizontal) {
+        this->numLayerViewRows = 1;
     } else {
-        // Take space from label and give it to graphics view
-        ui->gridLayout_MetatileProperties->addWidget(ui->graphicsView_metatileLayers, row, col, rowSpan + 1, colSpan);
+        this->numLayerViewRows = projectConfig.tripleLayerMetatilesEnabled ? 4 : 2;
+    }
+
+    for (const auto &frame : ui->gridLayout_MetatileProperties->findChildren<QFrame*>()) {
+        ui->gridLayout_MetatileProperties->removeWidget(frame);
+    }
+    ui->gridLayout_MetatileProperties->addWidget(ui->frame_Layers, 0, 0, this->numLayerViewRows, 1);
+
+    int row = 0;
+    addWidgetToMetatileProperties(ui->frame_LayerType, &row, 2);
+    if (porymapConfig.tilesetEditorLayerOrientation == Qt::Horizontal) {
+        // When the layer view's orientation is horizontal we only allow the
+        // layer type selector to share the row with the layer view.
+        row = this->numLayerViewRows;
+    }
+    addWidgetToMetatileProperties(ui->frame_MetatileBehavior,   &row, 2);
+    addWidgetToMetatileProperties(ui->frame_EncounterType,      &row, 2);
+    addWidgetToMetatileProperties(ui->frame_TerrainType,        &row, 2);
+    addWidgetToMetatileProperties(ui->frame_RawAttributesValue, &row, 2);
+    addWidgetToMetatileProperties(ui->frame_MetatileLabel,      &row, 2);
+}
+
+void TilesetEditor::addWidgetToMetatileProperties(QWidget *w, int *row, int rowSpan) {
+    if (w->isVisibleTo(ui->frame_Properties)) {
+        int col = (*row < this->numLayerViewRows) ? 1 : 0; // Shift widget over if it shares the row with the layer view
+        ui->gridLayout_MetatileProperties->addWidget(w, *row, col, rowSpan, -1);
+        *row += rowSpan;
     }
 }
 
@@ -299,7 +321,7 @@ void TilesetEditor::initMetatileLayersItem() {
 
     this->metatileLayersScene = new QGraphicsScene;
     this->metatileLayersScene->addItem(this->metatileLayersItem);
-    this->ui->graphicsView_metatileLayers->setScene(this->metatileLayersScene);
+    this->ui->graphicsView_MetatileLayers->setScene(this->metatileLayersScene);
 }
 
 void TilesetEditor::initTileSelector() {
@@ -478,8 +500,8 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     this->metatileLayersItem->draw();
 
     MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset);
-    this->ui->lineEdit_metatileLabel->setText(labels.owned);
-    this->ui->lineEdit_metatileLabel->setPlaceholderText(labels.shared);
+    this->ui->lineEdit_MetatileLabel->setText(labels.owned);
+    this->ui->lineEdit_MetatileLabel->setPlaceholderText(labels.shared);
 
     refreshMetatileAttributes();
 }
@@ -598,12 +620,7 @@ void TilesetEditor::refreshTileFlips() {
 
 void TilesetEditor::setMetatileLabel(QString label)
 {
-    this->ui->lineEdit_metatileLabel->setText(label);
-    commitMetatileLabel();
-}
-
-void TilesetEditor::on_lineEdit_metatileLabel_editingFinished()
-{
+    this->ui->lineEdit_MetatileLabel->setText(label);
     commitMetatileLabel();
 }
 
@@ -613,7 +630,7 @@ void TilesetEditor::commitMetatileLabel() {
     // Only commit if the field has changed.
     uint16_t metatileId = this->getSelectedMetatileId();
     QString oldLabel = Tileset::getOwnedMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
-    QString newLabel = this->ui->lineEdit_metatileLabel->text();
+    QString newLabel = this->ui->lineEdit_MetatileLabel->text();
     if (oldLabel != newLabel) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         Tileset::setMetatileLabel(metatileId, newLabel, this->primaryTileset, this->secondaryTileset);
@@ -626,12 +643,12 @@ void TilesetEditor::commitMetatileAndLabelChange(Metatile * prevMetatile, QStrin
 
     commit(new MetatileHistoryItem(this->getSelectedMetatileId(),
                                     prevMetatile, new Metatile(*this->metatile),
-                                    prevLabel, this->ui->lineEdit_metatileLabel->text()));
+                                    prevLabel, this->ui->lineEdit_MetatileLabel->text()));
 }
 
 void TilesetEditor::commitMetatileChange(Metatile * prevMetatile)
 {
-    this->commitMetatileAndLabelChange(prevMetatile, this->ui->lineEdit_metatileLabel->text());
+    this->commitMetatileAndLabelChange(prevMetatile, this->ui->lineEdit_MetatileLabel->text());
 }
 
 uint32_t TilesetEditor::attributeNameToValue(Metatile::Attr attribute, const QString &text, bool *ok) {
@@ -650,7 +667,7 @@ uint32_t TilesetEditor::attributeNameToValue(Metatile::Attr attribute, const QSt
         }
     } else if (attribute == Metatile::Attr::LayerType) {
         // The layer type text is not editable, it uses special display names. Just get the index of the display name.
-        int i = ui->comboBox_layerType->findText(text);
+        int i = ui->comboBox_LayerType->findText(text);
         if (i >= 0) return i;
     }
     return text.toUInt(ok, 0);
@@ -667,8 +684,8 @@ void TilesetEditor::commitAttributeFromComboBox(Metatile::Attr attribute, NoScro
         this->commitMetatileChange(prevMetatile);
 
         // When an attribute changes we also need to update the raw value display.
-        const QSignalBlocker b_RawAttributesValue(ui->spinBox_rawAttributesValue);
-        ui->spinBox_rawAttributesValue->setValue(this->metatile->getAttributes());
+        const QSignalBlocker b_RawAttributesValue(ui->spinBox_RawAttributesValue);
+        ui->spinBox_RawAttributesValue->setValue(this->metatile->getAttributes());
     }
 
     // Update the text in the combo box to reflect the final value.
@@ -680,7 +697,7 @@ void TilesetEditor::commitAttributeFromComboBox(Metatile::Attr attribute, NoScro
 void TilesetEditor::onRawAttributesEdited() {
     if (!this->metatile) return;
 
-    uint32_t newAttributes = ui->spinBox_rawAttributesValue->value();
+    uint32_t newAttributes = ui->spinBox_RawAttributesValue->value();
      if (newAttributes != this->metatile->getAttributes()) {
         Metatile *prevMetatile = new Metatile(*this->metatile);
         this->metatile->setAttributes(newAttributes);
@@ -692,34 +709,34 @@ void TilesetEditor::onRawAttributesEdited() {
 void TilesetEditor::refreshMetatileAttributes() {
     if (!this->metatile) return;
 
-    const QSignalBlocker b_MetatileBehaviors(ui->comboBox_metatileBehaviors);
-    const QSignalBlocker b_EncounterType(ui->comboBox_encounterType);
-    const QSignalBlocker b_TerrainType(ui->comboBox_terrainType);
-    const QSignalBlocker b_LayerType(ui->comboBox_layerType);
-    const QSignalBlocker b_RawAttributesValue(ui->spinBox_rawAttributesValue);
-    ui->comboBox_metatileBehaviors->setHexItem(this->metatile->behavior());
-    ui->comboBox_encounterType->setHexItem(this->metatile->encounterType());
-    ui->comboBox_terrainType->setHexItem(this->metatile->terrainType());
-    ui->comboBox_layerType->setHexItem(this->metatile->layerType());
-    ui->spinBox_rawAttributesValue->setValue(this->metatile->getAttributes());
+    const QSignalBlocker b_MetatileBehaviors(ui->comboBox_MetatileBehaviors);
+    const QSignalBlocker b_EncounterType(ui->comboBox_EncounterType);
+    const QSignalBlocker b_TerrainType(ui->comboBox_TerrainType);
+    const QSignalBlocker b_LayerType(ui->comboBox_LayerType);
+    const QSignalBlocker b_RawAttributesValue(ui->spinBox_RawAttributesValue);
+    ui->comboBox_MetatileBehaviors->setHexItem(this->metatile->behavior());
+    ui->comboBox_EncounterType->setHexItem(this->metatile->encounterType());
+    ui->comboBox_TerrainType->setHexItem(this->metatile->terrainType());
+    ui->comboBox_LayerType->setHexItem(this->metatile->layerType());
+    ui->spinBox_RawAttributesValue->setValue(this->metatile->getAttributes());
 
     this->metatileSelector->drawSelectedMetatile();
 }
 
 void TilesetEditor::commitMetatileBehavior() {
-    commitAttributeFromComboBox(Metatile::Attr::Behavior, ui->comboBox_metatileBehaviors);
+    commitAttributeFromComboBox(Metatile::Attr::Behavior, ui->comboBox_MetatileBehaviors);
 }
 
 void TilesetEditor::commitEncounterType() {
-    commitAttributeFromComboBox(Metatile::Attr::EncounterType, ui->comboBox_encounterType);
+    commitAttributeFromComboBox(Metatile::Attr::EncounterType, ui->comboBox_EncounterType);
 }
 
 void TilesetEditor::commitTerrainType() {
-    commitAttributeFromComboBox(Metatile::Attr::TerrainType, ui->comboBox_terrainType);
+    commitAttributeFromComboBox(Metatile::Attr::TerrainType, ui->comboBox_TerrainType);
 };
 
 void TilesetEditor::commitLayerType() {
-    commitAttributeFromComboBox(Metatile::Attr::LayerType, ui->comboBox_layerType);
+    commitAttributeFromComboBox(Metatile::Attr::LayerType, ui->comboBox_LayerType);
     this->metatileSelector->drawSelectedMetatile(); // Changing the layer type can affect how fully transparent metatiles appear
 }
 
@@ -919,7 +936,7 @@ bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile &src, QS
 
     Tileset::setMetatileLabel(metatileId, newLabel, this->primaryTileset, this->secondaryTileset);
     if (metatileId == this->getSelectedMetatileId())
-        this->ui->lineEdit_metatileLabel->setText(newLabel);
+        this->ui->lineEdit_MetatileLabel->setText(newLabel);
 
     // Update tile usage if any tiles changed
     if (this->tileSelector && this->tileSelector->showUnused) {
@@ -1023,7 +1040,7 @@ void TilesetEditor::pasteMetatile(const Metatile &toPaste, QString newLabel) {
     if (!this->metatile) return;
 
     Metatile *prevMetatile = new Metatile(*this->metatile);
-    QString prevLabel = this->ui->lineEdit_metatileLabel->text();
+    QString prevLabel = this->ui->lineEdit_MetatileLabel->text();
     if (newLabel.isNull()) newLabel = prevLabel; // Don't change the label if one wasn't copied
     uint16_t metatileId = this->getSelectedMetatileId();
     if (!this->replaceMetatile(metatileId, toPaste, newLabel)) {
@@ -1246,7 +1263,7 @@ void TilesetEditor::countTileUsage() {
     }
 }
 
-void TilesetEditor::on_copyButton_metatileLabel_clicked() {
+void TilesetEditor::on_copyButton_MetatileLabel_clicked() {
     uint16_t metatileId = this->getSelectedMetatileId();
     QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
     if (label.isEmpty()) return;
@@ -1254,7 +1271,7 @@ void TilesetEditor::on_copyButton_metatileLabel_clicked() {
     if (tileset)
         label.prepend(tileset->getMetatileLabelPrefix());
     QGuiApplication::clipboard()->setText(label);
-    QToolTip::showText(this->ui->copyButton_metatileLabel->mapToGlobal(QPoint(0, 0)), "Copied!");
+    QToolTip::showText(this->ui->copyButton_MetatileLabel->mapToGlobal(QPoint(0, 0)), "Copied!");
 }
 
 void TilesetEditor::on_horizontalSlider_MetatilesZoom_valueChanged(int value) {
