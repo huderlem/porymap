@@ -6,6 +6,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ## [Unreleased]
 ### Added
+- Add `View > Show Unused Colors` to the Palette Editor.
+- Add `Tools > Find Color Usage` to the Palette Editor. This opens a dialog showing which metatiles use a particular color.
 - Add an `Export Metatiles Image` option to the Tileset Editor that provides many more options for customizing metatile images.
 - Add an `Export Porytiles Layer Images` option to the Tileset Editor, which is a shortcut for individually exporting layer images that Porytiles can use.
 - Add an option under `Preferences` to include common scripts in the autocomplete for Script labels.
