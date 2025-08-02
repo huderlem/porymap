@@ -2,6 +2,7 @@
 #define TILESETEDITOR_H
 
 #include <QMainWindow>
+#include <QPointer>
 #include "project.h"
 #include "history.h"
 #include "paletteeditor.h"
@@ -54,6 +55,9 @@ public:
 
     QObjectList shortcutableObjects() const;
 
+    void setPaletteId(int paletteId);
+    int paletteId() const;
+
 public slots:
     void applyUserShortcuts();
     void onSelectedMetatileChanged(uint16_t);
@@ -65,13 +69,9 @@ private slots:
     void onHoveredTileChanged(const Tile&);
     void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
-    void onSelectedTilesChanged();
     void onMetatileLayerTileChanged(int, int);
     void onMetatileLayerSelectionChanged(QPoint, int, int);
     void onPaletteEditorChangedPaletteColor();
-    void onPaletteEditorChangedPalette(int);
-
-    void on_spinBox_paletteSelector_valueChanged(int arg1);
 
     void on_actionChange_Metatiles_Count_triggered();
 
@@ -136,23 +136,20 @@ private:
     void commitTerrainType();
     void commitLayerType();
     void setRawAttributesVisible(bool visible);
-    void setXFlip(bool enabled);
-    void setYFlip(bool enabled);
+    void refreshTileFlips();
+    void refreshPaletteId();
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
     TilesetEditorTileSelector *tileSelector = nullptr;
     MetatileLayersItem *metatileLayersItem = nullptr;
-    PaletteEditor *paletteEditor = nullptr;
+    QPointer<PaletteEditor> paletteEditor = nullptr;
     Project *project = nullptr;
     Layout *layout = nullptr;
     Metatile *metatile = nullptr;
     Metatile *copiedMetatile = nullptr;
     QString copiedMetatileLabel;
-    int paletteId;
-    bool tileXFlip;
-    bool tileYFlip;
     bool hasUnsavedChanges;
     Tileset *primaryTileset = nullptr;
     Tileset *secondaryTileset = nullptr;

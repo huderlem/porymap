@@ -122,7 +122,10 @@ void WildMonSearch::updateResults(const QString &species) {
     if (ui->comboBox_Search->findText(species) < 0)
         return; // Not a species name, no need to search wild encounter data.
 
-    const QList<RowData> results = this->resultsCache.value(species, search(species));
+    auto it = this->resultsCache.constFind(species);
+    bool inCache = (it != this->resultsCache.constEnd());
+    const QList<RowData> results = inCache ? it.value() : search(species);
+
     if (results.isEmpty()) {
         static const RowData noResults = {
             .mapName = "",
@@ -140,7 +143,7 @@ void WildMonSearch::updateResults(const QString &species) {
 
     ui->table_Results->setSortingEnabled(true);
 
-    this->resultsCache.insert(species, results);
+    if (!inCache) this->resultsCache.insert(species, results);
 }
 
 // Double-clicking row data opens the corresponding map/table on the Wild Pokémon tab.

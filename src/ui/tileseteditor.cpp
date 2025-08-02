@@ -26,14 +26,23 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
 
+    ui->spinBox_paletteSelector->setRange(0, Project::getNumPalettesTotal() - 1);
+
+    auto validator = new IdentifierValidator(this);
+    validator->setAllowEmpty(true);
+    ui->lineEdit_metatileLabel->setValidator(validator);
+
+    ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
+    ui->actionShow_Raw_Metatile_Attributes->setChecked(porymapConfig.showTilesetEditorRawAttributes);
+
+    ActiveWindowFilter *filter = new ActiveWindowFilter(this);
+    connect(filter, &ActiveWindowFilter::activated, this, &TilesetEditor::onWindowActivated);
+    this->installEventFilter(filter);
+
     setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
 
-    connect(ui->checkBox_xFlip, &QCheckBox::toggled, this, &TilesetEditor::setXFlip);
-    connect(ui->checkBox_yFlip, &QCheckBox::toggled, this, &TilesetEditor::setYFlip);
-
-    this->tileXFlip = ui->checkBox_xFlip->isChecked();
-    this->tileYFlip = ui->checkBox_yFlip->isChecked();
-    this->paletteId = ui->spinBox_paletteSelector->value();
+    connect(ui->checkBox_xFlip, &QCheckBox::toggled, this, &TilesetEditor::refreshTileFlips);
+    connect(ui->checkBox_yFlip, &QCheckBox::toggled, this, &TilesetEditor::refreshTileFlips);
 
     connect(ui->actionSave_Tileset, &QAction::triggered, this, &TilesetEditor::save);
 
@@ -51,19 +60,7 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
 
     connect(ui->actionExport_Metatiles_Image, &QAction::triggered, [this] { exportMetatilesImage(); });
 
-    ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
-    ui->actionShow_Raw_Metatile_Attributes->setChecked(porymapConfig.showTilesetEditorRawAttributes);
-
-    ui->spinBox_paletteSelector->setMinimum(0);
-    ui->spinBox_paletteSelector->setMaximum(Project::getNumPalettesTotal() - 1);
-
-    auto validator = new IdentifierValidator(this);
-    validator->setAllowEmpty(true);
-    ui->lineEdit_metatileLabel->setValidator(validator);
-
-    ActiveWindowFilter *filter = new ActiveWindowFilter(this);
-    connect(filter, &ActiveWindowFilter::activated, this, &TilesetEditor::onWindowActivated);
-    this->installEventFilter(filter);
+    connect(ui->spinBox_paletteSelector, QOverload<int>::of(&QSpinBox::valueChanged), this, &TilesetEditor::refreshPaletteId);
 
     initAttributesUi();
     initMetatileSelector();
@@ -131,11 +128,11 @@ void TilesetEditor::setTilesets(QString primaryTilesetLabel, QString secondaryTi
     this->metatileReloadQueue.clear();
     Tileset *primaryTileset = project->getTileset(primaryTilesetLabel);
     Tileset *secondaryTileset = project->getTileset(secondaryTilesetLabel);
-    if (this->primaryTileset) delete this->primaryTileset;
-    if (this->secondaryTileset) delete this->secondaryTileset;
+    delete this->primaryTileset;
+    delete this->secondaryTileset;
     this->primaryTileset = new Tileset(*primaryTileset);
     this->secondaryTileset = new Tileset(*secondaryTileset);
-    if (paletteEditor) paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
+    if (this->paletteEditor) this->paletteEditor->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->initMetatileHistory();
 }
 
@@ -265,10 +262,8 @@ void TilesetEditor::initTileSelector()
     connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged, [this](uint16_t tileId) {
         onHoveredTileChanged(tileId);
     });
-    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileCleared,
-            this, &TilesetEditor::onHoveredTileCleared);
-    connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged,
-            this, &TilesetEditor::onSelectedTilesChanged);
+    connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileCleared, this, &TilesetEditor::onHoveredTileCleared);
+    connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged, this, &TilesetEditor::drawSelectedTiles);
 
     this->tileSelector->showDivider = this->ui->actionShow_Tileset_Divider->isChecked();
 
@@ -475,10 +470,6 @@ void TilesetEditor::onHoveredTileCleared() {
     this->ui->statusbar->clearMessage();
 }
 
-void TilesetEditor::onSelectedTilesChanged() {
-    this->drawSelectedTiles();
-}
-
 void TilesetEditor::onMetatileLayerTileChanged(int x, int y) {
     static const QList<QPoint> tileCoords = QList<QPoint>{
         QPoint(0, 0),
@@ -543,39 +534,32 @@ void TilesetEditor::onMetatileLayerSelectionChanged(QPoint selectionOrigin, int 
 
     this->tileSelector->setExternalSelection(width, height, tiles, tileIdxs);
     if (width == 1 && height == 1) {
-        ui->spinBox_paletteSelector->setValue(tiles[0].palette);
+        setPaletteId(tiles[0].palette);
         this->tileSelector->highlight(static_cast<uint16_t>(tiles[0].tileId));
         this->redrawTileSelector();
     }
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
-void TilesetEditor::on_spinBox_paletteSelector_valueChanged(int paletteId)
-{
-    this->ui->spinBox_paletteSelector->blockSignals(true);
-    this->ui->spinBox_paletteSelector->setValue(paletteId);
-    this->ui->spinBox_paletteSelector->blockSignals(false);
-    this->paletteId = paletteId;
-    this->tileSelector->setPaletteId(paletteId);
+void TilesetEditor::setPaletteId(int paletteId) {
+    ui->spinBox_paletteSelector->setValue(paletteId);
+}
+
+int TilesetEditor::paletteId() const {
+    return ui->spinBox_paletteSelector->value();
+}
+
+void TilesetEditor::refreshPaletteId() {
+    this->tileSelector->setPaletteId(paletteId());
     this->drawSelectedTiles();
     if (this->paletteEditor) {
-        this->paletteEditor->setPaletteId(paletteId);
+        this->paletteEditor->setPaletteId(paletteId());
     }
     this->metatileLayersItem->clearLastModifiedCoords();
 }
 
-void TilesetEditor::setXFlip(bool enabled)
-{
-    this->tileXFlip = enabled;
-    this->tileSelector->setTileFlips(this->tileXFlip, this->tileYFlip);
-    this->drawSelectedTiles();
-    this->metatileLayersItem->clearLastModifiedCoords();
-}
-
-void TilesetEditor::setYFlip(bool enabled)
-{
-    this->tileYFlip = enabled;
-    this->tileSelector->setTileFlips(this->tileXFlip, this->tileYFlip);
+void TilesetEditor::refreshTileFlips() {
+    this->tileSelector->setTileFlips(ui->checkBox_xFlip->isChecked(), ui->checkBox_yFlip->isChecked());
     this->drawSelectedTiles();
     this->metatileLayersItem->clearLastModifiedCoords();
 }
@@ -872,30 +856,17 @@ void TilesetEditor::on_actionChange_Palettes_triggered()
 {
     if (!this->paletteEditor) {
         this->paletteEditor = new PaletteEditor(this->project, this->primaryTileset,
-                                                this->secondaryTileset, this->paletteId, this);
-        connect(this->paletteEditor, &PaletteEditor::changedPaletteColor,
-                this, &TilesetEditor::onPaletteEditorChangedPaletteColor);
-        connect(this->paletteEditor, &PaletteEditor::changedPalette,
-                this, &TilesetEditor::onPaletteEditorChangedPalette);
+                                                this->secondaryTileset, this->paletteId(), this);
+        connect(this->paletteEditor, &PaletteEditor::changedPaletteColor, this, &TilesetEditor::onPaletteEditorChangedPaletteColor);
+        connect(this->paletteEditor, &PaletteEditor::changedPalette, this, &TilesetEditor::setPaletteId);
+        connect(this->paletteEditor, &PaletteEditor::metatileSelected, this, &TilesetEditor::selectMetatile);
     }
-
-    if (!this->paletteEditor->isVisible()) {
-        this->paletteEditor->show();
-    } else if (this->paletteEditor->isMinimized()) {
-        this->paletteEditor->showNormal();
-    } else {
-        this->paletteEditor->raise();
-        this->paletteEditor->activateWindow();
-    }
+    Util::show(this->paletteEditor);
 }
 
 void TilesetEditor::onPaletteEditorChangedPaletteColor() {
     this->refresh();
     this->hasUnsavedChanges = true;
-}
-
-void TilesetEditor::onPaletteEditorChangedPalette(int paletteId) {
-    this->on_spinBox_paletteSelector_valueChanged(paletteId);
 }
 
 bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile * src, QString newLabel)
@@ -996,7 +967,7 @@ void TilesetEditor::pasteMetatile(const Metatile * toPaste, QString newLabel)
 
 void TilesetEditor::exportTilesImage(Tileset *tileset) {
     bool primary = !tileset->is_secondary;
-    QString defaultFilepath = QString("%1/%2_Tiles_Pal%3.png").arg(FileDialog::getDirectory()).arg(tileset->name).arg(this->paletteId);
+    QString defaultFilepath = QString("%1/%2_Tiles_Pal%3.png").arg(FileDialog::getDirectory()).arg(tileset->name).arg(this->paletteId());
     QString filepath = FileDialog::getSaveFileName(this, QString("Export %1 Tiles Image").arg(primary ? "Primary" : "Secondary"), defaultFilepath, "Image Files (*.png)");
     if (!filepath.isEmpty()) {
         QImage image = primary ? this->tileSelector->buildPrimaryTilesIndexedImage() : this->tileSelector->buildSecondaryTilesIndexedImage();

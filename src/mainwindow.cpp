@@ -345,7 +345,7 @@ void MainWindow::checkForUpdates(bool requestedByUser) {
 
 
     if (requestedByUser) {
-        openSubWindow(this->updatePromoter);
+        Util::show(this->updatePromoter);
     } else {
         // This is an automatic update check. Only run if we haven't done one in the last 5 minutes
         QDateTime lastCheck = porymapConfig.lastUpdateCheckTime;
@@ -419,7 +419,7 @@ void MainWindow::initEditor() {
 }
 
 void MainWindow::openEditHistory() {
-    openSubWindow(this->undoView);
+    Util::show(this->undoView);
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -934,19 +934,6 @@ void MainWindow::refreshRecentProjectsMenu() {
         this->refreshRecentProjectsMenu();
     });
     clearAction->setEnabled(!recentProjects.isEmpty());
-}
-
-void MainWindow::openSubWindow(QWidget * window) {
-    if (!window) return;
-
-    if (!window->isVisible()) {
-        window->show();
-    } else if (window->isMinimized()) {
-        window->showNormal();
-    } else {
-        window->raise();
-        window->activateWindow();
-    }
 }
 
 void MainWindow::showFileWatcherWarning() {
@@ -2266,7 +2253,7 @@ void MainWindow::on_actionGrid_Settings_triggered() {
         connect(this->gridSettingsDialog, &GridSettingsDialog::changedGridSettings, this->editor, &Editor::updateMapGrid);
         connect(this->gridSettingsDialog, &GridSettingsDialog::accepted, [this] { porymapConfig.gridSettings = this->editor->gridSettings; });
     }
-    openSubWindow(this->gridSettingsDialog);
+    Util::show(this->gridSettingsDialog);
 }
 
 void MainWindow::on_actionShortcuts_triggered()
@@ -2274,7 +2261,7 @@ void MainWindow::on_actionShortcuts_triggered()
     if (!shortcutsEditor)
         initShortcutsEditor();
 
-    openSubWindow(shortcutsEditor);
+    Util::show(shortcutsEditor);
 }
 
 void MainWindow::initShortcutsEditor() {
@@ -2698,7 +2685,7 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
         }
     }
 
-    openSubWindow(this->mapImageExporter);
+    Util::show(this->mapImageExporter);
 }
 
 void MainWindow::on_pushButton_AddConnection_clicked() {
@@ -2726,7 +2713,7 @@ void MainWindow::on_pushButton_SummaryChart_clicked() {
         connect(this->editor, &Editor::wildMonTableClosed, this->wildMonChart, &WildMonChart::clearTable);
         connect(this->editor, &Editor::wildMonTableEdited, this->wildMonChart, &WildMonChart::refresh);
     }
-    openSubWindow(this->wildMonChart);
+    Util::show(this->wildMonChart);
 }
 
 void MainWindow::on_toolButton_WildMonSearch_clicked() {
@@ -2735,7 +2722,7 @@ void MainWindow::on_toolButton_WildMonSearch_clicked() {
         connect(this->wildMonSearch, &WildMonSearch::openWildMonTableRequested, this, &MainWindow::openWildMonTable);
         connect(this->editor, &Editor::wildMonTableEdited, this->wildMonSearch, &WildMonSearch::refresh);
     }
-    openSubWindow(this->wildMonSearch);
+    Util::show(this->wildMonSearch);
 }
 
 void MainWindow::openWildMonTable(const QString &mapName, const QString &groupName, const QString &fieldName) {
@@ -2843,7 +2830,7 @@ void MainWindow::on_actionTileset_Editor_triggered()
         initTilesetEditor();
     }
 
-    openSubWindow(this->tilesetEditor);
+    Util::show(this->tilesetEditor);
 
     MetatileSelection selection = this->editor->metatile_selector_item->getMetatileSelection();
     if (!selection.metatileItems.isEmpty()) {
@@ -2895,7 +2882,7 @@ void MainWindow::on_actionAbout_Porymap_triggered()
 {
     if (!this->aboutWindow)
         this->aboutWindow = new AboutPorymap(this);
-    openSubWindow(this->aboutWindow);
+    Util::show(this->aboutWindow);
 }
 
 void MainWindow::on_actionOpen_Log_File_triggered() {
@@ -2927,7 +2914,7 @@ void MainWindow::on_actionPreferences_triggered() {
         connect(preferenceEditor, &PreferenceEditor::reloadProjectRequested, this, &MainWindow::on_action_Reload_Project_triggered);
     }
 
-    openSubWindow(preferenceEditor);
+    Util::show(preferenceEditor);
 }
 
 void MainWindow::togglePreferenceSpecificUi() {
@@ -2944,7 +2931,7 @@ void MainWindow::openProjectSettingsEditor(int tab) {
                 this, &MainWindow::on_action_Reload_Project_triggered);
     }
     this->projectSettingsEditor->setTab(tab);
-    openSubWindow(this->projectSettingsEditor);
+    Util::show(this->projectSettingsEditor);
 }
 
 void MainWindow::on_actionProject_Settings_triggered() {
@@ -2982,7 +2969,7 @@ void MainWindow::on_actionCustom_Scripts_triggered() {
     if (!this->customScriptsEditor)
         initCustomScriptsEditor();
 
-    openSubWindow(this->customScriptsEditor);
+    Util::show(this->customScriptsEditor);
 }
 
 void MainWindow::initCustomScriptsEditor() {
@@ -3062,7 +3049,7 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
         }
     }
 
-    openSubWindow(this->regionMapEditor);
+    Util::show(this->regionMapEditor);
 }
 
 void MainWindow::on_pushButton_CreatePrefab_clicked() {
@@ -3120,7 +3107,7 @@ bool MainWindow::closeSupplementaryWindows() {
         if (widget != this && widget->isWindow()) {
             // Make sure the window is raised and activated before closing in case it has a confirmation prompt.
             if (widget->isVisible()) {
-                openSubWindow(widget);
+                Util::show(widget);
             }
             if (!widget->close()) {
                 QString message = QStringLiteral("Aborted project close");

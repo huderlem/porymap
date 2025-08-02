@@ -11,14 +11,14 @@ class Layout;
 QImage getCollisionMetatileImage(Block);
 QImage getCollisionMetatileImage(int, int);
 
-QImage getMetatileImage(uint16_t, Layout*, bool useTruePalettes = false);
-QImage getMetatileImage(Metatile*, Layout*, bool useTruePalettes = false);
-QImage getMetatileImage(uint16_t, Tileset*, Tileset*, const QList<int>&, const QList<float>& = {}, bool useTruePalettes = false);
-QImage getMetatileImage(Metatile*, Tileset*, Tileset*, const QList<int>&, const QList<float>& = {}, bool useTruePalettes = false);
+QImage getMetatileImage(uint16_t, const Layout*, bool useTruePalettes = false);
+QImage getMetatileImage(const Metatile*, const Layout*, bool useTruePalettes = false);
+QImage getMetatileImage(uint16_t, const Tileset*, const Tileset*, const QList<int>& = {0,1,2}, const QList<float>& = {}, bool useTruePalettes = false);
+QImage getMetatileImage(const Metatile*, const Tileset*, const Tileset*, const QList<int>& = {0,1,2}, const QList<float>& = {}, bool useTruePalettes = false);
 
-QImage getMetatileSheetImage(Layout *layout, int numMetatilesWIde, bool useTruePalettes = false);
-QImage getMetatileSheetImage(Tileset *primaryTileset,
-                             Tileset *secondaryTileset,
+QImage getMetatileSheetImage(const Layout *layout, int numMetatilesWIde, bool useTruePalettes = false);
+QImage getMetatileSheetImage(const Tileset *primaryTileset,
+                             const Tileset *secondaryTileset,
                              uint16_t metatileIdStart,
                              uint16_t metatileIdEnd,
                              int numMetatilesWIde,
@@ -26,8 +26,8 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
                              const QList<float> &layerOpacity = {},
                              const QSize &metatileSize = Metatile::pixelSize(),
                              bool useTruePalettes = false);
-QImage getMetatileSheetImage(Tileset *primaryTileset,
-                             Tileset *secondaryTileset,
+QImage getMetatileSheetImage(const Tileset *primaryTileset,
+                             const Tileset *secondaryTileset,
                              int numMetatilesWide,
                              const QList<int> &layerOrder,
                              const QList<float> &layerOpacity = {},
@@ -35,10 +35,10 @@ QImage getMetatileSheetImage(Tileset *primaryTileset,
                              bool useTruePalettes = false);
 
 
-QImage getTileImage(uint16_t, Tileset*, Tileset*);
-QImage getPalettedTileImage(uint16_t, Tileset*, Tileset*, int, bool useTruePalettes = false);
-QImage getColoredTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset, const QList<QRgb> &palette);
-QImage getGreyscaleTileImage(uint16_t tileId, Tileset *primaryTileset, Tileset *secondaryTileset);
+QImage getTileImage(uint16_t, const Tileset*, const Tileset*);
+QImage getPalettedTileImage(uint16_t, const Tileset*, const Tileset*, int, bool useTruePalettes = false);
+QImage getColoredTileImage(uint16_t tileId, const Tileset *, const Tileset *, const QList<QRgb> &palette);
+QImage getGreyscaleTileImage(uint16_t tileId, const Tileset *, const Tileset *);
 
 void flattenTo4bppImage(QImage * image);
 

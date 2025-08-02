@@ -346,6 +346,7 @@ void PorymapConfig::reset() {
     this->showTilesetEditorLayerGrid = true;
     this->showTilesetEditorDivider = false;
     this->showTilesetEditorRawAttributes = false;
+    this->showPaletteEditorUnusedColors = false;
     this->monitorFiles = true;
     this->tilesetCheckerboardFill = true;
     this->newMapHeaderSectionExpanded = false;
@@ -469,6 +470,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->showTilesetEditorDivider = getConfigBool(key, value);
     } else if (key == "show_tileset_editor_raw_attributes") {
         this->showTilesetEditorRawAttributes = getConfigBool(key, value);
+    } else if (key == "show_palette_editor_unused_colors") {
+        this->showPaletteEditorUnusedColors = getConfigBool(key, value);
     } else if (key == "monitor_files") {
         this->monitorFiles = getConfigBool(key, value);
     } else if (key == "tileset_checkerboard_fill") {
@@ -609,6 +612,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("show_tileset_editor_layer_grid", this->showTilesetEditorLayerGrid ? "1" : "0");
     map.insert("show_tileset_editor_divider", this->showTilesetEditorDivider ? "1" : "0");
     map.insert("show_tileset_editor_raw_attributes", this->showTilesetEditorRawAttributes ? "1" : "0");
+    map.insert("show_palette_editor_unused_colors", this->showPaletteEditorUnusedColors ? "1" : "0");
     map.insert("monitor_files", this->monitorFiles ? "1" : "0");
     map.insert("tileset_checkerboard_fill", this->tilesetCheckerboardFill ? "1" : "0");
     map.insert("new_map_header_section_expanded", this->newMapHeaderSectionExpanded ? "1" : "0");

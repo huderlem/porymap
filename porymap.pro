@@ -116,6 +116,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/montabwidget.cpp \
     src/ui/encountertablemodel.cpp \
     src/ui/encountertabledelegates.cpp \
+    src/ui/palettecolorsearch.cpp \
     src/ui/paletteeditor.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
@@ -234,6 +235,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/encountertablemodel.h \
     include/ui/encountertabledelegates.h \
     include/ui/adjustingstackedwidget.h \
+    include/ui/palettecolorsearch.h \
     include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
@@ -287,6 +289,7 @@ FORMS    += forms/mainwindow.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
     forms/tileseteditor.ui \
+    forms/palettecolorsearch.ui \
     forms/paletteeditor.ui \
     forms/regionmapeditor.ui \
     forms/newmapdialog.ui \

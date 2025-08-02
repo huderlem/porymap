@@ -29,6 +29,7 @@ public:
     static constexpr int pixelWidth() { return 8; }
     static constexpr int pixelHeight() { return 8; }
     static constexpr QSize pixelSize() { return QSize(Tile::pixelWidth(), Tile::pixelHeight()); }
+    static constexpr int numPixels() { return Tile::pixelWidth() * Tile::pixelHeight(); }
     static constexpr int sizeInBytes() { return sizeof(uint16_t); }
 };
 

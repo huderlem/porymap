@@ -67,8 +67,6 @@ public:
     bool setLayout(QString layoutName);
     void unsetMap();
 
-    Tileset *getCurrentMapPrimaryTileset();
-
     bool displayMap();
     bool displayLayout();
 

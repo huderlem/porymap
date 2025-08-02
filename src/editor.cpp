@@ -2060,12 +2060,6 @@ void Editor::updateCustomMapAttributes()
     map->modify();
 }
 
-Tileset* Editor::getCurrentMapPrimaryTileset()
-{
-    QString tilesetLabel = this->layout->tileset_primary_label;
-    return project->getTileset(tilesetLabel);
-}
-
 void Editor::redrawAllEvents() {
     if (this->map) redrawEvents(this->map->getEvents());
 }

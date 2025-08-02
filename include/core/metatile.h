@@ -61,7 +61,7 @@ public:
     static int getDefaultAttributesSize(BaseGameVersion version);
     static void setLayout(Project*);
     static QString getMetatileIdString(uint16_t metatileId);
-    static QString getMetatileIdStrings(const QList<uint16_t> metatileIds);
+    static QString getMetatileIdStrings(const QList<uint16_t> &metatileIds);
     static QString getLayerName(int layerNum);
 
     static constexpr int tileWidth() { return 2; }

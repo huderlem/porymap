@@ -116,6 +116,7 @@ public:
     bool showTilesetEditorLayerGrid;
     bool showTilesetEditorDivider;
     bool showTilesetEditorRawAttributes;
+    bool showPaletteEditorUnusedColors;
     bool monitorFiles;
     bool tilesetCheckerboardFill;
     bool newMapHeaderSectionExpanded;

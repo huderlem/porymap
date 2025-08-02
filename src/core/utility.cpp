@@ -112,3 +112,16 @@ void Util::setErrorStylesheet(QLineEdit *lineEdit, bool isError) {
     static const QString stylesheet = QStringLiteral("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
     lineEdit->setStyleSheet(isError ? stylesheet : "");
 }
+
+void Util::show(QWidget *w) {
+    if (!w) return;
+
+    if (!w->isVisible()) {
+        w->show();
+    } else if (w->isMinimized()) {
+        w->showNormal();
+    } else {
+        w->raise();
+        w->activateWindow();
+    }
+}
