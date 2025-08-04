@@ -45,9 +45,11 @@ private:
     QPixmap basePixmap;
     Tileset *primaryTileset = nullptr;
     Tileset *secondaryTileset = nullptr;
-    uint16_t selectedMetatileId;
+    uint16_t selectedMetatileId = 0;
+    QPoint prevCellPos = QPoint(-1,-1);
 
     QList<uint16_t> swapMetatileIds;
+    uint16_t lastHoveredMetatileId = 0;
     bool inSwapMode = false;
 
     void updateBasePixmap();

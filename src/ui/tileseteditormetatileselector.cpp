@@ -82,7 +82,9 @@ void TilesetEditorMetatileSelector::draw() {
     drawFilters();
 
     if (this->inSwapMode) {
-        for (const auto &metatileId : this->swapMetatileIds) {
+        QSet<uint16_t> metatileIds(this->swapMetatileIds.constBegin(), this->swapMetatileIds.constEnd());
+        metatileIds.insert(this->lastHoveredMetatileId);
+        for (const auto &metatileId : metatileIds) {
             bool ok;
             QPoint pos = metatileIdToPos(metatileId, &ok);
             if (ok) drawSelectionRect(pos, QSize(1,1), Qt::DashLine);
@@ -141,8 +143,38 @@ void TilesetEditorMetatileSelector::clearSwapSelection() {
 }
 
 void TilesetEditorMetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    QPoint cellPos = getCellPos(event->pos());
+
     bool ok;
-    uint16_t metatileId = posToMetatileId(getCellPos(event->pos()), &ok);
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
+    if (!ok) return;
+
+    SelectablePixmapItem::mousePressEvent(event);
+    this->selectedMetatileId = this->lastHoveredMetatileId = metatileId;
+    emit selectedMetatileChanged(this->selectedMetatileId);
+    this->prevCellPos = cellPos;
+}
+
+void TilesetEditorMetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    QPoint cellPos = getCellPos(event->pos());
+    if (cellPos == this->prevCellPos) return;
+
+    bool ok;
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
+    if (!ok) return;
+
+    SelectablePixmapItem::mouseMoveEvent(event);
+    this->selectedMetatileId = this->lastHoveredMetatileId = metatileId;
+    emit selectedMetatileChanged(this->selectedMetatileId);
+    emit hoveredMetatileChanged(this->selectedMetatileId);
+    this->prevCellPos = cellPos;
+}
+
+void TilesetEditorMetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    QPoint cellPos = getCellPos(event->pos());
+
+    bool ok;
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
     if (!ok) return;
 
     if (this->inSwapMode) {
@@ -153,48 +185,31 @@ void TilesetEditorMetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *ev
         }
     }
 
-    SelectablePixmapItem::mousePressEvent(event);
-    this->selectedMetatileId = metatileId;
-    emit selectedMetatileChanged(this->selectedMetatileId);
-}
-
-void TilesetEditorMetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    if (this->inSwapMode) return;
-
-    bool ok;
-    uint16_t metatileId = posToMetatileId(getCellPos(event->pos()), &ok);
-    if (!ok) return;
-
-    SelectablePixmapItem::mouseMoveEvent(event);
-    this->selectedMetatileId = metatileId;
-    emit selectedMetatileChanged(this->selectedMetatileId);
-    emit hoveredMetatileChanged(this->selectedMetatileId);
-}
-
-void TilesetEditorMetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (this->inSwapMode) return;
-
-    bool ok;
-    uint16_t metatileId = posToMetatileId(getCellPos(event->pos()), &ok);
-    if (!ok) return;
-
     SelectablePixmapItem::mouseReleaseEvent(event);
-    this->selectedMetatileId = metatileId;
+    this->selectedMetatileId = this->lastHoveredMetatileId = metatileId;
     emit selectedMetatileChanged(this->selectedMetatileId);
+    this->prevCellPos = cellPos;
 }
 
 void TilesetEditorMetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    QPoint cellPos = getCellPos(event->pos());
+    if (cellPos == this->prevCellPos) return;
+
     bool ok;
-    uint16_t metatileId = posToMetatileId(getCellPos(event->pos()), &ok);
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
     if (ok) {
+        this->lastHoveredMetatileId = metatileId;
         emit this->hoveredMetatileChanged(metatileId);
+        if (this->inSwapMode) draw();
     } else {
         emit this->hoveredMetatileCleared();
     }
+    this->prevCellPos = cellPos;
 }
 
 void TilesetEditorMetatileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
     emit this->hoveredMetatileCleared();
+    this->prevCellPos = QPoint(-1,-1);
 }
 
 uint16_t TilesetEditorMetatileSelector::posToMetatileId(const QPoint &pos, bool *ok) const {
