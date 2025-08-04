@@ -13,8 +13,27 @@ QSize TilesetEditorTileSelector::getSelectionDimensions() const {
 }
 
 void TilesetEditorTileSelector::setMaxSelectionSize(int width, int height) {
+    width = qMax(1, width);
+    height = qMax(1, height);
     SelectablePixmapItem::setMaxSelectionSize(width, height);
-    updateSelectedTiles();
+    if (this->externalSelection) {
+        if (this->externalSelectionWidth > this->maxSelectionWidth || this->externalSelectionHeight > this->maxSelectionHeight) {
+            // Crop external selection to new max size.
+            QList<Tile> cropped;
+            int croppedWidth = qMin(this->externalSelectionWidth, this->maxSelectionWidth);
+            int croppedHeight = qMin(this->externalSelectionHeight, this->maxSelectionHeight);
+            for (int y = 0; y < croppedHeight; y++)
+            for (int x = 0; x < croppedWidth; x++) {
+                int index = y * this->externalSelectionWidth + x;
+                cropped.append(this->externalSelectedTiles.value(index));
+            }
+            this->externalSelectionWidth = croppedWidth;
+            this->externalSelectionHeight = croppedHeight;
+            this->externalSelectedTiles = cropped;
+        }
+    } else {
+        updateSelectedTiles();
+    }
 }
 
 void TilesetEditorTileSelector::updateBasePixmap() {
@@ -118,7 +137,7 @@ QList<Tile> TilesetEditorTileSelector::getSelectedTiles() {
     }
 }
 
-QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height, QList<Tile> selected) {
+QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height, const QList<Tile> &selected) {
     QList<Tile> tiles;
     QList<QList<Tile>> tileMatrix;
     for (int j = 0; j < height; j++) {
@@ -126,7 +145,7 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
         QList<Tile> layerRow;
         for (int i = 0; i < width; i++) {
             int index = i + j * width;
-            Tile tile = selected.at(index);
+            Tile tile = selected.value(index);
             tile.xflip ^= this->xFlip;
             tile.yflip ^= this->yFlip;
             if (this->paletteChanged)
@@ -139,7 +158,7 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
             // If we've completed a layer row, or its the last tile of an incompletely
             // selected layer, then append the layer row to the full row
             // If not an external selection, treat the whole row as 1 "layer"
-            if (i == width - 1 || (this->externalSelection && (this->externalSelectedPos.at(index) % Metatile::tilesPerLayer()) & 1)) {
+            if (i == width - 1) {
                 row.append(layerRow);
                 layerRow.clear();
             }
@@ -157,15 +176,14 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
     return tiles;
 }
 
-void TilesetEditorTileSelector::setExternalSelection(int width, int height, QList<Tile> tiles, QList<int> tileIdxs) {
+void TilesetEditorTileSelector::setExternalSelection(int width, int height, const QList<Tile> &tiles) {
+    width = qBound(1, width, this->maxSelectionWidth);
+    height = qBound(1, height, this->maxSelectionHeight);
     this->externalSelection = true;
     this->paletteChanged = false;
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
-    this->externalSelectedTiles.clear();
-    this->externalSelectedTiles.append(tiles);
-    this->externalSelectedPos.clear();
-    this->externalSelectedPos.append(tileIdxs);
+    this->externalSelectedTiles = tiles.mid(0, width * height);
     this->draw();
     emit selectedTilesChanged();
 }

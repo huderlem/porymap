@@ -27,7 +27,7 @@ public:
     void setPaletteId(int);
     void setTileFlips(bool, bool);
     QList<Tile> getSelectedTiles();
-    void setExternalSelection(int, int, QList<Tile>, QList<int>);
+    void setExternalSelection(int, int, const QList<Tile>&);
     QPoint getTileCoordsOnWidget(uint16_t);
     QImage buildPrimaryTilesIndexedImage();
     QImage buildSecondaryTilesIndexedImage();
@@ -49,7 +49,6 @@ private:
     int externalSelectionWidth;
     int externalSelectionHeight;
     QList<Tile> externalSelectedTiles;
-    QList<int> externalSelectedPos;
     QPoint prevCellPos = QPoint(-1,-1);
 
     Tileset *primaryTileset;
@@ -64,7 +63,7 @@ private:
     uint16_t getTileId(int x, int y);
     QPoint getTileCoords(uint16_t);
     QList<QRgb> getCurPaletteTable();
-    QList<Tile> buildSelectedTiles(int, int, QList<Tile>);
+    QList<Tile> buildSelectedTiles(int, int, const QList<Tile>&);
     QImage buildImage(int tileIdStart, int numTiles);
     void updateBasePixmap();
     void drawUnused();

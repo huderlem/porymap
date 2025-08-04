@@ -260,6 +260,8 @@ void TilesetEditor::setMetatileLayerOrientation(Qt::Orientation orientation) {
     ui->graphicsView_selectedTile->setFixedSize(w, h);
     ui->graphicsView_MetatileLayers->setFixedSize(w, h);
 
+    drawSelectedTiles();
+
     // If the layers are laid out vertically then the orientation is obvious, no need to label them.
     // This also lets us give the vertical space of the label over to the layer view.
     ui->label_BottomTop->setVisible(horizontal);
@@ -574,19 +576,14 @@ void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly)
 
 void TilesetEditor::onMetatileLayerSelectionChanged(const QPoint &selectionOrigin, const QSize &size) {
     QList<Tile> tiles;
-    QList<int> tileIdxs;
-    int maxTileIndex = projectConfig.getNumTilesInMetatile();
-    for (int j = 0; j < size.height(); j++) {
-        for (int i = 0; i < size.width(); i++) {
-            int tileIndex = this->metatileLayersItem->posToTileIndex(selectionOrigin.x() + i, selectionOrigin.y() + j);
-            if (tileIndex < maxTileIndex) {
-                tiles.append(this->metatile ? this->metatile->tiles.value(tileIndex) : Tile());
-                tileIdxs.append(tileIndex);
-            }
+    for (int y = 0; y < size.height(); y++) {
+        for (int x = 0; x < size.width(); x++) {
+            int tileIndex = this->metatileLayersItem->posToTileIndex(selectionOrigin.x() + x, selectionOrigin.y() + y);
+            tiles.append(this->metatile ? this->metatile->tiles.value(tileIndex) : Tile());
         }
     }
 
-    this->tileSelector->setExternalSelection(size.width(), size.height(), tiles, tileIdxs);
+    this->tileSelector->setExternalSelection(size.width(), size.height(), tiles);
     if (size == QSize(1,1)) {
         setPaletteId(tiles[0].palette);
         this->tileSelector->highlight(tiles[0].tileId);
