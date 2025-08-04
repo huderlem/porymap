@@ -205,7 +205,7 @@ uint16_t TilesetEditorMetatileSelector::posToMetatileId(int x, int y, bool *ok) 
     if (ok) *ok = true;
     int index = y * this->numMetatilesWide + x;
     uint16_t metatileId = static_cast<uint16_t>(index);
-    if (this->primaryTileset && this->primaryTileset->contains(metatileId)) {
+    if (this->primaryTileset && this->primaryTileset->containsMetatileId(metatileId)) {
         return metatileId;
     }
 
@@ -216,7 +216,7 @@ uint16_t TilesetEditorMetatileSelector::posToMetatileId(int x, int y, bool *ok) 
     int numPrimaryRounded = numPrimaryMetatilesRounded();
     int firstSecondaryRow = numPrimaryRounded / this->numMetatilesWide;
     metatileId = static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - numPrimaryRounded);
-    if (this->secondaryTileset && this->secondaryTileset->contains(metatileId) && y >= firstSecondaryRow) {
+    if (this->secondaryTileset && this->secondaryTileset->containsMetatileId(metatileId) && y >= firstSecondaryRow) {
         return metatileId;
     }
 
@@ -225,12 +225,12 @@ uint16_t TilesetEditorMetatileSelector::posToMetatileId(int x, int y, bool *ok) 
 }
 
 QPoint TilesetEditorMetatileSelector::metatileIdToPos(uint16_t metatileId, bool *ok) const {
-    if (this->primaryTileset && this->primaryTileset->contains(metatileId)) {
+    if (this->primaryTileset && this->primaryTileset->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId;
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
     }
-    if (this->secondaryTileset && this->secondaryTileset->contains(metatileId)) {
+    if (this->secondaryTileset && this->secondaryTileset->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId - Project::getNumMetatilesPrimary() + numPrimaryMetatilesRounded();
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);

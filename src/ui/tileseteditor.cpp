@@ -794,7 +794,7 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset) {
     int numTilesWide = image.width() / Tile::pixelWidth();
     int numTilesHigh = image.height() / Tile::pixelHeight();
     int totalTiles = numTilesHigh * numTilesWide;
-    int maxAllowedTiles = primary ? Project::getNumTilesPrimary() : Project::getNumTilesTotal() - Project::getNumTilesPrimary();
+    int maxAllowedTiles = primary ? Project::getNumTilesPrimary() : Project::getNumTilesSecondary();
     if (totalTiles > maxAllowedTiles) {
         ErrorMessage::show(QStringLiteral("Failed to import tiles."),
                            QString("The maximum number of tiles allowed in the %1 tileset is %2, but the provided image contains %3 total tiles.")
@@ -899,7 +899,7 @@ void TilesetEditor::on_actionChange_Metatiles_Count_triggered()
         // Our selected metatile ID may have become invalid. Make sure it's in-bounds.
         uint16_t metatileId = this->metatileSelector->getSelectedMetatileId();
         Tileset *tileset = Tileset::getMetatileTileset(metatileId, this->primaryTileset, this->secondaryTileset);
-        if (tileset && !tileset->contains(metatileId)) {
+        if (tileset && !tileset->containsMetatileId(metatileId)) {
             this->metatileSelector->select(qBound(tileset->firstMetatileId(), metatileId, tileset->lastMetatileId()));
         }
 
@@ -1233,31 +1233,25 @@ void TilesetEditor::countTileUsage() {
     this->tileSelector->usedTiles.resize(Project::getNumTilesTotal());
     this->tileSelector->usedTiles.fill(0);
 
-    // Count usage of our primary tileset's tiles in the secondary tilesets it gets paired with.
-    QSet<QString> tilesetNames = this->project->getPairedTilesetLabels(this->primaryTileset);
-    for (const auto &tilesetName : tilesetNames) {
-        Tileset *tileset = this->project->getTileset(tilesetName);
-        if (!tileset) continue;
-        for (const auto &metatile : tileset->metatiles()) {
-            for (const auto &tile : metatile->tiles) {
-                if (tile.tileId < Project::getNumTilesPrimary())
-                    this->tileSelector->usedTiles[tile.tileId]++;
+    auto countTilesetTileUsage = [this](Tileset *searchTileset) {
+        // Count usage of our search tileset's tiles (in itself, and in any tilesets it gets paired with).
+        QSet<QString> tilesetNames = this->project->getPairedTilesetLabels(searchTileset);
+        tilesetNames.insert(searchTileset->name);
+        for (const auto &tilesetName : tilesetNames) {
+            Tileset *tileset = this->project->getTileset(tilesetName);
+            if (!tileset) continue;
+            for (const auto &metatile : tileset->metatiles()) {
+                for (const auto &tile : metatile->tiles) {
+                    if (searchTileset->containsTileId(tile.tileId)) {
+                        this->tileSelector->usedTiles[tile.tileId]++;
+                    }
+                }
             }
         }
-    }
+    };
 
-    // Count usage of our secondary tileset's tiles in the primary tilesets it gets paired with.
-    tilesetNames = this->project->getPairedTilesetLabels(this->secondaryTileset);
-    for (const auto &tilesetName : tilesetNames) {
-        Tileset *tileset = this->project->getTileset(tilesetName);
-        if (!tileset) continue;
-        for (const auto &metatile : tileset->metatiles()) {
-            for (const auto &tile : metatile->tiles) {
-                if (tile.tileId >= Project::getNumTilesPrimary())
-                    this->tileSelector->usedTiles[tile.tileId]++;
-            }
-        }
-    }
+    countTilesetTileUsage(this->primaryTileset);
+    countTilesetTileUsage(this->secondaryTileset);
 }
 
 void TilesetEditor::on_copyButton_MetatileLabel_clicked() {
@@ -1396,9 +1390,9 @@ void TilesetEditor::applyMetatileSwapToLayouts(uint16_t metatileIdA, uint16_t me
 
     // Get which tilesets our swapped metatiles belong to.
     auto addSourceTileset = [this](uint16_t metatileId, TilesetPair *tilesets) {
-        if (this->primaryTileset->contains(metatileId)) {
+        if (this->primaryTileset->containsMetatileId(metatileId)) {
             tilesets->primary = this->primaryTileset;
-        } else if (this->secondaryTileset->contains(metatileId)) {
+        } else if (this->secondaryTileset->containsMetatileId(metatileId)) {
             tilesets->secondary = this->secondaryTileset;
         } else {
             // Invalid metatile, shouldn't happen

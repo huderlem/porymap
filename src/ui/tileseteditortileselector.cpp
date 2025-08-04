@@ -54,22 +54,26 @@ void TilesetEditorTileSelector::updateBasePixmap() {
         int y = (tileId / this->numTilesWide) * this->cellHeight;
         painter.drawImage(x, y, tileImage);
     }
-
-    if (this->showDivider) {
-        int row = Util::roundUpToMultiple(Project::getNumTilesPrimary(), this->numTilesWide) / this->numTilesWide;
-        const int y = row * this->cellHeight;
-        painter.setPen(Qt::white);
-        painter.drawLine(0, y, this->numTilesWide * this->cellWidth, y);
-    }
-
     painter.end();
+
     this->basePixmap = QPixmap::fromImage(image);
 }
 
 void TilesetEditorTileSelector::draw() {
     if (this->basePixmap.isNull())
         updateBasePixmap();
-    setPixmap(this->basePixmap);
+
+    QPixmap pixmap = this->basePixmap;
+
+    if (this->showDivider) {
+        QPainter painter(&pixmap);
+        int row = Util::roundUpToMultiple(Project::getNumTilesPrimary(), this->numTilesWide) / this->numTilesWide;
+        const int y = row * this->cellHeight;
+        painter.setPen(Qt::white);
+        painter.drawLine(0, y, this->numTilesWide * this->cellWidth, y);
+    }
+
+    setPixmap(pixmap);
 
     if (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1)) {
         this->drawSelection();

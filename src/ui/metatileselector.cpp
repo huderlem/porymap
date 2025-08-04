@@ -204,7 +204,7 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
     if (ok) *ok = true;
     int index = y * this->numMetatilesWide + x;
     uint16_t metatileId = static_cast<uint16_t>(index);
-    if (primaryTileset() && primaryTileset()->contains(metatileId)) {
+    if (primaryTileset() && primaryTileset()->containsMetatileId(metatileId)) {
         return metatileId;
     }
 
@@ -215,7 +215,7 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
     int numPrimaryRounded = numPrimaryMetatilesRounded();
     int firstSecondaryRow = numPrimaryRounded / this->numMetatilesWide;
     metatileId = static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - numPrimaryRounded);
-    if (secondaryTileset() && secondaryTileset()->contains(metatileId) && y >= firstSecondaryRow) {
+    if (secondaryTileset() && secondaryTileset()->containsMetatileId(metatileId) && y >= firstSecondaryRow) {
         return metatileId;
     }
 
@@ -224,12 +224,12 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
 }
 
 QPoint MetatileSelector::metatileIdToPos(uint16_t metatileId, bool *ok) const {
-    if (primaryTileset() && primaryTileset()->contains(metatileId)) {
+    if (primaryTileset() && primaryTileset()->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId;
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
     }
-    if (secondaryTileset() && secondaryTileset()->contains(metatileId)) {
+    if (secondaryTileset() && secondaryTileset()->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId - Project::getNumMetatilesPrimary() + numPrimaryMetatilesRounded();
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);

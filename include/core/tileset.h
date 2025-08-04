@@ -90,7 +90,11 @@ public:
 
     uint16_t firstMetatileId() const;
     uint16_t lastMetatileId() const;
-    bool contains(uint16_t metatileId) const { return metatileId >= firstMetatileId() && metatileId <= lastMetatileId(); }
+    bool containsMetatileId(uint16_t metatileId) const { return metatileId >= firstMetatileId() && metatileId <= lastMetatileId(); }
+
+    uint16_t firstTileId() const;
+    uint16_t lastTileId() const;
+    bool containsTileId(uint16_t tileId) const { return tileId > firstTileId() && tileId <= lastTileId(); }
 
     int numTiles() const { return m_tiles.length(); }
     int maxTiles() const;
