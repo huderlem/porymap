@@ -648,7 +648,7 @@
     </widget>
     <widget class="QMenu" name="menuExport_porytiles_Layer_Images">
      <property name="title">
-      <string>Export Porytiles Layer Images...</string>
+      <string>Export Porytiles Layer Images</string>
      </property>
      <addaction name="actionExport_Primary_Porytiles_Layer_Images"/>
      <addaction name="actionExport_Secondary_Porytiles_Layer_Images"/>
