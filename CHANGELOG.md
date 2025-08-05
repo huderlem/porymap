@@ -21,6 +21,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - The scroll position of the map view now remains the same between the Connections tab and the Map/Events tabs.
 - The Move tool now behaves more like a traditional pan tool (with no momentum).
 - The map image exporter now uses a checkered background to indicate transparency.
+- Invalid tile IDs are now rendered as magenta (like invalid metatiles), instead of rendering the same as a transparent tile.
+- Full menu paths are now listed for shortcuts in the Shortcuts Editor.
 
 ### Fixed
 - Fix crash when rendering tiles with invalid palette numbers.
