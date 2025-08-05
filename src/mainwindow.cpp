@@ -2271,7 +2271,12 @@ void MainWindow::initShortcutsEditor() {
 
     connectSubEditorsToShortcutsEditor();
 
-    shortcutsEditor->setShortcutableObjects(shortcutableObjects());
+    auto objectList = shortcutableObjects();
+    for (auto *menu : findChildren<QMenu *>()) {
+        if (!menu->objectName().isEmpty())
+            objectList.append(qobject_cast<QObject *>(menu));
+    }
+    shortcutsEditor->setShortcutableObjects(objectList);
 }
 
 void MainWindow::connectSubEditorsToShortcutsEditor() {

@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QLabel>
+#include <QMenu>
 
 
 ShortcutsEditor::ShortcutsEditor(QWidget *parent) :
@@ -78,11 +79,43 @@ void ShortcutsEditor::resetShortcuts() {
     }
 }
 
+void ShortcutsEditor::parseObject(const QObject *object, QMap<const QObject*, QString> *objects_labels, QMap<const QObject*, QString> *objects_prefixes) {
+    auto menu = dynamic_cast<const QMenu*>(object);
+    if (menu) {
+        // If a menu is provided we'll use it to create prefixes for any of the menu's actions,
+        // and automatically insert its actions in the shortcut list (if they weren't present already).
+        // The prefixing assumes the provided object list is in inheritance order.
+        // These prefixes are important for differentiating actions that may have the same display text
+        // but appear in different menus.
+        for (const auto &action : menu->actions()) {
+            if (!menu->title().isEmpty()) {
+                auto prefix = QString("%1%2 > ")
+                                        .arg(objects_prefixes->value(menu->menuAction())) // If this is a sub-menu, it may itself have a prefix.
+                                        .arg(menu->title());
+                objects_prefixes->insert(action, prefix);
+            }
+            parseObject(action, objects_labels, objects_prefixes);
+        }
+    } else if (object && !object->objectName().isEmpty() && !object->objectName().startsWith("_q_")) {
+        QString label = getLabel(object);
+        if (!label.isEmpty()) {
+            objects_labels->insert(object, label);
+        }
+    }
+}
+
 void ShortcutsEditor::parseObjectList(const QObjectList &objectList) {
-    for (auto *object : objectList) {
-        const auto label = getLabel(object);
-        if (!label.isEmpty() && !object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
-            labels_objects.insert(label, object);
+    QMap<const QObject*, QString> objects_labels;
+    QMap<const QObject*, QString> objects_prefixes;
+    for (const auto &object : objectList) {
+        parseObject(object, &objects_labels, &objects_prefixes);
+    }
+
+    // Sort alphabetically by label
+    this->labels_objects.clear();
+    for (auto it = objects_labels.constBegin(); it != objects_labels.constEnd(); it++) {
+        QString fullLabel = objects_prefixes.value(it.key()) + it.value();
+        this->labels_objects.insert(fullLabel, it.key());
     }
 }
 
@@ -164,7 +197,9 @@ QList<MultiKeyEdit *> ShortcutsEditor::siblings(MultiKeyEdit *multiKeyEdit) cons
 
 void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyEdit *sibling) {
     const auto duplicateKeySequence = sender->keySequences().last();
-    const auto siblingLabel = getLabel(multiKeyEdits_objects.value(sibling));
+    const auto siblingLabel = this->labels_objects.key(multiKeyEdits_objects.value(sibling));
+    if (siblingLabel.isEmpty())
+        return;
     const auto message = QString(
             "Shortcut '%1' is already used by '%2', would you like to replace it?")
             .arg(duplicateKeySequence.toString()).arg(siblingLabel);
