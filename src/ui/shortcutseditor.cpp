@@ -184,9 +184,12 @@ void ShortcutsEditor::checkForDuplicates(const QKeySequence &keySequence) {
     if (!sender_multiKeyEdit)
         return;
 
-    for (auto *sibling_multiKeyEdit : siblings(sender_multiKeyEdit))
-        if (sibling_multiKeyEdit->contains(keySequence))
+    for (auto *sibling_multiKeyEdit : siblings(sender_multiKeyEdit)) {
+        if (sibling_multiKeyEdit->contains(keySequence)) {
             promptUserOnDuplicateFound(sender_multiKeyEdit, sibling_multiKeyEdit);
+            break;
+        }
+    }
 }
 
 QList<MultiKeyEdit *> ShortcutsEditor::siblings(MultiKeyEdit *multiKeyEdit) const {
@@ -200,25 +203,22 @@ void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyE
     const auto siblingLabel = this->labels_objects.key(multiKeyEdits_objects.value(sibling));
     if (siblingLabel.isEmpty())
         return;
-    const auto message = QString(
-            "Shortcut '%1' is already used by '%2', would you like to replace it?")
-            .arg(duplicateKeySequence.toString()).arg(siblingLabel);
+    const auto message = QString("Shortcut '%1' is already used by '%2', would you like to replace it?")
+                                    .arg(duplicateKeySequence.toString())
+                                    .arg(siblingLabel);
 
-    const auto result = QMessageBox::question(
-            this, QApplication::applicationName(), message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    // QKeySequenceEdits::keySequenceChange fires when editing finishes on a QKeySequenceEdit,
+    // even if no change occurs. Displaying our question prompt will cause the edit to lose focus
+    // and fire another signal, which would cause another "duplicate shortcut" prompt to appear.
+    // For this reason we need to block their signals before the message is displayed.
+    const QSignalBlocker b_Sender(sender);
+    const QSignalBlocker b_Sibling(sibling);
 
-    if (result == QMessageBox::Yes)
-        removeKeySequence(duplicateKeySequence, sibling);
-    else
-        removeKeySequence(duplicateKeySequence, sender);
-    
-    activateWindow();
-}
-
-void ShortcutsEditor::removeKeySequence(const QKeySequence &keySequence, MultiKeyEdit *multiKeyEdit) {
-    multiKeyEdit->blockSignals(true);
-    multiKeyEdit->removeOne(keySequence);
-    multiKeyEdit->blockSignals(false);
+    if (QuestionMessage::show(message, this) == QMessageBox::Yes) {
+        sibling->removeOne(duplicateKeySequence);
+    } else {
+        sender->removeOne(duplicateKeySequence);
+    }
 }
 
 void ShortcutsEditor::dialogButtonClicked(QAbstractButton *button) {

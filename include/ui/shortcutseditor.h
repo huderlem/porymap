@@ -49,7 +49,6 @@ private:
     void addNewMultiKeyEdit(const QObject *object, const QString &shortcutContext);
     QList<MultiKeyEdit *> siblings(MultiKeyEdit *multiKeyEdit) const;
     void promptUserOnDuplicateFound(MultiKeyEdit *current, MultiKeyEdit *sender);
-    void removeKeySequence(const QKeySequence &keySequence, MultiKeyEdit *multiKeyEdit);
     void saveShortcuts();
     void resetShortcuts();
 
