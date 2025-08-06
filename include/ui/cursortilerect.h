@@ -43,7 +43,8 @@ public:
     bool getSingleTileMode() const { return m_singleTileMode; }
 
     void updateLocation(int x, int y);
-    void updateSelectionSize(int width, int height);
+    void updateSelectionSize(const QSize &size);
+    void updateSelectionSize(int width, int height) { updateSelectionSize(QSize(width, height)); }
 
 private:
     const QSize m_tileSize;

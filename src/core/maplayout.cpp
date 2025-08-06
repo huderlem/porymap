@@ -99,7 +99,7 @@ QRect Layout::getVisibleRect() const {
     return area += Project::getPixelViewDistance();
 }
 
-bool Layout::getBlock(int x, int y, Block *out) {
+bool Layout::getBlock(int x, int y, Block *out) const {
     if (isWithinBounds(x, y)) {
         int i = y * getWidth() + x;
         *out = this->blockdata.value(i);
@@ -132,6 +132,20 @@ void Layout::setBlockdata(Blockdata newBlockdata, bool enableScriptCallback) {
                 Scripting::cb_MetatileChanged(i % width, i / width, prevBlock, newBlock);
         }
     }
+}
+
+uint16_t Layout::getMetatileId(int x, int y) const {
+    Block block;
+    return getBlock(x, y, &block) ? block.metatileId() : 0;
+}
+
+bool Layout::setMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback) {
+    Block block;
+    if (!getBlock(x, y, &block)) {
+        return false;
+    }
+    setBlock(x, y, Block(metatileId, block.collision(), block.elevation()), enableScriptCallback);
+    return true;
 }
 
 void Layout::clearBorderCache() {

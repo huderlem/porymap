@@ -23,13 +23,13 @@ PrefabCreationDialog::PrefabCreationDialog(QWidget *parent, MetatileSelector *me
 
     QObject::connect(this->ui->graphicsView_Prefab, &ClickableGraphicsView::clicked, [=](QMouseEvent *event){
         auto pos = event->pos();
-        int selectionWidth = this->selection.dimensions.x() * Metatile::pixelWidth();
-        int selectionHeight = this->selection.dimensions.y() * Metatile::pixelHeight();
+        int selectionWidth = this->selection.dimensions.width() * Metatile::pixelWidth();
+        int selectionHeight = this->selection.dimensions.height() * Metatile::pixelHeight();
         if (pos.x() < 0 || pos.x() >= selectionWidth || pos.y() < 0 || pos.y() >= selectionHeight)
             return;
         int metatileX = pos.x() / Metatile::pixelWidth();
         int metatileY = pos.y() / Metatile::pixelHeight();
-        int index = metatileY * this->selection.dimensions.x() + metatileX;
+        int index = metatileY * this->selection.dimensions.width() + metatileX;
         bool toggledState = !this->selection.metatileItems[index].enabled;
         this->selection.metatileItems[index].enabled = toggledState;
         if (this->selection.hasCollision) {

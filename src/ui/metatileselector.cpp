@@ -3,7 +3,7 @@
 #include "project.h"
 #include <QPainter>
 
-QPoint MetatileSelector::getSelectionDimensions() const {
+QSize MetatileSelector::getSelectionDimensions() const {
     if (this->prefabSelection || this->externalSelection)
         return selection.dimensions;
     return SelectablePixmapItem::getSelectionDimensions();
@@ -41,7 +41,7 @@ bool MetatileSelector::select(uint16_t metatileId) {
     this->externalSelection = false;
     this->prefabSelection = false;
     this->selection = MetatileSelection{
-            QPoint(1, 1),
+            QSize(1, 1),
             false,
             QList<MetatileSelectionItem>({MetatileSelectionItem{true, metatileId}}),
             QList<CollisionSelectionItem>(),
@@ -80,7 +80,7 @@ void MetatileSelector::setExternalSelection(int width, int height, const QList<u
     this->selection.metatileItems.clear();
     this->selection.collisionItems.clear();
     this->selection.hasCollision = true;
-    this->selection.dimensions = QPoint(width, height);
+    this->selection.dimensions = QSize(width, height);
     for (int i = 0; i < qMin(metatiles.length(), collisions.length()); i++) {
         uint16_t metatileId = metatiles.at(i);
         uint16_t collision = collisions.at(i).first;
@@ -175,8 +175,8 @@ void MetatileSelector::updateSelectedMetatiles() {
     this->selection.hasCollision = false;
     this->selection.dimensions = this->getSelectionDimensions();
     QPoint origin = this->getSelectionStart();
-    for (int j = 0; j < this->selection.dimensions.y(); j++) {
-        for (int i = 0; i < this->selection.dimensions.x(); i++) {
+    for (int j = 0; j < this->selection.dimensions.height(); j++) {
+        for (int i = 0; i < this->selection.dimensions.width(); i++) {
             uint16_t metatileId = posToMetatileId(origin.x() + i, origin.y() + j);
             this->selection.metatileItems.append(MetatileSelectionItem{true, metatileId});
         }
@@ -186,7 +186,7 @@ void MetatileSelector::updateSelectedMetatiles() {
 
 void MetatileSelector::updateExternalSelectedMetatiles() {
     this->selection.metatileItems.clear();
-    this->selection.dimensions = QPoint(this->externalSelectionWidth, this->externalSelectionHeight);
+    this->selection.dimensions = QSize(this->externalSelectionWidth, this->externalSelectionHeight);
     for (int i = 0; i < this->externalSelectedMetatiles.count(); ++i) {
         uint16_t metatileId = this->externalSelectedMetatiles.at(i);
         if (!this->layout->metatileIsValid(metatileId))
@@ -204,7 +204,7 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
     if (ok) *ok = true;
     int index = y * this->numMetatilesWide + x;
     uint16_t metatileId = static_cast<uint16_t>(index);
-    if (primaryTileset() && primaryTileset()->contains(metatileId)) {
+    if (primaryTileset() && primaryTileset()->containsMetatileId(metatileId)) {
         return metatileId;
     }
 
@@ -215,7 +215,7 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
     int numPrimaryRounded = numPrimaryMetatilesRounded();
     int firstSecondaryRow = numPrimaryRounded / this->numMetatilesWide;
     metatileId = static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - numPrimaryRounded);
-    if (secondaryTileset() && secondaryTileset()->contains(metatileId) && y >= firstSecondaryRow) {
+    if (secondaryTileset() && secondaryTileset()->containsMetatileId(metatileId) && y >= firstSecondaryRow) {
         return metatileId;
     }
 
@@ -224,12 +224,12 @@ uint16_t MetatileSelector::posToMetatileId(int x, int y, bool *ok) const {
 }
 
 QPoint MetatileSelector::metatileIdToPos(uint16_t metatileId, bool *ok) const {
-    if (primaryTileset() && primaryTileset()->contains(metatileId)) {
+    if (primaryTileset() && primaryTileset()->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId;
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
     }
-    if (secondaryTileset() && secondaryTileset()->contains(metatileId)) {
+    if (secondaryTileset() && secondaryTileset()->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId - Project::getNumMetatilesPrimary() + numPrimaryMetatilesRounded();
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);

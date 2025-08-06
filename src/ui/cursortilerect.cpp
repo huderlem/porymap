@@ -39,8 +39,8 @@ void CursorTileRect::stopRightClickSelectionAnchor() {
     m_rightClickSelectionAnchored = false;
 }
 
-void CursorTileRect::updateSelectionSize(int width, int height) {
-    m_selectionSize = QSize(width, height).expandedTo(QSize(1,1));
+void CursorTileRect::updateSelectionSize(const QSize &size) {
+    m_selectionSize = size.expandedTo(QSize(1,1)); // Enforce minimum of 1x1 cell
     prepareGeometryChange();
     update();
 }

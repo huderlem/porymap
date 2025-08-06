@@ -1120,8 +1120,7 @@ void Editor::onHoveredMetatileSelectionCleared() {
 }
 
 void Editor::onSelectedMetatilesChanged() {
-    QPoint size = this->metatile_selector_item->getSelectionDimensions();
-    this->cursorMapTileRect->updateSelectionSize(size.x(), size.y());
+    this->cursorMapTileRect->updateSelectionSize(this->metatile_selector_item->getSelectionDimensions());
     this->redrawCurrentMetatilesSelection();
 }
 
@@ -1774,8 +1773,8 @@ void Editor::displayMovementPermissionSelector() {
                 this, &Editor::onHoveredMovementPermissionChanged);
         connect(movement_permissions_selector_item, &MovementPermissionsSelector::hoveredMovementPermissionCleared,
                 this, &Editor::onHoveredMovementPermissionCleared);
-        connect(movement_permissions_selector_item, &SelectablePixmapItem::selectionChanged, [this](int x, int y, int, int) {
-            this->setCollisionTabSpinBoxes(x, y);
+        connect(movement_permissions_selector_item, &SelectablePixmapItem::selectionChanged, [this](const QPoint &pos, const QSize&) {
+            this->setCollisionTabSpinBoxes(pos.x(), pos.y());
         });
         movement_permissions_selector_item->select(projectConfig.defaultCollision, projectConfig.defaultElevation);
     }

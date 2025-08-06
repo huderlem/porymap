@@ -28,11 +28,6 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
         ui->layout_Colors->addWidget(colorInput, i / numColorsPerRow, i % numColorsPerRow);
     }
 
-    // Setup edit-undo history for each of the palettes.
-    for (int i = 0; i < Project::getNumPalettesTotal(); i++) {
-        this->palettesHistory.append(History<PaletteHistoryItem*>());
-    }
-
     int bitDepth = porymapConfig.paletteEditorBitDepth;
     if (bitDepth == 15) {
         this->ui->bit_depth_15->setChecked(true);
@@ -61,6 +56,8 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     this->ui->spinBox_PaletteId->setValue(paletteId);
     connect(this->ui->spinBox_PaletteId, QOverload<int>::of(&QSpinBox::valueChanged), this, &PaletteEditor::refreshPaletteId);
     connect(this->ui->spinBox_PaletteId, QOverload<int>::of(&QSpinBox::valueChanged), this, &PaletteEditor::changedPalette);
+
+    ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
 
     refreshPaletteId();
     restoreWindowState();
@@ -127,8 +124,12 @@ void PaletteEditor::refreshPaletteId() {
     refreshColorInputs();
 
     int paletteId = currentPaletteId();
+
     if (!this->palettesHistory[paletteId].current()) {
+        // The original colors are saved as an initial commit.
         commitEditHistory(paletteId);
+    } else {
+        updateEditHistoryActions();
     }
     if (this->colorSearchWindow) {
         this->colorSearchWindow->setPaletteId(paletteId);
@@ -154,8 +155,8 @@ void PaletteEditor::commitEditHistory(int paletteId) {
     for (int i = 0; i < this->colorInputs.length(); i++) {
         colors.append(this->colorInputs.at(i)->color());
     }
-    PaletteHistoryItem *commit = new PaletteHistoryItem(colors);
-    this->palettesHistory[paletteId].push(commit);
+    this->palettesHistory[paletteId].push(new PaletteHistoryItem(colors));
+    updateEditHistoryActions();
 }
 
 void PaletteEditor::restoreWindowState() {
@@ -165,18 +166,27 @@ void PaletteEditor::restoreWindowState() {
     restoreState(geometry.value("palette_editor_state"));
 }
 
+void PaletteEditor::updateEditHistoryActions() {
+    int paletteId = currentPaletteId();
+    // We have an initial commit that shouldn't be available to Undo, so we ignore that.
+    ui->actionUndo->setEnabled(this->palettesHistory[paletteId].index() > 0);
+    ui->actionRedo->setEnabled(this->palettesHistory[paletteId].canRedo());
+}
+
 void PaletteEditor::on_actionUndo_triggered() {
     int paletteId = currentPaletteId();
-    PaletteHistoryItem *prev = this->palettesHistory[paletteId].back();
-    if (prev)
-        setPalette(paletteId, prev->colors);
+    PaletteHistoryItem *commit = this->palettesHistory[paletteId].back();
+    if (!commit) return;
+    setPalette(paletteId, commit->colors);
+    updateEditHistoryActions();
 }
 
 void PaletteEditor::on_actionRedo_triggered() {
     int paletteId = currentPaletteId();
-    PaletteHistoryItem *next = this->palettesHistory[paletteId].next();
-    if (next)
-        setPalette(paletteId, next->colors);
+    PaletteHistoryItem *commit = this->palettesHistory[paletteId].next();
+    if (!commit) return;
+    setPalette(paletteId, commit->colors);
+    updateEditHistoryActions();
 }
 
 void PaletteEditor::on_actionImport_Palette_triggered() {

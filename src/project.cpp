@@ -1187,6 +1187,18 @@ bool Project::loadLayoutTilesets(Layout *layout) {
         logError(QString("Failed to load %1: missing secondary tileset label.").arg(layout->name));
         return false;
     }
+    if (!this->primaryTilesetLabels.contains(layout->tileset_primary_label)) {
+        logError(QString("Failed to load %1: unknown primary tileset label '%2'.")
+                            .arg(layout->name)
+                            .arg(layout->tileset_primary_label));
+        return false;
+    }
+    if (!this->secondaryTilesetLabels.contains(layout->tileset_secondary_label)) {
+        logError(QString("Failed to load %1: unknown secondary tileset label '%2'.")
+                            .arg(layout->name)
+                            .arg(layout->tileset_secondary_label));
+        return false;
+    }
 
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
@@ -1194,6 +1206,11 @@ bool Project::loadLayoutTilesets(Layout *layout) {
 }
 
 Tileset* Project::getTileset(const QString &label, bool forceLoad) {
+    if (!this->tilesetLabelsOrdered.contains(label)) {
+        logError(QString("Unknown tileset name '%1'.").arg(label));
+        return nullptr;
+    }
+
     Tileset *tileset = nullptr;
 
     auto it = this->tilesetCache.constFind(label);
@@ -3545,4 +3562,20 @@ QSet<QString> Project::getPairedTilesetLabels(const Tileset *tileset) const {
         }
     }
     return pairedLabels;
+}
+
+// Returns the set of IDs for the layouts that use the specified tilesets.
+// nullptr for either tileset is treated as a wildcard (so 'getTilesetLayouts(nullptr, nullptr)' returns all layout IDs).
+QSet<QString> Project::getTilesetLayoutIds(const Tileset *primaryTileset, const Tileset *secondaryTileset) const {
+    // Note: We're intentioanlly just returning the layout IDs, and not the pointer to the layout.
+    //       The layout may not be loaded yet (which isn't obvious), and we should leave it up to the caller to request that.
+    QSet<QString> layoutIds;
+    for (const auto &layout : this->mapLayouts) {
+        if (primaryTileset && primaryTileset->name != layout->tileset_primary_label)
+            continue;
+        if (secondaryTileset && secondaryTileset->name != layout->tileset_secondary_label)
+            continue;
+        layoutIds.insert(layout->id);
+    }
+    return layoutIds;
 }

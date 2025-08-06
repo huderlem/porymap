@@ -107,6 +107,14 @@ int Tileset::maxMetatiles() const {
     return this->is_secondary ? Project::getNumMetatilesSecondary() : Project::getNumMetatilesPrimary();
 }
 
+uint16_t Tileset::firstTileId() const {
+    return this->is_secondary ? Project::getNumTilesPrimary() : 0;
+}
+
+uint16_t Tileset::lastTileId() const {
+    return qMax(1, firstMetatileId() + m_tiles.length()) - 1;
+}
+
 int Tileset::maxTiles() const {
     return this->is_secondary ? Project::getNumTilesSecondary() : Project::getNumTilesPrimary();
 }
@@ -250,8 +258,8 @@ QString Tileset::getMetatileLabelPrefix(const QString &name)
 }
 
 bool Tileset::metatileIsValid(uint16_t metatileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
-    return (primaryTileset && primaryTileset->contains(metatileId))
-        || (secondaryTileset && secondaryTileset->contains(metatileId));
+    return (primaryTileset && primaryTileset->containsMetatileId(metatileId))
+        || (secondaryTileset && secondaryTileset->containsMetatileId(metatileId));
 }
 
 QList<QList<QRgb>> Tileset::getBlockPalettes(const Tileset *primaryTileset, const Tileset *secondaryTileset, bool useTruePalettes) {

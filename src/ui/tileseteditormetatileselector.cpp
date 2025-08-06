@@ -81,7 +81,17 @@ void TilesetEditorMetatileSelector::draw() {
     drawDivider();
     drawFilters();
 
-    drawSelection();
+    if (this->inSwapMode) {
+        QSet<uint16_t> metatileIds(this->swapMetatileIds.constBegin(), this->swapMetatileIds.constEnd());
+        metatileIds.insert(this->lastHoveredMetatileId);
+        for (const auto &metatileId : metatileIds) {
+            bool ok;
+            QPoint pos = metatileIdToPos(metatileId, &ok);
+            if (ok) drawSelectionRect(pos, QSize(1,1), Qt::DashLine);
+        }
+    } else if (isValidMetatileId(this->selectedMetatileId)) {
+        drawSelection();
+    }
 }
 
 bool TilesetEditorMetatileSelector::select(uint16_t metatileId) {
@@ -103,53 +113,103 @@ void TilesetEditorMetatileSelector::setTilesets(Tileset *primaryTileset, Tileset
     draw();
 }
 
-void TilesetEditorMetatileSelector::updateSelectedMetatile() {
-    bool ok;
-    uint16_t metatileId = posToMetatileId(getSelectionStart(), &ok);
-    if (!ok)
+void TilesetEditorMetatileSelector::addToSwapSelection(uint16_t metatileId) {
+    if (this->swapMetatileIds.contains(metatileId)) {
         return;
+    }
+    if (this->swapMetatileIds.length() >= 2) {
+        this->swapMetatileIds.clear();
+    }
 
-    this->selectedMetatileId = metatileId;
-    emit selectedMetatileChanged(this->selectedMetatileId);
+    this->swapMetatileIds.append(metatileId);
+    draw();
+
+    if (this->swapMetatileIds.length() == 2) {
+        emit swapRequested(this->swapMetatileIds.at(0), this->swapMetatileIds.at(1));
+    }
 }
 
-bool TilesetEditorMetatileSelector::shouldAcceptEvent(QGraphicsSceneMouseEvent *event) {
-    bool ok;
-    posToMetatileId(getCellPos(event->pos()), &ok);
-    return ok;
+void TilesetEditorMetatileSelector::removeFromSwapSelection(uint16_t metatileId) {
+    if (this->swapMetatileIds.removeOne(metatileId)) {
+        draw();
+    }
+}
+
+void TilesetEditorMetatileSelector::clearSwapSelection() {
+    if (this->swapMetatileIds.isEmpty())
+        return;
+    this->swapMetatileIds.clear();
+    draw();
 }
 
 void TilesetEditorMetatileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+    QPoint cellPos = getCellPos(event->pos());
+
+    bool ok;
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
+    if (!ok) return;
+
     SelectablePixmapItem::mousePressEvent(event);
-    this->updateSelectedMetatile();
+    this->selectedMetatileId = this->lastHoveredMetatileId = metatileId;
+    emit selectedMetatileChanged(this->selectedMetatileId);
+    this->prevCellPos = cellPos;
 }
 
 void TilesetEditorMetatileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+    QPoint cellPos = getCellPos(event->pos());
+    if (cellPos == this->prevCellPos) return;
+
+    bool ok;
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
+    if (!ok) return;
+
     SelectablePixmapItem::mouseMoveEvent(event);
-    this->updateSelectedMetatile();
+    this->selectedMetatileId = this->lastHoveredMetatileId = metatileId;
+    emit selectedMetatileChanged(this->selectedMetatileId);
     emit hoveredMetatileChanged(this->selectedMetatileId);
+    this->prevCellPos = cellPos;
 }
 
 void TilesetEditorMetatileSelector::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (!shouldAcceptEvent(event)) return;
+    QPoint cellPos = getCellPos(event->pos());
+
+    bool ok;
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
+    if (!ok) return;
+
+    if (this->inSwapMode) {
+        if (this->swapMetatileIds.contains(metatileId)) {
+            this->removeFromSwapSelection(metatileId);
+        } else {
+            this->addToSwapSelection(metatileId);
+        }
+    }
+
     SelectablePixmapItem::mouseReleaseEvent(event);
-    this->updateSelectedMetatile();
+    this->selectedMetatileId = this->lastHoveredMetatileId = metatileId;
+    emit selectedMetatileChanged(this->selectedMetatileId);
+    this->prevCellPos = cellPos;
 }
 
 void TilesetEditorMetatileSelector::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+    QPoint cellPos = getCellPos(event->pos());
+    if (cellPos == this->prevCellPos) return;
+
     bool ok;
-    uint16_t metatileId = posToMetatileId(getCellPos(event->pos()), &ok);
+    uint16_t metatileId = posToMetatileId(cellPos, &ok);
     if (ok) {
+        this->lastHoveredMetatileId = metatileId;
         emit this->hoveredMetatileChanged(metatileId);
+        if (this->inSwapMode) draw();
     } else {
         emit this->hoveredMetatileCleared();
     }
+    this->prevCellPos = cellPos;
 }
 
 void TilesetEditorMetatileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
     emit this->hoveredMetatileCleared();
+    this->prevCellPos = QPoint(-1,-1);
 }
 
 uint16_t TilesetEditorMetatileSelector::posToMetatileId(const QPoint &pos, bool *ok) const {
@@ -160,7 +220,7 @@ uint16_t TilesetEditorMetatileSelector::posToMetatileId(int x, int y, bool *ok) 
     if (ok) *ok = true;
     int index = y * this->numMetatilesWide + x;
     uint16_t metatileId = static_cast<uint16_t>(index);
-    if (this->primaryTileset && this->primaryTileset->contains(metatileId)) {
+    if (this->primaryTileset && this->primaryTileset->containsMetatileId(metatileId)) {
         return metatileId;
     }
 
@@ -171,7 +231,7 @@ uint16_t TilesetEditorMetatileSelector::posToMetatileId(int x, int y, bool *ok) 
     int numPrimaryRounded = numPrimaryMetatilesRounded();
     int firstSecondaryRow = numPrimaryRounded / this->numMetatilesWide;
     metatileId = static_cast<uint16_t>(Project::getNumMetatilesPrimary() + index - numPrimaryRounded);
-    if (this->secondaryTileset && this->secondaryTileset->contains(metatileId) && y >= firstSecondaryRow) {
+    if (this->secondaryTileset && this->secondaryTileset->containsMetatileId(metatileId) && y >= firstSecondaryRow) {
         return metatileId;
     }
 
@@ -180,12 +240,12 @@ uint16_t TilesetEditorMetatileSelector::posToMetatileId(int x, int y, bool *ok) 
 }
 
 QPoint TilesetEditorMetatileSelector::metatileIdToPos(uint16_t metatileId, bool *ok) const {
-    if (this->primaryTileset && this->primaryTileset->contains(metatileId)) {
+    if (this->primaryTileset && this->primaryTileset->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId;
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
     }
-    if (this->secondaryTileset && this->secondaryTileset->contains(metatileId)) {
+    if (this->secondaryTileset && this->secondaryTileset->containsMetatileId(metatileId)) {
         if (ok) *ok = true;
         int index = metatileId - Project::getNumMetatilesPrimary() + numPrimaryMetatilesRounded();
         return QPoint(index % this->numMetatilesWide, index / this->numMetatilesWide);
@@ -193,6 +253,12 @@ QPoint TilesetEditorMetatileSelector::metatileIdToPos(uint16_t metatileId, bool 
 
     if (ok) *ok = false;
     return QPoint(0,0);
+}
+
+bool TilesetEditorMetatileSelector::isValidMetatileId(uint16_t metatileId) const {
+    bool ok;
+    metatileIdToPos(metatileId, &ok);
+    return ok;
 }
 
 QPoint TilesetEditorMetatileSelector::getMetatileIdCoordsOnWidget(uint16_t metatileId) const {
@@ -322,4 +388,20 @@ void TilesetEditorMetatileSelector::drawCounts() {
     countPainter.end();
 
     this->setPixmap(metatilesPixmap);
+}
+
+void TilesetEditorMetatileSelector::setSwapMode(bool enabled) {
+    if (enabled == this->inSwapMode)
+        return;
+    this->inSwapMode = enabled;
+    this->swapMetatileIds.clear();
+    if (porymapConfig.prettyCursors) {
+        if (enabled) {
+            static const QCursor cursor = QCursor(QPixmap(":/icons/swap_cursor.ico"), 10, 10);
+            setCursor(cursor);
+        } else {
+            unsetCursor();
+        }
+    }
+    draw();
 }

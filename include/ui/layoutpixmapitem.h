@@ -61,17 +61,17 @@ public:
     void magicFill(
             int initialX,
             int initialY,
-            QPoint selectionDimensions,
-            QList<MetatileSelectionItem> selectedMetatiles,
-            QList<CollisionSelectionItem> selectedCollisions,
+            const QSize &selectionDimensions,
+            const QList <MetatileSelectionItem> &selectedMetatiles,
+            const QList <CollisionSelectionItem> &selectedCollisions,
             bool fromScriptCall = false);
     void floodFill(int x, int y, bool fromScriptCall = false);
     void floodFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
     void floodFill(int initialX,
                    int initialY,
-                   QPoint selectionDimensions,
-                   QList<MetatileSelectionItem> selectedMetatiles,
-                   QList<CollisionSelectionItem> selectedCollisions,
+                   const QSize &selectionDimensions,
+                   const QList<MetatileSelectionItem> &selectedMetatiles,
+                   const QList<CollisionSelectionItem> &selectedCollisions,
                    bool fromScriptCall = false);
     void floodFillSmartPath(int initialX, int initialY, bool fromScriptCall = false);
 
