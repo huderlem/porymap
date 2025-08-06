@@ -146,7 +146,6 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
     QList<QList<Tile>> tileMatrix;
     for (int j = 0; j < height; j++) {
         QList<Tile> row;
-        QList<Tile> layerRow;
         for (int i = 0; i < width; i++) {
             int index = i + j * width;
             Tile tile = selected.value(index);
@@ -155,17 +154,9 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
             if (this->paletteChanged)
                 tile.palette = this->paletteId;
             if (this->xFlip)
-                layerRow.prepend(tile);
+                row.prepend(tile);
             else
-                layerRow.append(tile);
-
-            // If we've completed a layer row, or its the last tile of an incompletely
-            // selected layer, then append the layer row to the full row
-            // If not an external selection, treat the whole row as 1 "layer"
-            if (i == width - 1) {
-                row.append(layerRow);
-                layerRow.clear();
-            }
+                row.append(tile);
         }
         if (this->yFlip)
             tileMatrix.prepend(row);

@@ -9,15 +9,15 @@
 
 struct MetatileSelectionItem
 {
-    bool enabled;
-    uint16_t metatileId;
+    bool enabled = false;
+    uint16_t metatileId = 0;
 };
 
 struct CollisionSelectionItem
 {
-    bool enabled;
-    uint16_t collision;
-    uint16_t elevation;
+    bool enabled = false;
+    uint16_t collision = 0;
+    uint16_t elevation = 0;
 };
 
 struct MetatileSelection

@@ -392,10 +392,10 @@ void WildMonChart::updateTheme() {
     saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 
     chart = ui->chartView_LevelDistribution->chart();
-    if (chart) {
-        chart->setTheme(theme);
-        applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
-    }
+    if (!chart || chart->series().isEmpty())
+        return;
+    chart->setTheme(theme);
+    applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 }
 
 void WildMonChart::saveSpeciesColors(const QList<QBarSet*> &barSets) {

@@ -527,7 +527,7 @@ void Editor::configureEncounterJSON(QWidget *window) {
     auto createNewSlot = [&fieldSlots, &tempFields, &updateTotal](int index, EncounterField &currentField) {
         QLabel *indexLabel = new QLabel(QString("Index: %1").arg(QString::number(index)));
         QSpinBox *chanceSpinner = new QSpinBox;
-        int chance = currentField.encounterRates.at(index);
+        int chance = currentField.encounterRates.value(index);
         chanceSpinner->setMinimum(1);
         chanceSpinner->setMaximum(9999);
         chanceSpinner->setValue(chance);

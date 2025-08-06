@@ -1299,7 +1299,7 @@ void Project::setNewLayoutBorder(Layout *layout) {
     } else {
         // Fill the border with the default metatiles from the config.
         for (int i = 0; i < width * height; i++) {
-            layout->border.append(projectConfig.newMapBorderMetatileIds.at(i));
+            layout->border.append(projectConfig.newMapBorderMetatileIds.value(i));
         }
     }
 

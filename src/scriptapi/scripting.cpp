@@ -41,7 +41,7 @@ Scripting::Scripting(MainWindow *mainWindow) {
     const QStringList paths = userConfig.getCustomScriptPaths();
     const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
     for (int i = 0; i < paths.length(); i++) {
-        if (enabled.at(i))
+        if (enabled.value(i, true))
             this->filepaths.append(paths.at(i));
     }
     this->loadModules(this->filepaths);

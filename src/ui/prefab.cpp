@@ -120,7 +120,7 @@ void Prefab::savePrefabs() {
         for (int y = 0; y < item.selection.dimensions.height(); y++) {
             for (int x = 0; x < item.selection.dimensions.width(); x++) {
                 int index = y * item.selection.dimensions.width() + x;
-                auto metatileItem = item.selection.metatileItems.at(index);
+                auto metatileItem = item.selection.metatileItems.value(index);
                 if (metatileItem.enabled) {
                     OrderedJson::object metatileObj;
                     metatileObj["x"] = x;

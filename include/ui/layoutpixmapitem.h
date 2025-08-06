@@ -75,6 +75,8 @@ public:
                    bool fromScriptCall = false);
     void floodFillSmartPath(int initialX, int initialY, bool fromScriptCall = false);
 
+    static bool isSmartPathSize(const QSize &size) { return size.width() == smartPathWidth && size.height() == smartPathHeight; }
+
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
     virtual void shift(QGraphicsSceneMouseEvent*);
@@ -88,7 +90,11 @@ public:
 
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
+    static bool isValidSmartPathSelection(MetatileSelection selection);
     static QList<int> smartPathTable;
+    static constexpr int smartPathWidth = 3;
+    static constexpr int smartPathHeight = 3;
+    static constexpr int smartPathMiddleIndex = (smartPathWidth / 2) + ((smartPathHeight / 2) * smartPathWidth);
     QPoint lastMetatileSelectionPos = QPoint(-1,-1);
 
     unsigned actionId_ = 0;

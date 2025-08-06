@@ -15,7 +15,7 @@ QPixmap drawMetatileSelection(MetatileSelection selection, Layout *layout) {
             int y = j * Metatile::pixelHeight();
             QPoint metatile_origin = QPoint(x, y);
             int index = j * selection.dimensions.width() + i;
-            MetatileSelectionItem item = selection.metatileItems.at(index);
+            MetatileSelectionItem item = selection.metatileItems.value(index);
             if (item.enabled) {
                 QImage metatile_image = getMetatileImage(item.metatileId, layout);
                 painter.drawImage(metatile_origin, metatile_image);

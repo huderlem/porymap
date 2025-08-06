@@ -459,7 +459,7 @@ void TilesetEditor::drawSelectedTiles() {
     int tileIndex = 0;
     for (int y = 0; y < dimensions.height(); y++) {
         for (int x = 0; x < dimensions.width(); x++) {
-            auto tile = tiles.at(tileIndex++);
+            auto tile = tiles.value(tileIndex++);
             QImage tileImage = getPalettedTileImage(tile.tileId, this->primaryTileset, this->secondaryTileset, tile.palette, true).scaled(imgTileWidth, imgTileHeight);
             tile.flip(&tileImage);
             painter.drawImage(x * imgTileWidth, y * imgTileHeight, tileImage);
@@ -543,7 +543,7 @@ void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly)
             int destTileIndex = this->metatileLayersItem->posToTileIndex(pos.x() + x, pos.y() + y);
             if (destTileIndex < maxTileIndex) {
                 Tile &destTile = this->metatile->tiles[destTileIndex];
-                const Tile srcTile = tiles.at(srcTileIndex++);
+                const Tile srcTile = tiles.value(srcTileIndex++);
                 if (paletteOnly) {
                     if (srcTile.palette == destTile.palette)
                         continue; // Ignore no-ops for edit history

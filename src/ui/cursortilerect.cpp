@@ -1,4 +1,5 @@
 #include "cursortilerect.h"
+#include "layoutpixmapitem.h"
 #include "log.h"
 
 CursorTileRect::CursorTileRect(const QSize &tileSize, const QRgb &color, QGraphicsItem *parent)
@@ -46,7 +47,7 @@ void CursorTileRect::updateSelectionSize(const QSize &size) {
 }
 
 bool CursorTileRect::smartPathInEffect() const {
-    return !m_rightClickSelectionAnchored && m_smartPathMode && m_selectionSize == QSize(3,3);
+    return !m_rightClickSelectionAnchored && m_smartPathMode && LayoutPixmapItem::isSmartPathSize(m_selectionSize);
 }
 
 void CursorTileRect::updateLocation(int coordX, int coordY) {
