@@ -8,6 +8,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Added
 - Add `View > Show Unused Colors` to the Palette Editor.
 - Add `Tools > Find Color Usage` to the Palette Editor. This opens a dialog showing which metatiles use a particular color.
+- Add `Edit > Swap Metatiles` to the Tileset Editor. While in this mode, selecting two metatiles in the selector will swap their positions. When changes to the tilesets are saved these relocations will be applied to all layouts that use the relevant tileset(s).
+- Add `View > Layer Arrangement` to the Tileset Editor, which changes whether the metatile layer view is oriented vertically (default) or horizontally.
 - Add an `Export Metatiles Image` option to the Tileset Editor that provides many more options for customizing metatile images.
 - Add an `Export Porytiles Layer Images` option to the Tileset Editor, which is a shortcut for individually exporting layer images that Porytiles can use.
 - Add an option under `Preferences` to include common scripts in the autocomplete for Script labels.
@@ -22,6 +24,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - The Move tool now behaves more like a traditional pan tool (with no momentum).
 - The map image exporter now uses a checkered background to indicate transparency.
 - Invalid tile IDs are now rendered as magenta (like invalid metatiles), instead of rendering the same as a transparent tile.
+- While holding down `Ctrl` (`Cmd` on macOS) painting on the metatile layer view will now only change the tile's palette.
 - Full menu paths are now listed for shortcuts in the Shortcuts Editor.
 
 ### Fixed
@@ -38,6 +41,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix the Shortcuts Editor displaying the duplicate shortcut prompt repeatedly.
 - Fix clear text button on the left in each row of the Shortcuts Editor also clearing the shortcut on the right.
 - Fix Undo/Redo ignoring the automatic resizing that occurs if a layout/border was an unexpected size.
+- Fix Undo/Redo in the Tileset and Palette Editors and Paste in the Tileset Editor appearing enabled even when they don't do anything.
+- Fix `Ctrl+Shift+Z` not being set as a default shortcut for Redo in the Palette Editor like it is for other windows.
+- Fix the Tileset Editor's status bar not updating while selecting tiles in the metatile layer view.
 - Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
 - Fix broken error message for the primary tileset on the new map/layout dialogs.
 - Fix the dialog for duplicating/importing a map layout not allowing the tilesets to be changed.
