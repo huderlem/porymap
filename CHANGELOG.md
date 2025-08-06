@@ -41,11 +41,13 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix events being dragged in negative coordinates lagging behind the cursor.
 - Fix the shortcut for duplicating events working while on the Connections tab.
 - Fix the Shortcuts Editor displaying the duplicate shortcut prompt repeatedly.
-- Fix clear text button on the left in each row of the Shortcuts Editor also clearing the shortcut on the right.
+- Fix the clear text button on the left in each row of the Shortcuts Editor also clearing the shortcut on the right.
 - Fix Undo/Redo ignoring the automatic resizing that occurs if a layout/border was an unexpected size.
 - Fix Undo/Redo in the Tileset and Palette Editors and Paste in the Tileset Editor appearing enabled even when they don't do anything.
 - Fix `Ctrl+Shift+Z` not being set as a default shortcut for Redo in the Palette Editor like it is for other windows.
 - Fix the Tileset Editor's status bar not updating while selecting tiles in the metatile layer view.
+- Fix cleared metatile labels not updating until the project is reloaded.
+- Fix some changes in the Tileset Editor being discarded if the window is closed too quickly.
 - Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
 - Fix the Primary/Secondary Tileset selectors allowing invalid text, and considering a map unsaved if changed to invalid text then back again.
 - Fix broken error message for the primary tileset on the new map/layout dialogs.

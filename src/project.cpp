@@ -1701,6 +1701,7 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     QString metatileLabelPrefix = tileset->getMetatileLabelPrefix();
 
     // Reverse map for faster lookup by metatile id
+    tileset->metatileLabels.clear();
     for (auto it = this->metatileLabelsMap[tileset->name].constBegin(); it != this->metatileLabelsMap[tileset->name].constEnd(); it++) {
         QString labelName = it.key();
         tileset->metatileLabels[it.value()] = labelName.replace(metatileLabelPrefix, "");

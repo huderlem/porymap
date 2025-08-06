@@ -840,6 +840,11 @@ void TilesetEditor::importTilesetTiles(Tileset *tileset) {
 
 void TilesetEditor::closeEvent(QCloseEvent *event)
 {
+    // If focus is still on any input widgets, a user may have made changes
+    // but the widget hasn't had a chance to fire the 'editingFinished' signal.
+    // Make sure they lose focus before we close so that changes aren't missed.
+    setFocus();
+
     if (this->hasUnsavedChanges) {
         auto result = SaveChangesMessage::show(QStringLiteral("Tileset"), this);
         if (result == QMessageBox::Yes) {
