@@ -59,6 +59,7 @@ public:
     // Scripting API
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
+    void redrawResizedMapArea();
     void tryCommitMapChanges(bool commitChanges);
     Q_INVOKABLE void setBlock(int x, int y, int metatileId, int collision, int elevation, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE void setBlock(int x, int y, int rawValue, bool forceRedraw = true, bool commitChanges = true);

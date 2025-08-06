@@ -41,6 +41,17 @@ void MainWindow::tryRedrawMapArea(bool forceRedraw) {
     }
 }
 
+void MainWindow::redrawResizedMapArea() {
+    // We're calling this on a timer because we want to defer the redraw
+    // until it's time to process events. This avoids some potential crashes,
+    // as redrawMapScene will destroy a handful of objects capable of triggering
+    // script API callbacks; we want to let them finish what they were doing
+    // before we destroying them.
+    // NOTE: This has the same problem as ScriptEditLayout, namely that it's
+    //       doing more work than necessary and can be prohibitively slow.
+    QTimer::singleShot(0, this, &MainWindow::redrawMapScene);
+}
+
 void MainWindow::tryCommitMapChanges(bool commitChanges) {
     if (commitChanges) {
         Layout *layout = this->editor->layout;
@@ -226,7 +237,7 @@ void MainWindow::setDimensions(int width, int height) {
         return;
     this->editor->layout->setDimensions(width, height);
     this->tryCommitMapChanges(true);
-    this->redrawMapScene();
+    this->redrawResizedMapArea();
 }
 
 void MainWindow::setWidth(int width) {
@@ -236,7 +247,7 @@ void MainWindow::setWidth(int width) {
         return;
     this->editor->layout->setDimensions(width, this->editor->layout->getHeight());
     this->tryCommitMapChanges(true);
-    this->redrawMapScene();
+    this->redrawResizedMapArea();
 }
 
 void MainWindow::setHeight(int height) {
@@ -246,7 +257,7 @@ void MainWindow::setHeight(int height) {
         return;
     this->editor->layout->setDimensions(this->editor->layout->getWidth(), height);
     this->tryCommitMapChanges(true);
-    this->redrawMapScene();
+    this->redrawResizedMapArea();
 }
 
 //=====================
@@ -296,7 +307,7 @@ void MainWindow::setBorderDimensions(int width, int height) {
         return;
     this->editor->layout->setBorderDimensions(width, height);
     this->tryCommitMapChanges(true);
-    this->redrawMapScene();
+    this->redrawResizedMapArea();
 }
 
 void MainWindow::setBorderWidth(int width) {
@@ -306,7 +317,7 @@ void MainWindow::setBorderWidth(int width) {
         return;
     this->editor->layout->setBorderDimensions(width, this->editor->layout->getBorderHeight());
     this->tryCommitMapChanges(true);
-    this->redrawMapScene();
+    this->redrawResizedMapArea();
 }
 
 void MainWindow::setBorderHeight(int height) {
@@ -316,7 +327,7 @@ void MainWindow::setBorderHeight(int height) {
         return;
     this->editor->layout->setBorderDimensions(this->editor->layout->getBorderWidth(), height);
     this->tryCommitMapChanges(true);
-    this->redrawMapScene();
+    this->redrawResizedMapArea();
 }
 
 //======================

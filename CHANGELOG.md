@@ -31,6 +31,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Fixed
 - Fix crash when rendering tiles with invalid palette numbers.
 - Fix crash when opening the Tileset Editor for tilesets with no metatiles.
+- Fix crash when changing the map/border size in certain API callbacks.
 - Fix metatile images exporting at 2x scale.
 - Fix display errors when a project's metatile limits are not divisible by 8.
 - Fix incorrect dividing line position for primary tiles images that are smaller than the maximum size.
