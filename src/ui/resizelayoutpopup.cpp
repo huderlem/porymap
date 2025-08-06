@@ -133,10 +133,11 @@ void ResizeLayoutPopup::setupLayoutView() {
         this->scene->setValidRect(rect);
         this->outline->setRect(rect);
 
+        // Rect may have changed, ensure spinners reflect final rect size.
         const QSignalBlocker b_Width(this->ui->spinBox_width);
         const QSignalBlocker b_Height(this->ui->spinBox_height);
-        this->ui->spinBox_width->setValue(metatilesWide);
-        this->ui->spinBox_height->setValue(metatilesTall);
+        this->ui->spinBox_width->setValue(rect.width() / Metatile::pixelWidth());
+        this->ui->spinBox_height->setValue(rect.height() / Metatile::pixelHeight());
     });
     scene->addItem(outline);
 
