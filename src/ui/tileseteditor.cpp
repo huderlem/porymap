@@ -217,7 +217,7 @@ void TilesetEditor::initMetatileSelector()
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,  this, &TilesetEditor::onHoveredMetatileCleared);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::selectedMetatileChanged, this, &TilesetEditor::onSelectedMetatileChanged);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::swapRequested, this, &TilesetEditor::commitMetatileSwap);
-    connect(ui->actionSwap_Metatiles, &QAction::triggered, this->metatileSelector, &TilesetEditorMetatileSelector::setSwapMode);
+    connect(ui->actionSwap_Metatiles, &QAction::toggled, this->metatileSelector, &TilesetEditorMetatileSelector::setSwapMode);
 
     bool showGrid = porymapConfig.showTilesetEditorMetatileGrid;
     this->ui->actionMetatile_Grid->setChecked(showGrid);
@@ -1430,5 +1430,13 @@ void TilesetEditor::applyMetatileSwapToLayouts(uint16_t metatileIdA, uint16_t me
             } else continue;
             layout->hasUnsavedDataChanges = true;
         }
+    }
+}
+
+void TilesetEditor::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape && ui->actionSwap_Metatiles->isChecked()) {
+        ui->actionSwap_Metatiles->setChecked(false);
+    } else {
+        QMainWindow::keyPressEvent(event);
     }
 }

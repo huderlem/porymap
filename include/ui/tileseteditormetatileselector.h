@@ -21,7 +21,7 @@ public:
     uint16_t getSelectedMetatileId() const { return this->selectedMetatileId; }
     QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId) const;
 
-    void setSwapMode(bool enabeled);
+    void setSwapMode(bool enabled);
     void addToSwapSelection(uint16_t metatileId);
     void removeFromSwapSelection(uint16_t metatileId);
     void clearSwapSelection();

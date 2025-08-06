@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QPointer>
+#include <QKeyEvent>
 #include "project.h"
 #include "history.h"
 #include "paletteeditor.h"
@@ -104,6 +105,10 @@ private slots:
     void on_horizontalSlider_MetatilesZoom_valueChanged(int value);
     void on_horizontalSlider_TilesZoom_valueChanged(int value);
 
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void closeEvent(QCloseEvent*) override;
+
 private:
     void initAttributesUi();
     void initMetatileSelector();
@@ -126,7 +131,6 @@ private:
     void exportMetatilesImage();
     void refresh();
     void commitMetatileLabel();
-    void closeEvent(QCloseEvent*);
     void countMetatileUsage();
     void countTileUsage();
     void copyMetatile(bool cut);
