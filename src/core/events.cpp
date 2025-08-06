@@ -63,6 +63,16 @@ void Event::modify() {
     this->map->modify();
 }
 
+QString Event::groupToJsonKey(Event::Group group) {
+    static const QMap<Event::Group, QString> map = {
+        {Event::Group::Object, "object_events"},
+        {Event::Group::Warp, "warp_events"},
+        {Event::Group::Coord, "coord_events"},
+        {Event::Group::Bg, "bg_events"},
+    };
+    return map.value(group);
+}
+
 const QMap<Event::Group, QString> groupToStringMap = {
     {Event::Group::Object, "Object"},
     {Event::Group::Warp, "Warp"},

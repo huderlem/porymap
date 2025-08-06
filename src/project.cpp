@@ -360,10 +360,10 @@ QSet<QString> Project::getTopLevelMapFields() const {
         "show_map_name",
         "battle_scene",
         "connections",
-        "object_events",
-        "warp_events",
-        "coord_events",
-        "bg_events",
+        Event::groupToJsonKey(Event::Group::Object),
+        Event::groupToJsonKey(Event::Group::Warp),
+        Event::groupToJsonKey(Event::Group::Coord),
+        Event::groupToJsonKey(Event::Group::Bg),
         "shared_events_map",
         "shared_scripts_map",
     };
@@ -462,10 +462,10 @@ bool Project::loadMapData(Map* map) {
     static const QMap<QString, Event::Type> defaultEventTypes = {
         // Map of the expected keys for each event group, and the default type of that group.
         // If the default type is Type::None then each event must specify its type, or its an error.
-        {"object_events", Event::Type::Object},
-        {"warp_events",   Event::Type::Warp},
-        {"coord_events",  Event::Type::None},
-        {"bg_events",     Event::Type::None},
+        {Event::groupToJsonKey(Event::Group::Object), Event::Type::Object},
+        {Event::groupToJsonKey(Event::Group::Warp),   Event::Type::Warp},
+        {Event::groupToJsonKey(Event::Group::Coord),  Event::Type::None},
+        {Event::groupToJsonKey(Event::Group::Bg),     Event::Type::None},
     };
     for (auto i = defaultEventTypes.constBegin(); i != defaultEventTypes.constEnd(); i++) {
         QString eventGroupKey = i.key();
@@ -1396,41 +1396,25 @@ bool Project::saveMap(Map *map, bool skipLayout) {
         mapObj["connections"] = OrderedJson();
     }
 
-    if (map->sharedEventsMap().isEmpty()) {
-        // Object events
-        OrderedJson::array objectEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Object)){
-            objectEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["object_events"] = objectEventsArr;
-
-
-        // Warp events
-        OrderedJson::array warpEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Warp)) {
-            warpEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["warp_events"] = warpEventsArr;
-
-        // Coord events
-        OrderedJson::array coordEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Coord)) {
-            coordEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["coord_events"] = coordEventsArr;
-
-        // Bg Events
-        OrderedJson::array bgEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Bg)) {
-            bgEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["bg_events"] = bgEventsArr;
-    } else {
+    if (map->isInheritingEvents()) {
         mapObj["shared_events_map"] = map->sharedEventsMap();
     }
-
-    if (!map->sharedScriptsMap().isEmpty()) {
+    if (map->isInheritingScripts()) {
         mapObj["shared_scripts_map"] = map->sharedScriptsMap();
+    }
+
+    if (!map->isInheritingEvents()) {
+        auto buildEventsJson = [this, map](Event::Group group, OrderedJson::object *json) {
+            OrderedJson::array arr;
+            for (const auto &event : map->getEvents(group)){
+                arr.push_back(event->buildEventJson(this));
+            }
+            (*json)[Event::groupToJsonKey(group)] = arr;
+        };
+        buildEventsJson(Event::Group::Object, &mapObj);
+        buildEventsJson(Event::Group::Warp, &mapObj);
+        buildEventsJson(Event::Group::Coord, &mapObj);
+        buildEventsJson(Event::Group::Bg, &mapObj);
     }
 
     // Update the global heal locations array using the Map's heal location events.

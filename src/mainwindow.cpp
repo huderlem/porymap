@@ -1461,6 +1461,7 @@ void MainWindow::clearProjectUI() {
     ui->comboBox_LayoutSelector->clear();
 
     this->mapHeaderForm->clear();
+    ui->label_NoEvents->setText("");
 
     prefab.clearPrefabUi();
 
@@ -2479,6 +2480,14 @@ void MainWindow::updateSelectedEvents() {
     }
     else {
         ui->tabWidget_EventType->hide();
+
+        if (this->editor->map && this->editor->map->isInheritingEvents()) {
+            QString message = QString("<span style=\"color:red;\">NOTE:</span> This map inherits events from %1."
+                                      "<br>Adding any events will separate it from that map.").arg(this->editor->map->sharedEventsMap());
+            ui->label_NoEvents->setText(message);
+        } else {
+            ui->label_NoEvents->setText(QStringLiteral("There are no events on the current map."));
+        }
         ui->label_NoEvents->show();
     }
 }

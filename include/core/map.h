@@ -64,6 +64,8 @@ public:
     void setSharedEventsMap(const QString &sharedEventsMap) { m_sharedEventsMap = sharedEventsMap; }
     void setSharedScriptsMap(const QString &sharedScriptsMap);
 
+    bool isInheritingEvents() const { return !m_sharedEventsMap.isEmpty() && !hasEvents(); }
+    bool isInheritingScripts() const { return !m_sharedScriptsMap.isEmpty(); }
     QString sharedEventsMap() const { return m_sharedEventsMap; }
     QString sharedScriptsMap() const { return m_sharedScriptsMap; }
 
@@ -85,6 +87,7 @@ public:
     void addEvent(Event *);
     int getIndexOfEvent(Event *) const;
     bool hasEvent(Event *) const;
+    bool hasEvents() const;
 
     QStringList getScriptLabels(Event::Group group = Event::Group::None);
     QString getScriptsFilepath() const;

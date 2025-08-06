@@ -26,6 +26,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Invalid tile IDs are now rendered as magenta (like invalid metatiles), instead of rendering the same as a transparent tile.
 - While holding down `Ctrl` (`Cmd` on macOS) painting on the metatile layer view will now only change the tile's palette.
 - Full menu paths are now listed for shortcuts in the Shortcuts Editor.
+- Adding new event data to a map that has a `shared_events_map` will now remove the `shared_events_map`, rather than discard the event data.
 
 ### Fixed
 - Fix crash when rendering tiles with invalid palette numbers.

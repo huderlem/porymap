@@ -280,12 +280,21 @@ int Map::getNumEvents(Event::Group group) const {
     if (group == Event::Group::None) {
         // Total number of events
         int numEvents = 0;
-        for (auto i = m_events.constBegin(); i != m_events.constEnd(); i++) {
-            numEvents += i.value().length();
+        for (auto it = m_events.constBegin(); it != m_events.constEnd(); it++) {
+            numEvents += it.value().length();
         }
         return numEvents;
     }
     return m_events[group].length();
+}
+
+bool Map::hasEvents() const {
+    for (auto it = m_events.constBegin(); it != m_events.constEnd(); it++) {
+        if (!it.value().isEmpty()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Map::removeEvent(Event *event) {
