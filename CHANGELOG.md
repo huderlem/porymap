@@ -47,6 +47,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix `Ctrl+Shift+Z` not being set as a default shortcut for Redo in the Palette Editor like it is for other windows.
 - Fix the Tileset Editor's status bar not updating while selecting tiles in the metatile layer view.
 - Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
+- Fix the Primary/Secondary Tileset selectors allowing invalid text, and considering a map unsaved if changed to invalid text then back again.
 - Fix broken error message for the primary tileset on the new map/layout dialogs.
 - Fix the dialog for duplicating/importing a map layout not allowing the tilesets to be changed.
 - Fix warning not appearing when the log file exceeds maximum size.

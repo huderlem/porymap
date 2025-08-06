@@ -566,14 +566,6 @@ QString MainWindow::getSecondaryTileset() {
     return this->editor->layout->tileset_secondary->name;
 }
 
-void MainWindow::setPrimaryTileset(QString tileset) {
-    this->on_comboBox_PrimaryTileset_currentTextChanged(tileset);
-}
-
-void MainWindow::setSecondaryTileset(QString tileset) {
-    this->on_comboBox_SecondaryTileset_currentTextChanged(tileset);
-}
-
 void MainWindow::saveMetatilesByMetatileId(int metatileId) {
     Tileset * tileset = Tileset::getMetatileTileset(metatileId, this->editor->layout->tileset_primary, this->editor->layout->tileset_secondary);
     if (tileset)

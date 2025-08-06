@@ -320,10 +320,12 @@ void MainWindow::initExtraSignals() {
     connect(ui->action_NewMap, &QAction::triggered, this, &MainWindow::openNewMapDialog);
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
     connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
-    connect(ui->comboBox_LayoutSelector->lineEdit(), &QLineEdit::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
+    connect(ui->comboBox_LayoutSelector, &NoScrollComboBox::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
     connect(ui->checkBox_smartPaths, &QCheckBox::toggled, this, &MainWindow::setSmartPathsEnabled);
     connect(ui->checkBox_ToggleBorder, &QCheckBox::toggled, this, &MainWindow::setBorderVisibility);
     connect(ui->checkBox_MirrorConnections, &QCheckBox::toggled, this, &MainWindow::setMirrorConnectionsEnabled);
+    connect(ui->comboBox_PrimaryTileset, &NoScrollComboBox::editingFinished, [this] { setPrimaryTileset(ui->comboBox_PrimaryTileset->currentText()); });
+    connect(ui->comboBox_SecondaryTileset, &NoScrollComboBox::editingFinished, [this] { setSecondaryTileset(ui->comboBox_SecondaryTileset->currentText()); });
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -2761,26 +2763,38 @@ void MainWindow::on_button_OpenEmergeMap_clicked() {
     userSetMap(ui->comboBox_EmergeMap->currentText());
 }
 
-void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
-{
-    if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
+void MainWindow::setPrimaryTileset(const QString &tilesetLabel) {
+    if (!this->editor->layout || this->editor->layout->tileset_primary_label == tilesetLabel)
+        return;
+
+    if (editor->project->primaryTilesetLabels.contains(tilesetLabel)) {
         editor->updatePrimaryTileset(tilesetLabel);
         redrawMapScene();
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
         markLayoutEdited();
     }
+
+    // Restore valid text if input was invalid, or sync combo box with new valid setting.
+    const QSignalBlocker b(ui->comboBox_PrimaryTileset);
+    ui->comboBox_PrimaryTileset->setTextItem(this->editor->layout->tileset_primary_label);
 }
 
-void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &tilesetLabel)
-{
-    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
+void MainWindow::setSecondaryTileset(const QString &tilesetLabel) {
+    if (!this->editor->layout || this->editor->layout->tileset_secondary_label == tilesetLabel)
+        return;
+
+    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel)) {
         editor->updateSecondaryTileset(tilesetLabel);
         redrawMapScene();
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
         markLayoutEdited();
     }
+
+    // Restore valid text if input was invalid, or sync combo box with new valid setting.
+    const QSignalBlocker b(ui->comboBox_SecondaryTileset);
+    ui->comboBox_SecondaryTileset->setTextItem(this->editor->layout->tileset_secondary_label);
 }
 
 void MainWindow::on_pushButton_ChangeDimensions_clicked() {

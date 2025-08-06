@@ -119,8 +119,8 @@ public:
     Q_INVOKABLE int getNumSecondaryTilesetTiles();
     Q_INVOKABLE QString getPrimaryTileset();
     Q_INVOKABLE QString getSecondaryTileset();
-    Q_INVOKABLE void setPrimaryTileset(QString tileset);
-    Q_INVOKABLE void setSecondaryTileset(QString tileset);
+    Q_INVOKABLE void setPrimaryTileset(const QString &tileset);
+    Q_INVOKABLE void setSecondaryTileset(const QString &tileset);
     void saveMetatilesByMetatileId(int metatileId);
     void saveMetatileAttributesByMetatileId(int metatileId);
     Metatile * getMetatile(int metatileId);
@@ -251,8 +251,6 @@ private slots:
     void on_pushButton_AddConnection_clicked();
     void on_button_OpenDiveMap_clicked();
     void on_button_OpenEmergeMap_clicked();
-    void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
-    void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();
 
     void resetMapViewScale();
