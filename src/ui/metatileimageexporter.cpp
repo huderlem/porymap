@@ -54,7 +54,7 @@ MetatileImageExporter::MetatileImageExporter(QWidget *parent, Tileset *primaryTi
     connect(ui->listWidget_Layers, &ReorderableListWidget::itemChanged, this, &MetatileImageExporter::updatePreview);
     connect(ui->listWidget_Layers, &ReorderableListWidget::reordered, this, &MetatileImageExporter::updatePreview);
 
-    connect(ui->pushButton_Save,  &QPushButton::pressed, [this] { saveImage(); });
+    connect(ui->pushButton_Save,  &QPushButton::pressed, [this] { if (saveImage()) close(); });
     connect(ui->pushButton_Close, &QPushButton::pressed, this, &MetatileImageExporter::close);
     connect(ui->pushButton_Reset, &QPushButton::pressed, this, &MetatileImageExporter::reset);
 
