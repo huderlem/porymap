@@ -35,6 +35,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix click-drag map selections behaving unexpectedly when the cursor is outside the map grid.
 - Fix events being dragged in negative coordinates lagging behind the cursor.
 - Fix the shortcut for duplicating events working while on the Connections tab.
+- Fix the Shortcuts Editor displaying the duplicate shortcut prompt repeatedly.
+- Fix clear text button on the left in each row of the Shortcuts Editor also clearing the shortcut on the right.
 - Fix Undo/Redo ignoring the automatic resizing that occurs if a layout/border was an unexpected size.
 - Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
 - Fix broken error message for the primary tileset on the new map/layout dialogs.

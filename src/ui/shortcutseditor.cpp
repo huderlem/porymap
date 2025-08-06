@@ -207,7 +207,7 @@ void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyE
                                     .arg(duplicateKeySequence.toString())
                                     .arg(siblingLabel);
 
-    // QKeySequenceEdits::keySequenceChange fires when editing finishes on a QKeySequenceEdit,
+    // QKeySequenceEdit::keySequenceChanged fires when editing finishes on a QKeySequenceEdit,
     // even if no change occurs. Displaying our question prompt will cause the edit to lose focus
     // and fire another signal, which would cause another "duplicate shortcut" prompt to appear.
     // For this reason we need to block their signals before the message is displayed.
