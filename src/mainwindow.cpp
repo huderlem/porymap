@@ -74,7 +74,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     logInit();
-    logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
+    logInfo(QString("Launching Porymap v%1 (%2)").arg(QCoreApplication::applicationVersion()).arg(QStringLiteral(PORYMAP_LATEST_COMMIT)));
+    logInfo(QString("Using Qt v%2 (%3)").arg(QStringLiteral(QT_VERSION_STR)).arg(QSysInfo::buildCpuArchitecture()));
 }
 
 void MainWindow::initialize() {

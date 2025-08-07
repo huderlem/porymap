@@ -11,6 +11,9 @@ Porymap is extensible via scripting capabilities. This allows the user to write 
 - Procedurally Generated Maps
 - Randomize Grass Patterns
 
+.. note::
+    If you are compiling Porymap yourself, these features will only be available if Qt's ``qml`` module is installed.
+
 
 Custom Scripts Editor
 ---------------------
