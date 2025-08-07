@@ -974,6 +974,11 @@ void ProjectConfig::parseConfigKeyValue(QString key, QString value) {
         this->tilesetsHaveCallback = getConfigBool(key, value);
     } else if (key == "tilesets_have_is_compressed") {
         this->tilesetsHaveIsCompressed = getConfigBool(key, value);
+#ifdef CONFIG_BACKWARDS_COMPATABILITY
+    // Old setting replaced by transparency_color
+    } else if (key == "set_transparent_pixels_black") {
+        this->transparencyColor = getConfigBool(key, value) ? QColor(Qt::black) : QColor();
+#endif
     } else if (key == "transparency_color") {
         this->transparencyColor = getConfigColor(key, value);
     } else if (key == "preserve_matching_only_data") {
