@@ -331,8 +331,11 @@ private:
     QPointer<FilterChildrenProxyModel> layoutListProxyModel = nullptr;
     QPointer<LayoutTreeModel> layoutTreeModel = nullptr;
 
+#ifdef QT_NETWORK_LIB
     QPointer<UpdatePromoter> updatePromoter = nullptr;
     QPointer<NetworkAccessManager> networkAccessManager = nullptr;
+#endif
+
     QPointer<AboutPorymap> aboutWindow = nullptr;
     QPointer<WildMonChart> wildMonChart = nullptr;
     QPointer<WildMonSearch> wildMonSearch = nullptr;

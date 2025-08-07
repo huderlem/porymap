@@ -51,8 +51,10 @@
 
 // We only publish release binaries for Windows and macOS.
 // This is relevant for the update promoter, which alerts users of a new release.
+#ifdef QT_NETWORK_LIB
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 #define RELEASE_PLATFORM
+#endif
 #endif
 
 
@@ -155,11 +157,14 @@ void MainWindow::initWindow() {
     this->initMapList();
     this->initShortcuts();
 
+    QStringList missingModules;
+
 #ifndef RELEASE_PLATFORM
     ui->actionCheck_for_Updates->setVisible(false);
 #endif
-
-    QStringList missingModules;
+#ifndef QT_NETWORK_LIB
+    missingModules.append(" 'network'");
+#endif
 
 #ifndef QT_CHARTS_LIB
     ui->pushButton_SummaryChart->setVisible(false);
@@ -2970,8 +2975,10 @@ void MainWindow::on_actionPreferences_triggered() {
 void MainWindow::togglePreferenceSpecificUi() {
     ui->actionOpen_Project_in_Text_Editor->setEnabled(!porymapConfig.textEditorOpenFolder.isEmpty());
 
+#ifdef QT_NETWORK_LIB
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();
+#endif
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {
