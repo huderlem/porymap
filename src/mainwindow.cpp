@@ -159,9 +159,23 @@ void MainWindow::initWindow() {
     ui->actionCheck_for_Updates->setVisible(false);
 #endif
 
+    QStringList missingModules;
+
 #ifndef QT_CHARTS_LIB
     ui->pushButton_SummaryChart->setVisible(false);
+    missingModules.append(" 'charts'");
 #endif
+
+#ifndef QT_QML_LIB
+    ui->actionCustom_Scripts->setVisible(false);
+    missingModules.append(" 'qml'");
+#endif
+
+    if (!missingModules.isEmpty()) {
+        logWarn(QString("Qt module%1%2 not found. Some features will be disabled.")
+                            .arg(missingModules.length() > 1 ? "s" : "")
+                            .arg(missingModules.join(",")));
+    }
 
     setWindowDisabled(true);
 }
@@ -2285,21 +2299,29 @@ void MainWindow::initShortcutsEditor() {
 void MainWindow::connectSubEditorsToShortcutsEditor() {
     /* Initialize sub-editors so that their children are added to MainWindow's object tree and will
      * be returned by shortcutableObjects() to be passed to ShortcutsEditor. */
-    if (!tilesetEditor)
+    if (!this->tilesetEditor) {
         initTilesetEditor();
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            tilesetEditor, &TilesetEditor::applyUserShortcuts);
+    }
+    if (this->tilesetEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->tilesetEditor, &TilesetEditor::applyUserShortcuts);
+    }
 
-    if (!regionMapEditor)
+    if (!this->regionMapEditor){
         initRegionMapEditor(true);
-    if (regionMapEditor)
-        connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
+    if (this->regionMapEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
 
-    if (!customScriptsEditor)
+    if (!this->customScriptsEditor) {
         initCustomScriptsEditor();
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
+    }
+    if (this->customScriptsEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
+    }
 }
 
 void MainWindow::resetMapViewScale() {
@@ -2994,16 +3016,20 @@ void MainWindow::onWarpBehaviorWarningClicked() {
 }
 
 void MainWindow::on_actionCustom_Scripts_triggered() {
-    if (!this->customScriptsEditor)
+    if (!this->customScriptsEditor) {
         initCustomScriptsEditor();
-
-    Util::show(this->customScriptsEditor);
+    }
+    if (this->customScriptsEditor) {
+        Util::show(this->customScriptsEditor);
+    }
 }
 
 void MainWindow::initCustomScriptsEditor() {
+#ifdef QT_QML_LIB
     this->customScriptsEditor = new CustomScriptsEditor(this);
     connect(this->customScriptsEditor, &CustomScriptsEditor::reloadScriptEngine,
             this, &MainWindow::reloadScriptEngine);
+#endif
 }
 
 void MainWindow::reloadScriptEngine() {

@@ -1,7 +1,10 @@
 #ifndef MAPVIEW_H
 #define MAPVIEW_H
 
+#if __has_include(<QJSValue>)
 #include <QJSValue>
+#endif
+
 #include "graphicsview.h"
 #include "overlay.h"
 #include "tile.h"
@@ -22,6 +25,7 @@ public:
     void clearOverlayMap();
 
     // Overlay scripting API
+#ifdef QT_QML_LIB
     Q_INVOKABLE void clear(int layer);
     Q_INVOKABLE void clear();
     Q_INVOKABLE void hide(int layer);
@@ -74,6 +78,7 @@ public:
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
+#endif // QT_QML_LIB
 
 protected:
     virtual void drawForeground(QPainter *painter, const QRectF &rect) override;

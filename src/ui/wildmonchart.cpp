@@ -1,4 +1,4 @@
-#if __has_include(<QtCharts>)
+#ifdef QT_CHARTS_LIB
 #include "wildmonchart.h"
 #include "ui_wildmonchart.h"
 #include "config.h"
@@ -466,4 +466,4 @@ void WildMonChart::closeEvent(QCloseEvent *event) {
     QWidget::closeEvent(event);
 }
 
-#endif // __has_include(<QtCharts>)
+#endif // QT_CHARTS_LIB

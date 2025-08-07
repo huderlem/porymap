@@ -1,3 +1,4 @@
+#ifdef QT_QML_LIB
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "scripting.h"
@@ -963,3 +964,5 @@ void MainWindow::setFloorNumber(int floorNumber) {
     this->editor->map->header()->setFloorNumber(floorNumber);
 }
 
+
+#endif // QT_QML_LIB

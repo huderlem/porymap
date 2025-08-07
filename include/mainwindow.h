@@ -11,7 +11,6 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QCloseEvent>
 #include <QAbstractItemModel>
-#include <QJSValue>
 #include "project.h"
 #include "orderedjson.h"
 #include "config.h"
@@ -36,6 +35,10 @@
 #include "message.h"
 #include "resizelayoutpopup.h"
 
+#if __has_include(<QJSValue>)
+#include <QJSValue>
+#endif
+
 
 
 namespace Ui {
@@ -56,7 +59,11 @@ public:
 
     void initialize();
 
+    Q_INVOKABLE void setPrimaryTileset(const QString &tileset);
+    Q_INVOKABLE void setSecondaryTileset(const QString &tileset);
+
     // Scripting API
+#ifdef QT_QML_LIB
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
     void redrawResizedMapArea();
@@ -119,8 +126,6 @@ public:
     Q_INVOKABLE int getNumSecondaryTilesetTiles();
     Q_INVOKABLE QString getPrimaryTileset();
     Q_INVOKABLE QString getSecondaryTileset();
-    Q_INVOKABLE void setPrimaryTileset(const QString &tileset);
-    Q_INVOKABLE void setSecondaryTileset(const QString &tileset);
     void saveMetatilesByMetatileId(int metatileId);
     void saveMetatileAttributesByMetatileId(int metatileId);
     Metatile * getMetatile(int metatileId);
@@ -172,6 +177,7 @@ public:
     Q_INVOKABLE void setAllowEscaping(bool allow);
     Q_INVOKABLE int getFloorNumber();
     Q_INVOKABLE void setFloorNumber(int floorNumber);
+#endif // QT_QML_LIB
 
 public slots:
     void on_mainTabBar_tabBarClicked(int index);

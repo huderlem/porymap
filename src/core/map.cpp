@@ -4,6 +4,7 @@
 #include "scripting.h"
 #include "utility.h"
 #include "editcommands.h"
+#include "project.h"
 
 #include <QTime>
 #include <QPainter>

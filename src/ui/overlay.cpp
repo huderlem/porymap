@@ -1,3 +1,4 @@
+#ifdef QT_QML_LIB
 #include "overlay.h"
 #include "scripting.h"
 #include "log.h"
@@ -256,3 +257,6 @@ bool Overlay::addImage(int x, int y, QImage image) {
     this->items.append(new OverlayPixmap(x, y, QPixmap::fromImage(image)));
     return true;
 }
+
+
+#endif // QT_QML_LIB
