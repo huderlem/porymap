@@ -58,7 +58,7 @@ void Prefab::loadPrefabs() {
         QString secondaryTileset = ParseUtil::jsonToQString(prefabObj["secondary_tileset"]);
 
         MetatileSelection selection;
-        selection.dimensions = QPoint(width, height);
+        selection.dimensions = QSize(width, height);
         selection.hasCollision = true;
         for (int j = 0; j < width * height; j++) {
             selection.metatileItems.append(MetatileSelectionItem{false, 0});
@@ -112,15 +112,15 @@ void Prefab::savePrefabs() {
     for (auto item : this->items) {
         OrderedJson::object prefabObj;
         prefabObj["name"] = item.name;
-        prefabObj["width"] = item.selection.dimensions.x();
-        prefabObj["height"] = item.selection.dimensions.y();
+        prefabObj["width"] = item.selection.dimensions.width();
+        prefabObj["height"] = item.selection.dimensions.height();
         prefabObj["primary_tileset"] = item.primaryTileset;
         prefabObj["secondary_tileset"] = item.secondaryTileset;
         OrderedJson::array metatiles;
-        for (int y = 0; y < item.selection.dimensions.y(); y++) {
-            for (int x = 0; x < item.selection.dimensions.x(); x++) {
-                int index = y * item.selection.dimensions.x() + x;
-                auto metatileItem = item.selection.metatileItems.at(index);
+        for (int y = 0; y < item.selection.dimensions.height(); y++) {
+            for (int x = 0; x < item.selection.dimensions.width(); x++) {
+                int index = y * item.selection.dimensions.width() + x;
+                auto metatileItem = item.selection.metatileItems.value(index);
                 if (metatileItem.enabled) {
                     OrderedJson::object metatileObj;
                     metatileObj["x"] = x;

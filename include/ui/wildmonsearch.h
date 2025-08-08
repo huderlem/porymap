@@ -2,23 +2,10 @@
 #define WILDMONSEARCH_H
 
 #include <QDialog>
-#include <QTableWidgetItem>
-#include <QCollator>
+
+#include "numericsorttableitem.h"
 
 class Project;
-
-class NumericSortTableItem : public QTableWidgetItem
-{
-public:
-    explicit NumericSortTableItem(const QString &text) : QTableWidgetItem(text) {};
-
-protected:
-    virtual bool operator<(const QTableWidgetItem &other) const override {
-        QCollator collator;
-        collator.setNumericMode(true);
-        return collator.compare(text(), other.text()) < 0;
-    }
-};
 
 namespace Ui {
 class WildMonSearch;

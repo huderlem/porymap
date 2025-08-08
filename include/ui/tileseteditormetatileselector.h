@@ -9,7 +9,7 @@ class Layout;
 class TilesetEditorMetatileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorMetatileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout);
+    TilesetEditorMetatileSelector(int numMetatilesWide, Tileset *primaryTileset, Tileset *secondaryTileset, Layout *layout);
     Layout *layout = nullptr;
 
     void draw() override;
@@ -18,11 +18,16 @@ public:
 
     bool select(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
-    uint16_t getSelectedMetatileId();
-    void updateSelectedMetatile();
-    QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId);
-    QImage buildPrimaryMetatilesImage();
-    QImage buildSecondaryMetatilesImage();
+    uint16_t getSelectedMetatileId() const { return this->selectedMetatileId; }
+    QPoint getMetatileIdCoordsOnWidget(uint16_t metatileId) const;
+
+    void setSwapMode(bool enabled);
+    void addToSwapSelection(uint16_t metatileId);
+    void removeFromSwapSelection(uint16_t metatileId);
+    void clearSwapSelection();
+
+    bool hasCursor() const { return this->prevCellPos != QPoint(-1,-1); }
+    uint16_t metatileIdUnderCursor() const { return this->lastHoveredMetatileId; }
 
     QVector<uint16_t> usedMetatiles;
     bool selectorShowUnused = false;
@@ -38,32 +43,37 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
 
 private:
+    const int numMetatilesWide;
     QImage baseImage;
     QPixmap basePixmap;
     Tileset *primaryTileset = nullptr;
     Tileset *secondaryTileset = nullptr;
-    uint16_t selectedMetatileId;
-    int numMetatilesWide;
-    int numMetatilesHigh;
+    uint16_t selectedMetatileId = 0;
+    QPoint prevCellPos = QPoint(-1,-1);
+
+    QList<uint16_t> swapMetatileIds;
+    uint16_t lastHoveredMetatileId = 0;
+    bool inSwapMode = false;
+
     void updateBasePixmap();
-    uint16_t getMetatileId(int x, int y);
-    QPoint getMetatileIdCoords(uint16_t);
-    bool shouldAcceptEvent(QGraphicsSceneMouseEvent*);
-    int numRows(int numMetatiles);
-    int numRows();
+    uint16_t posToMetatileId(int x, int y, bool *ok = nullptr) const;
+    uint16_t posToMetatileId(const QPoint &pos, bool *ok = nullptr) const;
+    QPoint metatileIdToPos(uint16_t metatileId, bool *ok = nullptr) const;
+    bool isValidMetatileId(uint16_t metatileId) const;
+    int numRows(int numMetatiles) const;
+    int numRows() const;
     void drawGrid();
     void drawDivider();
     void drawFilters();
     void drawUnused();
     void drawCounts();
-    QImage buildAllMetatilesImage();
-    QImage buildImage(int metatileIdStart, int numMetatiles);
     int numPrimaryMetatilesRounded() const;
 
 signals:
     void hoveredMetatileChanged(uint16_t);
     void hoveredMetatileCleared();
     void selectedMetatileChanged(uint16_t);
+    void swapRequested(uint16_t, uint16_t);
 };
 
 #endif // TILESETEDITORMETATILESELECTOR_H

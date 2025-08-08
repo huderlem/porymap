@@ -40,10 +40,9 @@ void NewLayoutForm::initUi(Project *project) {
     }
 }
 
-void NewLayoutForm::setDisabled(bool disabled) {
+void NewLayoutForm::setDimensionsDisabled(bool disabled) {
     ui->groupBox_MapDimensions->setDisabled(disabled);
     ui->groupBox_BorderDimensions->setDisabled(disabled);
-    ui->groupBox_Tilesets->setDisabled(disabled);
 }
 
 void NewLayoutForm::setSettings(const Layout::Settings &settings) {
@@ -111,7 +110,7 @@ bool NewLayoutForm::validatePrimaryTileset(bool allowEmpty) {
     if (name.isEmpty()) {
         if (!allowEmpty) errorText = QString("The Primary Tileset cannot be empty.");
     } else if (ui->comboBox_PrimaryTileset->findText(name) < 0) {
-        errorText = QString("The Primary Tileset '%1' does not exist.").arg(ui->label_PrimaryTileset->text()).arg(name);
+        errorText = QString("The Primary Tileset '%1' does not exist.").arg(name);
     }
 
     bool isValid = errorText.isEmpty();

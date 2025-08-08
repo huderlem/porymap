@@ -25,6 +25,7 @@ public:
         if (head > 0) {
             return history.at(--head);
         }
+        head = -1;
         return NULL;
     }
 
@@ -37,9 +38,7 @@ public:
 
     void push(T commit) {
         while (head + 1 < history.length()) {
-            T item = history.last();
-            history.removeLast();
-            delete item;
+            delete history.takeLast();
         }
         if (saved > head) {
             saved = -1;
@@ -48,7 +47,7 @@ public:
         head++;
     }
 
-    T current() {
+    T current() const {
         if (head < 0 || history.length() == 0) {
             return NULL;
         }
@@ -59,8 +58,28 @@ public:
         saved = head;
     }
 
-    bool isSaved() {
+    bool isSaved() const {
         return saved == head;
+    }
+
+    int length() const {
+        return history.length();
+    }
+
+    bool isEmpty() const {
+        return history.isEmpty();
+    }
+
+    int index() const {
+        return head;
+    }
+
+    bool canUndo() const {
+        return head >= 0;
+    }
+
+    bool canRedo() const {
+        return (head + 1) < history.length();
     }
 
 private:

@@ -2,6 +2,7 @@
 #define MAPIMAGEEXPORTER_H
 
 #include "project.h"
+#include "checkeredbgscene.h"
 
 class QGifImage;
 
@@ -52,7 +53,7 @@ private:
     Project *m_project = nullptr;
     Map *m_map = nullptr;
     Layout *m_layout = nullptr;
-    QGraphicsScene *m_scene = nullptr;
+    CheckeredBgScene *m_scene = nullptr;
     QGifImage *m_timelapseGifImage = nullptr;
     QBuffer *m_timelapseBuffer = nullptr;
     QMovie *m_timelapseMovie = nullptr;

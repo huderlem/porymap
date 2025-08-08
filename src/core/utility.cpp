@@ -14,7 +14,7 @@ void Util::numericalModeSort(QStringList &list) {
     std::sort(list.begin(), list.end(), collator);
 }
 
-int Util::roundUp(int numToRound, int multiple) {
+int Util::roundUpToMultiple(int numToRound, int multiple) {
     if (multiple <= 0)
         return numToRound;
 
@@ -111,4 +111,17 @@ QString Util::replaceExtension(const QString &path, const QString &newExtension)
 void Util::setErrorStylesheet(QLineEdit *lineEdit, bool isError) {
     static const QString stylesheet = QStringLiteral("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
     lineEdit->setStyleSheet(isError ? stylesheet : "");
+}
+
+void Util::show(QWidget *w) {
+    if (!w) return;
+
+    if (!w->isVisible()) {
+        w->show();
+    } else if (w->isMinimized()) {
+        w->showNormal();
+    } else {
+        w->raise();
+        w->activateWindow();
+    }
 }

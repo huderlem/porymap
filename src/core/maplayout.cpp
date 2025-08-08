@@ -5,6 +5,11 @@
 #include "scripting.h"
 #include "imageproviders.h"
 #include "utility.h"
+#include "project.h"
+#include "layoutpixmapitem.h"
+
+QList<int> Layout::s_globalMetatileLayerOrder;
+QList<float> Layout::s_globalMetatileLayerOpacity;
 
 Layout::Layout(const Layout &other) : Layout() {
     copyFrom(&other);
@@ -55,6 +60,10 @@ bool Layout::isWithinBounds(int x, int y) const {
     return (x >= 0 && x < this->getWidth() && y >= 0 && y < this->getHeight());
 }
 
+bool Layout::isWithinBounds(const QPoint &pos) const {
+    return isWithinBounds(pos.x(), pos.y());
+}
+
 bool Layout::isWithinBounds(const QRect &rect) const {
     return rect.left() >= 0 && rect.right() < this->getWidth() && rect.top() >= 0 && rect.bottom() < this->getHeight();
 }
@@ -85,15 +94,14 @@ QMargins Layout::getBorderMargins() const {
     return distance;
 }
 
-// Get a rectangle that represents (in pixels) the layout's map area and the visible area of its border.
-// At maximum, this is equal to the map size plus the border margins.
-// If the border is large (and so beyond player the view) it may be smaller than that.
+// Get a rectangle that represents (in pixels) the layout's map area + the distance the player can see.
+// Note that this may be smaller than the map area + the size of the border for layouts with large border dimensions.
 QRect Layout::getVisibleRect() const {
-    QRect area = QRect(0, 0, this->width * 16, this->height * 16);
-    return area += (Project::getMetatileViewDistance() * 16);
+    QRect area = QRect(0, 0, this->pixelWidth(), this->pixelHeight());
+    return area += Project::getPixelViewDistance();
 }
 
-bool Layout::getBlock(int x, int y, Block *out) {
+bool Layout::getBlock(int x, int y, Block *out) const {
     if (isWithinBounds(x, y)) {
         int i = y * getWidth() + x;
         *out = this->blockdata.value(i);
@@ -126,6 +134,20 @@ void Layout::setBlockdata(Blockdata newBlockdata, bool enableScriptCallback) {
                 Scripting::cb_MetatileChanged(i % width, i / width, prevBlock, newBlock);
         }
     }
+}
+
+uint16_t Layout::getMetatileId(int x, int y) const {
+    Block block;
+    return getBlock(x, y, &block) ? block.metatileId() : 0;
+}
+
+bool Layout::setMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback) {
+    Block block;
+    if (!getBlock(x, y, &block)) {
+        return false;
+    }
+    setBlock(x, y, Block(metatileId, block.collision(), block.elevation()), enableScriptCallback);
+    return true;
 }
 
 void Layout::clearBorderCache() {
@@ -337,15 +359,13 @@ void Layout::magicFillCollisionElevation(int initialX, int initialY, uint16_t co
     }
 }
 
-QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
+QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, const QRect &bounds) {
     bool changed_any = false;
-    int width_ = getWidth();
-    int height_ = getHeight();
-    if (this->image.isNull() || this->image.width() != width_ * 16 || this->image.height() != height_ * 16) {
-        this->image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    if (this->image.isNull() || this->image.width() != pixelWidth() || this->image.height() != pixelHeight()) {
+        this->image = QImage(pixelWidth(), pixelHeight(), QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (this->blockdata.isEmpty() || !width_ || !height_) {
+    if (this->blockdata.isEmpty() || this->width == 0 || this->height == 0) {
         this->pixmap = this->pixmap.fromImage(this->image);
         return this->pixmap;
     }
@@ -361,9 +381,9 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
         if (!ignoreCache && !layoutBlockChanged(i, this->blockdata, this->cached_blockdata)) {
             continue;
         }
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        if (bounds.isValid() && !bounds.contains(map_x, map_y)) {
+        int x = this->width ? ((i % this->width) * Metatile::pixelWidth()) : 0;
+        int y = this->width ? ((i / this->width) * Metatile::pixelHeight()) : 0;
+        if (bounds.isValid() && !bounds.contains(x, y)) {
             continue;
         }
 
@@ -376,14 +396,12 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
                 metatileId,
                 fromLayout ? fromLayout->tileset_primary   : this->tileset_primary,
                 fromLayout ? fromLayout->tileset_secondary : this->tileset_secondary,
-                metatileLayerOrder,
-                metatileLayerOpacity
+                metatileLayerOrder(),
+                metatileLayerOpacity()
             );
             imageCache.insert(metatileId, metatileImage);
         }
-
-        QPoint metatileOrigin = QPoint(map_x * 16, map_y * 16);
-        painter.drawImage(metatileOrigin, metatileImage);
+        painter.drawImage(x, y, metatileImage);
         changed_any = true;
     }
     painter.end();
@@ -397,13 +415,11 @@ QPixmap Layout::render(bool ignoreCache, Layout *fromLayout, QRect bounds) {
 
 QPixmap Layout::renderCollision(bool ignoreCache) {
     bool changed_any = false;
-    int width_ = getWidth();
-    int height_ = getHeight();
-    if (collision_image.isNull() || collision_image.width() != width_ * 16 || collision_image.height() != height_ * 16) {
-        collision_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    if (collision_image.isNull() || collision_image.width() != pixelWidth() || collision_image.height() != pixelHeight()) {
+        collision_image = QImage(pixelWidth(), pixelHeight(), QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (this->blockdata.isEmpty() || !width_ || !height_) {
+    if (this->blockdata.isEmpty() || this->width == 0 || this->height == 0) {
         collision_pixmap = collision_pixmap.fromImage(collision_image);
         return collision_pixmap;
     }
@@ -415,10 +431,9 @@ QPixmap Layout::renderCollision(bool ignoreCache) {
         changed_any = true;
         Block block = this->blockdata.at(i);
         QImage collision_metatile_image = getCollisionMetatileImage(block);
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        QPoint metatile_origin = QPoint(map_x * 16, map_y * 16);
-        painter.drawImage(metatile_origin, collision_metatile_image);
+        int x = this->width ? ((i % this->width) * Metatile::pixelWidth()) : 0;
+        int y = this->width ? ((i / this->width) * Metatile::pixelHeight()) : 0;
+        painter.drawImage(x, y, collision_metatile_image);
     }
     painter.end();
     cacheCollision();
@@ -430,14 +445,14 @@ QPixmap Layout::renderCollision(bool ignoreCache) {
 
 QPixmap Layout::renderBorder(bool ignoreCache) {
     bool changed_any = false, border_resized = false;
-    int width_ = getBorderWidth();
-    int height_ = getBorderHeight();
+    int pixelWidth = this->border_width * Metatile::pixelWidth();
+    int pixelHeight = this->border_height * Metatile::pixelHeight();
     if (this->border_image.isNull()) {
-        this->border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+        this->border_image = QImage(pixelWidth, pixelHeight, QImage::Format_RGBA8888);
         changed_any = true;
     }
-    if (this->border_image.width() != width_ * 16 || this->border_image.height() != height_ * 16) {
-        this->border_image = QImage(width_ * 16, height_ * 16, QImage::Format_RGBA8888);
+    if (this->border_image.width() != pixelWidth || this->border_image.height() != pixelHeight) {
+        this->border_image = QImage(pixelWidth, pixelHeight, QImage::Format_RGBA8888);
         border_resized = true;
     }
     if (this->border.isEmpty()) {
@@ -453,10 +468,10 @@ QPixmap Layout::renderBorder(bool ignoreCache) {
         changed_any = true;
         Block block = this->border.at(i);
         uint16_t metatileId = block.metatileId();
-        QImage metatile_image = getMetatileImage(metatileId, this->tileset_primary, this->tileset_secondary, metatileLayerOrder, metatileLayerOpacity);
-        int map_y = width_ ? i / width_ : 0;
-        int map_x = width_ ? i % width_ : 0;
-        painter.drawImage(QPoint(map_x * 16, map_y * 16), metatile_image);
+        QImage metatile_image = getMetatileImage(metatileId, this);
+        int x = this->border_width ? ((i % this->border_width) * Metatile::pixelWidth()) : 0;
+        int y = this->border_width ? ((i / this->border_width) * Metatile::pixelHeight()) : 0;
+        painter.drawImage(x, y, metatile_image);
     }
     painter.end();
     if (changed_any) {
@@ -531,6 +546,7 @@ bool Layout::loadBorder(const QString &root) {
         logError(QString("Failed to load border for %1 from '%2': %3").arg(this->name).arg(path).arg(error));
         return false;
     }
+    this->border = blockdata;
 
     // 0 is an expected border width/height that should be handled, GF used it for the RS layouts in FRLG
     if (this->border_width <= 0) {
@@ -539,10 +555,6 @@ bool Layout::loadBorder(const QString &root) {
     if (this->border_height <= 0) {
         this->border_height = DEFAULT_BORDER_HEIGHT;
     }
-
-    this->border = blockdata;
-    this->lastCommitBlocks.border = blockdata;
-    this->lastCommitBlocks.borderDimensions = QSize(this->border_width, this->border_height);
 
     int expectedSize = this->border_width * this->border_height;
     if (this->border.count() != expectedSize) {
@@ -554,6 +566,10 @@ bool Layout::loadBorder(const QString &root) {
                 .arg(expectedSize));
         this->border.resize(expectedSize);
     }
+
+    this->lastCommitBlocks.border = this->border;
+    this->lastCommitBlocks.borderDimensions = QSize(this->border_width, this->border_height);
+
     return true;
 }
 
@@ -570,10 +586,7 @@ bool Layout::loadBlockdata(const QString &root) {
         logError(QString("Failed to load blockdata for %1 from '%2': %3").arg(this->name).arg(path).arg(error));
         return false;
     }
-
     this->blockdata = blockdata;
-    this->lastCommitBlocks.blocks = blockdata;
-    this->lastCommitBlocks.layoutDimensions = QSize(this->width, this->height);
 
     int expectedSize = this->width * this->height;
     if (expectedSize <= 0) {
@@ -589,6 +602,10 @@ bool Layout::loadBlockdata(const QString &root) {
                 .arg(expectedSize));
         this->blockdata.resize(expectedSize);
     }
+
+    this->lastCommitBlocks.blocks = this->blockdata;
+    this->lastCommitBlocks.layoutDimensions = QSize(this->width, this->height);
+
     return true;
 }
 

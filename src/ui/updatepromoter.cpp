@@ -1,3 +1,4 @@
+#ifdef QT_NETWORK_LIB
 #include "updatepromoter.h"
 #include "ui_updatepromoter.h"
 #include "log.h"
@@ -188,3 +189,5 @@ void UpdatePromoter::dialogButtonClicked(QAbstractButton *button) {
         QDesktopServices::openUrl(this->downloadUrl);
     }
 }
+
+#endif // QT_NETWORK_LIB

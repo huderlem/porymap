@@ -33,6 +33,9 @@ public slots:
     void setTabActive(int index, bool active = true);
     void deactivateTab(int tabIndex);
 
+signals:
+    void edited();
+
 private:
     void actionCopyTab(int index);
     void actionAddDeleteTab(int index);

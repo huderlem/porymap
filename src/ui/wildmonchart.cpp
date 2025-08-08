@@ -1,4 +1,4 @@
-#if __has_include(<QtCharts>)
+#ifdef QT_CHARTS_LIB
 #include "wildmonchart.h"
 #include "ui_wildmonchart.h"
 #include "config.h"
@@ -367,7 +367,7 @@ QChart* WildMonChart::createLevelDistributionChart() {
     series->attachAxis(axisY);
 
     // We round the y-axis max up to a multiple of 5.
-    axisY->setMax(Util::roundUp(qCeil(axisY->max()), 5));
+    axisY->setMax(Util::roundUpToMultiple(qCeil(axisY->max()), 5));
 
     return chart;
 }
@@ -392,10 +392,10 @@ void WildMonChart::updateTheme() {
     saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 
     chart = ui->chartView_LevelDistribution->chart();
-    if (chart) {
-        chart->setTheme(theme);
-        applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
-    }
+    if (!chart || chart->series().isEmpty())
+        return;
+    chart->setTheme(theme);
+    applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 }
 
 void WildMonChart::saveSpeciesColors(const QList<QBarSet*> &barSets) {
@@ -466,4 +466,4 @@ void WildMonChart::closeEvent(QCloseEvent *event) {
     QWidget::closeEvent(event);
 }
 
-#endif // __has_include(<QtCharts>)
+#endif // QT_CHARTS_LIB

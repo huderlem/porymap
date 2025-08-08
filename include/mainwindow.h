@@ -11,7 +11,6 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QCloseEvent>
 #include <QAbstractItemModel>
-#include <QJSValue>
 #include "project.h"
 #include "orderedjson.h"
 #include "config.h"
@@ -36,6 +35,10 @@
 #include "message.h"
 #include "resizelayoutpopup.h"
 
+#if __has_include(<QJSValue>)
+#include <QJSValue>
+#endif
+
 
 
 namespace Ui {
@@ -56,9 +59,14 @@ public:
 
     void initialize();
 
+    Q_INVOKABLE void setPrimaryTileset(const QString &tileset);
+    Q_INVOKABLE void setSecondaryTileset(const QString &tileset);
+
     // Scripting API
+#ifdef QT_QML_LIB
     Q_INVOKABLE QJSValue getBlock(int x, int y);
     void tryRedrawMapArea(bool forceRedraw);
+    void redrawResizedMapArea();
     void tryCommitMapChanges(bool commitChanges);
     Q_INVOKABLE void setBlock(int x, int y, int metatileId, int collision, int elevation, bool forceRedraw = true, bool commitChanges = true);
     Q_INVOKABLE void setBlock(int x, int y, int rawValue, bool forceRedraw = true, bool commitChanges = true);
@@ -118,8 +126,6 @@ public:
     Q_INVOKABLE int getNumSecondaryTilesetTiles();
     Q_INVOKABLE QString getPrimaryTileset();
     Q_INVOKABLE QString getSecondaryTileset();
-    Q_INVOKABLE void setPrimaryTileset(QString tileset);
-    Q_INVOKABLE void setSecondaryTileset(QString tileset);
     void saveMetatilesByMetatileId(int metatileId);
     void saveMetatileAttributesByMetatileId(int metatileId);
     Metatile * getMetatile(int metatileId);
@@ -145,6 +151,10 @@ public:
     Q_INVOKABLE void setMetatileTiles(int metatileId, QJSValue tilesObj, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE void setMetatileTiles(int metatileId, int tileId, bool xflip, bool yflip, int palette, int tileStart = 0, int tileEnd = -1, bool forceRedraw = true);
     Q_INVOKABLE QJSValue getTilePixels(int tileId);
+    Q_INVOKABLE QList<int> getMetatileLayerOrder() const;
+    Q_INVOKABLE void setMetatileLayerOrder(const QList<int> &order);
+    Q_INVOKABLE QList<float> getMetatileLayerOpacity() const;
+    Q_INVOKABLE void setMetatileLayerOpacity(const QList<float> &opacities);
     Q_INVOKABLE QString getSong();
     Q_INVOKABLE void setSong(QString song);
     Q_INVOKABLE QString getLocation();
@@ -167,6 +177,7 @@ public:
     Q_INVOKABLE void setAllowEscaping(bool allow);
     Q_INVOKABLE int getFloorNumber();
     Q_INVOKABLE void setFloorNumber(int floorNumber);
+#endif // QT_QML_LIB
 
 public slots:
     void on_mainTabBar_tabBarClicked(int index);
@@ -246,8 +257,6 @@ private slots:
     void on_pushButton_AddConnection_clicked();
     void on_button_OpenDiveMap_clicked();
     void on_button_OpenEmergeMap_clicked();
-    void on_comboBox_PrimaryTileset_currentTextChanged(const QString &arg1);
-    void on_comboBox_SecondaryTileset_currentTextChanged(const QString &arg1);
     void on_pushButton_ChangeDimensions_clicked();
 
     void resetMapViewScale();
@@ -286,6 +295,7 @@ private slots:
     void on_spinBox_SelectedCollision_valueChanged(int collision);
     void on_actionRegion_Map_Editor_triggered();
     void on_actionPreferences_triggered();
+    void on_actionOpen_Manual_triggered();
     void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
     void on_actionProject_Settings_triggered();
@@ -321,8 +331,11 @@ private:
     QPointer<FilterChildrenProxyModel> layoutListProxyModel = nullptr;
     QPointer<LayoutTreeModel> layoutTreeModel = nullptr;
 
+#ifdef QT_NETWORK_LIB
     QPointer<UpdatePromoter> updatePromoter = nullptr;
     QPointer<NetworkAccessManager> networkAccessManager = nullptr;
+#endif
+
     QPointer<AboutPorymap> aboutWindow = nullptr;
     QPointer<WildMonChart> wildMonChart = nullptr;
     QPointer<WildMonSearch> wildMonSearch = nullptr;
@@ -380,7 +393,6 @@ private:
     void openDuplicateMapOrLayoutDialog();
     void openNewMapGroupDialog();
     void openNewLocationDialog();
-    void openSubWindow(QWidget * window);
     void scrollMapList(MapTree *list, const QString &itemName);
     void scrollMapListToCurrentMap(MapTree *list);
     void scrollMapListToCurrentLayout(MapTree *list);

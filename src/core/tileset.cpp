@@ -8,6 +8,7 @@
 
 #include <QPainter>
 #include <QImage>
+#include <algorithm>
 
 
 Tileset::Tileset(const Tileset &other)
@@ -20,15 +21,15 @@ Tileset::Tileset(const Tileset &other)
       metatile_attrs_label(other.metatile_attrs_label),
       metatile_attrs_path(other.metatile_attrs_path),
       tilesImagePath(other.tilesImagePath),
-      tilesImage(other.tilesImage.copy()),
       palettePaths(other.palettePaths),
       metatileLabels(other.metatileLabels),
       palettes(other.palettes),
       palettePreviews(other.palettePreviews),
+      m_tilesImage(other.m_tilesImage.copy()),
       m_hasUnsavedTilesImage(other.m_hasUnsavedTilesImage)
 {
-    for (auto tile : other.tiles) {
-        tiles.append(tile.copy());
+    for (auto tile : other.m_tiles) {
+        m_tiles.append(tile.copy());
     }
 
     for (auto *metatile : other.m_metatiles) {
@@ -46,15 +47,15 @@ Tileset &Tileset::operator=(const Tileset &other) {
     metatile_attrs_label = other.metatile_attrs_label;
     metatile_attrs_path = other.metatile_attrs_path;
     tilesImagePath = other.tilesImagePath;
-    tilesImage = other.tilesImage.copy();
+    m_tilesImage = other.m_tilesImage.copy();
     palettePaths = other.palettePaths;
     metatileLabels = other.metatileLabels;
     palettes = other.palettes;
     palettePreviews = other.palettePreviews;
 
-    tiles.clear();
-    for (auto tile : other.tiles) {
-        tiles.append(tile.copy());
+    m_tiles.clear();
+    for (auto tile : other.m_tiles) {
+        m_tiles.append(tile.copy());
     }
 
     clearMetatiles();
@@ -94,7 +95,50 @@ void Tileset::resizeMetatiles(int newNumMetatiles) {
     }
 }
 
+uint16_t Tileset::firstMetatileId() const {
+    return this->is_secondary ? Project::getNumMetatilesPrimary() : 0;
+}
+
+uint16_t Tileset::lastMetatileId() const {
+    return qMax(1, firstMetatileId() + m_metatiles.length()) - 1;
+}
+
+int Tileset::maxMetatiles() const {
+    return this->is_secondary ? Project::getNumMetatilesSecondary() : Project::getNumMetatilesPrimary();
+}
+
+uint16_t Tileset::firstTileId() const {
+    return this->is_secondary ? Project::getNumTilesPrimary() : 0;
+}
+
+uint16_t Tileset::lastTileId() const {
+    return qMax(1, firstMetatileId() + m_tiles.length()) - 1;
+}
+
+int Tileset::maxTiles() const {
+    return this->is_secondary ? Project::getNumTilesSecondary() : Project::getNumTilesPrimary();
+}
+
+Tileset* Tileset::getPaletteTileset(int paletteId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    return const_cast<Tileset*>(getPaletteTileset(paletteId, static_cast<const Tileset*>(primaryTileset), static_cast<const Tileset*>(secondaryTileset)));
+}
+
+const Tileset* Tileset::getPaletteTileset(int paletteId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
+    if (paletteId < Project::getNumPalettesPrimary()) {
+        return primaryTileset;
+    } else if (paletteId < Project::getNumPalettesTotal()) {
+        return secondaryTileset;
+    } else {
+        return nullptr;
+    }
+}
+
 Tileset* Tileset::getTileTileset(int tileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    return const_cast<Tileset*>(getTileTileset(tileId, static_cast<const Tileset*>(primaryTileset), static_cast<const Tileset*>(secondaryTileset)));
+}
+
+// Get the tileset *expected* to contain the given 'tileId'. Note that this does not mean the tile actually exists in that tileset.
+const Tileset* Tileset::getTileTileset(int tileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
     if (tileId < Project::getNumTilesPrimary()) {
         return primaryTileset;
     } else if (tileId < Project::getNumTilesTotal()) {
@@ -105,6 +149,11 @@ Tileset* Tileset::getTileTileset(int tileId, Tileset *primaryTileset, Tileset *s
 }
 
 Tileset* Tileset::getMetatileTileset(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
+    return const_cast<Tileset*>(getMetatileTileset(metatileId, static_cast<const Tileset*>(primaryTileset), static_cast<const Tileset*>(secondaryTileset)));
+}
+
+// Get the tileset *expected* to contain the given 'metatileId'. Note that this does not mean the metatile actually exists in that tileset.
+const Tileset* Tileset::getMetatileTileset(int metatileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
     if (metatileId < Project::getNumMetatilesPrimary()) {
         return primaryTileset;
     } else if (metatileId < Project::getNumMetatilesTotal()) {
@@ -115,7 +164,11 @@ Tileset* Tileset::getMetatileTileset(int metatileId, Tileset *primaryTileset, Ti
 }
 
 Metatile* Tileset::getMetatile(int metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    Tileset *tileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
+    return const_cast<Metatile*>(getMetatile(metatileId, static_cast<const Tileset*>(primaryTileset), static_cast<const Tileset*>(secondaryTileset)));
+}
+
+const Metatile* Tileset::getMetatile(int metatileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
+    const Tileset *tileset = Tileset::getMetatileTileset(metatileId, primaryTileset, secondaryTileset);
     if (!tileset) {
         return nullptr;
     }
@@ -200,46 +253,48 @@ QString Tileset::getMetatileLabelPrefix()
 QString Tileset::getMetatileLabelPrefix(const QString &name)
 {
     // Default is "gTileset_Name" --> "METATILE_Name_"
-    const QString tilesetPrefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
     const QString labelPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_metatile_label_prefix);
-    return QString("%1%2_").arg(labelPrefix).arg(QString(name).replace(tilesetPrefix, ""));
+    return QString("%1%2_").arg(labelPrefix).arg(Tileset::stripPrefix(name));
 }
 
-bool Tileset::metatileIsValid(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset) {
-    if (metatileId >= Project::getNumMetatilesTotal())
-        return false;
-
-    if (metatileId < Project::getNumMetatilesPrimary() && metatileId >= primaryTileset->numMetatiles())
-        return false;
-
-    if (metatileId >= Project::getNumMetatilesPrimary() + secondaryTileset->numMetatiles())
-        return false;
-
-    return true;
+bool Tileset::metatileIsValid(uint16_t metatileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
+    return (primaryTileset && primaryTileset->containsMetatileId(metatileId))
+        || (secondaryTileset && secondaryTileset->containsMetatileId(metatileId));
 }
 
-QList<QList<QRgb>> Tileset::getBlockPalettes(Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
+QList<QList<QRgb>> Tileset::getBlockPalettes(const Tileset *primaryTileset, const Tileset *secondaryTileset, bool useTruePalettes) {
     QList<QList<QRgb>> palettes;
-    auto primaryPalettes = useTruePalettes ? primaryTileset->palettes : primaryTileset->palettePreviews;
+
+    QList<QList<QRgb>> primaryPalettes;
+    if (primaryTileset) {
+        primaryPalettes = useTruePalettes ? primaryTileset->palettes : primaryTileset->palettePreviews;
+    }
     for (int i = 0; i < Project::getNumPalettesPrimary(); i++) {
-        palettes.append(primaryPalettes.at(i));
+        palettes.append(primaryPalettes.value(i));
     }
-    auto secondaryPalettes = useTruePalettes ? secondaryTileset->palettes : secondaryTileset->palettePreviews;
+
+    QList<QList<QRgb>> secondaryPalettes;
+    if (secondaryTileset) {
+        secondaryPalettes = useTruePalettes ? secondaryTileset->palettes : secondaryTileset->palettePreviews;
+    }
     for (int i = Project::getNumPalettesPrimary(); i < Project::getNumPalettesTotal(); i++) {
-        palettes.append(secondaryPalettes.at(i));
+        palettes.append(secondaryPalettes.value(i));
     }
+
     return palettes;
 }
 
-QList<QRgb> Tileset::getPalette(int paletteId, Tileset *primaryTileset, Tileset *secondaryTileset, bool useTruePalettes) {
+QList<QRgb> Tileset::getPalette(int paletteId, const Tileset *primaryTileset, const Tileset *secondaryTileset, bool useTruePalettes) {
     QList<QRgb> paletteTable;
-    Tileset *tileset = paletteId < Project::getNumPalettesPrimary()
+    const Tileset *tileset = paletteId < Project::getNumPalettesPrimary()
             ? primaryTileset
             : secondaryTileset;
-    auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
+    if (!tileset) {
+        return paletteTable;
+    }
 
-    if (paletteId < 0 || paletteId >= palettes.length()){
-        logError(QString("Invalid tileset palette id '%1' requested.").arg(paletteId));
+    auto palettes = useTruePalettes ? tileset->palettes : tileset->palettePreviews;
+    if (paletteId < 0 || paletteId >= palettes.length()) {
         return paletteTable;
     }
 
@@ -316,7 +371,7 @@ bool Tileset::appendToGraphics(const QString &filepath, const QString &friendlyN
         dataString.append(QString("\t.incbin \"%1\"\n").arg(tilesPath));
     } else {
         // Append to C file
-        dataString.append(QString("const u16 gTilesetPalettes_%1[][16] =\n{\n").arg(friendlyName));
+        dataString.append(QString("const u16 gTilesetPalettes_%1[][%2] =\n{\n").arg(friendlyName).arg(Tileset::numColorsPerPalette()));
         for (int i = 0; i < Project::getNumPalettesTotal(); i++)
             dataString.append(QString("    INCBIN_U16(\"%1%2%3\"),\n").arg(palettesPath).arg(i, 2, 10, QLatin1Char('0')).arg(palettesExt));
         dataString.append("};\n");
@@ -373,8 +428,7 @@ QString Tileset::getExpectedDir(QString tilesetName, bool isSecondary)
                                          : projectConfig.getFilePath(ProjectFilePath::data_primary_tilesets_folders);
 
     static const QRegularExpression re("([a-z])([A-Z0-9])");
-    const QString prefix = projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix);
-    return basePath + tilesetName.replace(prefix, "").replace(re, "\\1_\\2").toLower();
+    return basePath + Tileset::stripPrefix(tilesetName).replace(re, "\\1_\\2").toLower();
 }
 
 // Get the expected positions of the members in struct Tileset.
@@ -400,17 +454,25 @@ QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
 bool Tileset::loadMetatiles() {
     clearMetatiles();
 
-    QFile metatiles_file(this->metatiles_path);
-    if (!metatiles_file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1' for reading: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+    QFile file(this->metatiles_path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatiles_path).arg(file.errorString()));
         return false;
     }
 
-    QByteArray data = metatiles_file.readAll();
+    QByteArray data = file.readAll();
     int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
-    int bytesPerMetatile = 2 * tilesPerMetatile;
-    int num_metatiles = data.length() / bytesPerMetatile;
-    for (int i = 0; i < num_metatiles; i++) {
+    int bytesPerMetatile = Tile::sizeInBytes() * tilesPerMetatile;
+    int numMetatiles = data.length() / bytesPerMetatile;
+    if (numMetatiles > maxMetatiles()) {
+        logWarn(QString("%1 metatile count %2 exceeds limit of %3. Additional metatiles will be ignored.")
+                        .arg(this->name)
+                        .arg(numMetatiles)
+                        .arg(maxMetatiles()));
+        numMetatiles = maxMetatiles();
+    }
+
+    for (int i = 0; i < numMetatiles; i++) {
         auto metatile = new Metatile;
         int index = i * bytesPerMetatile;
         for (int j = 0; j < tilesPerMetatile; j++) {
@@ -424,9 +486,9 @@ bool Tileset::loadMetatiles() {
 }
 
 bool Tileset::saveMetatiles() {
-    QFile metatiles_file(this->metatiles_path);
-    if (!metatiles_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        logError(QString("Could not open '%1' for writing: %2").arg(this->metatiles_path).arg(metatiles_file.errorString()));
+    QFile file(this->metatiles_path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatiles_path).arg(file.errorString()));
         return false;
     }
 
@@ -434,31 +496,40 @@ bool Tileset::saveMetatiles() {
     int numTiles = projectConfig.getNumTilesInMetatile();
     for (const auto &metatile : m_metatiles) {
         for (int i = 0; i < numTiles; i++) {
-            uint16_t tile = metatile->tiles.at(i).rawValue();
+            uint16_t tile = metatile->tiles.value(i).rawValue();
             data.append(static_cast<char>(tile));
             data.append(static_cast<char>(tile >> 8));
         }
     }
-    metatiles_file.write(data);
+    file.write(data);
     return true;
 }
 
 bool Tileset::loadMetatileAttributes() {
-    QFile attrs_file(this->metatile_attrs_path);
-    if (!attrs_file.open(QIODevice::ReadOnly)) {
-        logError(QString("Could not open '%1' for reading: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+    QFile file(this->metatile_attrs_path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        logError(QString("Could not open '%1' for reading: %2").arg(this->metatile_attrs_path).arg(file.errorString()));
         return false;
     }
 
-    QByteArray data = attrs_file.readAll();
+    QByteArray data = file.readAll();
     int attrSize = projectConfig.metatileAttributesSize;
     int numMetatiles = m_metatiles.length();
     int numMetatileAttrs = data.length() / attrSize;
-    if (numMetatiles != numMetatileAttrs) {
-        logWarn(QString("Metatile count %1 does not match metatile attribute count %2 in %3").arg(numMetatiles).arg(numMetatileAttrs).arg(this->name));
+    if (numMetatileAttrs > numMetatiles) {
+        logWarn(QString("%1 metatile attributes count %2 exceeds metatile count of %3. Additional attributes will be ignored.")
+                            .arg(this->name)
+                            .arg(numMetatileAttrs)
+                            .arg(numMetatiles));
+        numMetatileAttrs = numMetatiles;
+    } else if (numMetatileAttrs < numMetatiles) {
+        logWarn(QString("%1 metatile attributes count %2 is fewer than the metatile count of %3. Missing attributes will default to 0.")
+                            .arg(this->name)
+                            .arg(numMetatileAttrs)
+                            .arg(numMetatiles));
     }
 
-    for (int i = 0; i < qMin(numMetatiles, numMetatileAttrs); i++) {
+    for (int i = 0; i < numMetatileAttrs; i++) {
         uint32_t attributes = 0;
         for (int j = 0; j < attrSize; j++)
             attributes |= static_cast<unsigned char>(data.at(i * attrSize + j)) << (8 * j);
@@ -468,9 +539,9 @@ bool Tileset::loadMetatileAttributes() {
 }
 
 bool Tileset::saveMetatileAttributes() {
-    QFile attrs_file(this->metatile_attrs_path);
-    if (!attrs_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        logError(QString("Could not open '%1' for writing: %2").arg(this->metatile_attrs_path).arg(attrs_file.errorString()));
+    QFile file(this->metatile_attrs_path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        logError(QString("Could not open '%1' for writing: %2").arg(this->metatile_attrs_path).arg(file.errorString()));
         return false;
     }
 
@@ -480,45 +551,74 @@ bool Tileset::saveMetatileAttributes() {
         for (int i = 0; i < projectConfig.metatileAttributesSize; i++)
             data.append(static_cast<char>(attributes >> (8 * i)));
     }
-    attrs_file.write(data);
+    file.write(data);
     return true;
 }
 
 bool Tileset::loadTilesImage(QImage *importedImage) {
     QImage image;
+    bool imported = false;
     if (importedImage) {
         image = *importedImage;
-        m_hasUnsavedTilesImage = true;
+        imported = true;
     } else if (QFile::exists(this->tilesImagePath)) {
         // No image provided, load from file path.
         image = QImage(this->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
-    } else {
-        // Use default image
-        image = QImage(8, 8, QImage::Format_Indexed8);
     }
 
-    // Validate image contains 16 colors.
+    if (image.isNull()) {
+        logWarn(QString("Failed to load tiles image for %1. Using default tiles image.").arg(this->name));
+        image = QImage(Tile::pixelWidth(), Tile::pixelHeight(), QImage::Format_Indexed8);
+        image.fill(0);
+    }
+
+    // Validate image dimensions
+    if (image.width() % Tile::pixelWidth() || image.height() % Tile::pixelHeight()) {
+        logError(QString("%1 tiles image has invalid dimensions %2x%3. Dimensions must be a multiple of %4x%5.")
+                            .arg(this->name)
+                            .arg(image.width())
+                            .arg(image.height())
+                            .arg(Tile::pixelWidth())
+                            .arg(Tile::pixelHeight()));
+        return false;
+    }
+
+    // Validate the number of colors in the image.
     int colorCount = image.colorCount();
-    if (colorCount > 16) {
+    if (colorCount > Tileset::numColorsPerPalette()) {
         flattenTo4bppImage(&image);
-    } else if (colorCount < 16) {
+    } else if (colorCount < Tileset::numColorsPerPalette()) {
         QVector<QRgb> colorTable = image.colorTable();
-        for (int i = colorTable.length(); i < 16; i++) {
+        for (int i = colorTable.length(); i < Tileset::numColorsPerPalette(); i++) {
             colorTable.append(0);
         }
         image.setColorTable(colorTable);
     }
+    m_tilesImage = image;
 
-    QList<QImage> tiles;
-    int w = 8;
-    int h = 8;
-    for (int y = 0; y < image.height(); y += h)
-    for (int x = 0; x < image.width(); x += w) {
-        QImage tile = image.copy(x, y, w, h);
-        tiles.append(tile);
+    // Cut up the full tiles image into individual tile images.
+    m_tiles.clear();
+    for (int y = 0; y < image.height(); y += Tile::pixelHeight())
+    for (int x = 0; x < image.width(); x += Tile::pixelWidth()) {
+        m_tiles.append(image.copy(x, y, Tile::pixelWidth(), Tile::pixelHeight()));
     }
-    this->tilesImage = image;
-    this->tiles = tiles;
+
+    if (m_tiles.length() > maxTiles()) {
+        logWarn(QString("%1 tile count of %2 exceeds limit of %3. Additional tiles will not be displayed.")
+                            .arg(this->name)
+                            .arg(m_tiles.length())
+                            .arg(maxTiles()));
+
+        // Just resize m_tiles so that numTiles() reports the correct tile count.
+        // We'll leave m_tilesImage alone (it doesn't get displayed, and we don't want to delete the user's image data).
+        m_tiles = m_tiles.mid(0, maxTiles());
+    }
+
+    if (imported) {
+        // Only set this flag once we've successfully loaded the tiles image.
+        m_hasUnsavedTilesImage = true;
+    }
+
     return true;
 }
 
@@ -528,7 +628,7 @@ bool Tileset::saveTilesImage() {
     if (!m_hasUnsavedTilesImage)
         return true;
 
-    if (!this->tilesImage.save(this->tilesImagePath, "PNG")) {
+    if (!m_tilesImage.save(this->tilesImagePath, "PNG")) {
         logError(QString("Failed to save tiles image '%1'").arg(this->tilesImagePath));
         return false;
     }
@@ -553,8 +653,9 @@ bool Tileset::loadPalettes() {
             // Either the palette failed to load, or no palette exists.
             // We expect tilesets to have a certain number of palettes,
             // so fill this palette with dummy colors.
-            for (int j = 0; j < 16; j++) {
-                palette.append(qRgb(j * 16, j * 16, j * 16));
+            for (int j = 0; j < Tileset::numColorsPerPalette(); j++) {
+                int colorComponent = j * (256 / Tileset::numColorsPerPalette());
+                palette.append(qRgb(colorComponent, colorComponent, colorComponent));
             }
         }
         this->palettes.append(palette);
@@ -567,7 +668,7 @@ bool Tileset::savePalettes() {
     bool success = true;
     int numPalettes = qMin(this->palettePaths.length(), this->palettes.length());
     for (int i = 0; i < numPalettes; i++) {
-        if (!PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, 16))
+        if (!PaletteUtil::writeJASC(this->palettePaths.at(i), this->palettes.at(i).toVector(), 0, Tileset::numColorsPerPalette()))
             success = false;
     }
     return success;
@@ -575,19 +676,105 @@ bool Tileset::savePalettes() {
 
 bool Tileset::load() {
     bool success = true;
+    if (!loadPalettes()) success = false;
+    if (!loadTilesImage()) success = false;
     if (!loadMetatiles()) success = false;
     if (!loadMetatileAttributes()) success = false;
-    if (!loadTilesImage()) success = false;
-    if (!loadPalettes()) success = false;
     return success;
 }
 
 // Because metatile labels are global (and handled by the project) we don't save them here.
 bool Tileset::save() {
     bool success = true;
+    if (!savePalettes()) success = false;
+    if (!saveTilesImage()) success = false;
     if (!saveMetatiles()) success = false;
     if (!saveMetatileAttributes()) success = false;
-    if (!saveTilesImage()) success = false;
-    if (!savePalettes()) success = false;
     return success;
+}
+
+QString Tileset::stripPrefix(const QString &fullName) {
+    return QString(fullName).replace(projectConfig.getIdentifier(ProjectIdentifier::symbol_tilesets_prefix), "");
+}
+
+// Find which of the specified color IDs in 'searchColors' are not used by any of this tileset's metatiles.
+// The 'pairedTileset' may be used to get the tile images for any tiles that don't belong to this tileset.
+// If 'searchColors' is empty, it will for search for all unused colors.
+QSet<int> Tileset::getUnusedColorIds(int paletteId, const Tileset *pairedTileset, const QSet<int> &searchColors) const {
+    QSet<int> unusedColors = searchColors;
+    if (unusedColors.isEmpty()) {
+        // Search for all colors
+        for (int i = 0; i < Tileset::numColorsPerPalette(); i++) {
+            unusedColors.insert(i);
+        }
+    }
+    const Tileset *primaryTileset = this->is_secondary ? pairedTileset : this;
+    const Tileset *secondaryTileset = this->is_secondary ? this : pairedTileset;
+    QSet<uint16_t> seenTileIds;
+    for (const auto &metatile : m_metatiles)
+    for (const auto &tile : metatile->tiles) {
+        if (tile.palette != paletteId)
+            continue;
+
+        // Save time by ignoring tiles we've already inspected.
+        if (seenTileIds.contains(tile.tileId))
+            continue;
+        seenTileIds.insert(tile.tileId);
+
+        QImage image = getTileImage(tile.tileId, primaryTileset, secondaryTileset);
+        if (image.isNull() || image.sizeInBytes() < Tile::numPixels())
+            continue;
+
+        const uchar * pixels = image.constBits();
+        for (int i = 0; i < Tile::numPixels(); i++) {
+            auto it = unusedColors.constFind(pixels[i]);
+            if (it != unusedColors.constEnd()) {
+                unusedColors.erase(it);
+                if (unusedColors.isEmpty()) {
+                    return {};
+                }
+            }
+        }
+    }
+    return unusedColors;
+}
+
+// Returns the list of metatile IDs representing all the metatiles in this tileset that use the specified color ID.
+QList<uint16_t> Tileset::findMetatilesUsingColor(int paletteId, int colorId, const Tileset *pairedTileset) const {
+    const Tileset *primaryTileset = this->is_secondary ? pairedTileset : this;
+    const Tileset *secondaryTileset = this->is_secondary ? this : pairedTileset;
+    QSet<uint16_t> metatileIdSet;
+    QHash<uint16_t, bool> tileContainsColor;
+    uint16_t metatileIdBase = firstMetatileId();
+    for (int i = 0; i < m_metatiles.length(); i++) {
+        uint16_t metatileId = i + metatileIdBase;
+        for (const auto &tile : m_metatiles.at(i)->tiles) {
+            if (tile.palette != paletteId)
+                continue;
+
+            // Save time on tiles we've already inspected by getting the cached result.
+            auto tileIt = tileContainsColor.constFind(tile.tileId);
+            if (tileIt != tileContainsColor.constEnd()) {
+                if (tileIt.value()) metatileIdSet.insert(metatileId);
+                continue;
+            }
+            tileContainsColor[tile.tileId] = false;
+
+            QImage image = getTileImage(tile.tileId, primaryTileset, secondaryTileset);
+            if (image.isNull() || image.sizeInBytes() < Tile::numPixels())
+                continue;
+
+            const uchar * pixels = image.constBits();
+            for (int j = 0; j < Tile::numPixels(); j++) {
+                if (pixels[j] == colorId) {
+                    metatileIdSet.insert(metatileId);
+                    tileContainsColor[tile.tileId] = true;
+                    break;
+                }
+            }
+        }
+    }
+    QList<uint16_t> metatileIds(metatileIdSet.constBegin(), metatileIdSet.constEnd());
+    std::sort(metatileIds.begin(), metatileIds.end());
+    return metatileIds;
 }

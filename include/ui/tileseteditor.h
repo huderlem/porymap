@@ -2,12 +2,15 @@
 #define TILESETEDITOR_H
 
 #include <QMainWindow>
+#include <QPointer>
+#include <QKeyEvent>
 #include "project.h"
 #include "history.h"
 #include "paletteeditor.h"
 #include "tileseteditormetatileselector.h"
 #include "tileseteditortileselector.h"
 #include "metatilelayersitem.h"
+#include "metatileimageexporter.h"
 
 class NoScrollComboBox;
 class Layout;
@@ -18,6 +21,7 @@ class TilesetEditor;
 
 class MetatileHistoryItem {
 public:
+    MetatileHistoryItem() {};
     MetatileHistoryItem(uint16_t metatileId, Metatile *prevMetatile, Metatile *newMetatile, QString prevLabel, QString newLabel) {
         this->metatileId = metatileId;
         this->prevMetatile = prevMetatile;
@@ -25,15 +29,24 @@ public:
         this->prevLabel = prevLabel;
         this->newLabel = newLabel;
     }
+    MetatileHistoryItem(uint16_t metatileIdA, uint16_t metatileIdB) {
+        this->metatileId = metatileIdA;
+        this->swapMetatileId = metatileIdB;
+        this->isSwap = true;
+    }
     ~MetatileHistoryItem() {
         delete this->prevMetatile;
         delete this->newMetatile;
     }
-    uint16_t metatileId;
-    Metatile *prevMetatile;
-    Metatile *newMetatile;
+
+    uint16_t metatileId = 0;
+    Metatile *prevMetatile = nullptr;
+    Metatile *newMetatile = nullptr;
     QString prevLabel;
     QString newLabel;
+
+    uint16_t swapMetatileId = 0;
+    bool isSwap = false;
 };
 
 class TilesetEditor : public QMainWindow
@@ -53,27 +66,19 @@ public:
 
     QObjectList shortcutableObjects() const;
 
+    void setPaletteId(int paletteId);
+    int paletteId() const;
+
 public slots:
     void applyUserShortcuts();
     void onSelectedMetatileChanged(uint16_t);
 
 private slots:
     void onWindowActivated();
-    void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
-    void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
-    void onSelectedTilesChanged();
-    void onMetatileLayerTileChanged(int, int);
-    void onMetatileLayerSelectionChanged(QPoint, int, int);
+    void onMetatileLayerSelectionChanged(const QPoint&, const QSize&);
     void onPaletteEditorChangedPaletteColor();
-    void onPaletteEditorChangedPalette(int);
-
-    void on_spinBox_paletteSelector_valueChanged(int arg1);
-
-    void on_actionImport_Primary_Tiles_triggered();
-
-    void on_actionImport_Secondary_Tiles_triggered();
 
     void on_actionChange_Metatiles_Count_triggered();
 
@@ -89,23 +94,17 @@ private slots:
     void on_actionUndo_triggered();
     void on_actionRedo_triggered();
 
-    void on_lineEdit_metatileLabel_editingFinished();
-
-    void on_actionExport_Primary_Tiles_Image_triggered();
-    void on_actionExport_Secondary_Tiles_Image_triggered();
-    void on_actionExport_Primary_Metatiles_Image_triggered();
-    void on_actionExport_Secondary_Metatiles_Image_triggered();
-
-    void on_actionImport_Primary_Metatiles_triggered();
-    void on_actionImport_Secondary_Metatiles_triggered();
-
-    void on_copyButton_metatileLabel_clicked();
+    void on_copyButton_MetatileLabel_clicked();
 
     void on_actionCut_triggered();
     void on_actionCopy_triggered();
     void on_actionPaste_triggered();
     void on_horizontalSlider_MetatilesZoom_valueChanged(int value);
     void on_horizontalSlider_TilesZoom_valueChanged(int value);
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void closeEvent(QCloseEvent*) override;
 
 private:
     void initAttributesUi();
@@ -122,16 +121,18 @@ private:
     void drawSelectedTiles();
     void redrawTileSelector();
     void redrawMetatileSelector();
-    void importTilesetTiles(Tileset*, bool);
-    void importTilesetMetatiles(Tileset*, bool);
+    void importTilesetTiles(Tileset*);
+    void importAdvanceMapMetatiles(Tileset*);
+    void exportTilesImage(Tileset*);
+    void exportPorytilesLayerImages(Tileset*);
+    void exportMetatilesImage();
     void refresh();
     void commitMetatileLabel();
-    void closeEvent(QCloseEvent*);
     void countMetatileUsage();
     void countTileUsage();
     void copyMetatile(bool cut);
-    void pasteMetatile(const Metatile * toPaste, QString label);
-    bool replaceMetatile(uint16_t metatileId, const Metatile * src, QString label);
+    void pasteMetatile(const Metatile &toPaste, QString label);
+    bool replaceMetatile(uint16_t metatileId, const Metatile &src, QString label);
     void commitMetatileChange(Metatile * prevMetatile);
     void commitMetatileAndLabelChange(Metatile * prevMetatile, QString prevLabel);
     uint32_t attributeNameToValue(Metatile::Attr attribute, const QString &text, bool *ok);
@@ -142,24 +143,36 @@ private:
     void commitEncounterType();
     void commitTerrainType();
     void commitLayerType();
+    void commit(MetatileHistoryItem *item);
+    void updateEditHistoryActions();
     void setRawAttributesVisible(bool visible);
-    void setXFlip(bool enabled);
-    void setYFlip(bool enabled);
+    void refreshTileFlips();
+    void refreshPaletteId();
+    void paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly = false);
+    void setMetatileLayerOrientation(Qt::Orientation orientation);
+    void commitMetatileSwap(uint16_t metatileIdA, uint16_t metatileIdB);
+    bool swapMetatiles(uint16_t metatileIdA, uint16_t metatileIdB);
+    void applyMetatileSwapToLayouts(uint16_t metatileIdA, uint16_t metatileIdB);
+    void applyMetatileSwapsToLayouts();
+    void rebuildMetatilePropertiesFrame();
+    void addWidgetToMetatileProperties(QWidget *w, int *row, int rowSpan);
+    void updateLayerTileStatus();
+    void showTileStatus(const Tile &tile);
+    void showTileStatus(uint16_t tileId);
+    void updateMetatileStatus();
+    void showMetatileStatus(uint16_t metatileId);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
     TilesetEditorMetatileSelector *metatileSelector = nullptr;
     TilesetEditorTileSelector *tileSelector = nullptr;
     MetatileLayersItem *metatileLayersItem = nullptr;
-    PaletteEditor *paletteEditor = nullptr;
+    QPointer<PaletteEditor> paletteEditor = nullptr;
     Project *project = nullptr;
     Layout *layout = nullptr;
     Metatile *metatile = nullptr;
     Metatile *copiedMetatile = nullptr;
     QString copiedMetatileLabel;
-    int paletteId;
-    bool tileXFlip;
-    bool tileYFlip;
     bool hasUnsavedChanges;
     Tileset *primaryTileset = nullptr;
     Tileset *secondaryTileset = nullptr;
@@ -170,6 +183,9 @@ private:
     QGraphicsScene *metatileLayersScene = nullptr;
     bool lockSelection = false;
     QSet<uint16_t> metatileReloadQueue;
+    MetatileImageExporter::Settings *metatileImageExportSettings = nullptr;
+    QList<QPair<uint16_t,uint16_t>> metatileIdSwaps;
+    int numLayerViewRows;
 
     bool save();
 

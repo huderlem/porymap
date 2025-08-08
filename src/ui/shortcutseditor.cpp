@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QLabel>
+#include <QMenu>
 
 
 ShortcutsEditor::ShortcutsEditor(QWidget *parent) :
@@ -78,11 +79,43 @@ void ShortcutsEditor::resetShortcuts() {
     }
 }
 
+void ShortcutsEditor::parseObject(const QObject *object, QMap<const QObject*, QString> *objects_labels, QMap<const QObject*, QString> *objects_prefixes) {
+    auto menu = dynamic_cast<const QMenu*>(object);
+    if (menu) {
+        // If a menu is provided we'll use it to create prefixes for any of the menu's actions,
+        // and automatically insert its actions in the shortcut list (if they weren't present already).
+        // The prefixing assumes the provided object list is in inheritance order.
+        // These prefixes are important for differentiating actions that may have the same display text
+        // but appear in different menus.
+        for (const auto &action : menu->actions()) {
+            if (!menu->title().isEmpty()) {
+                auto prefix = QString("%1%2 > ")
+                                        .arg(objects_prefixes->value(menu->menuAction())) // If this is a sub-menu, it may itself have a prefix.
+                                        .arg(menu->title());
+                objects_prefixes->insert(action, prefix);
+            }
+            parseObject(action, objects_labels, objects_prefixes);
+        }
+    } else if (object && !object->objectName().isEmpty() && !object->objectName().startsWith("_q_")) {
+        QString label = getLabel(object);
+        if (!label.isEmpty()) {
+            objects_labels->insert(object, label);
+        }
+    }
+}
+
 void ShortcutsEditor::parseObjectList(const QObjectList &objectList) {
-    for (auto *object : objectList) {
-        const auto label = getLabel(object);
-        if (!label.isEmpty() && !object->objectName().isEmpty() && !object->objectName().startsWith("_q_"))
-            labels_objects.insert(label, object);
+    QMap<const QObject*, QString> objects_labels;
+    QMap<const QObject*, QString> objects_prefixes;
+    for (const auto &object : objectList) {
+        parseObject(object, &objects_labels, &objects_prefixes);
+    }
+
+    // Sort alphabetically by label
+    this->labels_objects.clear();
+    for (auto it = objects_labels.constBegin(); it != objects_labels.constEnd(); it++) {
+        QString fullLabel = objects_prefixes.value(it.key()) + it.value();
+        this->labels_objects.insert(fullLabel, it.key());
     }
 }
 
@@ -151,9 +184,12 @@ void ShortcutsEditor::checkForDuplicates(const QKeySequence &keySequence) {
     if (!sender_multiKeyEdit)
         return;
 
-    for (auto *sibling_multiKeyEdit : siblings(sender_multiKeyEdit))
-        if (sibling_multiKeyEdit->contains(keySequence))
+    for (auto *sibling_multiKeyEdit : siblings(sender_multiKeyEdit)) {
+        if (sibling_multiKeyEdit->contains(keySequence)) {
             promptUserOnDuplicateFound(sender_multiKeyEdit, sibling_multiKeyEdit);
+            break;
+        }
+    }
 }
 
 QList<MultiKeyEdit *> ShortcutsEditor::siblings(MultiKeyEdit *multiKeyEdit) const {
@@ -164,26 +200,25 @@ QList<MultiKeyEdit *> ShortcutsEditor::siblings(MultiKeyEdit *multiKeyEdit) cons
 
 void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyEdit *sibling) {
     const auto duplicateKeySequence = sender->keySequences().last();
-    const auto siblingLabel = getLabel(multiKeyEdits_objects.value(sibling));
-    const auto message = QString(
-            "Shortcut '%1' is already used by '%2', would you like to replace it?")
-            .arg(duplicateKeySequence.toString()).arg(siblingLabel);
+    const auto siblingLabel = this->labels_objects.key(multiKeyEdits_objects.value(sibling));
+    if (siblingLabel.isEmpty())
+        return;
+    const auto message = QString("Shortcut '%1' is already used by '%2', would you like to replace it?")
+                                    .arg(duplicateKeySequence.toString())
+                                    .arg(siblingLabel);
 
-    const auto result = QMessageBox::question(
-            this, QApplication::applicationName(), message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    // QKeySequenceEdit::keySequenceChanged fires when editing finishes on a QKeySequenceEdit,
+    // even if no change occurs. Displaying our question prompt will cause the edit to lose focus
+    // and fire another signal, which would cause another "duplicate shortcut" prompt to appear.
+    // For this reason we need to block their signals before the message is displayed.
+    const QSignalBlocker b_Sender(sender);
+    const QSignalBlocker b_Sibling(sibling);
 
-    if (result == QMessageBox::Yes)
-        removeKeySequence(duplicateKeySequence, sibling);
-    else
-        removeKeySequence(duplicateKeySequence, sender);
-    
-    activateWindow();
-}
-
-void ShortcutsEditor::removeKeySequence(const QKeySequence &keySequence, MultiKeyEdit *multiKeyEdit) {
-    multiKeyEdit->blockSignals(true);
-    multiKeyEdit->removeOne(keySequence);
-    multiKeyEdit->blockSignals(false);
+    if (QuestionMessage::show(message, this) == QMessageBox::Yes) {
+        sibling->removeOne(duplicateKeySequence);
+    } else {
+        sender->removeOne(duplicateKeySequence);
+    }
 }
 
 void ShortcutsEditor::dialogButtonClicked(QAbstractButton *button) {

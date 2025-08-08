@@ -40,6 +40,7 @@ private:
     QHash<MultiKeyEdit *, QPointer<const QObject>> multiKeyEdits_objects;
 
     void parseObjectList(const QObjectList &objectList);
+    void parseObject(const QObject *object, QMap<const QObject*, QString> *objects_labels, QMap<const QObject*, QString> *objects_prefixes);
     QString getLabel(const QObject *object) const;
     bool stringPropertyIsNotEmpty(const QObject *object, const char *name) const;
     void populateMainContainer();
@@ -48,7 +49,6 @@ private:
     void addNewMultiKeyEdit(const QObject *object, const QString &shortcutContext);
     QList<MultiKeyEdit *> siblings(MultiKeyEdit *multiKeyEdit) const;
     void promptUserOnDuplicateFound(MultiKeyEdit *current, MultiKeyEdit *sender);
-    void removeKeySequence(const QKeySequence &keySequence, MultiKeyEdit *multiKeyEdit);
     void saveShortcuts();
     void resetShortcuts();
 

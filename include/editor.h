@@ -67,8 +67,6 @@ public:
     bool setLayout(QString layoutName);
     void unsetMap();
 
-    Tileset *getCurrentMapPrimaryTileset();
-
     bool displayMap();
     bool displayLayout();
 
@@ -122,9 +120,10 @@ public:
     void updateEventPixmapItemZValue(EventPixmapItem *item);
     qreal getEventOpacity(const Event *event) const;
 
+    bool isMouseInMap() const;
     void setPlayerViewRect(const QRectF &rect);
-    void updateCursorRectPos(int x, int y);
-    void setCursorRectVisible(bool visible);
+    void setCursorRectPos(const QPoint &pos);
+    void updateCursorRectVisibility();
 
     void onEventDragged(Event *event, const QPoint &oldPosition, const QPoint &newPosition);
     void onEventReleased(Event *event, const QPoint &position);
@@ -171,7 +170,7 @@ public:
     void setEditMode(EditMode editMode);
     EditMode getEditMode() const { return this->editMode; }
 
-    bool getEditingLayout();
+    bool getEditingLayout() const;
 
     void setMapEditingButtonsEnabled(bool enabled);
 
@@ -208,7 +207,8 @@ public:
 
 public slots:
     void openMapScripts() const;
-    void openScript(const QString &scriptLabel) const;
+    bool openScript(const QString &scriptLabel) const;
+    bool openScriptInFile(const QString &scriptLabel, const QString &filepath) const;
     void openProjectInTextEditor() const;
     void maskNonVisibleConnectionTiles();
     void onBorderMetatilesChanged();
@@ -251,26 +251,26 @@ private:
     QString getMovementPermissionText(uint16_t collision, uint16_t elevation);
     QString getMetatileDisplayMessage(uint16_t metatileId);
     void setCollisionTabSpinBoxes(uint16_t collision, uint16_t elevation);
+    void adjustStraightPathPos(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item, QPoint *pos) const;
     static bool startDetachedProcess(const QString &command,
                                     const QString &workingDirectory = QString(),
                                     qint64 *pid = nullptr);
-
-private slots:
+    bool canPaintMetatiles() const;
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void onMapEndPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
+    void setStatusFromMapPos(const QPoint &pos);
+
+private slots:
     void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);
-    void setStraightPathCursorMode(QGraphicsSceneMouseEvent *event);
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
-    void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void setSelectedConnectionItem(ConnectionPixmapItem *connectionItem);
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();
     void onHoveredMetatileSelectionChanged(uint16_t);
     void onHoveredMetatileSelectionCleared();
-    void onHoveredMapMetatileChanged(const QPoint &pos);
-    void onHoveredMapMetatileCleared();
-    void onHoveredMapMovementPermissionChanged(int, int);
-    void onHoveredMapMovementPermissionCleared();
+    void onMapHoverEntered(const QPoint &pos);
+    void onMapHoverChanged(const QPoint &pos);
+    void onMapHoverCleared();
     void onSelectedMetatilesChanged();
     void onWheelZoom(int);
 
@@ -283,7 +283,6 @@ signals:
     void wildMonTableEdited();
     void currentMetatilesSelectionChanged();
     void mapRulerStatusChanged(const QString &);
-    void tilesetUpdated(QString);
     void gridToggled(bool);
     void editActionSet(EditAction newEditAction);
 };

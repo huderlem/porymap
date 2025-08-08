@@ -1,3 +1,4 @@
+#ifdef QT_NETWORK_LIB
 #include "network.h"
 #include "config.h"
 
@@ -148,3 +149,5 @@ void NetworkAccessManager::processReply(QNetworkReply * reply, NetworkReplyData 
 
     cacheEntry->data = data->m_body = reply->readAll();
 }
+
+#endif // QT_NETWORK_LIB

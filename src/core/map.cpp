@@ -4,6 +4,7 @@
 #include "scripting.h"
 #include "utility.h"
 #include "editcommands.h"
+#include "project.h"
 
 #include <QTime>
 #include <QPainter>
@@ -14,9 +15,6 @@
 Map::Map(QObject *parent) : QObject(parent)
 {
     m_editHistory = new QUndoStack(this);
-
-    m_scriptFileWatcher = new QFileSystemWatcher(this);
-    connect(m_scriptFileWatcher, &QFileSystemWatcher::fileChanged, this, &Map::invalidateScripts);
 
     resetEvents();
 
@@ -33,8 +31,6 @@ Map::Map(const Map &other, QObject *parent) : Map(parent) {
     *m_header = *other.m_header;
     m_layout = other.m_layout;
     m_isPersistedToFile = false;
-    m_metatileLayerOrder = other.m_metatileLayerOrder;
-    m_metatileLayerOpacity = other.m_metatileLayerOpacity;
 
     // Copy events
     for (auto i = other.m_events.constBegin(); i != other.m_events.constEnd(); i++) {
@@ -67,44 +63,28 @@ QString Map::mapConstantFromName(const QString &name) {
     return projectConfig.getIdentifier(ProjectIdentifier::define_map_prefix) + Util::toDefineCase(name);
 }
 
-int Map::getWidth() const {
-    return m_layout ? m_layout->getWidth() : 0;
-}
-
-int Map::getHeight() const {
-    return m_layout ? m_layout->getHeight() : 0;
-}
-
-int Map::getBorderWidth() const {
-    return m_layout ? m_layout->getBorderWidth() : 0;
-}
-
-int Map::getBorderHeight() const {
-    return m_layout ? m_layout->getBorderHeight() : 0;
-}
-
 // Get the portion of the map that can be rendered when rendered as a map connection.
 // Cardinal connections render the nearest segment of their map and within the bounds of the border draw distance,
 // Dive/Emerge connections are rendered normally within the bounds of their parent map.
 QRect Map::getConnectionRect(const QString &direction, Layout * fromLayout) const {
     int x = 0, y = 0;
-    int w = getWidth(), h = getHeight();
+    int w = pixelWidth(), h = pixelHeight();
 
-    QMargins viewDistance = Project::getMetatileViewDistance();
+    QMargins viewDistance = Project::getPixelViewDistance();
     if (direction == "up") {
         h = qMin(h, viewDistance.top());
-        y = getHeight() - h;
+        y = pixelHeight() - h;
     } else if (direction == "down") {
         h = qMin(h, viewDistance.bottom());
     } else if (direction == "left") {
         w = qMin(w, viewDistance.left());
-        x = getWidth() - w;
+        x = pixelWidth() - w;
     } else if (direction == "right") {
         w = qMin(w, viewDistance.right());
     } else if (MapConnection::isDiving(direction)) {
         if (fromLayout) {
-            w = qMin(w, fromLayout->getWidth());
-            h = qMin(h, fromLayout->getHeight());
+            w = qMin(w, fromLayout->pixelWidth());
+            h = qMin(h, fromLayout->pixelHeight());
         }
     } else {
         // Unknown direction
@@ -127,7 +107,7 @@ QPixmap Map::renderConnection(const QString &direction, Layout * fromLayout) {
         fromLayout = nullptr;
 
     QPixmap connectionPixmap = m_layout->render(true, fromLayout, bounds);
-    return connectionPixmap.copy(bounds.x() * 16, bounds.y() * 16, bounds.width() * 16, bounds.height() * 16);
+    return connectionPixmap.copy(bounds);
 }
 
 void Map::openScript(const QString &label) {
@@ -143,7 +123,12 @@ void Map::setSharedScriptsMap(const QString &sharedScriptsMap) {
 
 void Map::invalidateScripts() {
     m_scriptsLoaded = false;
-    m_scriptFileWatcher->removePaths(m_scriptFileWatcher->files());
+
+    // m_scriptFileWatcher is a QPointer so clearing it shouldn't be necessary,
+    // but it's possible that Map::getScriptLabels will be called before events are processed.
+    delete m_scriptFileWatcher;
+    m_scriptFileWatcher = nullptr;
+
     emit scriptsModified();
 }
 
@@ -158,14 +143,32 @@ QStringList Map::getScriptLabels(Event::Group group) {
                             .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
                             .arg(m_name)
                             .arg(error));
+
+            // Setting this flag here (and below) lets us skip some steps and logging if we already know it failed.
+            // Script labels may be re-requested often, so we don't want to fill the log with warnings.
             m_loggedScriptsFileError = true;
         }
 
-        if (!m_scriptFileWatcher->files().contains(scriptsFilepath) && !m_scriptFileWatcher->addPath(scriptsFilepath) && !m_loggedScriptsFileError) {
-            logWarn(QString("Failed to add scripts file '%1' to file watcher for %2.")
-                            .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
-                            .arg(m_name));
-            m_loggedScriptsFileError = true;
+        if (porymapConfig.monitorFiles && !m_loggedScriptsFileError) {
+            if (!m_scriptFileWatcher) {
+                // Only create the file watcher when it's first needed (even an empty QFileSystemWatcher will consume system resources).
+                // The other option would be for Porymap to have a single global QFileSystemWatcher, but that has complications of its own.
+                m_scriptFileWatcher = new QFileSystemWatcher(this);
+                connect(m_scriptFileWatcher, &QFileSystemWatcher::fileChanged, this, &Map::invalidateScripts);
+            }
+            // m_scriptFileWatcher can stil be nullptr here if the inotify limit was reached on Linux.
+            // Porymap isn't using enough resources in general for this to be a problem, but the user may have lowered the inotify limit.
+            if (!m_scriptFileWatcher) {
+                logWarn(QString("Failed to add scripts file '%1' to file watcher for %2: Reached system resource limit.")
+                                .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
+                                .arg(m_name));
+                m_loggedScriptsFileError = true;
+            } else if (!m_scriptFileWatcher->files().contains(scriptsFilepath) && !m_scriptFileWatcher->addPath(scriptsFilepath)) {
+                logWarn(QString("Failed to add scripts file '%1' to file watcher for %2.")
+                                .arg(Util::stripPrefix(scriptsFilepath, projectConfig.projectDir() + "/"))
+                                .arg(m_name));
+                m_loggedScriptsFileError = true;
+            }
         }
 
         m_scriptsLoaded = true;
@@ -278,12 +281,21 @@ int Map::getNumEvents(Event::Group group) const {
     if (group == Event::Group::None) {
         // Total number of events
         int numEvents = 0;
-        for (auto i = m_events.constBegin(); i != m_events.constEnd(); i++) {
-            numEvents += i.value().length();
+        for (auto it = m_events.constBegin(); it != m_events.constEnd(); it++) {
+            numEvents += it.value().length();
         }
         return numEvents;
     }
     return m_events[group].length();
+}
+
+bool Map::hasEvents() const {
+    for (auto it = m_events.constBegin(); it != m_events.constEnd(); it++) {
+        if (!it.value().isEmpty()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Map::removeEvent(Event *event) {

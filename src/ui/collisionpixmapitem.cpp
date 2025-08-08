@@ -2,52 +2,6 @@
 #include "editcommands.h"
 #include "metatile.h"
 
-void CollisionPixmapItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    if (pos != this->previousPos) {
-        this->previousPos = pos;
-        emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
-    }
-    if (this->settings->betterCursors && this->getEditsEnabled()) {
-        setCursor(this->settings->mapCursor);
-    }
-}
-
-void CollisionPixmapItem::hoverEnterEvent(QGraphicsSceneHoverEvent * event) {
-    this->has_mouse = true;
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
-}
-
-void CollisionPixmapItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    emit this->hoveredMapMovementPermissionCleared();
-    if (this->settings->betterCursors && this->getEditsEnabled()){
-        unsetCursor();
-    }
-    this->has_mouse = false;
-}
-
-void CollisionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    this->paint_tile_initial_x = this->straight_path_initial_x = pos.x();
-    this->paint_tile_initial_y = this->straight_path_initial_y = pos.y();
-    emit mouseEvent(event, this);
-}
-
-void CollisionPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-    if (pos != this->previousPos) {
-        this->previousPos = pos;
-        emit this->hoveredMapMovementPermissionChanged(pos.x(), pos.y());
-    }
-    emit mouseEvent(event, this);
-}
-
-void CollisionPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    this->lockedAxis = CollisionPixmapItem::Axis::None;
-    emit mouseEvent(event, this);
-}
-
 void CollisionPixmapItem::draw(bool ignoreCache) {
     if (this->layout) {
         this->layout->setCollisionItem(this);

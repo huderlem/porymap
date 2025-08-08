@@ -10,7 +10,6 @@ public:
     Settings();
     bool smartPathsEnabled;
     bool betterCursors;
-    QCursor mapCursor;
     bool playerViewRectEnabled;
     bool cursorTileRectEnabled;
 };

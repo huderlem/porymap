@@ -30,17 +30,21 @@ public:
     QString metatile_attrs_label;
     QString metatile_attrs_path;
     QString tilesImagePath;
-    QImage tilesImage;
     QStringList palettePaths;
 
-    QList<QImage> tiles;
     QHash<int, QString> metatileLabels;
     QList<QList<QRgb>> palettes;
     QList<QList<QRgb>> palettePreviews;
 
+    static QString stripPrefix(const QString &fullName);
+    static Tileset* getPaletteTileset(int, Tileset*, Tileset*);
+    static const Tileset* getPaletteTileset(int, const Tileset*, const Tileset*);
     static Tileset* getMetatileTileset(int, Tileset*, Tileset*);
+    static const Tileset* getMetatileTileset(int, const Tileset*, const Tileset*);
     static Tileset* getTileTileset(int, Tileset*, Tileset*);
+    static const Tileset* getTileTileset(int, const Tileset*, const Tileset*);
     static Metatile* getMetatile(int, Tileset*, Tileset*);
+    static const Metatile* getMetatile(int, const Tileset*, const Tileset*);
     static Tileset* getMetatileLabelTileset(int, Tileset*, Tileset*);
     static QString getMetatileLabel(int, Tileset *, Tileset *);
     static QString getOwnedMetatileLabel(int, Tileset *, Tileset *);
@@ -48,9 +52,9 @@ public:
     static bool setMetatileLabel(int, QString, Tileset *, Tileset *);
     QString getMetatileLabelPrefix();
     static QString getMetatileLabelPrefix(const QString &name);
-    static QList<QList<QRgb>> getBlockPalettes(Tileset*, Tileset*, bool useTruePalettes = false);
-    static QList<QRgb> getPalette(int, Tileset*, Tileset*, bool useTruePalettes = false);
-    static bool metatileIsValid(uint16_t metatileId, Tileset *, Tileset *);
+    static QList<QList<QRgb>> getBlockPalettes(const Tileset*, const Tileset*, bool useTruePalettes = false);
+    static QList<QRgb> getPalette(int, const Tileset*, const Tileset*, bool useTruePalettes = false);
+    static bool metatileIsValid(uint16_t metatileId, const Tileset*, const Tileset*);
     static QHash<int, QString> getHeaderMemberMap(bool usingAsm);
     static QString getExpectedDir(QString tilesetName, bool isSecondary);
     QString getExpectedDir();
@@ -76,15 +80,38 @@ public:
     void setMetatiles(const QList<Metatile*> &metatiles);
     void addMetatile(Metatile* metatile);
 
-    QList<Metatile*> metatiles() const { return m_metatiles; }
-    Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
+    const QList<Metatile*> &metatiles() const { return m_metatiles; }
+    const Metatile* metatileAt(unsigned int i) const { return m_metatiles.at(i); }
 
     void clearMetatiles();
     void resizeMetatiles(int newNumMetatiles);
     int numMetatiles() const { return m_metatiles.length(); }
+    int maxMetatiles() const;
+
+    uint16_t firstMetatileId() const;
+    uint16_t lastMetatileId() const;
+    bool containsMetatileId(uint16_t metatileId) const { return metatileId >= firstMetatileId() && metatileId <= lastMetatileId(); }
+
+    uint16_t firstTileId() const;
+    uint16_t lastTileId() const;
+    bool containsTileId(uint16_t tileId) const { return tileId >= firstTileId() && tileId <= lastTileId(); }
+
+    int numTiles() const { return m_tiles.length(); }
+    int maxTiles() const;
+
+    QImage tileImage(uint16_t tileId) const { return m_tiles.value(Tile::getIndexInTileset(tileId)); }
+
+    QSet<int> getUnusedColorIds(int paletteId, const Tileset *pairedTileset, const QSet<int> &searchColors = {}) const;
+    QList<uint16_t> findMetatilesUsingColor(int paletteId, int colorId, const Tileset *pairedTileset) const;
+
+    static constexpr int maxPalettes() { return 16; }
+    static constexpr int numColorsPerPalette() { return 16; }
 
 private:
     QList<Metatile*> m_metatiles;
+
+    QList<QImage> m_tiles;
+    QImage m_tilesImage;
     bool m_hasUnsavedTilesImage = false;
 };
 

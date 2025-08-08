@@ -46,7 +46,7 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
 
-    m_scene = new QGraphicsScene(this);
+    m_scene = new CheckeredBgScene(QSize(8,8), this);
     m_preview = m_scene->addPixmap(QPixmap());
     ui->graphicsView_Preview->setScene(m_scene);
 
@@ -333,8 +333,8 @@ QGifImage* MapImageExporter::createTimelapseGifImage(QProgressDialog *progress) 
             if (currentHistoryAppliesToFrame(step.historyStack) || step.historyStack->index() == step.initialStackIndex) {
                 // Either this is relevant edit history, or it's the final frame (which is always rendered). Record the size of the map at this point.
                 QMargins margins = getMargins(m_map);
-                canvasSize = canvasSize.expandedTo(QSize(m_layout->getWidth() * 16 + margins.left() + margins.right(),
-                                                         m_layout->getHeight() * 16 + margins.top() + margins.bottom()));
+                canvasSize = canvasSize.expandedTo(QSize(m_layout->pixelWidth() + margins.left() + margins.right(),
+                                                         m_layout->pixelHeight() + margins.top() + margins.bottom()));
             }
             if (step.historyStack->canUndo()){
                 step.historyStack->undo();
@@ -434,8 +434,8 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
             if (!connection->isCardinal()) continue;
             Map *connectedMap = connection->targetMap();
             if (!connectedMap) continue;
-            QPoint pos = connection->relativePos();
-            unvisited.append(StitchedMap{cur.x + (pos.x() * 16), cur.y + (pos.y() * 16), connectedMap});
+            QPoint pos = connection->relativePixelPos();
+            unvisited.append(StitchedMap{cur.x + pos.x(), cur.y + pos.y(), connectedMap});
         }
     }
     if (stitchedMaps.isEmpty())
@@ -447,7 +447,7 @@ QPixmap MapImageExporter::getStitchedImage(QProgressDialog *progress) {
     // Determine the overall dimensions of the stitched maps.
     QRect dimensions = QRect(0, 0, m_map->getWidth(), m_map->getHeight()) + getMargins(m_map);
     for (const StitchedMap &map : stitchedMaps) {
-        dimensions |= (QRect(map.x, map.y, map.map->getWidth() * 16, map.map->getHeight() * 16) + getMargins(map.map));
+        dimensions |= (QRect(map.x, map.y, map.map->pixelWidth(), map.map->pixelHeight()) + getMargins(map.map));
     }
 
     QPixmap stitchedPixmap(dimensions.width(), dimensions.height());
@@ -602,7 +602,7 @@ QPixmap MapImageExporter::getFormattedMapPixmap() {
 QMargins MapImageExporter::getMargins(const Map *map) {
     QMargins margins;
     if (m_settings.showBorder) {
-        margins = m_project->getMetatileViewDistance() * 16;
+        margins = m_project->getPixelViewDistance();
     } else if (map && connectionsEnabled()) {
         for (const auto &connection : map->getConnections()) {
             const QString dir = connection->direction();
@@ -612,10 +612,10 @@ QMargins MapImageExporter::getMargins(const Map *map) {
             if (!targetMap) continue;
 
             QRect rect = targetMap->getConnectionRect(dir);
-            if (dir == "up") margins.setTop(rect.height() * 16);
-            else if (dir == "down") margins.setBottom(rect.height() * 16);
-            else if (dir == "left") margins.setLeft(rect.width() * 16);
-            else if (dir == "right") margins.setRight(rect.width() * 16);
+            if (dir == "up") margins.setTop(rect.height());
+            else if (dir == "down") margins.setBottom(rect.height());
+            else if (dir == "left") margins.setLeft(rect.width());
+            else if (dir == "right") margins.setRight(rect.width());
         }
     }
     if (m_settings.showGrid) {
@@ -652,7 +652,7 @@ void MapImageExporter::paintBorder(QPainter *painter, Layout *layout) {
          // Skip border painting if it would be fully covered by the rest of the map
         if (layout->isWithinBounds(QRect(x, y, layout->getBorderWidth(), layout->getBorderHeight())))
             continue;
-        painter->drawPixmap(x * 16, y * 16, layout->border_pixmap);
+        painter->drawPixmap(x * Metatile::pixelWidth(), y * Metatile::pixelHeight(), layout->border_pixmap);
     }
 
     painter->restore();
@@ -665,7 +665,7 @@ void MapImageExporter::paintConnections(QPainter *painter, const Map *map) {
     for (const auto &connection : map->getConnections()) {
         if (!m_settings.showConnections.contains(connection->direction()))
             continue;
-        painter->drawImage(connection->relativePos(true) * 16, connection->render().toImage());
+        painter->drawImage(connection->relativePixelPos(true), connection->render().toImage());
     }
 }
 
@@ -693,12 +693,12 @@ void MapImageExporter::paintGrid(QPainter *painter, const Layout *layout) {
     if (!m_settings.showGrid)
         return;
 
-    int w = layout->getWidth() * 16;
-    int h = layout->getHeight() * 16;
-    for (int x = 0; x <= w; x += 16) {
+    int w = layout->pixelWidth();
+    int h = layout->pixelHeight();
+    for (int x = 0; x <= w; x += Metatile::pixelWidth()) {
         painter->drawLine(x, 0, x, h);
     }
-    for (int y = 0; y <= h; y += 16) {
+    for (int y = 0; y <= h; y += Metatile::pixelHeight()) {
         painter->drawLine(0, y, w, y);
     }
 }
