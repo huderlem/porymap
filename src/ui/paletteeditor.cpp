@@ -283,4 +283,13 @@ void PaletteEditor::closeEvent(QCloseEvent*) {
         saveGeometry(),
         saveState()
     );
+
+    // Opening the color search window then closing the Palette Editor sets
+    // focus to the main editor window instead of the parent (Tileset Editor).
+    // Make sure the parent is active when we close.
+    auto p = dynamic_cast<QWidget*>(parent());
+    if (p && p->isVisible()) {
+        p->raise();
+        p->activateWindow();
+    }
 }
