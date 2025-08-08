@@ -1,6 +1,8 @@
 #ifndef UPDATEPROMOTER_H
 #define UPDATEPROMOTER_H
 
+#ifdef QT_NETWORK_LIB
+
 #include "network.h"
 
 #include <QDialog>
@@ -46,5 +48,7 @@ private slots:
 signals:
     void changedPreferences();
 };
+
+#endif // QT_NETWORK_LIB
 
 #endif // UPDATEPROMOTER_H

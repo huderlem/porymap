@@ -1,8 +1,10 @@
+#if __has_include(<QQmlEngine>)
 #include <QQmlEngine>
 
 #include "scripting.h"
 #include "log.h"
 #include "config.h"
+#include "mainwindow.h"
 
 const QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
@@ -422,3 +424,6 @@ const QImage * Scripting::getImage(const QString &inputFilepath, bool useCache) 
     instance->imageCache.insert(inputFilepath, image);
     return image;
 }
+
+
+#endif // __has_include(<QQmlEngine>)

@@ -4,12 +4,22 @@
 #
 #-------------------------------------------------
 
-QT       += core gui qml network
+QT       += core gui
 
 qtHaveModule(charts) {
     QT += charts
 } else {
     warning("Qt module 'charts' not found, disabling chart features.")
+}
+qtHaveModule(qml) {
+    QT += qml
+} else {
+    warning("Qt module 'qml' not found, disabling plug-in features.")
+}
+qtHaveModule(network) {
+    QT += network
+} else {
+    warning("Qt module 'network' not found, disabling network features.")
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

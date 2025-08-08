@@ -1,11 +1,9 @@
+#ifdef QT_QML_LIB
+#include "scriptutility.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "scripting.h"
 #include "config.h"
-
-ScriptUtility::ScriptUtility(MainWindow *mainWindow) {
-    this->window = mainWindow;
-}
 
 ScriptUtility::~ScriptUtility() {
     if (window && window->ui && window->ui->menuTools) {
@@ -318,3 +316,5 @@ bool ScriptUtility::isPrimaryTileset(QString tilesetName) {
 bool ScriptUtility::isSecondaryTileset(QString tilesetName) {
     return getSecondaryTilesetNames().contains(tilesetName);
 }
+
+#endif // QT_QML_LIB

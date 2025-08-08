@@ -1,6 +1,8 @@
+#ifdef QT_QML_LIB
 #include "mapview.h"
 #include "scripting.h"
 #include "imageproviders.h"
+#include "editor.h"
 
 void MapView::updateScene() {
     if (this->scene()) {
@@ -300,3 +302,5 @@ void MapView::addMetatileImage(int x, int y, int metatileId, bool setTransparenc
     if (this->getOverlay(layer)->addImage(x, y, image))
         this->updateScene();
 }
+
+#endif // QT_QML_LIB

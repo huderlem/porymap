@@ -2,14 +2,24 @@
 #ifndef SCRIPTUTILITY_H
 #define SCRIPTUTILITY_H
 
-#include "mainwindow.h"
+#if __has_include(<QJSValue>)
+#include <QJSValue>
+#endif
+
+#ifdef QT_QML_LIB
+
+#include <QAction>
+#include <QMessageBox>
+#include <QSet>
+#include <QTimer>
+
+class MainWindow;
 
 class ScriptUtility : public QObject
 {
     Q_OBJECT
-
 public:
-    ScriptUtility(MainWindow *mainWindow);
+    ScriptUtility(MainWindow *mainWindow) : window(mainWindow) {}
     ~ScriptUtility();
 
     QString getActionFunctionName(int actionIndex);
@@ -68,5 +78,7 @@ private:
     QSet<QTimer *> activeTimers;
     QHash<int, QString> actionMap;
 };
+
+#endif // QT_QML_LIB
 
 #endif // SCRIPTUTILITY_H

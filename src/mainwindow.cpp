@@ -54,6 +54,9 @@
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 #define RELEASE_PLATFORM
 #endif
+#if defined(QT_NETWORK_LIB) && defined(RELEASE_PLATFORM)
+#define USE_UPDATE_PROMOTER
+#endif
 
 
 
@@ -72,7 +75,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     logInit();
-    logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
+    logInfo(QString("Launching Porymap v%1 (%2)").arg(QCoreApplication::applicationVersion()).arg(QStringLiteral(PORYMAP_LATEST_COMMIT)));
+    logInfo(QString("Using Qt v%2 (%3)").arg(QStringLiteral(QT_VERSION_STR)).arg(QSysInfo::buildCpuArchitecture()));
 }
 
 void MainWindow::initialize() {
@@ -155,13 +159,32 @@ void MainWindow::initWindow() {
     this->initMapList();
     this->initShortcuts();
 
-#ifndef RELEASE_PLATFORM
+    QStringList missingModules;
+
+#ifndef USE_UPDATE_PROMOTER
     ui->actionCheck_for_Updates->setVisible(false);
+#ifdef RELEASE_PLATFORM
+    // Only report the network module missing if we would
+    // have otherwise used it (we don't on non-release platforms).
+    missingModules.append(" 'network'");
+#endif
 #endif
 
 #ifndef QT_CHARTS_LIB
     ui->pushButton_SummaryChart->setVisible(false);
+    missingModules.append(" 'charts'");
 #endif
+
+#ifndef QT_QML_LIB
+    ui->actionCustom_Scripts->setVisible(false);
+    missingModules.append(" 'qml'");
+#endif
+
+    if (!missingModules.isEmpty()) {
+        logWarn(QString("Qt module%1%2 not found. Some features will be disabled.")
+                            .arg(missingModules.length() > 1 ? "s" : "")
+                            .arg(missingModules.join(",")));
+    }
 
     setWindowDisabled(true);
 }
@@ -332,7 +355,7 @@ void MainWindow::on_actionCheck_for_Updates_triggered() {
     checkForUpdates(true);
 }
 
-#ifdef RELEASE_PLATFORM
+#ifdef USE_UPDATE_PROMOTER
 void MainWindow::checkForUpdates(bool requestedByUser) {
     if (!this->networkAccessManager)
         this->networkAccessManager = new NetworkAccessManager(this);
@@ -2285,21 +2308,29 @@ void MainWindow::initShortcutsEditor() {
 void MainWindow::connectSubEditorsToShortcutsEditor() {
     /* Initialize sub-editors so that their children are added to MainWindow's object tree and will
      * be returned by shortcutableObjects() to be passed to ShortcutsEditor. */
-    if (!tilesetEditor)
+    if (!this->tilesetEditor) {
         initTilesetEditor();
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            tilesetEditor, &TilesetEditor::applyUserShortcuts);
+    }
+    if (this->tilesetEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->tilesetEditor, &TilesetEditor::applyUserShortcuts);
+    }
 
-    if (!regionMapEditor)
+    if (!this->regionMapEditor){
         initRegionMapEditor(true);
-    if (regionMapEditor)
-        connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
+    if (this->regionMapEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
 
-    if (!customScriptsEditor)
+    if (!this->customScriptsEditor) {
         initCustomScriptsEditor();
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
+    }
+    if (this->customScriptsEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
+    }
 }
 
 void MainWindow::resetMapViewScale() {
@@ -2948,8 +2979,10 @@ void MainWindow::on_actionPreferences_triggered() {
 void MainWindow::togglePreferenceSpecificUi() {
     ui->actionOpen_Project_in_Text_Editor->setEnabled(!porymapConfig.textEditorOpenFolder.isEmpty());
 
+#ifdef USE_UPDATE_PROMOTER
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();
+#endif
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {
@@ -2994,16 +3027,20 @@ void MainWindow::onWarpBehaviorWarningClicked() {
 }
 
 void MainWindow::on_actionCustom_Scripts_triggered() {
-    if (!this->customScriptsEditor)
+    if (!this->customScriptsEditor) {
         initCustomScriptsEditor();
-
-    Util::show(this->customScriptsEditor);
+    }
+    if (this->customScriptsEditor) {
+        Util::show(this->customScriptsEditor);
+    }
 }
 
 void MainWindow::initCustomScriptsEditor() {
+#ifdef QT_QML_LIB
     this->customScriptsEditor = new CustomScriptsEditor(this);
     connect(this->customScriptsEditor, &CustomScriptsEditor::reloadScriptEngine,
             this, &MainWindow::reloadScriptEngine);
+#endif
 }
 
 void MainWindow::reloadScriptEngine() {

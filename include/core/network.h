@@ -26,10 +26,14 @@
     });
 */
 
+#if __has_include(<QNetworkAccessManager>)
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QDateTime>
+#endif
+
+#ifdef QT_NETWORK_LIB
 
 class NetworkReplyData : public QObject
 {
@@ -83,5 +87,7 @@ private:
     void processReply(QNetworkReply * reply, NetworkReplyData * data);
     const QNetworkRequest getRequest(const QUrl &url);
 };
+
+#endif // QT_NETWORK_LIB
 
 #endif // NETWORK_H
