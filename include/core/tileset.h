@@ -94,7 +94,7 @@ public:
 
     uint16_t firstTileId() const;
     uint16_t lastTileId() const;
-    bool containsTileId(uint16_t tileId) const { return tileId > firstTileId() && tileId <= lastTileId(); }
+    bool containsTileId(uint16_t tileId) const { return tileId >= firstTileId() && tileId <= lastTileId(); }
 
     int numTiles() const { return m_tiles.length(); }
     int maxTiles() const;

@@ -1234,17 +1234,26 @@ void TilesetEditor::countMetatileUsage() {
 }
 
 void TilesetEditor::countTileUsage() {
-    // check primary tiles
     this->tileSelector->usedTiles.resize(Project::getNumTilesTotal());
     this->tileSelector->usedTiles.fill(0);
 
     auto countTilesetTileUsage = [this](Tileset *searchTileset) {
         // Count usage of our search tileset's tiles (in itself, and in any tilesets it gets paired with).
         QSet<QString> tilesetNames = this->project->getPairedTilesetLabels(searchTileset);
-        tilesetNames.insert(searchTileset->name);
+        QSet<Tileset*> tilesets;
+
+        // For the currently-loaded tilesets, make sure we use the Tileset Editor's versions
+        // (which may contain unsaved changes) and not the versions from the project.
+        tilesetNames.remove(this->primaryTileset->name);
+        tilesetNames.remove(this->secondaryTileset->name);
+        tilesets.insert(this->primaryTileset);
+        tilesets.insert(this->secondaryTileset);
+
         for (const auto &tilesetName : tilesetNames) {
             Tileset *tileset = this->project->getTileset(tilesetName);
-            if (!tileset) continue;
+            if (tileset) tilesets.insert(tileset);
+        }
+        for (const auto &tileset : tilesets) {
             for (const auto &metatile : tileset->metatiles()) {
                 for (const auto &tile : metatile->tiles) {
                     if (searchTileset->containsTileId(tile.tileId)) {
