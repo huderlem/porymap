@@ -51,10 +51,11 @@
 
 // We only publish release binaries for Windows and macOS.
 // This is relevant for the update promoter, which alerts users of a new release.
-#ifdef QT_NETWORK_LIB
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 #define RELEASE_PLATFORM
 #endif
+#if defined(QT_NETWORK_LIB) && defined(RELEASE_PLATFORM)
+#define USE_UPDATE_PROMOTER
 #endif
 
 
@@ -160,11 +161,13 @@ void MainWindow::initWindow() {
 
     QStringList missingModules;
 
-#ifndef RELEASE_PLATFORM
+#ifndef USE_UPDATE_PROMOTER
     ui->actionCheck_for_Updates->setVisible(false);
-#endif
-#ifndef QT_NETWORK_LIB
+#ifdef RELEASE_PLATFORM
+    // Only report the network module missing if we would
+    // have otherwise used it (we don't on non-release platforms).
     missingModules.append(" 'network'");
+#endif
 #endif
 
 #ifndef QT_CHARTS_LIB
@@ -352,7 +355,7 @@ void MainWindow::on_actionCheck_for_Updates_triggered() {
     checkForUpdates(true);
 }
 
-#ifdef RELEASE_PLATFORM
+#ifdef USE_UPDATE_PROMOTER
 void MainWindow::checkForUpdates(bool requestedByUser) {
     if (!this->networkAccessManager)
         this->networkAccessManager = new NetworkAccessManager(this);
@@ -2976,7 +2979,7 @@ void MainWindow::on_actionPreferences_triggered() {
 void MainWindow::togglePreferenceSpecificUi() {
     ui->actionOpen_Project_in_Text_Editor->setEnabled(!porymapConfig.textEditorOpenFolder.isEmpty());
 
-#ifdef QT_NETWORK_LIB
+#ifdef USE_UPDATE_PROMOTER
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();
 #endif
