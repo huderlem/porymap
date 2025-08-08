@@ -75,7 +75,6 @@ public slots:
 
 private slots:
     void onWindowActivated();
-    void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
     void onHoveredTileCleared();
     void onMetatileLayerSelectionChanged(const QPoint&, const QSize&);
@@ -160,6 +159,8 @@ private:
     void updateLayerTileStatus();
     void showTileStatus(const Tile &tile);
     void showTileStatus(uint16_t tileId);
+    void updateMetatileStatus();
+    void showMetatileStatus(uint16_t metatileId);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;

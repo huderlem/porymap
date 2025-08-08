@@ -213,7 +213,7 @@ void TilesetEditor::setRawAttributesVisible(bool visible) {
 void TilesetEditor::initMetatileSelector()
 {
     this->metatileSelector = new TilesetEditorMetatileSelector(projectConfig.metatileSelectorWidth, this->primaryTileset, this->secondaryTileset, this->layout);
-    connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,  this, &TilesetEditor::onHoveredMetatileChanged);
+    connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileChanged,  this, &TilesetEditor::showMetatileStatus);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::hoveredMetatileCleared,  this, &TilesetEditor::onHoveredMetatileCleared);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::selectedMetatileChanged, this, &TilesetEditor::onSelectedMetatileChanged);
     connect(this->metatileSelector, &TilesetEditorMetatileSelector::swapRequested, this, &TilesetEditor::commitMetatileSwap);
@@ -473,7 +473,13 @@ void TilesetEditor::drawSelectedTiles() {
     this->ui->graphicsView_selectedTile->setSceneRect(0, 0, size.width(), size.height());
 }
 
-void TilesetEditor::onHoveredMetatileChanged(uint16_t metatileId) {
+void TilesetEditor::updateMetatileStatus() {
+    if (this->metatileSelector->hasCursor()) {
+        showMetatileStatus(this->metatileSelector->metatileIdUnderCursor());
+    }
+}
+
+void TilesetEditor::showMetatileStatus(uint16_t metatileId) {
     QString label = Tileset::getMetatileLabel(metatileId, this->primaryTileset, this->secondaryTileset);
     QString message = QString("Metatile: %1").arg(Metatile::getMetatileIdString(metatileId));
     if (label.size() != 0) {
@@ -959,6 +965,7 @@ bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile &src, QS
     *this->metatile = src;
     this->metatileSelector->select(metatileId);
     this->metatileSelector->drawMetatile(metatileId);
+    updateMetatileStatus();
     this->metatileLayersItem->draw();
     updateLayerTileStatus();
     return true;

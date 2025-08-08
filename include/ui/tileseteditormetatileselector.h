@@ -26,6 +26,9 @@ public:
     void removeFromSwapSelection(uint16_t metatileId);
     void clearSwapSelection();
 
+    bool hasCursor() const { return this->prevCellPos != QPoint(-1,-1); }
+    uint16_t metatileIdUnderCursor() const { return this->lastHoveredMetatileId; }
+
     QVector<uint16_t> usedMetatiles;
     bool selectorShowUnused = false;
     bool selectorShowCounts = false;
