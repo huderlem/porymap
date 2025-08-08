@@ -12,12 +12,14 @@ public:
     MetatileLayersItem(Metatile *metatile,
                        Tileset *primaryTileset,
                        Tileset *secondaryTileset,
-                       Qt::Orientation orientation = Qt::Horizontal);
-    void draw();
+                       Qt::Orientation orientation = Qt::Vertical);
+
+    void draw() override;
     void setTilesets(Tileset*, Tileset*);
     void setMetatile(Metatile*);
-    void clearLastModifiedCoords();
-    void clearLastHoveredCoords();
+
+    bool hasCursor() const { return this->cursorCellPos != QPoint(-1,-1); }
+    Tile tileUnderCursor() const;
 
     QPoint tileIndexToPos(int index) const { return this->tilePositions.value(index); }
     int posToTileIndex(const QPoint &pos) const { return this->tilePositions.indexOf(pos); }
@@ -31,14 +33,14 @@ private:
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     Qt::Orientation orientation;
-    QPoint prevChangedPos;
-    QPoint prevHoveredPos;
+
+    QPoint cursorCellPos = QPoint(-1,-1);
 
     QList<QPoint> tilePositions;
 
     QPoint getBoundedPos(const QPointF &);
     void updateSelection();
-    void hover(const QPoint &pos);
+    bool setCursorCellPos(const QPoint &pos);
 signals:
     void tileChanged(const QPoint &pos);
     void paletteChanged(const QPoint &pos);
@@ -46,11 +48,11 @@ signals:
     void hoveredTileChanged(const Tile &tile);
     void hoveredTileCleared();
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
 };
 
 #endif // METATILELAYERSITEM_H

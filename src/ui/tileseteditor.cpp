@@ -314,7 +314,7 @@ void TilesetEditor::initMetatileLayersItem() {
     connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged, [this](const QPoint &pos) { paintSelectedLayerTiles(pos); });
     connect(this->metatileLayersItem, &MetatileLayersItem::paletteChanged, [this](const QPoint &pos) { paintSelectedLayerTiles(pos, true); });
     connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged, this, &TilesetEditor::onMetatileLayerSelectionChanged);
-    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileChanged, [this](const Tile &tile) { onHoveredTileChanged(tile); });
+    connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileChanged, [this](const Tile &tile) { showTileStatus(tile); });
     connect(this->metatileLayersItem, &MetatileLayersItem::hoveredTileCleared, this, &TilesetEditor::onHoveredTileCleared);
 
     bool showGrid = porymapConfig.showTilesetEditorLayerGrid;
@@ -329,7 +329,7 @@ void TilesetEditor::initMetatileLayersItem() {
 void TilesetEditor::initTileSelector() {
     this->tileSelector = new TilesetEditorTileSelector(this->primaryTileset, this->secondaryTileset);
     connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileChanged, [this](uint16_t tileId) {
-        onHoveredTileChanged(tileId);
+        showTileStatus(tileId);
     });
     connect(this->tileSelector, &TilesetEditorTileSelector::hoveredTileCleared, this, &TilesetEditor::onHoveredTileCleared);
     connect(this->tileSelector, &TilesetEditorTileSelector::selectedTilesChanged, this, &TilesetEditor::drawSelectedTiles);
@@ -499,7 +499,6 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
     }
 
     this->metatileLayersItem->setMetatile(metatile);
-    this->metatileLayersItem->draw();
 
     MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset);
     this->ui->lineEdit_MetatileLabel->setText(labels.owned);
@@ -512,7 +511,13 @@ void TilesetEditor::queueMetatileReload(uint16_t metatileId) {
     this->metatileReloadQueue.insert(metatileId);
 }
 
-void TilesetEditor::onHoveredTileChanged(const Tile &tile) {
+void TilesetEditor::updateLayerTileStatus() {
+    if (this->metatileLayersItem->hasCursor()) {
+        showTileStatus(this->metatileLayersItem->tileUnderCursor());
+    }
+}
+
+void TilesetEditor::showTileStatus(const Tile &tile) {
     this->ui->statusbar->showMessage(QString("Tile: %1, Palette: %2%3%4")
                                         .arg(Util::toHexString(tile.tileId, 3))
                                         .arg(QString::number(tile.palette))
@@ -521,7 +526,7 @@ void TilesetEditor::onHoveredTileChanged(const Tile &tile) {
                                     );
 }
 
-void TilesetEditor::onHoveredTileChanged(uint16_t tileId) {
+void TilesetEditor::showTileStatus(uint16_t tileId) {
     this->ui->statusbar->showMessage(QString("Tile: %1").arg(Util::toHexString(tileId, 3)));
 }
 
@@ -570,6 +575,7 @@ void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly)
 
     this->metatileSelector->drawSelectedMetatile();
     this->metatileLayersItem->draw();
+    updateLayerTileStatus();
     this->tileSelector->draw();
     this->commitMetatileChange(prevMetatile);
 }
@@ -589,7 +595,6 @@ void TilesetEditor::onMetatileLayerSelectionChanged(const QPoint &selectionOrigi
         this->tileSelector->highlight(tiles[0].tileId);
         this->redrawTileSelector();
     }
-    this->metatileLayersItem->clearLastModifiedCoords();
 }
 
 void TilesetEditor::setPaletteId(int paletteId) {
@@ -606,13 +611,11 @@ void TilesetEditor::refreshPaletteId() {
     if (this->paletteEditor) {
         this->paletteEditor->setPaletteId(paletteId());
     }
-    this->metatileLayersItem->clearLastModifiedCoords();
 }
 
 void TilesetEditor::refreshTileFlips() {
     this->tileSelector->setTileFlips(ui->checkBox_xFlip->isChecked(), ui->checkBox_yFlip->isChecked());
     this->drawSelectedTiles();
-    this->metatileLayersItem->clearLastModifiedCoords();
 }
 
 void TilesetEditor::setMetatileLabel(QString label)
@@ -957,8 +960,7 @@ bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile &src, QS
     this->metatileSelector->select(metatileId);
     this->metatileSelector->drawMetatile(metatileId);
     this->metatileLayersItem->draw();
-    this->metatileLayersItem->clearLastModifiedCoords();
-    this->metatileLayersItem->clearLastHoveredCoords();
+    updateLayerTileStatus();
     return true;
 }
 

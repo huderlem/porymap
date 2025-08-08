@@ -9,13 +9,13 @@ MetatileLayersItem::MetatileLayersItem(Metatile *metatile, Tileset *primaryTiles
      primaryTileset(primaryTileset),
      secondaryTileset(secondaryTileset)
 {
-    clearLastModifiedCoords();
-    clearLastHoveredCoords();
     setAcceptHoverEvents(true);
     setOrientation(orientation);
 }
 
 void MetatileLayersItem::setOrientation(Qt::Orientation orientation) {
+    if (this->orientation == orientation)
+        return;
     this->orientation = orientation;
     int maxWidth = Metatile::tileWidth();
     int maxHeight = Metatile::tileHeight();
@@ -94,16 +94,13 @@ void MetatileLayersItem::draw() {
 
 void MetatileLayersItem::setMetatile(Metatile *metatile) {
     this->metatile = metatile;
-    this->clearLastModifiedCoords();
-    this->clearLastHoveredCoords();
+    draw();
 }
 
 void MetatileLayersItem::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
     this->draw();
-    this->clearLastModifiedCoords();
-    this->clearLastHoveredCoords();
 }
 
 void MetatileLayersItem::updateSelection() {
@@ -112,8 +109,8 @@ void MetatileLayersItem::updateSelection() {
 }
 
 void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    const QPoint pos = this->getBoundedPos(event->pos());
-    hover(pos);
+    const QPoint pos = getBoundedPos(event->pos());
+    setCursorCellPos(pos);
 
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mousePressEvent(event);
@@ -123,14 +120,12 @@ void MetatileLayersItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else {
         emit tileChanged(pos);
     }
-    this->prevChangedPos = pos;
 }
 
 void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    const QPoint pos = this->getBoundedPos(event->pos());
-    if (this->prevChangedPos == pos)
+    const QPoint pos = getBoundedPos(event->pos());
+    if (!setCursorCellPos(pos))
         return;
-    hover(pos);
 
     if (event->buttons() & Qt::RightButton) {
         SelectablePixmapItem::mouseMoveEvent(event);
@@ -140,7 +135,6 @@ void MetatileLayersItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     } else {
         emit tileChanged(pos);
     }
-    this->prevChangedPos = pos;
 }
 
 void MetatileLayersItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
@@ -154,32 +148,29 @@ void MetatileLayersItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void MetatileLayersItem::hoverMoveEvent(QGraphicsSceneHoverEvent * event) {
-    hover(getBoundedPos(event->pos()));
+    setCursorCellPos(getBoundedPos(event->pos()));
 }
 
-void MetatileLayersItem::hover(const QPoint &pos) {
-    if (pos == this->prevHoveredPos)
-        return;
-    this->prevHoveredPos = pos;
+bool MetatileLayersItem::setCursorCellPos(const QPoint &pos) {
+    if (this->cursorCellPos == pos)
+        return false;
+    this->cursorCellPos = pos;
 
-    int tileIndex = posToTileIndex(pos);
-    if (tileIndex < 0 || !this->metatile || tileIndex >= this->metatile->tiles.length())
-        return;
-
-    emit this->hoveredTileChanged(this->metatile->tiles.at(tileIndex));
+    emit this->hoveredTileChanged(tileUnderCursor());
+    return true;
 }
 
 void MetatileLayersItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
-    this->clearLastHoveredCoords();
+    this->cursorCellPos = QPoint(-1,-1);
     emit this->hoveredTileCleared();
 }
 
-void MetatileLayersItem::clearLastModifiedCoords() {
-    this->prevChangedPos = QPoint(-1, -1);
-}
-
-void MetatileLayersItem::clearLastHoveredCoords() {
-    this->prevHoveredPos = QPoint(-1, -1);
+Tile MetatileLayersItem::tileUnderCursor() const {
+    int tileIndex = posToTileIndex(this->cursorCellPos);
+    if (tileIndex < 0 || !this->metatile || tileIndex >= this->metatile->tiles.length()) {
+        return Tile();
+    }
+    return this->metatile->tiles.at(tileIndex);
 }
 
 QPoint MetatileLayersItem::getBoundedPos(const QPointF &pos) {

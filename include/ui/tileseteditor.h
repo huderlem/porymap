@@ -77,8 +77,6 @@ private slots:
     void onWindowActivated();
     void onHoveredMetatileChanged(uint16_t);
     void onHoveredMetatileCleared();
-    void onHoveredTileChanged(const Tile&);
-    void onHoveredTileChanged(uint16_t);
     void onHoveredTileCleared();
     void onMetatileLayerSelectionChanged(const QPoint&, const QSize&);
     void onPaletteEditorChangedPaletteColor();
@@ -159,6 +157,9 @@ private:
     void applyMetatileSwapsToLayouts();
     void rebuildMetatilePropertiesFrame();
     void addWidgetToMetatileProperties(QWidget *w, int *row, int rowSpan);
+    void updateLayerTileStatus();
+    void showTileStatus(const Tile &tile);
+    void showTileStatus(uint16_t tileId);
 
     Ui::TilesetEditor *ui;
     History<MetatileHistoryItem*> metatileHistory;
