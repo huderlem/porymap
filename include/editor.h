@@ -258,11 +258,11 @@ private:
     bool canPaintMetatiles() const;
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void onMapEndPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
+    void setStatusFromMapPos(const QPoint &pos);
 
 private slots:
     void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);
     void mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
-    void mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item);
     void setSelectedConnectionItem(ConnectionPixmapItem *connectionItem);
     void onHoveredMovementPermissionChanged(uint16_t, uint16_t);
     void onHoveredMovementPermissionCleared();

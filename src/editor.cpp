@@ -1231,6 +1231,19 @@ void Editor::onMapHoverChanged(const QPoint &pos) {
     if (!layout || !layout->isWithinBounds(pos))
         return;
 
+    setStatusFromMapPos(pos);
+    Scripting::cb_BlockHoverChanged(pos.x(), pos.y());
+}
+
+void Editor::onMapHoverCleared() {
+    updateCursorRectVisibility();
+    if (getEditingLayout()) {
+        ui->statusBar->clearMessage();
+    }
+    Scripting::cb_BlockHoverCleared();
+}
+
+void Editor::setStatusFromMapPos(const QPoint &pos) {
     int x = pos.x();
     int y = pos.y();
     if (this->editMode == EditMode::Metatiles) {
@@ -1255,16 +1268,6 @@ void Editor::onMapHoverChanged(const QPoint &pos) {
                               .arg(y)
                               .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     }
-
-    Scripting::cb_BlockHoverChanged(x, y);
-}
-
-void Editor::onMapHoverCleared() {
-    updateCursorRectVisibility();
-    if (getEditingLayout()) {
-        ui->statusBar->clearMessage();
-    }
-    Scripting::cb_BlockHoverCleared();
 }
 
 QString Editor::getMovementPermissionText(uint16_t collision, uint16_t elevation) {
@@ -1438,10 +1441,15 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
 
     QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
 
-    if (this->editMode == EditMode::Metatiles) {
+    if (this->editMode == EditMode::Metatiles || this->editMode == EditMode::Collision) {
         if (editAction == EditAction::Paint) {
             if (event->buttons() & Qt::RightButton) {
-                item->updateMetatileSelection(event);
+                if (this->editMode == EditMode::Collision) {
+                    auto collisionItem = dynamic_cast<CollisionPixmapItem*>(item);
+                    if (collisionItem) collisionItem->updateMovementPermissionSelection(event);
+                } else {
+                    item->updateMetatileSelection(event);
+                }
             } else if (event->buttons() & Qt::MiddleButton) {
                 if (event->modifiers() & Qt::ControlModifier) {
                     item->magicFill(event);
@@ -1457,18 +1465,24 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 adjustStraightPathPos(event, item, &pos);
                 item->paint(event);
             }
+            setStatusFromMapPos(pos);
         } else if (editAction == EditAction::Select) {
             item->select(event);
         } else if (editAction == EditAction::Fill) {
             if (event->buttons() & Qt::RightButton) {
-                item->updateMetatileSelection(event);
+                if (this->editMode == EditMode::Metatiles) {
+                    item->updateMetatileSelection(event);
+                } else {
+                    item->pick(event);
+                }
             } else if (event->modifiers() & Qt::ControlModifier) {
                 item->magicFill(event);
             } else {
                 item->floodFill(event);
             }
+            setStatusFromMapPos(pos);
         } else if (editAction == EditAction::Pick) {
-            if (event->buttons() & Qt::RightButton) {
+            if (this->editMode == EditMode::Metatiles && (event->buttons() & Qt::RightButton)) {
                 item->updateMetatileSelection(event);
             } else if (event->type() != QEvent::GraphicsSceneMouseRelease) {
                 item->pick(event);
@@ -1517,46 +1531,6 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 }
             }
         }
-    }
-}
-
-void Editor::mouseEvent_collision(QGraphicsSceneMouseEvent *event, CollisionPixmapItem *item) {
-    auto editAction = getEditAction();
-    if (this->editMode != EditMode::Collision || editAction == EditAction::Move) {
-        event->ignore();
-        return;
-    }
-
-    QPoint pos = Metatile::coordFromPixmapCoord(event->pos());
-
-    if (editAction == EditAction::Paint) {
-        if (event->buttons() & Qt::RightButton) {
-            item->updateMovementPermissionSelection(event);
-        } else if (event->buttons() & Qt::MiddleButton) {
-            if (event->modifiers() & Qt::ControlModifier) {
-                item->magicFill(event);
-            } else {
-                item->floodFill(event);
-            }
-        } else {
-            adjustStraightPathPos(event, item, &pos);
-            item->paint(event);
-        }
-    } else if (editAction == EditAction::Select) {
-        item->select(event);
-    } else if (editAction == EditAction::Fill) {
-        if (event->buttons() & Qt::RightButton) {
-            item->pick(event);
-        } else if (event->modifiers() & Qt::ControlModifier) {
-            item->magicFill(event);
-        } else {
-            item->floodFill(event);
-        }
-    } else if (editAction == EditAction::Pick) {
-        item->pick(event);
-    } else if (editAction == EditAction::Shift) {
-        adjustStraightPathPos(event, item, &pos);
-        item->shift(event);
     }
 }
 
@@ -1697,7 +1671,7 @@ void Editor::displayMapMovementPermissions() {
 
     collision_item = new CollisionPixmapItem(this->layout, ui->spinBox_SelectedCollision, ui->spinBox_SelectedElevation,
                                              this->metatile_selector_item, this->settings, &this->collisionOpacity);
-    connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_collision);
+    connect(collision_item, &CollisionPixmapItem::mouseEvent, this, &Editor::mouseEvent_map);
     connect(collision_item, &CollisionPixmapItem::hoverEntered, this, &Editor::onMapHoverEntered);
     connect(collision_item, &CollisionPixmapItem::hoverChanged, this, &Editor::onMapHoverChanged);
     connect(collision_item, &CollisionPixmapItem::hoverCleared, this, &Editor::onMapHoverCleared);

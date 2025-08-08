@@ -30,23 +30,7 @@ public:
     void draw(bool ignoreCache = false) override;
 
 private:
-    unsigned actionId_ = 0;
-    QPoint previousPos;
     void updateSelection(QPoint pos);
-
-signals:
-    void mouseEvent(QGraphicsSceneMouseEvent *, CollisionPixmapItem *);
-    void hoverEntered(const QPoint &pos);
-    void hoverChanged(const QPoint &pos);
-    void hoverCleared();
-
-protected:
-    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
-    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent*) override;
-    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
 };
 
 #endif // COLLISIONPIXMAPITEM_H

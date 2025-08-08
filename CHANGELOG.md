@@ -46,6 +46,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix Undo/Redo in the Tileset and Palette Editors and Paste in the Tileset Editor appearing enabled even when they don't do anything.
 - Fix `Ctrl+Shift+Z` not being set as a default shortcut for Redo in the Palette Editor like it is for other windows.
 - Fix the Tileset Editor's status bar not updating while selecting tiles in the metatile layer view.
+- Fix the main window's status bar not immediately reflecting changes made while painting metatiles / movement permissions.
 - Fix cleared metatile labels not updating until the project is reloaded.
 - Fix some changes in the Tileset Editor being discarded if the window is closed too quickly.
 - Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.

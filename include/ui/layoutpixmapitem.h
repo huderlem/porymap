@@ -88,6 +88,9 @@ public:
     void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
     QPoint adjustCoords(QPoint pos);
 
+protected:
+    unsigned actionId_ = 0;
+
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
     static bool isValidSmartPathSelection(MetatileSelection selection);
@@ -96,8 +99,6 @@ private:
     static constexpr int smartPathHeight = 3;
     static constexpr int smartPathMiddleIndex = (smartPathWidth / 2) + ((smartPathHeight / 2) * smartPathWidth);
     QPoint lastMetatileSelectionPos = QPoint(-1,-1);
-
-    unsigned actionId_ = 0;
 
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
