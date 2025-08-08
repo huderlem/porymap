@@ -221,8 +221,20 @@ QString MetatileImageExporter::getDefaultFileName() const {
         }
         defaultFilename.append("_");
     }
-    defaultFilename.append("Metatiles.png");
-    return defaultFilename;
+    defaultFilename.append("Metatile");
+
+    uint16_t start = ui->spinBox_MetatileStart->value();
+    uint16_t end = ui->spinBox_MetatileEnd->value();
+    if (start != end) {
+        defaultFilename.append("s");
+    }
+    if (!ui->checkBox_PrimaryTileset->isChecked() && !ui->checkBox_SecondaryTileset->isChecked()) {
+        defaultFilename.append(QString("_%1").arg(Metatile::getMetatileIdString(start)));
+        if (start != end) {
+            defaultFilename.append(QString("-%1").arg(Metatile::getMetatileIdString(end)));
+        }
+    }
+    return QString("%1.png").arg(defaultFilename);
 }
 
 void MetatileImageExporter::queuePreviewUpdate() {
