@@ -81,7 +81,7 @@ private:
     QMap<QString, const QImage*> imageCache;
     ScriptUtility *scriptUtility;
 
-    void loadModules(QStringList moduleFiles);
+    void loadModules(const QStringList &moduleFiles);
     void invokeCallback(CallbackType type, QJSValueList args);
 };
 

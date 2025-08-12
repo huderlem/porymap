@@ -58,13 +58,17 @@ Scripting::~Scripting() {
     delete this->scriptUtility;
 }
 
-void Scripting::loadModules(QStringList moduleFiles) {
-    for (QString filepath : moduleFiles) {
+void Scripting::loadModules(const QStringList &moduleFiles) {
+    for (const auto &filepath : moduleFiles) {
+        if (filepath.isEmpty()) continue;
+        QJSValue module;
         QString validPath = Project::getExistingFilepath(filepath);
-        if (!validPath.isEmpty()) filepath = validPath; // Otherwise allow it to fail with the original path
-
-        QJSValue module = this->engine->importModule(filepath);
-        if (tryErrorJS(module)) {
+        if (validPath.isEmpty()) {
+            logError(QString("Failed to find script file '%1'.").arg(filepath));
+        } else {
+            module = this->engine->importModule(validPath);
+        }
+        if (validPath.isEmpty() || tryErrorJS(module)) {
             QMessageBox messageBox(this->mainWindow);
             messageBox.setText("Failed to load script");
             messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
