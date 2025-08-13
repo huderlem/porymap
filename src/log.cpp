@@ -104,14 +104,7 @@ bool removeLogStatusBar(QStatusBar *statusBar) {
     return false;
 }
 
-void updateLogDisplays(const QString &message, LogType type) {
-    static const QMap<LogType, QPixmap> icons = {
-        {LogType::LOG_INFO,  QPixmap(QStringLiteral(":/icons/information.ico"))},
-        {LogType::LOG_WARN,  QPixmap(QStringLiteral(":/icons/warning.ico"))},
-        {LogType::LOG_ERROR, QPixmap(QStringLiteral(":/icons/error.ico"))},
-    };
-
-    bool startTimer = false;
+void pruneLogDisplays() {
     auto it = QMutableListIterator<Log::Display>(Log::displays);
     while (it.hasNext()) {
         auto display = it.next();
@@ -120,6 +113,19 @@ void updateLogDisplays(const QString &message, LogType type) {
             it.remove();
             continue;
         }
+    }
+}
+
+void updateLogDisplays(const QString &message, LogType type) {
+    static const QMap<LogType, QPixmap> icons = {
+        {LogType::LOG_INFO,  QPixmap(QStringLiteral(":/icons/information.ico"))},
+        {LogType::LOG_WARN,  QPixmap(QStringLiteral(":/icons/warning.ico"))},
+        {LogType::LOG_ERROR, QPixmap(QStringLiteral(":/icons/error.ico"))},
+    };
+
+    pruneLogDisplays();
+    bool startTimer = false;
+    for (const auto &display : Log::displays) {
         // Update the display, but only if it accepts this message type.
         if (display.acceptedTypes.contains(type)) {
             display.icon->setPixmap(icons.value(type));
@@ -134,6 +140,7 @@ void updateLogDisplays(const QString &message, LogType type) {
 }
 
 void clearLogDisplays() {
+    pruneLogDisplays();
     for (const auto &display : Log::displays) {
         display.icon->setPixmap(QPixmap());
         display.message->setText(QString());
