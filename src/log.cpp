@@ -111,7 +111,6 @@ void pruneLogDisplays() {
         if (!display.statusBar) {
             // Status bar was deleted externally, remove entry from the list.
             it.remove();
-            continue;
         }
     }
 }
