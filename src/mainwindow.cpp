@@ -54,6 +54,9 @@
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 #define RELEASE_PLATFORM
 #endif
+#if defined(QT_NETWORK_LIB) && defined(RELEASE_PLATFORM)
+#define USE_UPDATE_PROMOTER
+#endif
 
 
 
@@ -72,7 +75,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     logInit();
-    logInfo(QString("Launching Porymap v%1").arg(QCoreApplication::applicationVersion()));
+    logInfo(QString("Launching Porymap v%1 (%2)").arg(QCoreApplication::applicationVersion()).arg(QStringLiteral(PORYMAP_LATEST_COMMIT)));
+    logInfo(QString("Using Qt v%2 (%3)").arg(QStringLiteral(QT_VERSION_STR)).arg(QSysInfo::buildCpuArchitecture()));
 }
 
 void MainWindow::initialize() {
@@ -155,13 +159,32 @@ void MainWindow::initWindow() {
     this->initMapList();
     this->initShortcuts();
 
-#ifndef RELEASE_PLATFORM
+    QStringList missingModules;
+
+#ifndef USE_UPDATE_PROMOTER
     ui->actionCheck_for_Updates->setVisible(false);
+#ifdef RELEASE_PLATFORM
+    // Only report the network module missing if we would
+    // have otherwise used it (we don't on non-release platforms).
+    missingModules.append(" 'network'");
+#endif
 #endif
 
 #ifndef QT_CHARTS_LIB
     ui->pushButton_SummaryChart->setVisible(false);
+    missingModules.append(" 'charts'");
 #endif
+
+#ifndef QT_QML_LIB
+    ui->actionCustom_Scripts->setVisible(false);
+    missingModules.append(" 'qml'");
+#endif
+
+    if (!missingModules.isEmpty()) {
+        logWarn(QString("Qt module%1%2 not found. Some features will be disabled.")
+                            .arg(missingModules.length() > 1 ? "s" : "")
+                            .arg(missingModules.join(",")));
+    }
 
     setWindowDisabled(true);
 }
@@ -320,17 +343,19 @@ void MainWindow::initExtraSignals() {
     connect(ui->action_NewMap, &QAction::triggered, this, &MainWindow::openNewMapDialog);
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
     connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
-    connect(ui->comboBox_LayoutSelector->lineEdit(), &QLineEdit::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
+    connect(ui->comboBox_LayoutSelector, &NoScrollComboBox::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
     connect(ui->checkBox_smartPaths, &QCheckBox::toggled, this, &MainWindow::setSmartPathsEnabled);
     connect(ui->checkBox_ToggleBorder, &QCheckBox::toggled, this, &MainWindow::setBorderVisibility);
     connect(ui->checkBox_MirrorConnections, &QCheckBox::toggled, this, &MainWindow::setMirrorConnectionsEnabled);
+    connect(ui->comboBox_PrimaryTileset, &NoScrollComboBox::editingFinished, [this] { setPrimaryTileset(ui->comboBox_PrimaryTileset->currentText()); });
+    connect(ui->comboBox_SecondaryTileset, &NoScrollComboBox::editingFinished, [this] { setSecondaryTileset(ui->comboBox_SecondaryTileset->currentText()); });
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
     checkForUpdates(true);
 }
 
-#ifdef RELEASE_PLATFORM
+#ifdef USE_UPDATE_PROMOTER
 void MainWindow::checkForUpdates(bool requestedByUser) {
     if (!this->networkAccessManager)
         this->networkAccessManager = new NetworkAccessManager(this);
@@ -345,7 +370,7 @@ void MainWindow::checkForUpdates(bool requestedByUser) {
 
 
     if (requestedByUser) {
-        openSubWindow(this->updatePromoter);
+        Util::show(this->updatePromoter);
     } else {
         // This is an automatic update check. Only run if we haven't done one in the last 5 minutes
         QDateTime lastCheck = porymapConfig.lastUpdateCheckTime;
@@ -367,7 +392,6 @@ void MainWindow::initEditor() {
     connect(this->editor, &Editor::currentMetatilesSelectionChanged, this, &MainWindow::currentMetatilesSelectionChanged);
     connect(this->editor, &Editor::wildMonTableEdited, [this] { markMapEdited(this->editor->map); });
     connect(this->editor, &Editor::mapRulerStatusChanged, this, &MainWindow::onMapRulerStatusChanged);
-    connect(this->editor, &Editor::tilesetUpdated, this, &Scripting::cb_TilesetUpdated);
     connect(this->editor, &Editor::editActionSet, this, &MainWindow::setEditActionUi);
     connect(ui->newEventToolButton, &NewEventToolButton::newEventAdded, this->editor, &Editor::addNewEvent);
     connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
@@ -420,7 +444,7 @@ void MainWindow::initEditor() {
 }
 
 void MainWindow::openEditHistory() {
-    openSubWindow(this->undoView);
+    Util::show(this->undoView);
 }
 
 void MainWindow::initMiscHeapObjects() {
@@ -937,19 +961,6 @@ void MainWindow::refreshRecentProjectsMenu() {
     clearAction->setEnabled(!recentProjects.isEmpty());
 }
 
-void MainWindow::openSubWindow(QWidget * window) {
-    if (!window) return;
-
-    if (!window->isVisible()) {
-        window->show();
-    } else if (window->isMinimized()) {
-        window->showNormal();
-    } else {
-        window->raise();
-        window->activateWindow();
-    }
-}
-
 void MainWindow::showFileWatcherWarning() {
     if (!porymapConfig.monitorFiles || !isProjectOpen())
         return;
@@ -1409,7 +1420,7 @@ bool MainWindow::setProjectUI() {
     ui->newEventToolButton->setEventTypeVisible(Event::Type::SecretBase, projectConfig.eventSecretBaseEnabled);
     ui->newEventToolButton->setEventTypeVisible(Event::Type::CloneObject, projectConfig.eventCloneObjectEnabled);
 
-    this->editor->setPlayerViewRect(QRectF(0, 0, 16, 16).marginsAdded(projectConfig.playerViewDistance));
+    this->editor->setPlayerViewRect(QRectF(QPoint(0,0), Metatile::pixelSize()).marginsAdded(projectConfig.playerViewDistance));
 
     editor->setCollisionGraphics();
     ui->spinBox_SelectedElevation->setMaximum(Block::getMaxElevation());
@@ -1475,6 +1486,7 @@ void MainWindow::clearProjectUI() {
     ui->comboBox_LayoutSelector->clear();
 
     this->mapHeaderForm->clear();
+    ui->label_NoEvents->setText("");
 
     prefab.clearPrefabUi();
 
@@ -1801,7 +1813,7 @@ void MainWindow::redrawMetatileSelection() {
 
 void MainWindow::scrollMetatileSelectorToSelection() {
     // Internal selections or 1x1 external selections can be scrolled to
-    if (!editor->metatile_selector_item->isInternalSelection() && editor->metatile_selector_item->getSelectionDimensions() != QPoint(1, 1))
+    if (!editor->metatile_selector_item->isInternalSelection() && editor->metatile_selector_item->getSelectionDimensions() != QSize(1, 1))
         return;
 
     MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
@@ -1809,8 +1821,8 @@ void MainWindow::scrollMetatileSelectorToSelection() {
         return;
 
     QPoint pos = editor->metatile_selector_item->getMetatileIdCoordsOnWidget(selection.metatileItems.first().metatileId);
-    QPoint size = editor->metatile_selector_item->getSelectionDimensions();
-    pos += QPoint(size.x() - 1, size.y() - 1) * 16 / 2; // We want to focus on the center of the whole selection
+    QSize size = editor->metatile_selector_item->getSelectionDimensions();
+    pos += QPoint((size.width() - 1) * Metatile::pixelWidth(), (size.height() - 1) * Metatile::pixelHeight()) / 2; // We want to focus on the center of the whole selection
     pos *= getMetatilesZoomScale();
 
     auto viewport = ui->scrollArea_MetatileSelector->viewport();
@@ -1821,7 +1833,9 @@ void MainWindow::currentMetatilesSelectionChanged() {
     redrawMetatileSelection();
     if (this->tilesetEditor) {
         MetatileSelection selection = editor->metatile_selector_item->getMetatileSelection();
-        this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+        if (!selection.metatileItems.isEmpty()) {
+            this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+        }
     }
 
     // Don't scroll to internal selections here, it will disrupt the user while they make their selection.
@@ -1982,8 +1996,8 @@ void MainWindow::copy() {
             }
             copyObject["metatile_selection"] = metatiles;
             copyObject["collision_selection"] = collisions;
-            copyObject["width"] = editor->metatile_selector_item->getSelectionDimensions().x();
-            copyObject["height"] = editor->metatile_selector_item->getSelectionDimensions().y();
+            copyObject["width"] = editor->metatile_selector_item->getSelectionDimensions().width();
+            copyObject["height"] = editor->metatile_selector_item->getSelectionDimensions().height();
             setClipboardData(copyObject);
             logInfo("Copied metatile selection to clipboard");
         }
@@ -2176,7 +2190,6 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
                 prefab.updatePrefabUi(this->editor->layout);
         }
     }
-    editor->setCursorRectVisible(false);
 }
 
 void MainWindow::on_mainTabBar_tabBarClicked(int index)
@@ -2240,11 +2253,7 @@ void MainWindow::on_actionPlayer_View_Rectangle_triggered()
     bool enabled = ui->actionPlayer_View_Rectangle->isChecked();
     porymapConfig.showPlayerView = enabled;
     this->editor->settings->playerViewRectEnabled = enabled;
-    if ((this->editor->map_item && this->editor->map_item->has_mouse)
-     || (this->editor->collision_item && this->editor->collision_item->has_mouse)) {
-        this->editor->playerViewRect->setVisible(enabled && this->editor->playerViewRect->getActive());
-        ui->graphicsView_Map->scene()->update();
-    }
+    this->editor->updateCursorRectVisibility();
 }
 
 void MainWindow::on_actionCursor_Tile_Outline_triggered()
@@ -2252,11 +2261,7 @@ void MainWindow::on_actionCursor_Tile_Outline_triggered()
     bool enabled = ui->actionCursor_Tile_Outline->isChecked();
     porymapConfig.showCursorTile = enabled;
     this->editor->settings->cursorTileRectEnabled = enabled;
-    if ((this->editor->map_item && this->editor->map_item->has_mouse)
-     || (this->editor->collision_item && this->editor->collision_item->has_mouse)) {
-        this->editor->cursorMapTileRect->setVisible(enabled && this->editor->cursorMapTileRect->getActive());
-        ui->graphicsView_Map->scene()->update();
-    }
+    this->editor->updateCursorRectVisibility();
 }
 
 void MainWindow::on_actionShow_Events_In_Map_View_triggered() {
@@ -2274,7 +2279,7 @@ void MainWindow::on_actionGrid_Settings_triggered() {
         connect(this->gridSettingsDialog, &GridSettingsDialog::changedGridSettings, this->editor, &Editor::updateMapGrid);
         connect(this->gridSettingsDialog, &GridSettingsDialog::accepted, [this] { porymapConfig.gridSettings = this->editor->gridSettings; });
     }
-    openSubWindow(this->gridSettingsDialog);
+    Util::show(this->gridSettingsDialog);
 }
 
 void MainWindow::on_actionShortcuts_triggered()
@@ -2282,7 +2287,7 @@ void MainWindow::on_actionShortcuts_triggered()
     if (!shortcutsEditor)
         initShortcutsEditor();
 
-    openSubWindow(shortcutsEditor);
+    Util::show(shortcutsEditor);
 }
 
 void MainWindow::initShortcutsEditor() {
@@ -2292,27 +2297,40 @@ void MainWindow::initShortcutsEditor() {
 
     connectSubEditorsToShortcutsEditor();
 
-    shortcutsEditor->setShortcutableObjects(shortcutableObjects());
+    auto objectList = shortcutableObjects();
+    for (auto *menu : findChildren<QMenu *>()) {
+        if (!menu->objectName().isEmpty())
+            objectList.append(qobject_cast<QObject *>(menu));
+    }
+    shortcutsEditor->setShortcutableObjects(objectList);
 }
 
 void MainWindow::connectSubEditorsToShortcutsEditor() {
     /* Initialize sub-editors so that their children are added to MainWindow's object tree and will
      * be returned by shortcutableObjects() to be passed to ShortcutsEditor. */
-    if (!tilesetEditor)
+    if (!this->tilesetEditor) {
         initTilesetEditor();
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            tilesetEditor, &TilesetEditor::applyUserShortcuts);
+    }
+    if (this->tilesetEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->tilesetEditor, &TilesetEditor::applyUserShortcuts);
+    }
 
-    if (!regionMapEditor)
+    if (!this->regionMapEditor){
         initRegionMapEditor(true);
-    if (regionMapEditor)
-        connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
+    if (this->regionMapEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->regionMapEditor, &RegionMapEditor::applyUserShortcuts);
+    }
 
-    if (!customScriptsEditor)
+    if (!this->customScriptsEditor) {
         initCustomScriptsEditor();
-    connect(shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-            customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
+    }
+    if (this->customScriptsEditor) {
+        connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
+                this->customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
+    }
 }
 
 void MainWindow::resetMapViewScale() {
@@ -2495,6 +2513,14 @@ void MainWindow::updateSelectedEvents() {
     }
     else {
         ui->tabWidget_EventType->hide();
+
+        if (this->editor->map && this->editor->map->isInheritingEvents()) {
+            QString message = QString("<span style=\"color:red;\">NOTE:</span> This map inherits events from %1."
+                                      "<br>Adding any events will separate it from that map.").arg(this->editor->map->sharedEventsMap());
+            ui->label_NoEvents->setText(message);
+        } else {
+            ui->label_NoEvents->setText(QStringLiteral("There are no events on the current map."));
+        }
         ui->label_NoEvents->show();
     }
 }
@@ -2588,19 +2614,6 @@ void MainWindow::on_toolButton_Move_clicked()    { editor->setEditAction(Editor:
 void MainWindow::on_toolButton_Shift_clicked()   { editor->setEditAction(Editor::EditAction::Shift); }
 
 void MainWindow::setEditActionUi(Editor::EditAction editAction) {
-    if (editAction == Editor::EditAction::Move) {
-        ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        QScroller::grabGesture(ui->graphicsView_Map, QScroller::LeftMouseButtonGesture);
-        ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::FullViewportUpdate);
-    } else {
-        ui->graphicsView_Map->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        ui->graphicsView_Map->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        QScroller::ungrabGesture(ui->graphicsView_Map);
-        ui->graphicsView_Map->setViewportUpdateMode(QGraphicsView::ViewportUpdateMode::MinimalViewportUpdate);
-    }
-    ui->graphicsView_Map->setFocus();
-
     ui->toolButton_Paint->setChecked(editAction == Editor::EditAction::Paint);
     ui->toolButton_Select->setChecked(editAction == Editor::EditAction::Select);
     ui->toolButton_Fill->setChecked(editAction == Editor::EditAction::Fill);
@@ -2719,7 +2732,7 @@ void MainWindow::showExportMapImageWindow(ImageExporterMode mode) {
         }
     }
 
-    openSubWindow(this->mapImageExporter);
+    Util::show(this->mapImageExporter);
 }
 
 void MainWindow::on_pushButton_AddConnection_clicked() {
@@ -2747,7 +2760,7 @@ void MainWindow::on_pushButton_SummaryChart_clicked() {
         connect(this->editor, &Editor::wildMonTableClosed, this->wildMonChart, &WildMonChart::clearTable);
         connect(this->editor, &Editor::wildMonTableEdited, this->wildMonChart, &WildMonChart::refresh);
     }
-    openSubWindow(this->wildMonChart);
+    Util::show(this->wildMonChart);
 }
 
 void MainWindow::on_toolButton_WildMonSearch_clicked() {
@@ -2756,7 +2769,7 @@ void MainWindow::on_toolButton_WildMonSearch_clicked() {
         connect(this->wildMonSearch, &WildMonSearch::openWildMonTableRequested, this, &MainWindow::openWildMonTable);
         connect(this->editor, &Editor::wildMonTableEdited, this->wildMonSearch, &WildMonSearch::refresh);
     }
-    openSubWindow(this->wildMonSearch);
+    Util::show(this->wildMonSearch);
 }
 
 void MainWindow::openWildMonTable(const QString &mapName, const QString &groupName, const QString &fieldName) {
@@ -2781,26 +2794,38 @@ void MainWindow::on_button_OpenEmergeMap_clicked() {
     userSetMap(ui->comboBox_EmergeMap->currentText());
 }
 
-void MainWindow::on_comboBox_PrimaryTileset_currentTextChanged(const QString &tilesetLabel)
-{
-    if (editor->project->primaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
+void MainWindow::setPrimaryTileset(const QString &tilesetLabel) {
+    if (!this->editor->layout || this->editor->layout->tileset_primary_label == tilesetLabel)
+        return;
+
+    if (editor->project->primaryTilesetLabels.contains(tilesetLabel)) {
         editor->updatePrimaryTileset(tilesetLabel);
         redrawMapScene();
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
         markLayoutEdited();
     }
+
+    // Restore valid text if input was invalid, or sync combo box with new valid setting.
+    const QSignalBlocker b(ui->comboBox_PrimaryTileset);
+    ui->comboBox_PrimaryTileset->setTextItem(this->editor->layout->tileset_primary_label);
 }
 
-void MainWindow::on_comboBox_SecondaryTileset_currentTextChanged(const QString &tilesetLabel)
-{
-    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel) && editor->layout) {
+void MainWindow::setSecondaryTileset(const QString &tilesetLabel) {
+    if (!this->editor->layout || this->editor->layout->tileset_secondary_label == tilesetLabel)
+        return;
+
+    if (editor->project->secondaryTilesetLabels.contains(tilesetLabel)) {
         editor->updateSecondaryTileset(tilesetLabel);
         redrawMapScene();
         updateTilesetEditor();
         prefab.updatePrefabUi(editor->layout);
         markLayoutEdited();
     }
+
+    // Restore valid text if input was invalid, or sync combo box with new valid setting.
+    const QSignalBlocker b(ui->comboBox_SecondaryTileset);
+    ui->comboBox_SecondaryTileset->setTextItem(this->editor->layout->tileset_secondary_label);
 }
 
 void MainWindow::on_pushButton_ChangeDimensions_clicked() {
@@ -2864,10 +2889,12 @@ void MainWindow::on_actionTileset_Editor_triggered()
         initTilesetEditor();
     }
 
-    openSubWindow(this->tilesetEditor);
+    Util::show(this->tilesetEditor);
 
     MetatileSelection selection = this->editor->metatile_selector_item->getMetatileSelection();
-    this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+    if (!selection.metatileItems.isEmpty()) {
+        this->tilesetEditor->selectMetatile(selection.metatileItems.first().metatileId);
+    }
 }
 
 void MainWindow::initTilesetEditor() {
@@ -2914,7 +2941,7 @@ void MainWindow::on_actionAbout_Porymap_triggered()
 {
     if (!this->aboutWindow)
         this->aboutWindow = new AboutPorymap(this);
-    openSubWindow(this->aboutWindow);
+    Util::show(this->aboutWindow);
 }
 
 void MainWindow::on_actionOpen_Log_File_triggered() {
@@ -2925,6 +2952,11 @@ void MainWindow::on_actionOpen_Log_File_triggered() {
 
 void MainWindow::on_actionOpen_Config_Folder_triggered() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)));
+}
+
+void MainWindow::on_actionOpen_Manual_triggered() {
+    static const QUrl url("https://huderlem.github.io/porymap/");
+    QDesktopServices::openUrl(url);
 }
 
 void MainWindow::on_actionPreferences_triggered() {
@@ -2938,16 +2970,19 @@ void MainWindow::on_actionPreferences_triggered() {
         // require us to repopulate the EventFrames and redraw event pixmaps, respectively.
         connect(preferenceEditor, &PreferenceEditor::preferencesSaved, editor, &Editor::updateEvents);
         connect(preferenceEditor, &PreferenceEditor::scriptSettingsChanged, editor->project, &Project::readEventScriptLabels);
+        connect(preferenceEditor, &PreferenceEditor::reloadProjectRequested, this, &MainWindow::on_action_Reload_Project_triggered);
     }
 
-    openSubWindow(preferenceEditor);
+    Util::show(preferenceEditor);
 }
 
 void MainWindow::togglePreferenceSpecificUi() {
     ui->actionOpen_Project_in_Text_Editor->setEnabled(!porymapConfig.textEditorOpenFolder.isEmpty());
 
+#ifdef USE_UPDATE_PROMOTER
     if (this->updatePromoter)
         this->updatePromoter->updatePreferences();
+#endif
 }
 
 void MainWindow::openProjectSettingsEditor(int tab) {
@@ -2957,7 +2992,7 @@ void MainWindow::openProjectSettingsEditor(int tab) {
                 this, &MainWindow::on_action_Reload_Project_triggered);
     }
     this->projectSettingsEditor->setTab(tab);
-    openSubWindow(this->projectSettingsEditor);
+    Util::show(this->projectSettingsEditor);
 }
 
 void MainWindow::on_actionProject_Settings_triggered() {
@@ -2992,16 +3027,20 @@ void MainWindow::onWarpBehaviorWarningClicked() {
 }
 
 void MainWindow::on_actionCustom_Scripts_triggered() {
-    if (!this->customScriptsEditor)
+    if (!this->customScriptsEditor) {
         initCustomScriptsEditor();
-
-    openSubWindow(this->customScriptsEditor);
+    }
+    if (this->customScriptsEditor) {
+        Util::show(this->customScriptsEditor);
+    }
 }
 
 void MainWindow::initCustomScriptsEditor() {
+#ifdef QT_QML_LIB
     this->customScriptsEditor = new CustomScriptsEditor(this);
     connect(this->customScriptsEditor, &CustomScriptsEditor::reloadScriptEngine,
             this, &MainWindow::reloadScriptEngine);
+#endif
 }
 
 void MainWindow::reloadScriptEngine() {
@@ -3075,7 +3114,7 @@ void MainWindow::on_actionRegion_Map_Editor_triggered() {
         }
     }
 
-    openSubWindow(this->regionMapEditor);
+    Util::show(this->regionMapEditor);
 }
 
 void MainWindow::on_pushButton_CreatePrefab_clicked() {
@@ -3133,7 +3172,7 @@ bool MainWindow::closeSupplementaryWindows() {
         if (widget != this && widget->isWindow()) {
             // Make sure the window is raised and activated before closing in case it has a confirmation prompt.
             if (widget->isVisible()) {
-                openSubWindow(widget);
+                Util::show(widget);
             }
             if (!widget->close()) {
                 QString message = QStringLiteral("Aborted project close");

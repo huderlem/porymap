@@ -21,6 +21,7 @@ public:
     uint32_t value() const { return m_value; }
     uint32_t minimum() const { return m_minimum; }
     uint32_t maximum() const { return m_maximum; }
+    uint32_t singleStep() const { return m_singleStep; }
     QString prefix() const { return m_prefix; }
     int displayIntegerBase() const { return m_displayIntegerBase; }
     bool hasPadding() const { return m_hasPadding; }
@@ -28,6 +29,7 @@ public:
     void setMinimum(uint32_t min);
     void setMaximum(uint32_t max);
     void setRange(uint32_t min, uint32_t max);
+    void setSingleStep(uint32_t val);
     void setPrefix(const QString &prefix);
     void setDisplayIntegerBase(int base);
     void setHasPadding(bool enabled);
@@ -36,6 +38,7 @@ private:
     uint32_t m_minimum;
     uint32_t m_maximum;
     uint32_t m_value;
+    uint32_t m_singleStep;
     QString m_prefix;
     int m_displayIntegerBase;
     bool m_hasPadding;

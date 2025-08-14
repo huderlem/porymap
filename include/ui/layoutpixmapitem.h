@@ -61,19 +61,21 @@ public:
     void magicFill(
             int initialX,
             int initialY,
-            QPoint selectionDimensions,
-            QList<MetatileSelectionItem> selectedMetatiles,
-            QList<CollisionSelectionItem> selectedCollisions,
+            const QSize &selectionDimensions,
+            const QList <MetatileSelectionItem> &selectedMetatiles,
+            const QList <CollisionSelectionItem> &selectedCollisions,
             bool fromScriptCall = false);
     void floodFill(int x, int y, bool fromScriptCall = false);
     void floodFill(int x, int y, uint16_t metatileId, bool fromScriptCall = false);
     void floodFill(int initialX,
                    int initialY,
-                   QPoint selectionDimensions,
-                   QList<MetatileSelectionItem> selectedMetatiles,
-                   QList<CollisionSelectionItem> selectedCollisions,
+                   const QSize &selectionDimensions,
+                   const QList<MetatileSelectionItem> &selectedMetatiles,
+                   const QList<CollisionSelectionItem> &selectedCollisions,
                    bool fromScriptCall = false);
     void floodFillSmartPath(int initialX, int initialY, bool fromScriptCall = false);
+
+    static bool isSmartPathSize(const QSize &size) { return size.width() == smartPathWidth && size.height() == smartPathHeight; }
 
     virtual void pick(QGraphicsSceneMouseEvent*);
     virtual void select(QGraphicsSceneMouseEvent*);
@@ -86,32 +88,33 @@ public:
     void lockNondominantAxis(QGraphicsSceneMouseEvent *event);
     QPoint adjustCoords(QPoint pos);
 
-    void setEditsEnabled(bool enabled) { this->editsEnabled = enabled; }
-    bool getEditsEnabled() { return this->editsEnabled; }
+protected:
+    unsigned actionId_ = 0;
 
 private:
     void paintSmartPath(int x, int y, bool fromScriptCall = false);
+    static bool isValidSmartPathSelection(MetatileSelection selection);
     static QList<int> smartPathTable;
+    static constexpr int smartPathWidth = 3;
+    static constexpr int smartPathHeight = 3;
+    static constexpr int smartPathMiddleIndex = (smartPathWidth / 2) + ((smartPathHeight / 2) * smartPathWidth);
     QPoint lastMetatileSelectionPos = QPoint(-1,-1);
-
-    unsigned actionId_ = 0;
-
-    bool editsEnabled = true;
 
 signals:
     void startPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
     void endPaint(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
     void mouseEvent(QGraphicsSceneMouseEvent *, LayoutPixmapItem *);
-    void hoveredMapMetatileChanged(const QPoint &pos);
-    void hoveredMapMetatileCleared();
+    void hoverEntered(const QPoint &pos);
+    void hoverChanged(const QPoint &pos);
+    void hoverCleared();
 
 protected:
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverEnterEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
 };
 
 #endif // MAPPIXMAPITEM_H

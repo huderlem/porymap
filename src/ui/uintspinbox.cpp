@@ -2,24 +2,24 @@
 #include <QWheelEvent>
 
 UIntSpinBox::UIntSpinBox(QWidget *parent)
-   : QAbstractSpinBox(parent)
+   : QAbstractSpinBox(parent),
+     m_minimum(0),
+     m_maximum(99),
+     m_value(m_minimum),
+     m_singleStep(1),
+     m_displayIntegerBase(10),
+     m_hasPadding(false),
+     m_numChars(2)
 {
     // Don't let scrolling hijack focus.
     setFocusPolicy(Qt::StrongFocus);
-
-    m_minimum = 0;
-    m_maximum = 99;
-    m_value = m_minimum;
-    m_displayIntegerBase = 10;
-    m_numChars = 2;
-    m_hasPadding = false;
 
     this->updateEdit();
     connect(lineEdit(), SIGNAL(textEdited(QString)), this, SLOT(onEditFinished()));
 };
 
 void UIntSpinBox::setValue(uint32_t val) {
-    val = qMax(m_minimum, qMin(m_maximum, val));
+    val = qBound(m_minimum, val, m_maximum);
     if (m_value != val) {
         m_value = val;
         emit valueChanged(m_value);
@@ -69,6 +69,12 @@ void UIntSpinBox::setRange(uint32_t min, uint32_t max) {
     this->updateEdit();
 }
 
+void UIntSpinBox::setSingleStep(uint32_t val) {
+    if (m_singleStep != val) {
+        m_singleStep = val;
+    }
+}
+
 void UIntSpinBox::setPrefix(const QString &prefix) { 
     if (m_prefix != prefix) {
         m_prefix = prefix;
@@ -113,11 +119,16 @@ void UIntSpinBox::onEditFinished() {
         // Valid input
         newValue = this->valueFromText(input);
     } else if (state == QValidator::Intermediate) {
-        // User has deleted all the number text.
-        // If they did this by selecting all text and then hitting delete
-        // make sure to put the cursor back in front of the prefix.
-        newValue = m_minimum;
-        this->lineEdit()->setCursorPosition(m_prefix.length());
+        if (input == m_prefix) {
+            // User has deleted all the number text.
+            // If they did this by selecting all text and then hitting delete
+            // make sure to put the cursor back in front of the prefix.
+            newValue = m_minimum;
+            this->lineEdit()->setCursorPosition(m_prefix.length());
+        } else {
+            // Other intermediate inputs (values outside of acceptable range) should be ignored.
+            return;
+        }
     }
     if (newValue != m_value) {
         m_value = newValue;
@@ -127,6 +138,7 @@ void UIntSpinBox::onEditFinished() {
 }
 
 void UIntSpinBox::stepBy(int steps) {
+    steps *= m_singleStep;
     auto newValue = m_value;
     if (steps < 0 && newValue + steps > newValue) {
         newValue = 0;
@@ -160,10 +172,14 @@ QValidator::State UIntSpinBox::validate(QString &input, int &pos) const {
 
     bool ok;
     uint32_t num = copy.toUInt(&ok, m_displayIntegerBase);
-    if (!ok || num < m_minimum || num > m_maximum)
+    if (!ok)
         return QValidator::Invalid;
 
     input += copy.toUpper();
+
+    if (num < m_minimum || num > m_maximum)
+        return QValidator::Intermediate;
+
     return QValidator::Acceptable;
 }
 

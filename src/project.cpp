@@ -32,9 +32,7 @@ int Project::num_pals_total = 13;
 
 Project::Project(QObject *parent) :
     QObject(parent)
-{
-    QObject::connect(&this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
-}
+{ }
 
 Project::~Project()
 {
@@ -186,7 +184,10 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
 
 bool Project::load() {
     this->parser.setUpdatesSplashScreen(true);
+    resetFileWatcher();
     resetFileCache();
+    QPixmapCache::clear();
+
     this->disabledSettingsNames.clear();
     bool success = readGlobalConstants()
                 && readMapLayouts()
@@ -225,6 +226,7 @@ bool Project::load() {
         initNewLayoutSettings();
         initNewMapSettings();
         applyParsedLimits();
+        logFileWatchStatus();
     }
     this->parser.setUpdatesSplashScreen(false);
     return success;
@@ -232,7 +234,6 @@ bool Project::load() {
 
 void Project::resetFileCache() {
     this->parser.clearFileCache();
-    this->failedFileWatchPaths.clear();
 
     const QSet<QString> filepaths = {
         // Whenever we load a tileset we'll need to parse some data from these files, so we cache them to avoid the overhead of opening the files.
@@ -272,6 +273,17 @@ void Project::clearMaps() {
 void Project::clearTilesetCache() {
     qDeleteAll(this->tilesetCache);
     this->tilesetCache.clear();
+}
+
+void Project::cacheTileset(const QString &name, Tileset *tileset) {
+    auto it = this->tilesetCache.constFind(name);
+    if (it != this->tilesetCache.constEnd() && it.value() && tileset != it.value()) {
+        // Callers of this function should ensure this doesn't happen,
+        // but in case it does we should avoid leaking memory.
+        logWarn(QString("New tileset %1 overwrote existing tileset.").arg(name));
+        delete it.value();
+    }
+    this->tilesetCache.insert(name, tileset);
 }
 
 Map* Project::loadMap(const QString &mapName) {
@@ -348,10 +360,10 @@ QSet<QString> Project::getTopLevelMapFields() const {
         "show_map_name",
         "battle_scene",
         "connections",
-        "object_events",
-        "warp_events",
-        "coord_events",
-        "bg_events",
+        Event::groupToJsonKey(Event::Group::Object),
+        Event::groupToJsonKey(Event::Group::Warp),
+        Event::groupToJsonKey(Event::Group::Coord),
+        Event::groupToJsonKey(Event::Group::Bg),
         "shared_events_map",
         "shared_scripts_map",
     };
@@ -450,10 +462,10 @@ bool Project::loadMapData(Map* map) {
     static const QMap<QString, Event::Type> defaultEventTypes = {
         // Map of the expected keys for each event group, and the default type of that group.
         // If the default type is Type::None then each event must specify its type, or its an error.
-        {"object_events", Event::Type::Object},
-        {"warp_events",   Event::Type::Warp},
-        {"coord_events",  Event::Type::None},
-        {"bg_events",     Event::Type::None},
+        {Event::groupToJsonKey(Event::Group::Object), Event::Type::Object},
+        {Event::groupToJsonKey(Event::Group::Warp),   Event::Type::Warp},
+        {Event::groupToJsonKey(Event::Group::Coord),  Event::Type::None},
+        {Event::groupToJsonKey(Event::Group::Bg),     Event::Type::None},
     };
     for (auto i = defaultEventTypes.constBegin(); i != defaultEventTypes.constEnd(); i++) {
         QString eventGroupKey = i.key();
@@ -749,16 +761,21 @@ bool Project::saveMapLayouts() {
 }
 
 bool Project::watchFile(const QString &filename) {
+    if (!porymapConfig.monitorFiles)
+        return true;
+
+    if (!this->fileWatcher) {
+        // Only create the file watcher when it's first needed (even an empty QFileSystemWatcher will consume system resources).
+        this->fileWatcher = new QFileSystemWatcher(this);
+        QObject::connect(this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
+    }
+
     QString filepath = filename.startsWith(this->root) ? filename : QString("%1/%2").arg(this->root).arg(filename);
-    if (!this->fileWatcher.addPath(filepath) && !this->fileWatcher.files().contains(filepath)) {
+    if (!this->fileWatcher->addPath(filepath) && !this->fileWatcher->files().contains(filepath)) {
         // We failed to watch the file, and this wasn't a file we were already watching.
-        // Log a warning, but only if A. we actually care that we failed, because 'monitor files' is enabled,
-        // B. we haven't logged a warning for this file yet, and C. we would have otherwise been able to watch it, because the file exists.
-        if (porymapConfig.monitorFiles && !this->failedFileWatchPaths.contains(filepath) && QFileInfo::exists(filepath)) {
+        // Record the filepath for logging later, assuming we should have been able to watch the file.
+        if (QFileInfo::exists(filepath)) {
             this->failedFileWatchPaths.insert(filepath);
-            logWarn(QString("Failed to add '%1' to file watcher. Currently watching %2 files.")
-                            .arg(Util::stripPrefix(filepath, this->root))
-                            .arg(this->fileWatcher.files().length()));
         }
         return false;
     }
@@ -774,8 +791,11 @@ bool Project::watchFiles(const QStringList &filenames) {
 }
 
 bool Project::stopFileWatch(const QString &filename) {
+    if (!this->fileWatcher)
+        return true;
+
     QString filepath = filename.startsWith(this->root) ? filename : QString("%1/%2").arg(this->root).arg(filename);
-    return this->fileWatcher.removePath(filepath);
+    return this->fileWatcher->removePath(filepath);
 }
 
 void Project::ignoreWatchedFileTemporarily(const QString &filepath) {
@@ -794,8 +814,8 @@ void Project::recordFileChange(const QString &filepath) {
     // Note: As a safety measure, many applications save an open file by writing a new file and then deleting the old one.
     //       In your slot function, you can check watcher.files().contains(path).
     //       If it returns false, check whether the file still exists and then call addPath() to continue watching it.
-    if (!this->fileWatcher.files().contains(filepath) && QFileInfo::exists(filepath)) {
-        this->fileWatcher.addPath(filepath);
+    if (this->fileWatcher && !this->fileWatcher->files().contains(filepath) && QFileInfo::exists(filepath)) {
+        this->fileWatcher->addPath(filepath);
     }
 
     if (this->modifiedFiles.contains(filepath)) {
@@ -813,6 +833,38 @@ void Project::recordFileChange(const QString &filepath) {
 
     this->modifiedFiles.insert(filepath);
     emit fileChanged(filepath);
+}
+
+// When calling 'watchFile' we record failures rather than log them immediately.
+// We do this primarily to condense the warning if we fail to monitor any files.
+void Project::logFileWatchStatus() {
+    if (!this->fileWatcher)
+        return;
+
+    int numSuccessful = this->fileWatcher->files().length();
+    int numAttempted = numSuccessful + this->failedFileWatchPaths.count();
+    if (numAttempted == 0)
+        return;
+
+    if (numSuccessful == 0) {
+        // We failed to watch every file we tried. As of writing this happens if Porymap is running
+        // on Windows and the project files are in WSL2. Rather than filling the log by
+        // outputting a warning for every file, just log that we failed to monitor any of them.
+        logWarn(QString("Failed to monitor project files"));
+        return;
+    } else {
+        logInfo(QString("Successfully monitoring %1/%2 project files").arg(numSuccessful).arg(numAttempted));
+    }
+
+    for (const auto &failedPath : this->failedFileWatchPaths) {
+        logWarn(QString("Failed to monitor project file '%1'").arg(failedPath));
+    }
+}
+
+void Project::resetFileWatcher() {
+    this->failedFileWatchPaths.clear();
+    delete this->fileWatcher;
+    this->fileWatcher = nullptr;
 }
 
 bool Project::saveMapGroups() {
@@ -1135,13 +1187,44 @@ bool Project::loadLayoutTilesets(Layout *layout) {
         logError(QString("Failed to load %1: missing secondary tileset label.").arg(layout->name));
         return false;
     }
+    if (!this->primaryTilesetLabels.contains(layout->tileset_primary_label)) {
+        logError(QString("Failed to load %1: unknown primary tileset label '%2'.")
+                            .arg(layout->name)
+                            .arg(layout->tileset_primary_label));
+        return false;
+    }
+    if (!this->secondaryTilesetLabels.contains(layout->tileset_secondary_label)) {
+        logError(QString("Failed to load %1: unknown secondary tileset label '%2'.")
+                            .arg(layout->name)
+                            .arg(layout->tileset_secondary_label));
+        return false;
+    }
 
     layout->tileset_primary = getTileset(layout->tileset_primary_label);
     layout->tileset_secondary = getTileset(layout->tileset_secondary_label);
     return layout->tileset_primary && layout->tileset_secondary;
 }
 
-Tileset* Project::loadTileset(QString label, Tileset *tileset) {
+Tileset* Project::getTileset(const QString &label, bool forceLoad) {
+    if (!this->tilesetLabelsOrdered.contains(label)) {
+        logError(QString("Unknown tileset name '%1'.").arg(label));
+        return nullptr;
+    }
+
+    Tileset *tileset = nullptr;
+
+    auto it = this->tilesetCache.constFind(label);
+    if (it != this->tilesetCache.constEnd()) {
+        tileset = it.value();
+        if (!forceLoad) {
+            return tileset;
+        }
+    } else {
+        // Create a cache entry even if we don't end up loading the tileset successfully.
+        // This will prevent repeated file reads if the tileset fails to load.
+        cacheTileset(label, nullptr);
+    }
+
     auto memberMap = Tileset::getHeaderMemberMap(this->usingAsmTilesets);
     if (this->usingAsmTilesets) {
         // Read asm tileset header. Backwards compatibility
@@ -1186,7 +1269,7 @@ Tileset* Project::loadTileset(QString label, Tileset *tileset) {
         return nullptr;
     }
 
-    tilesetCache.insert(label, tileset);
+    cacheTileset(tileset->name, tileset);
     return tileset;
 }
 
@@ -1216,7 +1299,7 @@ void Project::setNewLayoutBorder(Layout *layout) {
     } else {
         // Fill the border with the default metatiles from the config.
         for (int i = 0; i < width * height; i++) {
-            layout->border.append(projectConfig.newMapBorderMetatileIds.at(i));
+            layout->border.append(projectConfig.newMapBorderMetatileIds.value(i));
         }
     }
 
@@ -1313,41 +1396,25 @@ bool Project::saveMap(Map *map, bool skipLayout) {
         mapObj["connections"] = OrderedJson();
     }
 
-    if (map->sharedEventsMap().isEmpty()) {
-        // Object events
-        OrderedJson::array objectEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Object)){
-            objectEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["object_events"] = objectEventsArr;
-
-
-        // Warp events
-        OrderedJson::array warpEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Warp)) {
-            warpEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["warp_events"] = warpEventsArr;
-
-        // Coord events
-        OrderedJson::array coordEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Coord)) {
-            coordEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["coord_events"] = coordEventsArr;
-
-        // Bg Events
-        OrderedJson::array bgEventsArr;
-        for (const auto &event : map->getEvents(Event::Group::Bg)) {
-            bgEventsArr.push_back(event->buildEventJson(this));
-        }
-        mapObj["bg_events"] = bgEventsArr;
-    } else {
+    if (map->isInheritingEvents()) {
         mapObj["shared_events_map"] = map->sharedEventsMap();
     }
-
-    if (!map->sharedScriptsMap().isEmpty()) {
+    if (map->isInheritingScripts()) {
         mapObj["shared_scripts_map"] = map->sharedScriptsMap();
+    }
+
+    if (!map->isInheritingEvents()) {
+        auto buildEventsJson = [this, map](Event::Group group, OrderedJson::object *json) {
+            OrderedJson::array arr;
+            for (const auto &event : map->getEvents(group)){
+                arr.push_back(event->buildEventJson(this));
+            }
+            (*json)[Event::groupToJsonKey(group)] = arr;
+        };
+        buildEventsJson(Event::Group::Object, &mapObj);
+        buildEventsJson(Event::Group::Warp, &mapObj);
+        buildEventsJson(Event::Group::Coord, &mapObj);
+        buildEventsJson(Event::Group::Bg, &mapObj);
     }
 
     // Update the global heal locations array using the Map's heal location events.
@@ -1478,7 +1545,7 @@ void Project::readTilesetPaths(Tileset* tileset) {
         tileset->metatile_attrs_path = defaultPath + "/metatile_attributes.bin";
     if (tileset->palettePaths.isEmpty()) {
         QString palettes_dir_path = defaultPath + "/palettes/";
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < Tileset::maxPalettes(); i++) {
             tileset->palettePaths.append(palettes_dir_path + QString("%1").arg(i, 2, 10, QLatin1Char('0')) + ".pal");
         }
     }
@@ -1519,9 +1586,8 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
     tileset->loadTilesImage(&tilesImage);
 
     // Create default metatiles
-    const int numMetatiles = tileset->is_secondary ? (Project::getNumMetatilesTotal() - Project::getNumMetatilesPrimary()) : Project::getNumMetatilesPrimary();
     const int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
-    for (int i = 0; i < numMetatiles; ++i) {
+    for (int i = 0; i < tileset->maxMetatiles(); ++i) {
         auto metatile = new Metatile();
         for(int j = 0; j < tilesPerMetatile; ++j){
             Tile tile = Tile();
@@ -1541,9 +1607,9 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
     }
 
     // Create default palettes
-    for(int i = 0; i < 16; ++i) {
+    for(int i = 0; i < Tileset::maxPalettes(); ++i) {
         QList<QRgb> currentPal;
-        for(int i = 0; i < 16;++i) {
+        for(int i = 0; i < Tileset::numColorsPerPalette();++i) {
             currentPal.append(qRgb(0,0,0));
         }
         tileset->palettes.append(currentPal);
@@ -1579,15 +1645,14 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
         metatilesFilepath.append(projectConfig.getFilePath(ProjectFilePath::tilesets_metatiles));
     }
     ignoreWatchedFilesTemporarily({headersFilepath, graphicsFilepath, metatilesFilepath});
-    name.remove(0, prefix.length()); // Strip prefix from name to get base name for use in other symbols.
-    tileset->appendToHeaders(headersFilepath, name, this->usingAsmTilesets);
-    tileset->appendToGraphics(graphicsFilepath, name, this->usingAsmTilesets);
-    tileset->appendToMetatiles(metatilesFilepath, name, this->usingAsmTilesets);
+    QString baseName = Tileset::stripPrefix(name);
+    tileset->appendToHeaders(headersFilepath, baseName, this->usingAsmTilesets);
+    tileset->appendToGraphics(graphicsFilepath, baseName, this->usingAsmTilesets);
+    tileset->appendToMetatiles(metatilesFilepath, baseName, this->usingAsmTilesets);
 
     tileset->save();
 
-    this->tilesetCache.insert(tileset->name, tileset);
-
+    cacheTileset(tileset->name, tileset);
     emit tilesetCreated(tileset);
     return tileset;
 }
@@ -1636,23 +1701,10 @@ void Project::loadTilesetMetatileLabels(Tileset* tileset) {
     QString metatileLabelPrefix = tileset->getMetatileLabelPrefix();
 
     // Reverse map for faster lookup by metatile id
+    tileset->metatileLabels.clear();
     for (auto it = this->metatileLabelsMap[tileset->name].constBegin(); it != this->metatileLabelsMap[tileset->name].constEnd(); it++) {
         QString labelName = it.key();
         tileset->metatileLabels[it.value()] = labelName.replace(metatileLabelPrefix, "");
-    }
-}
-
-Tileset* Project::getTileset(QString label, bool forceLoad) {
-    Tileset *existingTileset = nullptr;
-    if (tilesetCache.contains(label)) {
-        existingTileset = tilesetCache.value(label);
-    }
-
-    if (existingTileset && !forceLoad) {
-        return existingTileset;
-    } else {
-        Tileset *tileset = loadTileset(label, existingTileset);
-        return tileset;
     }
 }
 
@@ -2228,6 +2280,7 @@ bool Project::readTilesetLabels() {
     this->primaryTilesetLabels.clear();
     this->secondaryTilesetLabels.clear();
     this->tilesetLabelsOrdered.clear();
+    clearTilesetCache();
 
     QString filename = projectConfig.getFilePath(ProjectFilePath::tilesets_headers);
     QFileInfo fileInfo(this->root + "/" + filename);
@@ -2309,7 +2362,7 @@ bool Project::readFieldmapProperties() {
             logWarn(QString("Value for '%1' not found. Using default (%2) instead.").arg(name).arg(*dest));
         }
     };
-    loadDefine(numPalsTotalName,        &Project::num_pals_total, 2, INT_MAX); // In reality the max would be 16, but as far as Porymap is concerned it doesn't matter.
+    loadDefine(numPalsTotalName,        &Project::num_pals_total, 2, Tileset::maxPalettes());
     loadDefine(numTilesTotalName,       &Project::num_tiles_total, 2, 1024); // 1024 is fixed because we store tile IDs in a 10-bit field.
     loadDefine(numPalsPrimaryName,      &Project::num_pals_primary, 1, Project::num_pals_total - 1);
     loadDefine(numTilesPrimaryName,     &Project::num_tiles_primary, 1, Project::num_tiles_total - 1);
@@ -2361,12 +2414,11 @@ bool Project::readFieldmapProperties() {
         // We can determine whether triple-layer metatiles are in-use by reading this constant.
         // If the constant is missing (or is using a value other than 8 or 12) the user must tell
         // us whether they're using triple-layer metatiles under Project Settings.
-        static const int numTilesPerLayer = 4;
         int numTilesPerMetatile = it.value();
-        if (numTilesPerMetatile == 2 * numTilesPerLayer) {
+        if (numTilesPerMetatile == 2 * Metatile::tilesPerLayer()) {
             projectConfig.tripleLayerMetatilesEnabled = false;
             this->disabledSettingsNames.insert(numTilesPerMetatileName);
-        } else if (numTilesPerMetatile == 3 * numTilesPerLayer) {
+        } else if (numTilesPerMetatile == 3 * Metatile::tilesPerLayer()) {
             projectConfig.tripleLayerMetatilesEnabled = true;
             this->disabledSettingsNames.insert(numTilesPerMetatileName);
         }
@@ -2423,6 +2475,7 @@ bool Project::readFieldmapMasks() {
         projectConfig.blockCollisionMask = blockMask;
     if (readBlockMask(elevationMaskName, &blockMask))
         projectConfig.blockElevationMask = blockMask;
+    Block::setLayout();
 
     // Read RSE metatile attribute masks
     auto it = defines.find(behaviorMaskName);
@@ -2602,7 +2655,10 @@ void Project::setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries
 QHash<QString, MapSectionEntry> Project::getRegionMapEntries() const {
     QHash<QString, MapSectionEntry> entries;
     for (auto it = this->locationData.constBegin(); it != this->locationData.constEnd(); it++) {
-        entries[it.key()] = it.value().map;
+        const MapSectionEntry regionMapData = it.value().map;
+        if (regionMapData.valid) {
+            entries[it.key()] = regionMapData;
+        }
     }
     return entries;
 }
@@ -2928,13 +2984,19 @@ bool Project::readGlobalConstants() {
 bool Project::readEventScriptLabels() {
     this->globalScriptLabels.clear();
 
-    if (porymapConfig.loadAllEventScripts) {
-        for (const auto &filePath : getEventScriptsFilepaths())
-            this->globalScriptLabels << ParseUtil::getGlobalScriptLabels(filePath);
-
-       this->globalScriptLabels.sort(Qt::CaseInsensitive);
-       this->globalScriptLabels.removeDuplicates();
+    QStringList paths;
+    if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::All) {
+        paths = getAllEventScriptsFilepaths();
+    } else if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::MapAndCommon) {
+        paths = getCommonEventScriptsFilepaths();
     }
+
+    for (const auto &path : paths) {
+        this->globalScriptLabels << ParseUtil::getGlobalScriptLabels(path);
+    }
+    this->globalScriptLabels.sort(Qt::CaseInsensitive);
+    this->globalScriptLabels.removeDuplicates();
+
     emit eventScriptLabelsRead();
     return true;
 }
@@ -2970,30 +3032,46 @@ QString Project::getScriptDefaultString(bool usePoryScript, QString mapName) con
         return QString("%1_MapScripts::\n\t.byte 0\n").arg(mapName);
 }
 
-QStringList Project::getEventScriptsFilepaths() const {
-    QStringList filePaths(QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts)));
-    const QString scriptsDir = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_scripts_folders));
-    const QString mapsDir = QDir::cleanPath(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_map_folders));
+QStringList Project::getAllEventScriptsFilepaths() const {
+    return getMapScriptsFilepaths() + getCommonEventScriptsFilepaths();
+}
 
-    if (projectConfig.usePoryScript) {
-        QDirIterator it_pory_shared(scriptsDir, {"*.pory"}, QDir::Files);
-        while (it_pory_shared.hasNext())
-            filePaths << it_pory_shared.next();
+// Get the paths for all "scripts.inc" / "scripts.pory" files in the data/maps/*/ folders.
+QStringList Project::getMapScriptsFilepaths() const {
+    return findScriptsFiles(projectConfig.getFilePath(ProjectFilePath::data_map_folders), {"scripts"});
+}
 
-        QDirIterator it_pory_maps(mapsDir, {"scripts.pory"}, QDir::Files, QDirIterator::Subdirectories);
-        while (it_pory_maps.hasNext())
-            filePaths << it_pory_maps.next();
+// Get the paths for all "*.inc" / "*.pory" files in the data/scripts/ folder, + data/event_scripts.s.
+QStringList Project::getCommonEventScriptsFilepaths() const {
+    QStringList paths = { QDir::cleanPath(this->root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts)) };
+    return paths + findScriptsFiles(projectConfig.getFilePath(ProjectFilePath::data_scripts_folders));
+}
+
+QStringList Project::findScriptsFiles(const QString &searchDir, const QStringList &fileNames) const {
+    QStringList paths;
+
+    QString dir = searchDir;
+    if (!dir.startsWith(this->root)) {
+        dir = QDir::cleanPath(this->root + "/" + dir);
     }
 
-    QDirIterator it_inc_shared(scriptsDir, {"*.inc"}, QDir::Files);
-    while (it_inc_shared.hasNext())
-        filePaths << it_inc_shared.next();
+    QStringList filters;
+    for (const auto &s : fileNames) {
+        filters.append(s + getScriptFileExtension(false));
+        if (projectConfig.usePoryScript) {
+            filters.append(s + getScriptFileExtension(true));
+        }
+    }
 
-    QDirIterator it_inc_maps(mapsDir, {"scripts.inc"}, QDir::Files, QDirIterator::Subdirectories);
-    while (it_inc_maps.hasNext())
-        filePaths << it_inc_maps.next();
-
-    return filePaths;
+    // TODO: Filter out .inc files that are generated by a .pory file.
+    //       They won't cause problems for the user, but it'll create extra parsing work later.
+    if (!filters.isEmpty()) {
+        QDirIterator it(dir, filters, QDir::Files, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+        while (it.hasNext()) {
+            paths.append(it.next());
+        }
+    }
+    return paths;
 }
 
 void Project::loadEventPixmap(Event *event, bool forceLoad) {
@@ -3380,14 +3458,25 @@ QString Project::getEmptySpeciesName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_species_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_species_empty);
 }
 
-// Get the distance in metatiles (rounded up) that the player is able to see in each direction in-game.
+// Get the distance in pixels that the player is able to see in each direction in-game,
+// rounded up to a multiple of a metatile's pixel size.
+QMargins Project::getPixelViewDistance() {
+    QMargins viewDistance = projectConfig.playerViewDistance;
+    viewDistance.setTop(Util::roundUpToMultiple(viewDistance.top(), Metatile::pixelHeight()));
+    viewDistance.setBottom(Util::roundUpToMultiple(viewDistance.bottom(), Metatile::pixelHeight()));
+    viewDistance.setLeft(Util::roundUpToMultiple(viewDistance.left(), Metatile::pixelWidth()));
+    viewDistance.setRight(Util::roundUpToMultiple(viewDistance.right(), Metatile::pixelWidth()));
+    return viewDistance;
+}
+
+// Get the distance in metatiles that the player is able to see in each direction in-game.
 // For the default view distance (i.e. assuming the player is centered in a 240x160 pixel GBA screen) this is 7x5 metatiles.
 QMargins Project::getMetatileViewDistance() {
-    QMargins viewDistance = projectConfig.playerViewDistance;
-    viewDistance.setTop(qCeil(viewDistance.top() / 16.0));
-    viewDistance.setBottom(qCeil(viewDistance.bottom() / 16.0));
-    viewDistance.setLeft(qCeil(viewDistance.left() / 16.0));
-    viewDistance.setRight(qCeil(viewDistance.right() / 16.0));
+    QMargins viewDistance = getPixelViewDistance();
+    viewDistance.setTop(viewDistance.top() / Metatile::pixelHeight());
+    viewDistance.setBottom(viewDistance.bottom() / Metatile::pixelHeight());
+    viewDistance.setLeft(viewDistance.left() / Metatile::pixelWidth());
+    viewDistance.setRight(viewDistance.right() / Metatile::pixelWidth());
     return viewDistance;
 }
 
@@ -3417,15 +3506,14 @@ void Project::applyParsedLimits() {
     projectConfig.metatileEncounterTypeMask &= maxMask;
     projectConfig.metatileLayerTypeMask &= maxMask;
 
-    Block::setLayout();
     Metatile::setLayout(this);
 
-    Project::num_metatiles_primary = qMin(qMax(Project::num_metatiles_primary, 1), Block::getMaxMetatileId() + 1);
+    Project::num_metatiles_primary = qBound(1, Project::num_metatiles_primary, Block::getMaxMetatileId() + 1);
     projectConfig.defaultMetatileId = qMin(projectConfig.defaultMetatileId, Block::getMaxMetatileId());
     projectConfig.defaultElevation = qMin(projectConfig.defaultElevation, Block::getMaxElevation());
     projectConfig.defaultCollision = qMin(projectConfig.defaultCollision, Block::getMaxCollision());
-    projectConfig.collisionSheetSize.setHeight(qMin(qMax(projectConfig.collisionSheetSize.height(), 1), Block::getMaxElevation() + 1));
-    projectConfig.collisionSheetSize.setWidth(qMin(qMax(projectConfig.collisionSheetSize.width(), 1), Block::getMaxCollision() + 1));
+    projectConfig.collisionSheetSize.setHeight(qBound(1, projectConfig.collisionSheetSize.height(), Block::getMaxElevation() + 1));
+    projectConfig.collisionSheetSize.setWidth(qBound(1, projectConfig.collisionSheetSize.width(), Block::getMaxCollision() + 1));
 }
 
 bool Project::hasUnsavedChanges() {
@@ -3444,4 +3532,35 @@ bool Project::hasUnsavedChanges() {
             return true;
     }
     return false;
+}
+
+// Searches the project's map layouts to find the names of the tilesets that the provided tileset gets paired with.
+QSet<QString> Project::getPairedTilesetLabels(const Tileset *tileset) const {
+    QSet<QString> pairedLabels;
+    for (const auto &layout : this->mapLayouts) {
+        if (tileset->is_secondary) {
+            if (layout->tileset_secondary_label == tileset->name) {
+                pairedLabels.insert(layout->tileset_primary_label);
+            }
+        } else if (layout->tileset_primary_label == tileset->name) {
+            pairedLabels.insert(layout->tileset_secondary_label);
+        }
+    }
+    return pairedLabels;
+}
+
+// Returns the set of IDs for the layouts that use the specified tilesets.
+// nullptr for either tileset is treated as a wildcard (so 'getTilesetLayouts(nullptr, nullptr)' returns all layout IDs).
+QSet<QString> Project::getTilesetLayoutIds(const Tileset *primaryTileset, const Tileset *secondaryTileset) const {
+    // Note: We're intentioanlly just returning the layout IDs, and not the pointer to the layout.
+    //       The layout may not be loaded yet (which isn't obvious), and we should leave it up to the caller to request that.
+    QSet<QString> layoutIds;
+    for (const auto &layout : this->mapLayouts) {
+        if (primaryTileset && primaryTileset->name != layout->tileset_primary_label)
+            continue;
+        if (secondaryTileset && secondaryTileset->name != layout->tileset_secondary_label)
+            continue;
+        layoutIds.insert(layout->id);
+    }
+    return layoutIds;
 }

@@ -161,6 +161,7 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_PlayerViewDistance_North->setMaximum(INT_MAX);
     ui->spinBox_PlayerViewDistance_East->setMaximum(INT_MAX);
     ui->spinBox_PlayerViewDistance_South->setMaximum(INT_MAX);
+    ui->spinBox_MetatileSelectorWidth->setMaximum(maxMetatileId + 1);
 
     // The values for some of the settings we provide in this window can be determined using constants in the user's projects.
     // If the user has these constants we disable these settings in the UI -- they can modify them using their constants.
@@ -232,7 +233,7 @@ QList<uint16_t> ProjectSettingsEditor::getBorderMetatileIds(bool customSize) {
         // Custom border size, read metatiles from line edit
         for (auto s : ui->lineEdit_BorderMetatiles->text().split(",")) {
             uint16_t metatileId = s.toUInt(nullptr, 0);
-            metatileIds.append(qMin(metatileId, static_cast<uint16_t>(Project::getNumMetatilesTotal() - 1)));
+            metatileIds.append(qMin(metatileId, Block::getMaxMetatileId()));
         }
     } else {
         // Default border size, read metatiles from spin boxes
@@ -475,7 +476,7 @@ void ProjectSettingsEditor::refresh() {
     ui->checkBox_PreserveMatchingOnlyData->setChecked(projectConfig.preserveMatchingOnlyData);
 
     // Radio buttons
-    if (projectConfig.setTransparentPixelsBlack)
+    if (projectConfig.transparencyColor == QColor(Qt::black))
         ui->radioButton_RenderBlack->setChecked(true);
     else
         ui->radioButton_RenderFirstPalColor->setChecked(true);
@@ -503,6 +504,7 @@ void ProjectSettingsEditor::refresh() {
     ui->spinBox_PlayerViewDistance_North->setValue(projectConfig.playerViewDistance.top());
     ui->spinBox_PlayerViewDistance_East->setValue(projectConfig.playerViewDistance.right());
     ui->spinBox_PlayerViewDistance_South->setValue(projectConfig.playerViewDistance.bottom());
+    ui->spinBox_MetatileSelectorWidth->setValue(projectConfig.metatileSelectorWidth);
 
     // Set (and sync) border metatile IDs
     this->setBorderMetatileIds(false, projectConfig.newMapBorderMetatileIds);
@@ -574,7 +576,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.tilesetsHaveCallback = ui->checkBox_OutputCallback->isChecked();
     projectConfig.tilesetsHaveIsCompressed = ui->checkBox_OutputIsCompressed->isChecked();
     porymapConfig.warpBehaviorWarningDisabled = ui->checkBox_DisableWarning->isChecked();
-    projectConfig.setTransparentPixelsBlack = ui->radioButton_RenderBlack->isChecked();
+    projectConfig.transparencyColor = ui->radioButton_RenderBlack->isChecked() ? QColor(Qt::black) : QColor();
     projectConfig.preserveMatchingOnlyData = ui->checkBox_PreserveMatchingOnlyData->isChecked();
 
     // Save spin box settings
@@ -598,6 +600,7 @@ void ProjectSettingsEditor::save() {
                                                 ui->spinBox_PlayerViewDistance_North->value(),
                                                 ui->spinBox_PlayerViewDistance_East->value(),
                                                 ui->spinBox_PlayerViewDistance_South->value());
+    projectConfig.metatileSelectorWidth = ui->spinBox_MetatileSelectorWidth->value();
 
     // Save line edit settings
     projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();

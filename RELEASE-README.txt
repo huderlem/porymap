@@ -1,11 +1,65 @@
-Version: 6.1.0
-Date: June 9th, 2025
+Version: 6.2.0
+Date: August 8th, 2025
 
 Official Porymap documentation: https://huderlem.github.io/porymap/
 
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [6.2.0] - 2025-08-08
+### Added
+- Add `View > Show Unused Colors` to the Palette Editor.
+- Add `Tools > Find Color Usage` to the Palette Editor. This opens a dialog showing which metatiles use a particular color.
+- Add `Edit > Swap Metatiles` to the Tileset Editor. While in this mode, selecting two metatiles in the selector will swap their positions. When changes to the tilesets are saved these relocations will be applied to all layouts that use the relevant tileset(s).
+- Add `View > Layer Arrangement` to the Tileset Editor, which changes whether the metatile layer view is oriented vertically (default) or horizontally.
+- Add an `Export Metatiles Image` option to the Tileset Editor that provides many more options for customizing metatile images.
+- Add an `Export Porytiles Layer Images` option to the Tileset Editor, which is a shortcut for individually exporting layer images that Porytiles can use.
+- Add an option under `Preferences` to include common scripts in the autocomplete for Script labels.
+- Add a setting under `Project Settings` to change the width of the metatile selectors.
+- Add versions of the API functions `[get|set]MetatileLayerOrder` and `[get|set]MetatileLayerOpacity` that work globally, rather than on individual layouts.
+- A link to Porymap's manual is now available under `Help`.
+
+### Changed
+- The Player View Rectangle is now visible on the Events tab, as is the Cursor Tile Outline for certain tools.
+- When hovering over tiles in the Tileset Editor their palette and x/yflip are now listed alongside the tile ID.
+- The scroll position of the map view now remains the same between the Connections tab and the Map/Events tabs.
+- The Move tool now behaves more like a traditional pan tool (with no momentum).
+- The map image exporter now uses a checkered background to indicate transparency.
+- Invalid tile IDs are now rendered as magenta (like invalid metatiles), instead of rendering the same as a transparent tile.
+- While holding down `Ctrl` (`Cmd` on macOS) painting on the metatile layer view will now only change the tile's palette.
+- Full menu paths are now listed for shortcuts in the Shortcuts Editor.
+- Adding new event data to a map that has a `shared_events_map` will now remove the `shared_events_map`, rather than discard the event data.
+
+### Fixed
+- Fix crash when rendering tiles with invalid palette numbers.
+- Fix crash when opening the Tileset Editor for tilesets with no metatiles.
+- Fix crash when changing the map/border size in certain API callbacks.
+- Fix metatile images exporting at 2x scale.
+- Fix display errors when a project's metatile limits are not divisible by 8.
+- Fix incorrect dividing line position for primary tiles images that are smaller than the maximum size.
+- Fix the checkered background of the `Change Dimensions` popup shifting while scrolling around.
+- Fix pasting Wild Pokémon data then changing maps resetting the pasted data.
+- Fix click-drag map selections behaving unexpectedly when the cursor is outside the map grid.
+- Fix events being dragged in negative coordinates lagging behind the cursor.
+- Fix the shortcut for duplicating events working while on the Connections tab.
+- Fix the Shortcuts Editor displaying the duplicate shortcut prompt repeatedly.
+- Fix the clear text button on the left in each row of the Shortcuts Editor also clearing the shortcut on the right.
+- Fix Undo/Redo ignoring the automatic resizing that occurs if a layout/border was an unexpected size.
+- Fix Undo/Redo in the Tileset and Palette Editors and Paste in the Tileset Editor appearing enabled even when they don't do anything.
+- Fix `Ctrl+Shift+Z` not being set as a default shortcut for Redo in the Palette Editor like it is for other windows.
+- Fix the Tileset Editor's status bar not updating while selecting tiles in the metatile layer view, or when pasting metatiles.
+- Fix the main window's status bar not immediately reflecting changes made while painting metatiles / movement permissions.
+- Fix cleared metatile labels not updating until the project is reloaded.
+- Fix some changes in the Tileset Editor being discarded if the window is closed too quickly.
+- Fix the Region Map Editor incorrectly displaying whether a `MAPSEC` has region map data.
+- Fix the Primary/Secondary Tileset selectors allowing invalid text, and considering a map unsaved if changed to invalid text then back again.
+- Fix broken error message for the primary tileset on the new map/layout dialogs.
+- Fix the dialog for duplicating/importing a map layout not allowing the tilesets to be changed.
+- Fix warning not appearing when the log file exceeds maximum size.
+- Fix possible lag while using the Tileset Editor's tile selector.
+- Fix unnecessary resources being used to watch files.
+- Fix possible crash on Linux if too many inotify instances are requested.
 
 ## [6.1.0] - 2025-06-09
 ### Added

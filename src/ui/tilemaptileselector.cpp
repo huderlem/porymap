@@ -7,9 +7,9 @@ void TilemapTileSelector::draw() {
     this->pixelWidth = width_;
     size_t height_ = this->tileset.height();
     this->pixelHeight = height_;
-    size_t ntiles_ = (width_/8) * (height_/8);
+    size_t ntiles_ = (width_/this->cellWidth) * (height_/this->cellHeight);
 
-    this->numTilesWide = width_ / 8;
+    this->numTilesWide = width_ / this->cellWidth;
     this->numTiles     = ntiles_;
 
     this->setPixmap(QPixmap::fromImage(this->setPalette(this->tile_palette)));
@@ -92,7 +92,7 @@ QImage TilemapTileSelector::tileImg(shared_ptr<TilemapTile> tile) {
     QImage tilesetImage = setPalette(tile->palette());
 
     // take a tile from the tileset
-    QImage img = tilesetImage.copy(pos.x() * 8, pos.y() * 8, 8, 8);
+    QImage img = tilesetImage.copy(pos.x() * this->cellWidth, pos.y() * this->cellHeight, this->cellWidth, this->cellHeight);
 
     // QImage::flip was introduced in 6.9.0 to replace QImage::mirrored.
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))

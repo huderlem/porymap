@@ -2,14 +2,24 @@
 #ifndef SCRIPTUTILITY_H
 #define SCRIPTUTILITY_H
 
-#include "mainwindow.h"
+#if __has_include(<QJSValue>)
+#include <QJSValue>
+#endif
+
+#ifdef QT_QML_LIB
+
+#include <QAction>
+#include <QMessageBox>
+#include <QSet>
+#include <QTimer>
+
+class MainWindow;
 
 class ScriptUtility : public QObject
 {
     Q_OBJECT
-
 public:
-    ScriptUtility(MainWindow *mainWindow);
+    ScriptUtility(MainWindow *mainWindow) : window(mainWindow) {}
     ~ScriptUtility();
 
     QString getActionFunctionName(int actionIndex);
@@ -38,9 +48,9 @@ public:
     Q_INVOKABLE bool getSmartPathsEnabled();
     Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE QList<int> getMetatileLayerOrder();
-    Q_INVOKABLE void setMetatileLayerOrder(QList<int> order);
+    Q_INVOKABLE void setMetatileLayerOrder(const QList<int> &order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();
-    Q_INVOKABLE void setMetatileLayerOpacity(QList<float> order);
+    Q_INVOKABLE void setMetatileLayerOpacity(const QList<float> &order);
     Q_INVOKABLE QList<QString> getMapNames();
     Q_INVOKABLE QList<QString> getMapConstants();
     Q_INVOKABLE QList<QString> getLayoutNames();
@@ -57,6 +67,8 @@ public:
     Q_INVOKABLE bool isPrimaryTileset(QString tilesetName);
     Q_INVOKABLE bool isSecondaryTileset(QString tilesetName);
 
+    static bool validateMetatileLayerOrder(const QList<int> &order);
+
 private:
     void callTimeoutFunction(QJSValue callback);
     void runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon);
@@ -66,5 +78,7 @@ private:
     QSet<QTimer *> activeTimers;
     QHash<int, QString> actionMap;
 };
+
+#endif // QT_QML_LIB
 
 #endif // SCRIPTUTILITY_H

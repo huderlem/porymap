@@ -62,10 +62,10 @@ void NewLayoutDialog::refresh() {
     if (this->layoutToCopy) {
         // If we're importing a layout then some settings will be enforced.
         ui->newLayoutForm->setSettings(this->layoutToCopy->settings());
-        ui->newLayoutForm->setDisabled(true);
+        ui->newLayoutForm->setDimensionsDisabled(true);
     } else {
         ui->newLayoutForm->setSettings(*settings);
-        ui->newLayoutForm->setDisabled(false);
+        ui->newLayoutForm->setDimensionsDisabled(false);
     }
 
     ui->lineEdit_Name->setText(settings->name);

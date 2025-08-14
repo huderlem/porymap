@@ -1,7 +1,7 @@
 #include "preferenceeditor.h"
 #include "ui_preferenceeditor.h"
-#include "config.h"
 #include "noscrollcombobox.h"
+#include "message.h"
 
 #include <QAbstractButton>
 #include <QRegularExpression>
@@ -75,7 +75,14 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_OpenRecentProject->setChecked(porymapConfig.reopenOnLaunch);
     ui->checkBox_CheckForUpdates->setChecked(porymapConfig.checkForUpdates);
     ui->checkBox_DisableEventWarning->setChecked(porymapConfig.eventDeleteWarningDisabled);
-    ui->checkBox_AutocompleteAllScripts->setChecked(porymapConfig.loadAllEventScripts);
+
+    if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::MapOnly) {
+        ui->radioButton_AutocompleteMapScripts->setChecked(true);
+    } else if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::MapAndCommon) {
+        ui->radioButton_AutocompleteCommonScripts->setChecked(true);
+    } else if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::All) {
+        ui->radioButton_AutocompleteAllScripts->setChecked(true);
+    }
 
     auto logTypeEnd = porymapConfig.statusBarLogTypes.end();
     ui->checkBox_StatusErrors->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_ERROR) != logTypeEnd);
@@ -87,20 +94,28 @@ void PreferenceEditor::updateFields() {
 }
 
 void PreferenceEditor::saveFields() {
+    bool needsProjectReload = false;
+
     bool changedTheme = false;
     if (themeSelector->currentText() != porymapConfig.theme) {
         porymapConfig.theme = themeSelector->currentText();
         changedTheme = true;
     }
-    bool loadAllEventScripts = ui->checkBox_AutocompleteAllScripts->isChecked();
-    if (loadAllEventScripts != porymapConfig.loadAllEventScripts) {
-        porymapConfig.loadAllEventScripts = loadAllEventScripts;
-        emit scriptSettingsChanged(loadAllEventScripts);
+
+    auto scriptAutocompleteMode = ScriptAutocompleteMode::MapOnly;
+    if (ui->radioButton_AutocompleteCommonScripts->isChecked()) {
+        scriptAutocompleteMode = ScriptAutocompleteMode::MapAndCommon;
+    } else if (ui->radioButton_AutocompleteAllScripts->isChecked()) {
+        scriptAutocompleteMode = ScriptAutocompleteMode::All;
     }
+    if (scriptAutocompleteMode != porymapConfig.scriptAutocompleteMode) {
+        porymapConfig.scriptAutocompleteMode = scriptAutocompleteMode;
+        emit scriptSettingsChanged(scriptAutocompleteMode);
+    }
+
     porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
     porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();
-    porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();
     porymapConfig.reopenOnLaunch = ui->checkBox_OpenRecentProject->isChecked();
     porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
     porymapConfig.eventDeleteWarningDisabled = ui->checkBox_DisableEventWarning->isChecked();
@@ -109,6 +124,11 @@ void PreferenceEditor::saveFields() {
     if (ui->checkBox_StatusErrors->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_ERROR);
     if (ui->checkBox_StatusWarnings->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_WARN);
     if (ui->checkBox_StatusInformation->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_INFO);
+
+    if (porymapConfig.monitorFiles != ui->checkBox_MonitorProjectFiles->isChecked()) {
+        porymapConfig.monitorFiles = ui->checkBox_MonitorProjectFiles->isChecked();
+        needsProjectReload = true;
+    }
 
     if (porymapConfig.applicationFont != this->applicationFont) {
         porymapConfig.applicationFont = this->applicationFont;
@@ -119,12 +139,18 @@ void PreferenceEditor::saveFields() {
         changedTheme = true;
     }
 
-    porymapConfig.save();
-
-    emit preferencesSaved();
-
     if (changedTheme) {
         emit themeChanged(porymapConfig.theme);
+    }
+
+    porymapConfig.save();
+    emit preferencesSaved();
+
+    if (needsProjectReload) {
+        auto message = QStringLiteral("Some changes will only take effect after reloading the project. Reload the project now?");
+        if (QuestionMessage::show(message, this) == QMessageBox::Yes) {
+            emit reloadProjectRequested();
+        }
     }
 }
 

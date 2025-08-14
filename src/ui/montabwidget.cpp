@@ -11,6 +11,9 @@ static WildMonInfo encounterClipboard;
 
 MonTabWidget::MonTabWidget(Editor *editor, QWidget *parent) : QTabWidget(parent) {
     this->editor = editor;
+    connect(this, &MonTabWidget::edited, this->editor, &Editor::saveEncounterTabData);
+    connect(this, &MonTabWidget::edited, this->editor, &Editor::wildMonTableEdited);
+
     populate();
     this->tabBar()->installEventFilter(new WheelFilter(this));
 }
@@ -64,7 +67,7 @@ void MonTabWidget::paste(int index) {
     WildMonInfo newInfo = getDefaultMonInfo(this->editor->project->wildMonFields.at(index));
     combineEncounters(newInfo, encounterClipboard);
     populateTab(index, newInfo);
-    emit editor->wildMonTableEdited();
+    emit edited();
 }
 
 void MonTabWidget::actionCopyTab(int index) {
@@ -88,15 +91,12 @@ void MonTabWidget::actionAddDeleteTab(int index) {
     if (activeTabs[index]) {
         // delete tab
         deactivateTab(index);
-        editor->saveEncounterTabData();
-    }
-    else {
+    } else {
         // add tab
         populateTab(index, getDefaultMonInfo(editor->project->wildMonFields.at(index)));
-        editor->saveEncounterTabData();
         setCurrentIndex(index);
     }
-    emit editor->wildMonTableEdited();
+    emit edited();
 }
 
 void MonTabWidget::clearTableAt(int tabIndex) {
@@ -123,8 +123,7 @@ void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
     QTableView *speciesTable = tableAt(tabIndex);
 
     EncounterTableModel *model = new EncounterTableModel(monInfo, editor->project->wildMonFields[tabIndex], this);
-    connect(model, &EncounterTableModel::edited, editor, &Editor::saveEncounterTabData);
-    connect(model, &EncounterTableModel::edited, editor, &Editor::wildMonTableEdited);
+    connect(model, &EncounterTableModel::edited, this, &MonTabWidget::edited);
     speciesTable->setModel(model);
 
     speciesTable->setItemDelegateForColumn(EncounterTableModel::ColumnType::Species, new SpeciesComboDelegate(editor->project, this));

@@ -36,8 +36,10 @@ int Metatile::getIndexInTileset(int metatileId) {
 }
 
 QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
-    int x = static_cast<int>(pixelCoord.x()) / 16;
-    int y = static_cast<int>(pixelCoord.y()) / 16;
+    int x = static_cast<int>(pixelCoord.x()) / pixelWidth();
+    int y = static_cast<int>(pixelCoord.y()) / pixelHeight();
+    if (pixelCoord.x() < 0) x--;
+    if (pixelCoord.y() < 0) y--;
     return QPoint(x, y);
 }
 
@@ -46,12 +48,17 @@ QString Metatile::getMetatileIdString(uint16_t metatileId) {
     return Util::toHexString(metatileId, numMetatileIdChars);
 };
 
-QString Metatile::getMetatileIdStrings(const QList<uint16_t> metatileIds) {
+QString Metatile::getMetatileIdStrings(const QList<uint16_t> &metatileIds) {
     QStringList metatiles;
     for (auto metatileId : metatileIds)
         metatiles << Metatile::getMetatileIdString(metatileId);
     return metatiles.join(",");
 };
+
+QString Metatile::getLayerName(int layerNum) {
+    static const QStringList layerTitles = { "Bottom", "Middle", "Top"};
+    return layerTitles.value(layerNum);
+}
 
 // Read and pack together this metatile's attributes.
 uint32_t Metatile::getAttributes() const {

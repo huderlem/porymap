@@ -17,12 +17,12 @@ void RegionMapEntriesPixmapItem::draw() {
         entry_w = entry.width, entry_h = entry.height;
     }
 
-    QImage image(region_map->tilemapWidth() * 8, region_map->tilemapHeight() * 8, QImage::Format_RGBA8888);
+    QImage image(region_map->tilemapWidth() * this->cellWidth, region_map->tilemapHeight() * this->cellHeight, QImage::Format_RGBA8888);
 
     QPainter painter(&image);
     for (int i = 0; i < region_map->tilemapSize(); i++) {
         QImage bottom_img = this->tile_selector->tileImg(region_map->getTile(i));
-        QImage top_img(8, 8, QImage::Format_RGBA8888);
+        QImage top_img(this->cellWidth, this->cellHeight, QImage::Format_RGBA8888);
         int x = i % region_map->tilemapWidth();
         int y = i / region_map->tilemapWidth();
         bool insideEntry = false;
@@ -40,7 +40,7 @@ void RegionMapEntriesPixmapItem::draw() {
         } else {
             top_img.fill(Qt::black);
         }
-        QPoint pos = QPoint(x * 8, y * 8);
+        QPoint pos = QPoint(x * this->cellWidth, y * this->cellHeight);
         painter.setOpacity(1);
         painter.drawImage(pos, bottom_img);
         painter.save();

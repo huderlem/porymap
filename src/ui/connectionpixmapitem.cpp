@@ -100,9 +100,9 @@ void ConnectionPixmapItem::updatePos() {
 void ConnectionPixmapItem::updateOrigin() {
     if (this->connection->isVertical()) {
         this->originX = 0;
-        this->originY = this->connection->relativePos(true).y() * this->mHeight;
+        this->originY = this->connection->relativePixelPos(true).y();
     } else if (this->connection->isHorizontal()) {
-        this->originX = this->connection->relativePos(true).x() * this->mWidth;
+        this->originX = this->connection->relativePixelPos(true).x();
         this->originY = 0;
     }
     updatePos();
@@ -126,7 +126,11 @@ void ConnectionPixmapItem::setSelected(bool selected) {
     emit selectionChanged(selected);
 }
 
-void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
+void ConnectionPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    if (!this->getEditable()) {
+        event->ignore();
+        return;
+    }
     this->setSelected(true);
 }
 
