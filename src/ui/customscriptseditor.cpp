@@ -21,7 +21,7 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     const QStringList paths = userConfig.getCustomScriptPaths();
     const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
     for (int i = 0; i < paths.length(); i++)
-        this->displayScript(paths.at(i), enabled.at(i));
+        this->displayScript(paths.at(i), enabled.value(i, true));
 
     connect(ui->button_Help, &QAbstractButton::clicked, this, &CustomScriptsEditor::openManual);
     connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);

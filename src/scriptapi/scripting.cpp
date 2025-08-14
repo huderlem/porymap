@@ -1,8 +1,10 @@
+#if __has_include(<QQmlEngine>)
 #include <QQmlEngine>
 
 #include "scripting.h"
 #include "log.h"
 #include "config.h"
+#include "mainwindow.h"
 
 const QMap<CallbackType, QString> callbackFunctions = {
     {OnProjectOpened, "onProjectOpened"},
@@ -41,7 +43,7 @@ Scripting::Scripting(MainWindow *mainWindow) {
     const QStringList paths = userConfig.getCustomScriptPaths();
     const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
     for (int i = 0; i < paths.length(); i++) {
-        if (enabled.at(i))
+        if (enabled.value(i, true))
             this->filepaths.append(paths.at(i));
     }
     this->loadModules(this->filepaths);
@@ -99,15 +101,12 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     constants.setProperty("version", version);
 
     // Get basic tileset information
-    int numTilesPrimary = Project::getNumTilesPrimary();
-    int numMetatilesPrimary = Project::getNumMetatilesPrimary();
-    int numPalettesPrimary = Project::getNumPalettesPrimary();
-    constants.setProperty("max_primary_tiles", numTilesPrimary);
-    constants.setProperty("max_secondary_tiles", Project::getNumTilesTotal() - numTilesPrimary);
-    constants.setProperty("max_primary_metatiles", numMetatilesPrimary);
-    constants.setProperty("max_secondary_metatiles", Project::getNumMetatilesTotal() - numMetatilesPrimary);
-    constants.setProperty("num_primary_palettes", numPalettesPrimary);
-    constants.setProperty("num_secondary_palettes", Project::getNumPalettesTotal() - numPalettesPrimary);
+    constants.setProperty("max_primary_tiles", Project::getNumTilesPrimary());
+    constants.setProperty("max_secondary_tiles", Project::getNumTilesSecondary());
+    constants.setProperty("max_primary_metatiles", Project::getNumMetatilesPrimary());
+    constants.setProperty("max_secondary_metatiles", Project::getNumMetatilesSecondary());
+    constants.setProperty("num_primary_palettes", Project::getNumPalettesPrimary());
+    constants.setProperty("num_secondary_palettes", Project::getNumPalettesSecondary());
     constants.setProperty("layers_per_metatile", projectConfig.getNumLayersInMetatile());
     constants.setProperty("tiles_per_metatile", projectConfig.getNumTilesInMetatile());
 
@@ -301,7 +300,7 @@ void Scripting::cb_MapShifted(int xDelta, int yDelta) {
     instance->invokeCallback(OnMapShifted, args);
 }
 
-void Scripting::cb_TilesetUpdated(QString tilesetName) {
+void Scripting::cb_TilesetUpdated(const QString &tilesetName) {
     if (!instance) return;
 
     QJSValueList args {
@@ -425,3 +424,6 @@ const QImage * Scripting::getImage(const QString &inputFilepath, bool useCache) 
     instance->imageCache.insert(inputFilepath, image);
     return image;
 }
+
+
+#endif // __has_include(<QQmlEngine>)

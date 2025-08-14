@@ -24,7 +24,7 @@ public:
     void setSettings(const Layout::Settings &settings);
     Layout::Settings settings() const;
 
-    void setDisabled(bool disabled);
+    void setDimensionsDisabled(bool disabled);
 
     bool validate();
 

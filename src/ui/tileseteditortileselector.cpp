@@ -4,61 +4,76 @@
 #include <QPainter>
 #include <QVector>
 
-QPoint TilesetEditorTileSelector::getSelectionDimensions() {
+QSize TilesetEditorTileSelector::getSelectionDimensions() const {
     if (this->externalSelection) {
-        return QPoint(this->externalSelectionWidth, this->externalSelectionHeight);
+        return QSize(this->externalSelectionWidth, this->externalSelectionHeight);
     } else {
         return SelectablePixmapItem::getSelectionDimensions();
     }
 }
 
-void TilesetEditorTileSelector::draw() {
-    if (!this->primaryTileset || !this->secondaryTileset) {
-        this->setPixmap(QPixmap());
+void TilesetEditorTileSelector::setMaxSelectionSize(int width, int height) {
+    width = qMax(1, width);
+    height = qMax(1, height);
+    SelectablePixmapItem::setMaxSelectionSize(width, height);
+    if (this->externalSelection) {
+        if (this->externalSelectionWidth > this->maxSelectionWidth || this->externalSelectionHeight > this->maxSelectionHeight) {
+            // Crop external selection to new max size.
+            QList<Tile> cropped;
+            int croppedWidth = qMin(this->externalSelectionWidth, this->maxSelectionWidth);
+            int croppedHeight = qMin(this->externalSelectionHeight, this->maxSelectionHeight);
+            for (int y = 0; y < croppedHeight; y++)
+            for (int x = 0; x < croppedWidth; x++) {
+                int index = y * this->externalSelectionWidth + x;
+                cropped.append(this->externalSelectedTiles.value(index));
+            }
+            this->externalSelectionWidth = croppedWidth;
+            this->externalSelectionHeight = croppedHeight;
+            this->externalSelectedTiles = cropped;
+        }
+    } else {
+        updateSelectedTiles();
+    }
+}
+
+void TilesetEditorTileSelector::updateBasePixmap() {
+    if (!this->primaryTileset || !this->secondaryTileset || this->numTilesWide == 0) {
+        this->basePixmap = QPixmap();
+        return;
     }
 
     int totalTiles = Project::getNumTilesTotal();
-    int primaryLength = this->primaryTileset->tiles.length();
-    int secondaryLength = this->secondaryTileset->tiles.length();
     int height = totalTiles / this->numTilesWide;
-    QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
-    QImage image(this->numTilesWide * 16, height * 16, QImage::Format_RGBA8888);
+    QImage image(this->numTilesWide * this->cellWidth, height * this->cellHeight, QImage::Format_RGBA8888);
 
     QPainter painter(&image);
-    for (uint16_t tile = 0; tile < totalTiles; tile++) {
-        QImage tileImage;
-        if (tile < primaryLength) {
-            tileImage = getPalettedTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId, true).scaled(16, 16);
-        } else if (tile < Project::getNumTilesPrimary()) {
-            tileImage = QImage(16, 16, QImage::Format_RGBA8888);
-            tileImage.fill(palette.at(0));
-        } else if (tile < Project::getNumTilesPrimary() + secondaryLength) {
-            tileImage = getPalettedTileImage(tile, this->primaryTileset, this->secondaryTileset, this->paletteId, true).scaled(16, 16);
-        } else {
-            tileImage = QImage(16, 16, QImage::Format_RGBA8888);
-            QPainter painter(&tileImage);
-            painter.fillRect(0, 0, 16, 16, palette.at(0));
-        }
-
-        int y = tile / this->numTilesWide;
-        int x = tile % this->numTilesWide;
-        QPoint origin = QPoint(x * 16, y * 16);
-        painter.drawImage(origin, tileImage);
+    for (uint16_t tileId = 0; tileId < totalTiles; tileId++) {
+        QImage tileImage = getPalettedTileImage(tileId, this->primaryTileset, this->secondaryTileset, this->paletteId, true)
+                                                .scaled(this->cellWidth, this->cellHeight);
+        int x = (tileId % this->numTilesWide) * this->cellWidth;
+        int y = (tileId / this->numTilesWide) * this->cellHeight;
+        painter.drawImage(x, y, tileImage);
     }
+    painter.end();
+
+    this->basePixmap = QPixmap::fromImage(image);
+}
+
+void TilesetEditorTileSelector::draw() {
+    if (this->basePixmap.isNull())
+        updateBasePixmap();
+
+    QPixmap pixmap = this->basePixmap;
 
     if (this->showDivider) {
-        int row = this->primaryTileset->tiles.length() / this->numTilesWide;
-        if (this->primaryTileset->tiles.length() % this->numTilesWide != 0) {
-            // Round up height for incomplete last row
-            row++;
-        }
-        const int y = row * 16;
+        QPainter painter(&pixmap);
+        int row = Util::roundUpToMultiple(Project::getNumTilesPrimary(), this->numTilesWide) / this->numTilesWide;
+        const int y = row * this->cellHeight;
         painter.setPen(Qt::white);
-        painter.drawLine(0, y, this->numTilesWide * 16, y);
+        painter.drawLine(0, y, this->numTilesWide * this->cellWidth, y);
     }
 
-    painter.end();
-    this->setPixmap(QPixmap::fromImage(image));
+    setPixmap(pixmap);
 
     if (!this->externalSelection || (this->externalSelectionWidth == 1 && this->externalSelectionHeight == 1)) {
         this->drawSelection();
@@ -82,12 +97,14 @@ void TilesetEditorTileSelector::highlight(uint16_t tile) {
 void TilesetEditorTileSelector::setTilesets(Tileset *primaryTileset, Tileset *secondaryTileset) {
     this->primaryTileset = primaryTileset;
     this->secondaryTileset = secondaryTileset;
+    this->updateBasePixmap();
     this->draw();
 }
 
 void TilesetEditorTileSelector::setPaletteId(int paletteId) {
     this->paletteId = paletteId;
     this->paletteChanged = true;
+    this->updateBasePixmap();
     this->draw();
 }
 
@@ -101,9 +118,9 @@ void TilesetEditorTileSelector::updateSelectedTiles() {
     this->externalSelection = false;
     this->selectedTiles.clear();
     QPoint origin = this->getSelectionStart();
-    QPoint dimensions = this->getSelectionDimensions();
-    for (int j = 0; j < dimensions.y(); j++) {
-        for (int i = 0; i < dimensions.x(); i++) {
+    QSize dimensions = this->getSelectionDimensions();
+    for (int j = 0; j < dimensions.height(); j++) {
+        for (int i = 0; i < dimensions.width(); i++) {
             uint16_t metatileId = this->getTileId(origin.x() + i, origin.y() + j);
             this->selectedTiles.append(metatileId);
         }
@@ -114,41 +131,32 @@ QList<Tile> TilesetEditorTileSelector::getSelectedTiles() {
     if (this->externalSelection) {
         return buildSelectedTiles(this->externalSelectionWidth, this->externalSelectionHeight, this->externalSelectedTiles);
     } else {
-        QPoint dimensions = this->getSelectionDimensions();
+        QSize dimensions = this->getSelectionDimensions();
         QList<Tile> tiles;
         for (int i = 0; i < this->selectedTiles.length(); i++) {
             uint16_t tile = this->selectedTiles.at(i);
             tiles.append(Tile(tile, false, false, this->paletteId));
         }
-        return buildSelectedTiles(dimensions.x(), dimensions.y(), tiles);
+        return buildSelectedTiles(dimensions.width(), dimensions.height(), tiles);
     }
 }
 
-QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height, QList<Tile> selected) {
+QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height, const QList<Tile> &selected) {
     QList<Tile> tiles;
     QList<QList<Tile>> tileMatrix;
     for (int j = 0; j < height; j++) {
         QList<Tile> row;
-        QList<Tile> layerRow;
         for (int i = 0; i < width; i++) {
             int index = i + j * width;
-            Tile tile = selected.at(index);
+            Tile tile = selected.value(index);
             tile.xflip ^= this->xFlip;
             tile.yflip ^= this->yFlip;
             if (this->paletteChanged)
                 tile.palette = this->paletteId;
             if (this->xFlip)
-                layerRow.prepend(tile);
+                row.prepend(tile);
             else
-                layerRow.append(tile);
-
-            // If we've completed a layer row, or its the last tile of an incompletely
-            // selected layer, then append the layer row to the full row
-            // If not an external selection, treat the whole row as 1 "layer"
-            if (i == width - 1 || (this->externalSelection && (this->externalSelectedPos.at(index) % 4) & 1)) {
-                row.append(layerRow);
-                layerRow.clear();
-            }
+                row.append(tile);
         }
         if (this->yFlip)
             tileMatrix.prepend(row);
@@ -163,15 +171,14 @@ QList<Tile> TilesetEditorTileSelector::buildSelectedTiles(int width, int height,
     return tiles;
 }
 
-void TilesetEditorTileSelector::setExternalSelection(int width, int height, QList<Tile> tiles, QList<int> tileIdxs) {
+void TilesetEditorTileSelector::setExternalSelection(int width, int height, const QList<Tile> &tiles) {
+    width = qBound(1, width, this->maxSelectionWidth);
+    height = qBound(1, height, this->maxSelectionHeight);
     this->externalSelection = true;
     this->paletteChanged = false;
     this->externalSelectionWidth = width;
     this->externalSelectionHeight = height;
-    this->externalSelectedTiles.clear();
-    this->externalSelectedTiles.append(tiles);
-    this->externalSelectedPos.clear();
-    this->externalSelectedPos.append(tileIdxs);
+    this->externalSelectedTiles = tiles.mid(0, width * height);
     this->draw();
     emit selectedTilesChanged();
 }
@@ -181,16 +188,20 @@ uint16_t TilesetEditorTileSelector::getTileId(int x, int y) {
 }
 
 void TilesetEditorTileSelector::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    this->prevCellPos = getCellPos(event->pos());
     SelectablePixmapItem::mousePressEvent(event);
     this->updateSelectedTiles();
     emit selectedTilesChanged();
 }
 
 void TilesetEditorTileSelector::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    QPoint pos = getCellPos(event->pos());
+    if (this->prevCellPos == pos)
+        return;
+    this->prevCellPos = pos;
+
     SelectablePixmapItem::mouseMoveEvent(event);
     this->updateSelectedTiles();
-
-    QPoint pos = this->getCellPos(event->pos());
     uint16_t tile = this->getTileId(pos.x(), pos.y());
     emit hoveredTileChanged(tile);
     emit selectedTilesChanged();
@@ -213,7 +224,7 @@ void TilesetEditorTileSelector::hoverLeaveEvent(QGraphicsSceneHoverEvent*) {
 }
 
 QPoint TilesetEditorTileSelector::getTileCoords(uint16_t tile) {
-    if (tile >= Project::getNumTilesTotal())
+    if (tile >= Project::getNumTilesTotal() || this->numTilesWide == 0)
     {
         // Invalid tile.
         return QPoint(0, 0);
@@ -233,28 +244,30 @@ QImage TilesetEditorTileSelector::buildPrimaryTilesIndexedImage() {
     if (!this->primaryTileset)
         return QImage();
 
-    return buildImage(0, this->primaryTileset->tiles.length());
+    return buildImage(0, this->primaryTileset->numTiles());
 }
 
 QImage TilesetEditorTileSelector::buildSecondaryTilesIndexedImage() {
     if (!this->secondaryTileset)
         return QImage();
 
-    return buildImage(Project::getNumTilesPrimary(), this->secondaryTileset->tiles.length());
+    return buildImage(Project::getNumTilesPrimary(), this->secondaryTileset->numTiles());
 }
 
 QImage TilesetEditorTileSelector::buildImage(int tileIdStart, int numTiles) {
+    if (this->numTilesWide == 0)
+        return QImage();
+
     int height = qCeil(numTiles / static_cast<double>(this->numTilesWide));
-    QImage image(this->numTilesWide * 8, height * 8, QImage::Format_RGBA8888);
+    QImage image(this->numTilesWide * Tile::pixelWidth(), height * Tile::pixelHeight(), QImage::Format_RGBA8888);
     image.fill(0);
 
     QPainter painter(&image);
     for (int i = 0; i < numTiles; i++) {
         QImage tileImage = getGreyscaleTileImage(tileIdStart + i, this->primaryTileset, this->secondaryTileset);
-        int y = i / this->numTilesWide;
-        int x = i % this->numTilesWide;
-        QPoint origin = QPoint(x * 8, y * 8);
-        painter.drawImage(origin, tileImage);
+        int x = (i % this->numTilesWide) * Tile::pixelWidth();
+        int y = (i / this->numTilesWide) * Tile::pixelHeight();
+        painter.drawImage(x, y, tileImage);
     }
     painter.end();
 
@@ -305,7 +318,7 @@ void TilesetEditorTileSelector::drawUnused() {
 
     for (int tile = 0; tile < this->usedTiles.size(); tile++) {
         if (!this->usedTiles[tile]) {
-            unusedPainter.drawPixmap((tile % 16) * 16, (tile / 16) * 16, redX);
+            unusedPainter.drawPixmap((tile % this->cellWidth) * this->cellWidth, (tile / this->cellWidth) * this->cellHeight, redX);
         }
     }
 

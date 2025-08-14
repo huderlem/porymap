@@ -2,12 +2,19 @@
 #ifndef SCRIPTING_H
 #define SCRIPTING_H
 
-#include "mainwindow.h"
-#include "block.h"
+#include <QStringList>
 #include "scriptutility.h"
 
-#include <QStringList>
+class Block;
+class Tile;
+class MainWindow;
+
+#if __has_include(<QJSEngine>)
 #include <QJSEngine>
+#endif
+
+
+#ifdef QT_QML_LIB
 
 // !! New callback functions or changes to existing callback function names/arguments
 //    should be synced to resources/text/script_template.txt and docsrc/manual/scripting-capabilities.rst
@@ -51,7 +58,7 @@ public:
     static void cb_MapResized(int oldWidth, int oldHeight, const QMargins &delta);
     static void cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int newHeight);
     static void cb_MapShifted(int xDelta, int yDelta);
-    static void cb_TilesetUpdated(QString tilesetName);
+    static void cb_TilesetUpdated(const QString &tilesetName);
     static void cb_MainTabChanged(int oldTab, int newTab);
     static void cb_MapViewTabChanged(int oldTab, int newTab);
     static void cb_BorderVisibilityToggled(bool visible);
@@ -77,5 +84,35 @@ private:
     void loadModules(QStringList moduleFiles);
     void invokeCallback(CallbackType type, QJSValueList args);
 };
+
+#else
+
+class Scripting
+{
+public:
+    Scripting(MainWindow *) {}
+    ~Scripting() {}
+    static void init(MainWindow *) {}
+    static void stop() {}
+    static void populateGlobalObject(MainWindow *) {}
+
+    static void cb_ProjectOpened(QString) {};
+    static void cb_ProjectClosed(QString) {};
+    static void cb_MetatileChanged(int, int, Block, Block) {};
+    static void cb_BorderMetatileChanged(int, int, uint16_t, uint16_t) {};
+    static void cb_BlockHoverChanged(int, int) {};
+    static void cb_BlockHoverCleared() {};
+    static void cb_MapOpened(QString) {};
+    static void cb_LayoutOpened(QString) {};
+    static void cb_MapResized(int, int, const QMargins &) {};
+    static void cb_BorderResized(int, int, int, int) {};
+    static void cb_MapShifted(int, int) {};
+    static void cb_TilesetUpdated(const QString &) {};
+    static void cb_MainTabChanged(int, int) {};
+    static void cb_MapViewTabChanged(int, int) {};
+    static void cb_BorderVisibilityToggled(bool) {};
+};
+
+#endif // QT_QML_LIB
 
 #endif // SCRIPTING_H

@@ -7,8 +7,8 @@
 class TilesetEditorTileSelector: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset, int numLayers)
-        : SelectablePixmapItem(16, 16, numLayers * 2, 2) {
+    TilesetEditorTileSelector(Tileset *primaryTileset, Tileset *secondaryTileset)
+        : SelectablePixmapItem(16, 16, Metatile::tileWidth(), Metatile::tileWidth()) {
         this->primaryTileset = primaryTileset;
         this->secondaryTileset = secondaryTileset;
         this->numTilesWide = 16;
@@ -18,15 +18,16 @@ public:
         this->paletteChanged = false;
         setAcceptHoverEvents(true);
     }
-    QPoint getSelectionDimensions();
-    void draw();
+    QSize getSelectionDimensions() const override;
+    void setMaxSelectionSize(int width, int height) override;
+    void draw() override;
     void select(uint16_t metatileId);
     void highlight(uint16_t metatileId);
     void setTilesets(Tileset*, Tileset*);
     void setPaletteId(int);
     void setTileFlips(bool, bool);
     QList<Tile> getSelectedTiles();
-    void setExternalSelection(int, int, QList<Tile>, QList<int>);
+    void setExternalSelection(int, int, const QList<Tile>&);
     QPoint getTileCoordsOnWidget(uint16_t);
     QImage buildPrimaryTilesIndexedImage();
     QImage buildSecondaryTilesIndexedImage();
@@ -36,18 +37,19 @@ public:
     bool showDivider = false;
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent*);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent*);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent*);
-    void hoverMoveEvent(QGraphicsSceneHoverEvent*);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+    void mousePressEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent*) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent*) override;
 
 private:
+    QPixmap basePixmap;
     bool externalSelection;
     int externalSelectionWidth;
     int externalSelectionHeight;
     QList<Tile> externalSelectedTiles;
-    QList<int> externalSelectedPos;
+    QPoint prevCellPos = QPoint(-1,-1);
 
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
@@ -61,9 +63,9 @@ private:
     uint16_t getTileId(int x, int y);
     QPoint getTileCoords(uint16_t);
     QList<QRgb> getCurPaletteTable();
-    QList<Tile> buildSelectedTiles(int, int, QList<Tile>);
+    QList<Tile> buildSelectedTiles(int, int, const QList<Tile>&);
     QImage buildImage(int tileIdStart, int numTiles);
-
+    void updateBasePixmap();
     void drawUnused();
 
 signals:

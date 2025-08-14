@@ -8,6 +8,8 @@
 #include <QStaticText>
 #include <QPainterPath>
 
+#ifdef QT_QML_LIB
+
 class OverlayItem {
 public:
     OverlayItem() {}
@@ -122,5 +124,18 @@ private:
     qreal opacity;
     QRectF *clippingRect;
 };
+
+#else
+
+class Overlay
+{
+public:
+    Overlay() {}
+    ~Overlay() {}
+
+    void renderItems(QPainter *) {}
+};
+
+#endif // QT_QML_LIB
 
 #endif // OVERLAY_H

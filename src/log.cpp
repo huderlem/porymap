@@ -196,8 +196,9 @@ void logInit() {
         clearLogDisplays();
     });
 
+    Log::initialized = true;
+
     if (cleanupLargeLog()) {
         logWarn(QString("Previous log file %1 was cleared due to being over 20MB in size.").arg(Log::path));
     }
-    Log::initialized = true;
 }

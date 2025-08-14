@@ -852,7 +852,7 @@
              <x>0</x>
              <y>0</y>
              <width>570</width>
-             <height>798</height>
+             <height>837</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -972,6 +972,27 @@
                </item>
               </layout>
              </widget>
+            </item>
+            <item>
+             <layout class="QFormLayout" name="formLayout_MetatileSelectorWidth">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_MetatileSelectorWidth">
+                <property name="text">
+                 <string>Metatile Selector Width</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="NoScrollSpinBox" name="spinBox_MetatileSelectorWidth">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The width (in metatiles) of the metatile selectors on the Map tab and in the Tileset Editor.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
              <widget class="QFrame" name="frame_WarningTilesetsTab">
@@ -1874,16 +1895,6 @@
    <header>noscrollcombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>NoScrollSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>noscrollspinbox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>NoScrollTextEdit</class>
-   <extends>QTextEdit</extends>
-   <header>noscrolltextedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>UIntSpinBox</class>
    <extends>QAbstractSpinBox</extends>
    <header>uintspinbox.h</header>
@@ -1892,6 +1903,16 @@
    <class>UIntHexSpinBox</class>
    <extends>UIntSpinBox</extends>
    <header location="global">uintspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>noscrollspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>NoScrollTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>noscrolltextedit.h</header>
   </customwidget>
  </customwidgets>
  <resources>

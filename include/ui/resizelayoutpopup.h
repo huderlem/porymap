@@ -3,10 +3,10 @@
 
 #include "maplayout.h"
 #include "project.h"
+#include "checkeredbgscene.h"
 
 #include <QDialog>
 #include <QPointer>
-#include <QGraphicsScene>
 #include <QGraphicsLineItem>
 #include <QGraphicsRectItem>
 #include <QDialogButtonBox>
@@ -16,39 +16,12 @@ namespace Ui {
     class ResizeLayoutPopup;
 }
 
-
-
-/// Custom scene that paints its background a gray checkered pattern.
-/// Additionally there is a definable "valid" area which will paint the checkerboard green inside.
-class CheckeredBgScene : public QGraphicsScene {
-    Q_OBJECT
-
-public:
-    CheckeredBgScene(QObject *parent = nullptr);
-    void setValidRect(int x, int y, int width, int height) {
-        this->validRect = QRect(x * this->gridSize, y * this->gridSize, width * this->gridSize, height * this->gridSize);
-    }
-    void setValidRect(QRect rect) {
-        this->validRect = rect;
-    }
-    QRect getValidRect() { return this->validRect; }
-
-protected:
-    void drawBackground(QPainter *painter, const QRectF &rect) override;
-
-private:
-    int gridSize = 16; // virtual pixels
-    QRect validRect = QRect();
-};
-
-
-
 /// PixmapItem subclass which allows for creating a boundary which determine whether
 /// the pixmap paints normally or with a black tint.
-/// This item is movable and snaps on a 16x16 grid.
+/// This item is movable and snaps on a 'cellSize' grid.
 class BoundedPixmapItem : public QGraphicsPixmapItem {
 public:
-    BoundedPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = nullptr);
+    BoundedPixmapItem(const QPixmap &pixmap, const QSize &cellSize, QGraphicsItem *parent = nullptr);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 
     void setBoundary(ResizableRect *rect) { this->boundary = rect; }
@@ -59,6 +32,7 @@ protected:
 private:
     ResizableRect *boundary = nullptr;
     QPointF clickedPos = QPointF();
+    QSize cellSize;
 };
 
 

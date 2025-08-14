@@ -2,6 +2,7 @@
 #define CONNECTIONPIXMAPITEM_H
 
 #include "mapconnection.h"
+#include "metatile.h"
 #include <QGraphicsPixmapItem>
 #include <QPainter>
 #include <QPointer>
@@ -31,8 +32,8 @@ private:
     bool selected = false;
     unsigned actionId = 0;
 
-    static const int mWidth = 16;
-    static const int mHeight = 16;
+    static const int mWidth = Metatile::pixelWidth();
+    static const int mHeight = Metatile::pixelHeight();
 
     void updatePos();
     void updateOrigin();

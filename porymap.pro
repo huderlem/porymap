@@ -4,12 +4,22 @@
 #
 #-------------------------------------------------
 
-QT       += core gui qml network
+QT       += core gui
 
 qtHaveModule(charts) {
     QT += charts
 } else {
     warning("Qt module 'charts' not found, disabling chart features.")
+}
+qtHaveModule(qml) {
+    QT += qml
+} else {
+    warning("Qt module 'qml' not found, disabling plug-in features.")
+}
+qtHaveModule(network) {
+    QT += network
+} else {
+    warning("Qt module 'network' not found, disabling network features.")
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -30,7 +40,7 @@ win32 {
 
 DEFINES += PORYMAP_LATEST_COMMIT=\\\"$$LATEST_COMMIT\\\"
 
-VERSION = 6.1.0
+VERSION = 6.2.0
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/core/advancemapparser.cpp \
@@ -66,6 +76,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/scriptapi/apiutility.cpp \
     src/scriptapi/scripting.cpp \
     src/ui/aboutporymap.cpp \
+    src/ui/checkeredbgscene.cpp \
     src/ui/colorinputwidget.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customattributesdialog.cpp \
@@ -115,6 +126,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/montabwidget.cpp \
     src/ui/encountertablemodel.cpp \
     src/ui/encountertabledelegates.cpp \
+    src/ui/palettecolorsearch.cpp \
     src/ui/paletteeditor.cpp \
     src/ui/selectablepixmapitem.cpp \
     src/ui/tileseteditor.cpp \
@@ -124,6 +136,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/regionmapeditor.cpp \
     src/ui/newmapdialog.cpp \
     src/ui/mapimageexporter.cpp \
+    src/ui/metatileimageexporter.cpp \
     src/ui/newtilesetdialog.cpp \
     src/ui/flowlayout.cpp \
     src/ui/mapruler.cpp \
@@ -180,6 +193,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/lib/orderedmap.h \
     include/lib/orderedjson.h \
     include/ui/aboutporymap.h \
+    include/ui/checkeredbgscene.h \
     include/ui/connectionslistitem.h \
     include/ui/customattributesdialog.h \
     include/ui/customattributestable.h \
@@ -231,6 +245,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/encountertablemodel.h \
     include/ui/encountertabledelegates.h \
     include/ui/adjustingstackedwidget.h \
+    include/ui/palettecolorsearch.h \
     include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \
     include/ui/tileseteditor.h \
@@ -240,6 +255,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/regionmapeditor.h \
     include/ui/newmapdialog.h \
     include/ui/mapimageexporter.h \
+    include/ui/metatileimageexporter.h \
     include/ui/newtilesetdialog.h \
     include/ui/overlay.h \
     include/ui/flowlayout.h \
@@ -283,12 +299,14 @@ FORMS    += forms/mainwindow.ui \
     forms/prefabcreationdialog.ui \
     forms/prefabframe.ui \
     forms/tileseteditor.ui \
+    forms/palettecolorsearch.ui \
     forms/paletteeditor.ui \
     forms/regionmapeditor.ui \
     forms/newmapdialog.ui \
     forms/aboutporymap.ui \
     forms/newtilesetdialog.ui \
     forms/mapimageexporter.ui \
+    forms/metatileimageexporter.ui \
     forms/shortcutseditor.ui \
     forms/preferenceeditor.ui \
     forms/regionmappropertiesdialog.ui \

@@ -17,7 +17,7 @@ class BorderMetatilesPixmapItem;
 class Layout : public QObject {
     Q_OBJECT
 public:
-    Layout() {}
+    Layout() {};
     Layout(const Layout &other);
 
     static QString layoutConstantFromName(const QString &name);
@@ -32,6 +32,9 @@ public:
     int height;
     int border_width;
     int border_height;
+    int pixelWidth() const { return this->width * Metatile::pixelWidth(); }
+    int pixelHeight() const { return this->height * Metatile::pixelHeight(); }
+    QSize pixelSize() const { return QSize(pixelWidth(), pixelHeight()); }
 
     QString border_path;
     QString blockdata_path;
@@ -64,8 +67,25 @@ public:
         QSize borderDimensions;
     } lastCommitBlocks; // to track map changes
 
-    QList<int> metatileLayerOrder;
-    QList<float> metatileLayerOpacity;
+    void setMetatileLayerOrder(const QList<int> &layerOrder) { m_metatileLayerOrder = layerOrder; }
+    const QList<int> &metatileLayerOrder() const {
+        return !m_metatileLayerOrder.isEmpty() ? m_metatileLayerOrder : Layout::globalMetatileLayerOrder();
+    }
+    static void setGlobalMetatileLayerOrder(const QList<int> &layerOrder) { s_globalMetatileLayerOrder = layerOrder; }
+    static const QList<int> &globalMetatileLayerOrder() {
+        static const QList<int> defaultLayerOrder = {0, 1, 2};
+        return !s_globalMetatileLayerOrder.isEmpty() ? s_globalMetatileLayerOrder : defaultLayerOrder;
+    }
+
+    void setMetatileLayerOpacity(const QList<float> &layerOpacity) { m_metatileLayerOpacity = layerOpacity; }
+    const QList<float> &metatileLayerOpacity() const {
+        return !m_metatileLayerOpacity.isEmpty() ? m_metatileLayerOpacity : Layout::globalMetatileLayerOpacity();
+    }
+    static void setGlobalMetatileLayerOpacity(const QList<float> &layerOpacity) { s_globalMetatileLayerOpacity = layerOpacity; }
+    static const QList<float> &globalMetatileLayerOpacity() {
+        static const QList<float> defaultLayerOpacity = {1.0, 1.0, 1.0};
+        return !s_globalMetatileLayerOpacity.isEmpty() ? s_globalMetatileLayerOpacity : defaultLayerOpacity;
+    }
 
     LayoutPixmapItem *layoutItem = nullptr;
     CollisionPixmapItem *collisionItem = nullptr;
@@ -100,12 +120,16 @@ public:
     QRect getVisibleRect() const;
 
     bool isWithinBounds(int x, int y) const;
+    bool isWithinBounds(const QPoint &pos) const;
     bool isWithinBounds(const QRect &rect) const;
     bool isWithinBorderBounds(int x, int y) const;
 
-    bool getBlock(int x, int y, Block *out);
+    bool getBlock(int x, int y, Block *out) const;
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
     void setBlockdata(Blockdata blockdata, bool enableScriptCallback = false);
+
+    uint16_t getMetatileId(int x, int y) const;
+    bool setMetatileId(int x, int y, uint16_t metatileId, bool enableScriptCallback = false);
 
     void adjustDimensions(const QMargins &margins, bool setNewBlockdata = true);
     void setDimensions(int newWidth, int newHeight, bool setNewBlockdata = true);
@@ -135,9 +159,8 @@ public:
     void _floodFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
     void magicFillCollisionElevation(int x, int y, uint16_t collision, uint16_t elevation);
 
-    QPixmap render(bool ignoreCache = false, Layout *fromLayout = nullptr, QRect bounds = QRect(0, 0, -1, -1));
+    QPixmap render(bool ignoreCache = false, Layout *fromLayout = nullptr, const QRect &bounds = QRect(0, 0, -1, -1));
     QPixmap renderCollision(bool ignoreCache);
-    // QPixmap renderConnection(MapConnection, Layout *);
     QPixmap renderBorder(bool ignoreCache = false);
 
     QPixmap getLayoutItemPixmap();
@@ -146,6 +169,8 @@ public:
     void setCollisionItem(CollisionPixmapItem *item) { collisionItem = item; }
     void setBorderItem(BorderMetatilesPixmapItem *item) { borderItem = item; }
 
+    bool metatileIsValid(uint16_t metatileId) { return Tileset::metatileIsValid(metatileId, this->tileset_primary, this->tileset_secondary); }
+
 private:
     void setNewDimensionsBlockdata(int newWidth, int newHeight);
     void setNewBorderDimensionsBlockdata(int newWidth, int newHeight);
@@ -153,6 +178,11 @@ private:
     static Blockdata readBlockdata(const QString &path, QString *error);
 
     static int getBorderDrawDistance(int dimension, qreal minimum);
+
+    QList<int> m_metatileLayerOrder;
+    QList<float> m_metatileLayerOpacity;
+    static QList<int> s_globalMetatileLayerOrder;
+    static QList<float> s_globalMetatileLayerOpacity;
 
 signals:
     void dimensionsChanged(const QSize &size);

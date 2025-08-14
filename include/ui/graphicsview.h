@@ -4,11 +4,26 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 
-class NoScrollGraphicsView : public QGraphicsView
+// For general utility features that we add to QGraphicsView
+class GraphicsView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    NoScrollGraphicsView(QWidget *parent = nullptr) : QGraphicsView(parent) {}
+    GraphicsView(QWidget *parent = nullptr) : QGraphicsView(parent) {}
+
+    void centerOn(const QGraphicsView *other) {
+        if (other && other->viewport()) {
+            QPoint center = other->viewport()->rect().center();
+            QGraphicsView::centerOn(other->mapToScene(center));
+        }
+    }
+};
+
+class NoScrollGraphicsView : public GraphicsView
+{
+    Q_OBJECT
+public:
+    NoScrollGraphicsView(QWidget *parent = nullptr) : GraphicsView(parent) {}
 
 protected:
     void wheelEvent(QWheelEvent *event) {
@@ -32,11 +47,11 @@ signals:
     void clicked(QMouseEvent *event);
 };
 
-class ConnectionsView : public QGraphicsView
+class ConnectionsView : public GraphicsView
 {
     Q_OBJECT
 public:
-    ConnectionsView(QWidget *parent = nullptr) : QGraphicsView(parent) {}
+    ConnectionsView(QWidget *parent = nullptr) : GraphicsView(parent) {}
 
 signals:
     void pressedDelete();
