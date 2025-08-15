@@ -47,6 +47,7 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
     } else {
         restoreGeometry(porymapConfig.newLayoutDialogGeometry);
     }
+    ui->lineEdit_Name->setFocus();
 }
 
 NewLayoutDialog::~NewLayoutDialog()

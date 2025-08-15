@@ -62,6 +62,7 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
 
     refresh();
     restoreGeometry(porymapConfig.newMapDialogGeometry);
+    ui->lineEdit_Name->setFocus();
 }
 
 // Adding new map to an existing map list folder. Initialize settings accordingly.
