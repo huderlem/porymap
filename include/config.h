@@ -14,6 +14,7 @@
 #include <QGraphicsPixmapItem>
 #include <QFontDatabase>
 #include <QStandardPaths>
+#include <QColorSpace>
 #include <set>
 
 #include "events.h"
@@ -145,6 +146,7 @@ public:
     std::set<LogType> statusBarLogTypes;
     QFont applicationFont;
     QFont mapListFont;
+    int imageExportColorSpaceId;
 
 protected:
     virtual void parseConfigKeyValue(QString key, QString value) override;

@@ -81,6 +81,7 @@ private:
 
     CheckeredBgScene *m_scene = nullptr;
     QGraphicsPixmapItem *m_preview = nullptr;
+    QImage m_previewImage;
     bool m_previewUpdateQueued = false;
     QList<int> m_layerOrder;
     ProjectConfig m_savedConfig;

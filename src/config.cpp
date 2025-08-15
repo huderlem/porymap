@@ -373,6 +373,16 @@ void PorymapConfig::reset() {
     this->statusBarLogTypes = { LogType::LOG_ERROR, LogType::LOG_WARN };
     this->applicationFont = QFont();
     this->mapListFont = PorymapConfig::defaultMapListFont();
+#ifdef Q_OS_MACOS
+    // Since the release of the Retina display, Apple products use the Display P3 color space by default.
+    // If we don't use this for exported images (which by default will either have no color space or the sRGB
+    // color space) then they may appear to have different colors than the same image displayed in Porymap.
+    this->imageExportColorSpaceId = static_cast<int>(QColorSpace::DisplayP3);
+#else
+    // As of writing Qt has no way to get a reasonable color space from the user's environment,
+    // so we export images without one and let them handle it.
+    this->imageExportColorSpaceId = 0;
+#endif
 }
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
@@ -563,6 +573,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
     } else if (key == "map_list_font") {
         this->mapListFont = QFont();
         this->mapListFont.fromString(value);
+    } else if (key == "image_export_color_space_id") {
+        this->imageExportColorSpaceId = getConfigInteger(key, value, 0, 8);
     } else {
         logWarn(QString("Invalid config key found in config file %1: '%2'").arg(this->filepath()).arg(key));
     }
@@ -656,6 +668,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("status_bar_log_types", logTypesStrings.join(","));
     map.insert("application_font", this->applicationFont.toString());
     map.insert("map_list_font", this->mapListFont.toString());
+    map.insert("image_export_color_space_id", QString::number(this->imageExportColorSpaceId));
     
     return map;
 }

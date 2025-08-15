@@ -6,23 +6,20 @@
 #include <QAbstractButton>
 #include <QRegularExpression>
 #include <QDirIterator>
-#include <QFormLayout>
 #include <QFontDialog>
 #include <QToolTip>
 
 
 PreferenceEditor::PreferenceEditor(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::PreferenceEditor),
-    themeSelector(nullptr)
+    ui(new Ui::PreferenceEditor)
 {
     ui->setupUi(this);
-    auto *formLayout = new QFormLayout(ui->groupBox_Themes);
-    themeSelector = new NoScrollComboBox(ui->groupBox_Themes);
-    themeSelector->setEditable(false);
-    themeSelector->setMinimumContentsLength(0);
-    formLayout->addRow("Themes", themeSelector);
     setAttribute(Qt::WA_DeleteOnClose);
+
+    ui->comboBox_ColorSpace->setMinimumContentsLength(0);
+    ui->comboBox_ApplicationTheme->setMinimumContentsLength(0);
+
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &PreferenceEditor::dialogButtonClicked);
 
     connect(ui->pushButton_CustomizeApplicationFont, &QPushButton::clicked, [this] {
@@ -59,16 +56,35 @@ void PreferenceEditor::initFields() {
             themes.append(themeName);
         }
     }
-    themeSelector->addItems(themes);
+    ui->comboBox_ApplicationTheme->addItems(themes);
+
+    static const QMap<QString, int> colorSpaces = {
+        {"---",           0},
+        {"sRGB",          QColorSpace::SRgb},
+        {"sRGB Linear",   QColorSpace::SRgbLinear},
+        {"Adobe RGB",     QColorSpace::AdobeRgb},
+        {"Display P3",    QColorSpace::DisplayP3},
+        {"ProPhoto RGB",  QColorSpace::ProPhotoRgb},
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 8, 0))
+        // Qt 6.8.0 introduced additional color spaces
+        {"BT.2020",       QColorSpace::Bt2020},
+        {"BT.2100 (PQ)",  QColorSpace::Bt2100Pq},
+        {"BT.2100 (HLG)", QColorSpace::Bt2100Hlg},
+#endif
+    };
+    for (auto it = colorSpaces.constBegin(); it != colorSpaces.constEnd(); it++) {
+        ui->comboBox_ColorSpace->addItem(it.key(), it.value());
+    }
 }
 
 void PreferenceEditor::updateFields() {
-    themeSelector->setTextItem(porymapConfig.theme);
+    ui->comboBox_ApplicationTheme->setTextItem(porymapConfig.theme);
     if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::MaskShape) {
         ui->radioButton_OnSprite->setChecked(true);
     } else if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::BoundingRectShape) {
         ui->radioButton_WithinRect->setChecked(true);
     }
+    ui->comboBox_ColorSpace->setNumberItem(porymapConfig.imageExportColorSpaceId);
     ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.textEditorOpenFolder);
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.textEditorGotoLine);
     ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.monitorFiles);
@@ -97,8 +113,8 @@ void PreferenceEditor::saveFields() {
     bool needsProjectReload = false;
 
     bool changedTheme = false;
-    if (themeSelector->currentText() != porymapConfig.theme) {
-        porymapConfig.theme = themeSelector->currentText();
+    if (ui->comboBox_ApplicationTheme->currentText() != porymapConfig.theme) {
+        porymapConfig.theme = ui->comboBox_ApplicationTheme->currentText();
         changedTheme = true;
     }
 
@@ -113,6 +129,7 @@ void PreferenceEditor::saveFields() {
         emit scriptSettingsChanged(scriptAutocompleteMode);
     }
 
+    porymapConfig.imageExportColorSpaceId = ui->comboBox_ColorSpace->currentData().toInt();
     porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
     porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();

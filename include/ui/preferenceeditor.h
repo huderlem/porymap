@@ -29,7 +29,6 @@ signals:
 
 private:
     Ui::PreferenceEditor *ui;
-    NoScrollComboBox *themeSelector;
     QFont applicationFont;
     QFont mapListFont;
 

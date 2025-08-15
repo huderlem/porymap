@@ -42,6 +42,7 @@ public:
     MapConnection* createMirror();
 
     QPixmap render() const;
+    QImage renderImage() const;
     QPoint relativePixelPos(bool clipped = false) const;
 
     static QPointer<Project> project;

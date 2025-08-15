@@ -125,3 +125,23 @@ void Util::show(QWidget *w) {
         w->activateWindow();
     }
 }
+
+// Safe conversion from an int representing a QColorSpace::NamedColorSpace to a QColorSpace.
+// This lets us use 0 to mean "no color space".
+QColorSpace Util::toColorSpace(int colorSpaceInt) {
+    QColorSpace colorSpace;
+
+    int min = static_cast<int>(QColorSpace::SRgb);
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 8, 0))
+    // Qt 6.8.0 introduced additional color spaces
+    int max = static_cast<int>(QColorSpace::Bt2100Hlg);
+#else
+    int max = static_cast<int>(QColorSpace::ProPhotoRgb);
+#endif
+
+    if (colorSpaceInt >= min && colorSpaceInt <= max) {
+        return QColorSpace(static_cast<QColorSpace::NamedColorSpace>(colorSpaceInt));
+    } else {
+        return QColorSpace();
+    }
+}
