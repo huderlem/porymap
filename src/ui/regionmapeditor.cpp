@@ -648,7 +648,7 @@ void RegionMapEditor::displayRegionMapLayoutOptions() {
 
     const QSignalBlocker b(ui->comboBox_RM_ConnectedMap);
     this->ui->comboBox_RM_ConnectedMap->clear();
-    this->ui->comboBox_RM_ConnectedMap->addItems(this->project->mapSectionIdNames);
+    this->ui->comboBox_RM_ConnectedMap->addItems(this->project->locationNames());
 
     this->ui->frame_RM_Options->setEnabled(true);
 
@@ -711,7 +711,7 @@ void RegionMapEditor::displayRegionMapEntryOptions() {
     if (!this->region_map->layoutEnabled()) return;
 
     this->ui->comboBox_RM_Entry_MapSection->clear();
-    this->ui->comboBox_RM_Entry_MapSection->addItems(this->project->mapSectionIdNames);
+    this->ui->comboBox_RM_Entry_MapSection->addItems(this->project->locationNames());
     this->ui->spinBox_RM_Entry_x->setMaximum(128);
     this->ui->spinBox_RM_Entry_y->setMaximum(128);
     this->ui->spinBox_RM_Entry_width->setMinimum(1);
@@ -1103,10 +1103,10 @@ void RegionMapEditor::on_action_Swap_triggered() {
     QFormLayout form(&popup);
 
     QComboBox *oldSecBox = new QComboBox();
-    oldSecBox->addItems(this->project->mapSectionIdNames);
+    oldSecBox->addItems(this->project->locationNames());
     form.addRow(new QLabel("Map Section 1:"), oldSecBox);
     QComboBox *newSecBox = new QComboBox();
-    newSecBox->addItems(this->project->mapSectionIdNames);
+    newSecBox->addItems(this->project->locationNames());
     form.addRow(new QLabel("Map Section 2:"), newSecBox);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);
@@ -1142,10 +1142,10 @@ void RegionMapEditor::on_action_Replace_triggered() {
     QFormLayout form(&popup);
 
     QComboBox *oldSecBox = new QComboBox();
-    oldSecBox->addItems(this->project->mapSectionIdNames);
+    oldSecBox->addItems(this->project->locationNames());
     form.addRow(new QLabel("Old Map Section:"), oldSecBox);
     QComboBox *newSecBox = new QComboBox();
-    newSecBox->addItems(this->project->mapSectionIdNames);
+    newSecBox->addItems(this->project->locationNames());
     form.addRow(new QLabel("New Map Section:"), newSecBox);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &popup);

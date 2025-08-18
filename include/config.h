@@ -97,6 +97,8 @@ public:
     int mapListTab;
     bool mapListEditGroupsEnabled;
     QMap<int, bool> mapListHideEmptyEnabled;
+    bool mapListLayoutsSorted;
+    bool mapListLocationsSorted;
     bool prettyCursors;
     bool mirrorConnectingMaps;
     bool showDiveEmergeMaps;

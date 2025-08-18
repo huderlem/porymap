@@ -327,6 +327,8 @@ void PorymapConfig::reset() {
     this->mapListTab = 0;
     this->mapListEditGroupsEnabled = false;
     this->mapListHideEmptyEnabled.clear();
+    this->mapListLayoutsSorted = true;
+    this->mapListLocationsSorted = true;
     this->prettyCursors = true;
     this->mirrorConnectingMaps = true;
     this->showDiveEmergeMaps = false;
@@ -397,6 +399,10 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             return;
         }
         this->mapListHideEmptyEnabled.insert(tab, getConfigBool(key, value));
+    } else if (key == "map_list_layouts_sorted") {
+        this->mapListLayoutsSorted = getConfigBool(key, value);
+    } else if (key == "map_list_locations_sorted") {
+        this->mapListLocationsSorted = getConfigBool(key, value);
     } else if (key == "main_window_geometry") {
         this->mainWindowGeometry = bytesFromString(value);
     } else if (key == "main_window_state") {
@@ -579,6 +585,8 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     for (auto i = this->mapListHideEmptyEnabled.constBegin(); i != this->mapListHideEmptyEnabled.constEnd(); i++) {
         map.insert(QStringLiteral("map_list_hide_empty_enabled/") + QString::number(i.key()), i.value() ? "1" : "0");
     }
+    map.insert("map_list_layouts_sorted", this->mapListLayoutsSorted ? "1" : "0");
+    map.insert("map_list_locations_sorted", this->mapListLocationsSorted ? "1" : "0");
     map.insert("main_window_geometry", stringFromByteArray(this->mainWindowGeometry));
     map.insert("main_window_state", stringFromByteArray(this->mainWindowState));
     map.insert("map_splitter_state", stringFromByteArray(this->mapSplitterState));

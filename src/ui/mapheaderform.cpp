@@ -67,7 +67,7 @@ void MapHeaderForm::setProject(Project * project, bool allowChanges) {
 
     const QSignalBlocker b_Locations(ui->comboBox_Location);
     ui->comboBox_Location->clear();
-    ui->comboBox_Location->addItems(m_project->mapSectionIdNames);
+    ui->comboBox_Location->addItems(m_project->locationNames());
 
     // Hide config-specific settings
 

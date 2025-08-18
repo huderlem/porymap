@@ -442,7 +442,7 @@ bool MapGroupModel::setData(const QModelIndex &index, const QVariant &value, int
 MapLocationModel::MapLocationModel(Project *project, QObject *parent) : MapListModel(project, parent) {
     this->folderTypeName = "map_section";
 
-    for (const auto &idName : this->project->mapSectionIdNames) {
+    for (const auto &idName : this->project->locationNamesOrdered()) {
         insertMapFolderItem(idName);
     }
     for (const auto &mapName : this->project->mapNames()) {
@@ -466,7 +466,7 @@ QStandardItem *MapLocationModel::createMapFolderItem(const QString &folderName, 
 LayoutTreeModel::LayoutTreeModel(Project *project, QObject *parent) : MapListModel(project, parent) {
     this->folderTypeName = "map_layout";
 
-    for (const auto &layoutId : this->project->layoutIds()) {
+    for (const auto &layoutId : this->project->layoutIdsOrdered()) {
         insertMapFolderItem(layoutId);
     }
     for (const auto &mapName : this->project->mapNames()) {

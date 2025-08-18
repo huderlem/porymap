@@ -393,10 +393,10 @@ private:
     void openDuplicateMapOrLayoutDialog();
     void openNewMapGroupDialog();
     void openNewLocationDialog();
-    void scrollMapList(MapTree *list, const QString &itemName);
+    void scrollMapList(MapTree *list, const QString &itemName, bool expandItem = true);
     void scrollMapListToCurrentMap(MapTree *list);
     void scrollMapListToCurrentLayout(MapTree *list);
-    void scrollCurrentMapListToItem(const QString &itemName);
+    void scrollCurrentMapListToItem(const QString &itemName, bool expandItem = true);
     void showFileWatcherWarning();
     bool openProject(QString dir, bool initial = false);
     bool closeProject();
@@ -410,6 +410,7 @@ private:
 
     void rebuildMapList_Locations();
     void rebuildMapList_Layouts();
+    void setMapListSorted(MapTree *list, bool sort);
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
     void onMapListTabChanged(int index);

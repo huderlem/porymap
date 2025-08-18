@@ -156,7 +156,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
                 for (int x = 0; x < this->layout_width; x++) {
                     int bin_index = x + y * this->layout_width;
                     uint8_t square_section_id = mapBinData.at(bin_index);
-                    QString square_section_name = project->mapSectionIdNames.value(square_section_id, this->default_map_section);
+                    QString square_section_name = project->getLocationName(square_section_id);
 
                     LayoutSquare square;
                     square.map_section = square_section_name;
@@ -397,11 +397,11 @@ void RegionMap::saveLayout() {
         case LayoutFormat::Binary:
         {
             QByteArray data;
-            int defaultValue = this->project->mapSectionIdNames.indexOf(this->default_map_section);
+            int defaultValue = this->project->getLocationValue(this->default_map_section);
             for (int m = 0; m < this->layout_height; m++) {
                 for (int n = 0; n < this->layout_width; n++) {
                     int i = n + this->layout_width * m;
-                    int mapSectionValue = this->project->mapSectionIdNames.indexOf(this->layouts["main"][i].map_section);
+                    int mapSectionValue = this->project->getLocationValue(this->layouts["main"][i].map_section);
                     if (mapSectionValue < 0){
                         mapSectionValue = defaultValue;
                     }
