@@ -1522,8 +1522,9 @@ void Project::readTilesetPaths(Tileset* tileset) {
         
         const QString tilesImagePath = parser.readCIncbin(graphicsFile, tileset->tiles_label);
         const QStringList palettePaths = parser.readCIncbinArray(graphicsFile, tileset->palettes_label);
-        const QString metatilesPath = parser.readCIncbin(metatilesFile, tileset->metatiles_label);
-        const QString metatileAttrsPath = parser.readCIncbin(metatilesFile, tileset->metatile_attrs_label);
+        auto metatileIncbins = parser.readCIncbinMulti(metatilesFile);
+        const QString metatilesPath = metatileIncbins.value(tileset->metatiles_label);
+        const QString metatileAttrsPath = metatileIncbins.value(tileset->metatile_attrs_label);
 
         if (!tilesImagePath.isEmpty())
             tileset->tilesImagePath = this->fixGraphicPath(rootDir + tilesImagePath);
