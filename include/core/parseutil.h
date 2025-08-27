@@ -140,6 +140,7 @@ private:
     static const QRegularExpression re_poryScriptLabel;
     static const QRegularExpression re_globalPoryScriptLabel;
     static const QRegularExpression re_poryRawSection;
+    static const QString incbinRegexText;
 };
 
 #endif // PARSEUTIL_H
