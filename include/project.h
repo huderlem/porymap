@@ -52,8 +52,6 @@ public:
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
     QStringList globalScriptLabels;
-    QStringList mapSectionIdNamesSaveOrder;
-    QStringList mapSectionIdNames;
     QMap<uint32_t, QString> encounterTypeToName;
     QMap<uint32_t, QString> terrainTypeToName;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
@@ -83,6 +81,7 @@ public:
     Map* loadMap(const QString &mapName);
 
     const QStringList& layoutIds() const { return this->alphabeticalLayoutIds; }
+    const QStringList& layoutIdsOrdered() const { return this->orderedLayoutIds; }
     bool isKnownLayout(const QString &layoutId) const { return this->mapLayouts.contains(layoutId); }
     bool isLoadedLayout(const QString &layoutId) const { return this->loadedLayoutIds.contains(layoutId); }
     bool isUnsavedLayout(const QString &layoutId) const;
@@ -92,6 +91,12 @@ public:
     // Note: This does not guarantee the layout is loaded.
     Layout* getLayout(const QString &layoutId) const { return this->mapLayouts.value(layoutId); }
     Layout* loadLayout(const QString &layoutId);
+
+    const QStringList& locationNames() const { return this->mapSectionIdNames; }
+    const QStringList& locationNamesOrdered() const { return this->mapSectionIdNamesSaveOrder; }
+
+    QString getLocationName(int locationValue) const { return this->mapSectionIdNamesSaveOrder.value(locationValue, getEmptyMapsecName()); }
+    int getLocationValue(const QString &locationName) const { return this->mapSectionIdNamesSaveOrder.indexOf(locationName); }
 
     void clearMaps();
     void clearTilesetCache();
@@ -284,6 +289,8 @@ private:
     QStringList orderedLayoutIdsMaster;
     QHash<QString, Layout*> mapLayouts;
     QHash<QString, Layout*> mapLayoutsMaster;
+    QStringList mapSectionIdNamesSaveOrder;
+    QStringList mapSectionIdNames;
 
     // Fields for preserving top-level JSON data that Porymap isn't expecting.
     QJsonObject customLayoutsData;

@@ -1440,16 +1440,15 @@ bool MainWindow::setProjectUI() {
     this->locationListProxyModel = new FilterChildrenProxyModel();
     this->locationListProxyModel->setSourceModel(this->mapLocationModel);
     this->locationListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Locations]);
-
     ui->locationList->setModel(locationListProxyModel);
-    ui->locationList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+    setMapListSorted(ui->locationList, porymapConfig.mapListLocationsSorted);
 
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
     this->layoutListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Layouts]);
     ui->layoutList->setModel(layoutListProxyModel);
-    ui->layoutList->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+    setMapListSorted(ui->layoutList, porymapConfig.mapListLayoutsSorted);
 
     ui->mapCustomAttributesFrame->table()->setRestrictedKeys(project->getTopLevelMapFields());
 
@@ -1503,7 +1502,7 @@ void MainWindow::clearProjectUI() {
     resetMapNavigation();
 }
 
-void MainWindow::scrollMapList(MapTree *list, const QString &itemName) {
+void MainWindow::scrollMapList(MapTree *list, const QString &itemName, bool expandItem) {
     if (!list || itemName.isEmpty())
         return;
     auto model = static_cast<FilterChildrenProxyModel*>(list->model());
@@ -1516,7 +1515,7 @@ void MainWindow::scrollMapList(MapTree *list, const QString &itemName) {
         return;
 
     list->setCurrentIndex(index);
-    list->setExpanded(index, true);
+    if (expandItem) list->setExpanded(index, true);
     list->scrollTo(index, QAbstractItemView::PositionAtCenter);
 }
 
@@ -1537,13 +1536,13 @@ void MainWindow::scrollMapListToCurrentLayout(MapTree *list) {
 // - The map list was in the middle of a search
 // - A map/layout is being opened by interacting with the list (in which case `lockMapListAutoScroll` is true)
 // - The item is not in the list (e.g. a layout ID for the Groups list)
-void MainWindow::scrollCurrentMapListToItem(const QString &itemName) {
+void MainWindow::scrollCurrentMapListToItem(const QString &itemName, bool expandItem) {
     if (this->lockMapListAutoScroll)
         return;
 
     auto toolbar = getCurrentMapListToolBar();
     if (toolbar && toolbar->filterText().isEmpty()) {
-        scrollMapList(toolbar->list(), itemName);
+        scrollMapList(toolbar->list(), itemName, expandItem);
     }
 }
 
@@ -1565,6 +1564,7 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     QAction* openItemAction = nullptr;
     QAction* copyListNameAction = nullptr;
     QAction* copyToolTipAction = nullptr;
+    QAction* sortFoldersAction = nullptr;
 
     if (itemType == "map_name") {
         // Right-clicking on a map.
@@ -1596,6 +1596,8 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         deleteFolderAction = menu.addAction("Delete Location");
         if (itemName == this->editor->project->getEmptyMapsecName())
             deleteFolderAction->setEnabled(false); // Disallow deleting the default name
+        menu.addSeparator();
+        sortFoldersAction = menu.addAction(list->isSortingEnabled() ? "Sort List by Value" : "Sort List Alphabetically");
     } else if (itemType == "map_layout") {
         // Right-clicking on a map layout
         openItemAction = menu.addAction("Open Layout");
@@ -1612,6 +1614,8 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
         addToFolderAction = menu.addAction("Add New Map with Layout");
         //menu.addSeparator();
         //deleteFolderAction = menu.addAction("Delete Layout"); // TODO: No support for deleting layouts
+        menu.addSeparator();
+        sortFoldersAction = menu.addAction(list->isSortingEnabled() ? "Sort List by Value" : "Sort List Alphabetically");
     }
 
     if (addToFolderAction) {
@@ -1644,6 +1648,12 @@ void MainWindow::onOpenMapListContextMenu(const QPoint &point) {
     if (copyToolTipAction) {
         connect(copyToolTipAction, &QAction::triggered, [this, selectedItem] {
             setClipboardData(selectedItem->toolTip());
+        });
+    }
+    if (sortFoldersAction) {
+        connect(sortFoldersAction, &QAction::triggered, [this, list, itemName] {
+            setMapListSorted(list, !list->isSortingEnabled());
+            scrollCurrentMapListToItem(itemName, false);
         });
     }
 
@@ -1893,6 +1903,19 @@ void MainWindow::rebuildMapList_Layouts() {
     this->layoutTreeModel = new LayoutTreeModel(this->editor->project);
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
     ui->mapListToolBar_Layouts->refreshFilter();
+}
+
+void MainWindow::setMapListSorted(MapTree *list, bool sort) {
+    if (sort == list->isSortingEnabled())
+        return;
+    list->setSortingEnabled(sort);
+    list->sortByColumn(sort ? 0 : -1, Qt::SortOrder::AscendingOrder);
+
+    if (list == ui->locationList) {
+        porymapConfig.mapListLocationsSorted = sort;
+    } else if (list == ui->layoutList) {
+        porymapConfig.mapListLayoutsSorted = sort;
+    }
 }
 
 QString MainWindow::getActiveItemName() {
