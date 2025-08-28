@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are **"Breaking Changes"** in the pret projects. For more on this, see [the manual page on breaking changes](https://huderlem.github.io/porymap/manual/breaking-changes.html).
 
 ## [Unreleased]
+### Added
+- Add option to sort Locations and Layouts lists by value, rather than alphabetically.
+- Add color space settings for exported images.
+
 ### Changed
 - The name field now receives focus immediately for the new map/layout dialogs.
 
