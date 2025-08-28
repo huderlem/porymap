@@ -58,6 +58,7 @@ private:
     QBuffer *m_timelapseBuffer = nullptr;
     QMovie *m_timelapseMovie = nullptr;
     QGraphicsPixmapItem *m_preview = nullptr;
+    QImage m_previewImage;
 
     ImageExporterSettings m_settings;
     ImageExporterMode m_mode = ImageExporterMode::Normal;
@@ -77,15 +78,15 @@ private:
     void setConnectionDirectionEnabled(const QString &dir, bool enable);
     void saveImage();
     QGifImage* createTimelapseGifImage(QProgressDialog *progress);
-    QPixmap getStitchedImage(QProgressDialog *progress);
-    QPixmap getFormattedMapPixmap();
+    QImage getStitchedImage(QProgressDialog *progress);
+    QImage getFormattedMapImage();
     void paintBorder(QPainter *painter, Layout *layout);
     void paintCollision(QPainter *painter, Layout *layout);
     void paintConnections(QPainter *painter, const Map *map);
     void paintEvents(QPainter *painter, const Map *map);
     void paintGrid(QPainter *painter, const Layout *layout = nullptr);
     QMargins getMargins(const Map *map);
-    QPixmap getExpandedPixmap(const QPixmap &pixmap, const QSize &targetSize, const QColor &fillColor);
+    QImage getExpandedImage(const QImage &image, const QSize &targetSize, const QColor &fillColor);
     bool currentHistoryAppliesToFrame(QUndoStack *historyStack);
 
 protected:

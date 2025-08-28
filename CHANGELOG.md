@@ -10,6 +10,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ### Fixed
 - Fix rare crash while quitting Porymap.
+- Fix exported images on macOS using a different color space than in Porymap.
 
 ## [6.2.0] - 2025-08-08
 ### Added

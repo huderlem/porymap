@@ -185,7 +185,7 @@ void MetatileImageExporter::reset() {
 
 QImage MetatileImageExporter::getImage() {
     tryUpdatePreview();
-    return m_preview->pixmap().toImage();
+    return m_previewImage;
 }
 
 bool MetatileImageExporter::saveImage(QString filepath) {
@@ -197,7 +197,7 @@ bool MetatileImageExporter::saveImage(QString filepath) {
             return false;
         }
     }
-    return m_preview->pixmap().save(filepath);
+    return m_previewImage.save(filepath);
 }
 
 QString MetatileImageExporter::getDefaultFileName() const {
@@ -244,7 +244,7 @@ void MetatileImageExporter::queuePreviewUpdate() {
 // For updating only when a change has been recorded.
 // Useful for something that might happen often, like an input widget losing focus.
 void MetatileImageExporter::tryUpdatePreview() {
-    if (m_preview->pixmap().isNull() || m_previewUpdateQueued) {
+    if (m_previewImage.isNull() || m_previewUpdateQueued) {
         updatePreview();
     }
 }
@@ -261,15 +261,14 @@ void MetatileImageExporter::updatePreview() {
         }
     }
 
-    QImage previewImage;
     if (ui->checkBox_PrimaryTileset->isChecked() && ui->checkBox_SecondaryTileset->isChecked()) {
         // Special behavior to combine the two tilesets while skipping the unused region between tilesets.
-        previewImage = getMetatileSheetImage(m_primaryTileset,
+        m_previewImage = getMetatileSheetImage(m_primaryTileset,
                                              m_secondaryTileset,
                                              ui->spinBox_WidthMetatiles->value(),
                                              m_layerOrder);
     } else {
-        previewImage = getMetatileSheetImage(m_primaryTileset,
+        m_previewImage = getMetatileSheetImage(m_primaryTileset,
                                              m_secondaryTileset,
                                              ui->spinBox_MetatileStart->value(),
                                              ui->spinBox_MetatileEnd->value(),
@@ -277,7 +276,8 @@ void MetatileImageExporter::updatePreview() {
                                              m_layerOrder);
     }
 
-    m_preview->setPixmap(QPixmap::fromImage(previewImage));
+    m_previewImage.setColorSpace(Util::toColorSpace(porymapConfig.imageExportColorSpaceId));
+    m_preview->setPixmap(QPixmap::fromImage(m_previewImage));
     m_scene->setSceneRect(m_scene->itemsBoundingRect());
     m_previewUpdateQueued = false;
 
