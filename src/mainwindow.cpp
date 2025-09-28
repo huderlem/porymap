@@ -437,7 +437,7 @@ void MainWindow::initEditor() {
     connect(ui->toolButton_deleteEvent, &QAbstractButton::clicked, this->editor, &Editor::deleteSelectedEvents);
     connect(ui->graphicsView_Connections, &ConnectionsView::pressedDelete, this->editor, &Editor::removeSelectedConnection);
 
-    this->loadUserSettings();
+    loadUserSettings();
 
     undoAction = editor->editGroup.createUndoAction(this, tr("&Undo"));
     undoAction->setObjectName("action_Undo");
@@ -461,8 +461,6 @@ void MainWindow::initEditor() {
     connect(showHistory, &QAction::triggered, this, &MainWindow::openEditHistory);
 
     ui->menuEdit->addAction(showHistory);
-
-    refreshRecentProjectsMenu();
 
     // Toggle an asterisk in the window title when the undo state is changed
     connect(&editor->editGroup, &QUndoGroup::indexChanged, this, &MainWindow::updateWindowTitle);
@@ -718,6 +716,9 @@ void MainWindow::loadUserSettings() {
 
     setTheme(porymapConfig.theme);
     setDivingMapsVisible(porymapConfig.showDiveEmergeMaps);
+
+    togglePreferenceSpecificUi();
+    refreshRecentProjectsMenu();
 }
 
 void MainWindow::restoreWindowState() {
