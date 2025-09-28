@@ -16,6 +16,7 @@ const QRegularExpression ParseUtil::re_globalIncScriptLabel("\\b(?<label>[\\w_][
 const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
+const QString ParseUtil::incbinRegexText(R"(INCBIN_[US][0-9][0-9]?\s*\(\s*\"(?<path>[^\"]*)\"[^\)]*\))");
 
 ParseUtil::ParseUtil() {
     resetCDefines();
@@ -330,36 +331,16 @@ int ParseUtil::evaluatePostfix(const QList<Token> &postfix) {
 }
 
 QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
-    QString path;
-
-    if (label.isNull()) {
-        return path;
-    }
-
-    this->text = loadTextFile(filename);
-
-    QRegularExpression re(QString(
-        "\\b%1\\b"
-        "\\s*\\[?\\s*\\]?\\s*=\\s*"
-        "INCBIN_[US][0-9][0-9]?"
-        "\\(\\s*\"([^\"]*)\"\\s*\\)").arg(label));
-
-    QRegularExpressionMatch match;
-    qsizetype pos = this->text.indexOf(re, 0, &match);
-    if (pos != -1) {
-        path = match.captured(1);
-    }
-
-    return path;
+    return !label.isEmpty() ? readCIncbinMulti(filename).value(label) : QString();
 }
 
-QMap<QString, QString> ParseUtil::readCIncbinMulti(const QString &filepath) {
+QMap<QString, QString> ParseUtil::readCIncbinMulti(const QString &filename) {
     QMap<QString, QString> incbinMap;
 
-    this->file = filepath;
-    this->text = loadTextFile(filepath);
+    this->file = filename;
+    this->text = loadTextFile(filename);
 
-    static const QRegularExpression regex("(?<label>[A-Za-z0-9_]+)\\s*\\[?\\s*\\]?\\s*=\\s*INCBIN_[US][0-9][0-9]?\\(\\s*\\\"(?<path>[^\\\\\"]*)\\\"\\s*\\)");
+    static const QRegularExpression regex(QString(R"((?<label>[\w]+)\s*(?:\[[^\]]*\])?\s*=\s*%1)").arg(this->incbinRegexText));
 
     QRegularExpressionMatchIterator iter = regex.globalMatch(this->text);
     while (iter.hasNext()) {
@@ -385,13 +366,13 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     QString arrayText;
 
     // Get the text starting after the label all the way to the definition's end
-    static const QRegularExpression re_labelGroup(QString("(?<label>[A-Za-z0-9_]+)\\[([^;]*?)};"), QRegularExpression::DotMatchesEverythingOption);
+    static const QRegularExpression re_labelGroup(QString("(?<label>[\\w]+)\\[(?<body>[^;]*?)};"), QRegularExpression::DotMatchesEverythingOption);
     QRegularExpressionMatchIterator findLabelIter = re_labelGroup.globalMatch(this->text);
     while (findLabelIter.hasNext()) {
         QRegularExpressionMatch labelMatch = findLabelIter.next();
         if (labelMatch.captured("label") == label) {
             found = true;
-            arrayText = labelMatch.captured(2);
+            arrayText = labelMatch.captured("body");
             break;
         }
     }
@@ -401,10 +382,10 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     }
 
     // Extract incbin paths from the array
-    static const QRegularExpression re_incbin("INCBIN_[US][0-9][0-9]?\\(\\s*\"([^\"]*)\"\\s*\\)");
+    static const QRegularExpression re_incbin(this->incbinRegexText);
     QRegularExpressionMatchIterator iter = re_incbin.globalMatch(arrayText);
     while (iter.hasNext()) {
-        paths.append(iter.next().captured(1));
+        paths.append(iter.next().captured("path"));
     }
     return paths;
 }
@@ -588,30 +569,7 @@ void ParseUtil::resetCDefines() {
 }
 
 QStringList ParseUtil::readCArray(const QString &filename, const QString &label) {
-    QStringList list;
-
-    if (label.isNull()) {
-        return list;
-    }
-
-    this->file = filename;
-    this->text = loadTextFile(filename);
-
-    QRegularExpression re(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
-    QRegularExpressionMatch match = re.match(this->text);
-
-    if (match.hasMatch()) {
-        QString body = match.captured(2);
-        QStringList split = body.split(',');
-        for (QString item : split) {
-            item = item.trimmed();
-            static const QRegularExpression validChars("[^A-Za-z0-9_&()\\s]");
-            if (!item.contains(validChars)) list.append(item);
-            // do not print error info here because this is called dozens of times
-        }
-    }
-
-    return list;
+    return !label.isEmpty() ? readCArrayMulti(filename).value(label) : QStringList();
 }
 
 QMap<QString, QStringList> ParseUtil::readCArrayMulti(const QString &filename) {
