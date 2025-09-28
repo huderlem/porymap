@@ -121,25 +121,60 @@ void MainWindow::saveGlobalConfigs() {
 }
 
 void MainWindow::setWindowDisabled(bool disabled) {
-    for (auto action : findChildren<QAction *>())
-        action->setDisabled(disabled);
-    for (auto child : findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly))
-        child->setDisabled(disabled);
-    for (auto menu : ui->menuBar->findChildren<QMenu *>(QString(), Qt::FindDirectChildrenOnly))
-        menu->setDisabled(disabled);
-    ui->menuBar->setDisabled(false);
-    ui->menuFile->setDisabled(false);
-    ui->action_Open_Project->setDisabled(false);
-    ui->menuOpen_Recent_Project->setDisabled(false);
-    refreshRecentProjectsMenu();
-    ui->action_Exit->setDisabled(false);
-    ui->menuHelp->setDisabled(false);
-    ui->actionAbout_Porymap->setDisabled(false);
-    ui->actionOpen_Log_File->setDisabled(false);
-    ui->actionOpen_Config_Folder->setDisabled(false);
-    ui->actionCheck_for_Updates->setDisabled(false);
-    if (!disabled)
-        togglePreferenceSpecificUi();
+    // When we disable the window's widgets/actions, record them so we know what to re-enable later.
+    // Blindly re-enabling widgets/actions could otherwise enable something that should initially be disabled.
+    if (disabled) {
+        // Some objects should be available even if no project is open.
+        const QSet<QObject*> objectsAlwaysEnabled = {
+            ui->menuBar,
+            ui->menuFile,
+            ui->menuOpen_Recent_Project,
+            ui->menuHelp,
+            ui->action_Open_Project,
+            ui->action_Exit,
+            ui->actionAbout_Porymap,
+            ui->actionOpen_Manual,
+            ui->actionOpen_Log_File,
+            ui->actionOpen_Config_Folder,
+            ui->actionCheck_for_Updates,
+        };
+        auto allowedToDisable = [objectsAlwaysEnabled](QObject *object) {
+            return !(object->objectName().isEmpty() || object->objectName().startsWith(QStringLiteral("_q_")) || objectsAlwaysEnabled.contains(object));
+        };
+
+        for (auto action : findChildren<QAction *>()) {
+            if (action->isEnabled() && allowedToDisable(action)) {
+                action->setEnabled(false);
+                this->objectsDisabled.insert(action);
+            }
+        }
+        for (auto child : findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly)) {
+            if (child->isEnabled() && allowedToDisable(child)) {
+                child->setEnabled(false);
+                this->objectsDisabled.insert(child);
+            }
+        }
+        for (auto menu : ui->menuBar->findChildren<QMenu *>(QString(), Qt::FindDirectChildrenOnly)) {
+            if (menu->isEnabled() && allowedToDisable(menu)) {
+                menu->setEnabled(false);
+                this->objectsDisabled.insert(menu);
+            }
+        }
+    } else {
+        for (auto object : this->objectsDisabled) {
+            auto action = dynamic_cast<QAction*>(object);
+            if (action) {
+                action->setEnabled(true);
+                continue;
+            }
+            auto widget = dynamic_cast<QWidget*>(object);
+            if (widget) {
+                widget->setEnabled(true);
+                continue;
+            }
+        }
+        this->objectsDisabled.clear();
+    }
 
     // Disabling the central widget above sets focus to the map list's search bar,
     // which prevents users from using keyboard shortcuts for menu actions.
@@ -342,13 +377,18 @@ void MainWindow::initExtraSignals() {
 
     connect(ui->action_NewMap, &QAction::triggered, this, &MainWindow::openNewMapDialog);
     connect(ui->action_NewLayout, &QAction::triggered, this, &MainWindow::openNewLayoutDialog);
-    connect(ui->actionDuplicate_Current_Map_Layout, &QAction::triggered, this, &MainWindow::openDuplicateMapOrLayoutDialog);
     connect(ui->comboBox_LayoutSelector, &NoScrollComboBox::editingFinished, this, &MainWindow::onLayoutSelectorEditingFinished);
     connect(ui->checkBox_smartPaths, &QCheckBox::toggled, this, &MainWindow::setSmartPathsEnabled);
     connect(ui->checkBox_ToggleBorder, &QCheckBox::toggled, this, &MainWindow::setBorderVisibility);
     connect(ui->checkBox_MirrorConnections, &QCheckBox::toggled, this, &MainWindow::setMirrorConnectionsEnabled);
     connect(ui->comboBox_PrimaryTileset, &NoScrollComboBox::editingFinished, [this] { setPrimaryTileset(ui->comboBox_PrimaryTileset->currentText()); });
     connect(ui->comboBox_SecondaryTileset, &NoScrollComboBox::editingFinished, [this] { setSecondaryTileset(ui->comboBox_SecondaryTileset->currentText()); });
+    connect(ui->actionDuplicate_Current_Map, &QAction::triggered, [this] {
+        if (this->editor->map) openDuplicateMapDialog(this->editor->map->name());
+    });
+    connect(ui->actionDuplicate_Current_Layout, &QAction::triggered, [this] {
+        if (this->editor->layout) openDuplicateLayoutDialog(this->editor->layout->id);
+    });
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -421,6 +461,8 @@ void MainWindow::initEditor() {
     connect(showHistory, &QAction::triggered, this, &MainWindow::openEditHistory);
 
     ui->menuEdit->addAction(showHistory);
+
+    refreshRecentProjectsMenu();
 
     // Toggle an asterisk in the window title when the undo state is changed
     connect(&editor->editGroup, &QUndoGroup::indexChanged, this, &MainWindow::updateWindowTitle);
@@ -1176,6 +1218,7 @@ void MainWindow::setLayoutOnlyMode(bool layoutOnly) {
     ui->mainTabBar->setTabToolTip(MainTab::WildPokemon, this->editor->project->wildEncountersLoaded ? toolTip : QString());
 
     ui->comboBox_LayoutSelector->setEnabled(mapEditingEnabled);
+    ui->actionDuplicate_Current_Map->setEnabled(mapEditingEnabled);
 }
 
 // setLayout, but with a visible error message in case of failure.
@@ -1771,14 +1814,6 @@ void MainWindow::openDuplicateLayoutDialog(const QString &layoutId) {
         dialog->open();
     } else {
         RecentErrorMessage::show(QString("Unable to duplicate '%1'.").arg(layoutId), this);
-    }
-}
-
-void MainWindow::openDuplicateMapOrLayoutDialog() {
-    if (this->editor->map) {
-        openDuplicateMapDialog(this->editor->map->name());
-    } else if (this->editor->layout) {
-        openDuplicateLayoutDialog(this->editor->layout->id);
     }
 }
 
@@ -3234,6 +3269,7 @@ bool MainWindow::closeProject() {
     }
     editor->closeProject();
     clearProjectUI();
+    refreshRecentProjectsMenu();
     setWindowDisabled(true);
     updateWindowTitle();
 

@@ -366,6 +366,8 @@ private:
     bool tilesetNeedsRedraw = false;
     bool lockMapListAutoScroll = false;
 
+    QSet<QObject*> objectsDisabled;
+
     bool setLayout(const QString &layoutId);
     bool setMap(const QString &mapName);
     void unsetMap();
@@ -390,7 +392,6 @@ private:
     NewLayoutDialog* createNewLayoutDialog(const Layout *layoutToCopy = nullptr);
     void openNewLayoutDialog();
     void openDuplicateLayoutDialog(const QString &layoutId);
-    void openDuplicateMapOrLayoutDialog();
     void openNewMapGroupDialog();
     void openNewLocationDialog();
     void scrollMapList(MapTree *list, const QString &itemName, bool expandItem = true);
