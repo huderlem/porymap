@@ -1190,7 +1190,7 @@ void RegionMapEditor::on_action_RegionMap_ClearLayout_triggered() {
     QMessageBox::StandardButton result = QMessageBox::question(
         this,
         "WARNING",
-        QString("This action will reset the entire map layout to %1, continue?").arg(this->region_map->default_map_section),
+        QString("This action will reset the entire map layout to %1. Continue?").arg(this->region_map->default_map_section),
         QMessageBox::Yes | QMessageBox::Cancel,
         QMessageBox::Yes
     );
@@ -1212,7 +1212,7 @@ void RegionMapEditor::on_action_RegionMap_ClearEntries_triggered() {
     QMessageBox::StandardButton result = QMessageBox::question(
         this,
         "WARNING",
-        "This action will remove the entire mapsection entries list, continue?",
+        "This action will clear all the data on the Map Entries tab. Continue?",
         QMessageBox::Yes | QMessageBox::Cancel,
         QMessageBox::Yes
     );

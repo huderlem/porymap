@@ -14,6 +14,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ### Fixed
 - Fix rare crash while quitting Porymap.
+- Fix `Edit > Clear Map Entries` in the Region Map Editor not saving the applied changes.
 - Fix exported images on macOS using a different color space than in Porymap.
 - Fix some `INCBIN` statements not being parsed correctly.
 - Fix excessive logging if Porymap fails to monitor all map files.

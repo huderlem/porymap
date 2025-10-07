@@ -2652,8 +2652,8 @@ bool Project::readRegionMapSections() {
 }
 
 void Project::setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries) {
-    for (auto it = entries.constBegin(); it != entries.constEnd(); it++) {
-        this->locationData[it.key()].map = it.value();
+    for (auto it = this->locationData.keyBegin(); it != this->locationData.keyEnd(); it++) {
+        this->locationData[*it].map = entries.value(*it);
     }
 }
 
