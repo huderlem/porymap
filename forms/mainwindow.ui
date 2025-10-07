@@ -2867,7 +2867,8 @@
     <addaction name="action_NewMap"/>
     <addaction name="action_NewLayout"/>
     <addaction name="actionNew_Tileset"/>
-    <addaction name="actionDuplicate_Current_Map_Layout"/>
+    <addaction name="actionDuplicate_Current_Map"/>
+    <addaction name="actionDuplicate_Current_Layout"/>
     <addaction name="separator"/>
     <addaction name="actionImport_Map_from_Advance_Map_1_92"/>
     <addaction name="separator"/>
@@ -3244,9 +3245,17 @@
     <string>New Layout...</string>
    </property>
   </action>
-  <action name="actionDuplicate_Current_Map_Layout">
+  <action name="actionDuplicate_Current_Map">
    <property name="text">
-    <string>Duplicate Current Map/Layout...</string>
+    <string>Duplicate Current Map...</string>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionDuplicate_Current_Layout">
+   <property name="text">
+    <string>Duplicate Current Layout...</string>
    </property>
   </action>
   <action name="actionBack">
