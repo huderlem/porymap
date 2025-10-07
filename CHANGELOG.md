@@ -10,11 +10,14 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Add color space settings for exported images.
 
 ### Changed
+- Separate `File > Duplicate Current Map/Layout` into two options to allow duplicating the current layout when a map is open.
 - The name field now receives focus immediately for the new map/layout dialogs.
 
 ### Fixed
 - Fix rare crash while quitting Porymap.
 - Fix `Edit > Clear Map Entries` in the Region Map Editor not saving the applied changes.
+- Fix `Edit > Undo/Redo` appearing enabled even when they don't do anything.
+- Fix `Help > Open Manual` being disabled when no project is open.
 - Fix exported images on macOS using a different color space than in Porymap.
 - Fix some `INCBIN` statements not being parsed correctly.
 - Fix excessive logging if Porymap fails to monitor all map files.
