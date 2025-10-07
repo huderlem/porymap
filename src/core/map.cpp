@@ -11,6 +11,7 @@
 #include <QImage>
 #include <QRegularExpression>
 
+bool Map::m_fileWatchingEnabled = true;
 
 Map::Map(QObject *parent) : QObject(parent)
 {
@@ -149,7 +150,7 @@ QStringList Map::getScriptLabels(Event::Group group) {
             m_loggedScriptsFileError = true;
         }
 
-        if (porymapConfig.monitorFiles && !m_loggedScriptsFileError) {
+        if (m_fileWatchingEnabled && !m_loggedScriptsFileError) {
             if (!m_scriptFileWatcher) {
                 // Only create the file watcher when it's first needed (even an empty QFileSystemWatcher will consume system resources).
                 // The other option would be for Porymap to have a single global QFileSystemWatcher, but that has complications of its own.

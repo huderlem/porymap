@@ -116,6 +116,9 @@ public:
     void setCustomAttributes(const QJsonObject &attributes) { m_customAttributes = attributes; }
     QJsonObject customAttributes() const { return m_customAttributes; }
 
+    static void setFileWatchingEnabled(bool enabled) { m_fileWatchingEnabled = enabled; }
+    static bool isFileWatchingEnabled() { return m_fileWatchingEnabled; }
+
 private:
     QString m_name;
     QString m_constantName;
@@ -134,6 +137,7 @@ private:
     bool m_needsHealLocation = false;
     bool m_scriptsLoaded = false;
     bool m_loggedScriptsFileError = false;
+    static bool m_fileWatchingEnabled;
 
     QMap<Event::Group, QList<Event *>> m_events;
     QSet<Event *> m_ownedEvents; // for memory management

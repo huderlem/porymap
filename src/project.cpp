@@ -838,6 +838,7 @@ void Project::recordFileChange(const QString &filepath) {
 // When calling 'watchFile' we record failures rather than log them immediately.
 // We do this primarily to condense the warning if we fail to monitor any files.
 void Project::logFileWatchStatus() {
+    Map::setFileWatchingEnabled(porymapConfig.monitorFiles);
     if (!this->fileWatcher)
         return;
 
@@ -851,6 +852,9 @@ void Project::logFileWatchStatus() {
         // on Windows and the project files are in WSL2. Rather than filling the log by
         // outputting a warning for every file, just log that we failed to monitor any of them.
         logWarn(QString("Failed to monitor project files"));
+
+        // Similarly, avoid logging a warning every time we open a map. We can assume that will also fail.
+        Map::setFileWatchingEnabled(false);
         return;
     } else {
         logInfo(QString("Successfully monitoring %1/%2 project files").arg(numSuccessful).arg(numAttempted));
