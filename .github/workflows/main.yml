@@ -40,7 +40,7 @@ jobs:
   build-macos:
     strategy:
      matrix:
-       os: [macos-latest, macos-13]
+       os: [macos-latest, macos-15-intel]
     runs-on: ${{ matrix.os }}
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
