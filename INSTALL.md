@@ -30,11 +30,43 @@ make
 ./porymap.app/Contents/MacOS/porymap
 ```
 
-## Windows
+## Windows 10+
 
-Install [Qt development tools](https://www.qt.io/download-qt-installer), and use Qt Creator, the official Qt IDE, for development purposes.
+Install [Qt development tools](https://www.qt.io/download-qt-installer), and use Qt Creator, the official Qt IDE, for development purposes. (for qt6)
 
-## Ubuntu
+## Debian /Linux derivatives (Non Ubuntu with an exception to Mint)
+Although porymap can be made on other platforms with Qt 5.14.2, Debian requires qt6
+
+```bash
+git clone https://github.com/huderlem/porymap
+cd porymap
+
+apt install qt6-declarative-dev 
+
+qmake6
+make
+./porymap
+```
+
+
+## Gentoo Linux
+You need to install Qt dev tools. You can set version of your Qt packages with flags such as `qt6`.
+25.04.2 is porymap's minimum supported dev-util/kdevelop version.
+https://wiki.gentoo.org/wiki/Qt
+
+```bash
+git clone https://github.com/huderlem/porymap
+cd porymap
+
+emerge dev-util/kdevelop
+emerge --depclean
+
+qmake6
+make
+./porymap
+```
+
+## Ubuntu derivatives (Non Mint)
 
 You need to install Qt. The minimum supported version is currently Qt 5.14.2. You can check your Qt version
 with `qtdiag` or `qmake --version`.
@@ -51,7 +83,7 @@ make
 ./porymap
 ```
 
-## Arch Linux
+## Arch Linux derivatives
 
 You need to install Qt. You can check the version of your Qt packages with `qtdiag` or `qmake --version`.
 
