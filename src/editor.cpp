@@ -217,8 +217,8 @@ void Editor::setEditAction(EditAction editAction) {
     this->cursorMapTileRect->setSingleTileMode(!(editAction == EditAction::Paint && this->editMode == EditMode::Metatiles));
 
     auto dragMode = (editAction == EditAction::Move) ? QGraphicsView::ScrollHandDrag : QGraphicsView::NoDrag;
-    ui->graphicsView_Map->setDragMode(dragMode);
-    ui->graphicsView_Connections->setDragMode(dragMode);
+    ui->graphicsView_Map->setDesiredDragMode(dragMode);
+    ui->graphicsView_Connections->setDesiredDragMode(dragMode);
 
     // Update cursor
     if (this->settings->betterCursors) {
@@ -1434,7 +1434,7 @@ void Editor::adjustStraightPathPos(QGraphicsSceneMouseEvent *event, LayoutPixmap
 
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
     auto editAction = getEditAction();
-    if (editAction == EditAction::Move) {
+    if (editAction == EditAction::Move || ui->graphicsView_Map->getIsMiddleButtonScrollInProgress()) {
         event->ignore();
         return;
     }
@@ -1450,7 +1450,7 @@ void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *i
                 } else {
                     item->updateMetatileSelection(event);
                 }
-            } else if (event->buttons() & Qt::MiddleButton) {
+            } else if (event->modifiers() & Qt::AltModifier) {
                 if (event->modifiers() & Qt::ControlModifier) {
                     item->magicFill(event);
                 } else {

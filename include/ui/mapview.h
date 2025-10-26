@@ -16,8 +16,10 @@ class MapView : public GraphicsView
     Q_OBJECT
 
 public:
-    MapView() : GraphicsView() {}
-    MapView(QWidget *parent) : GraphicsView(parent) {}
+    MapView() : MapView(nullptr) {}
+    MapView(QWidget *parent) : GraphicsView(parent) {
+        this->enableMiddleMouseButtonScroll = true;
+    }
 
     Editor *editor;
 

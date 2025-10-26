@@ -82,6 +82,8 @@ Pencil Tool
 
 The Pencil Tool |pencil-tool| (``Tools > Pencil``, or ``N``) is your bread and butter when editing maps.  Simply left-click to paint your current metatile selection onto the map.  You can click and drag to paint a bigger portion of the map.  When clicking and dragging, the metatiles will be painted as if they are snapping to a grid.  This simplifies things like painting large areas of trees.
 
+While using the Pencil Tool (or really, viewing any map view in Porymap), the middle mouse button can be pressed as a hotkey to pan around the map. This is a convenient shortcut as an alternative to selecting the Move Tool.
+
 .. figure:: images/editing-map-tiles/snapping-painting.gif
     :alt: Painting a Large Metatile Selection
     :align: center

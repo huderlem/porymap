@@ -12,6 +12,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Changed
 - Separate `File > Duplicate Current Map/Layout` into two options to allow duplicating the current layout when a map is open.
 - The name field now receives focus immediately for the new map/layout dialogs.
+- The middle mouse button can now be used to pan around the map views, rather than needing to select the Map Tool. This is a very convenient shortcut that matches popular image-editing programs.
+   - Previously, the middle mouse button could be used as a shortcut with the pencil tool to switch to bucket-fill mode. This is now achieved using the `Alt` key.
 
 ### Fixed
 - Fix rare crash while quitting Porymap.
