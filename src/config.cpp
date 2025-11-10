@@ -114,6 +114,9 @@ const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIde
     {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "MAP_UNDEFINED"}},
     {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
     {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
+    {ProjectIdentifier::define_region_prefix,          {"define_region_prefix",          "REGION_"}},
+    {ProjectIdentifier::define_region_empty,           {"define_region_empty",           "NONE"}},
+    {ProjectIdentifier::define_region_count,           {"define_region_count",           "REGIONS_COUNT"}},
     {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
     {ProjectIdentifier::define_species_empty,          {"define_species_empty",          "NONE"}},
     // Regex
@@ -150,6 +153,7 @@ const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths
     {ProjectFilePath::json_wild_encounters,             { "json_wild_encounters",            "src/data/wild_encounters.json"}},
     {ProjectFilePath::json_heal_locations,              { "json_heal_locations",             "src/data/heal_locations.json"}},
     {ProjectFilePath::json_region_map_entries,          { "json_region_map_entries",         "src/data/region_map/region_map_sections.json"}},
+    {ProjectFilePath::json_region_entries,              { "json_region_entries",             "src/data/region_map/regions.json"}},
     {ProjectFilePath::json_region_porymap_cfg,          { "json_region_porymap_cfg",         "src/data/region_map/porymap_config.json"}},
     {ProjectFilePath::tilesets_headers,                 { "tilesets_headers",                "src/data/tilesets/headers.h"}},
     {ProjectFilePath::tilesets_graphics,                { "tilesets_graphics",               "src/data/tilesets/graphics.h"}},

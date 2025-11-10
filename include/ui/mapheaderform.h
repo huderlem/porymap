@@ -35,6 +35,7 @@ public:
 
     void setSong(const QString &song);
     void setLocation(const QString &location);
+    void setRegion(const QString &region);
     void setLocationName(const QString &locationName);
     void setRequiresFlash(bool requiresFlash);
     void setWeather(const QString &weather);
@@ -48,6 +49,7 @@ public:
 
     QString song() const;
     QString location() const;
+    QString region() const;
     QString locationName() const;
     bool requiresFlash() const;
     QString weather() const;
@@ -68,10 +70,12 @@ private:
     void setText(NoScrollComboBox *combo, const QString &text) const;
     void setText(QLineEdit *lineEdit, const QString &text) const;
     void setLocations(const QStringList &locations);
+    void setRegions(const QStringList &regions);
     void updateLocationName();
 
     void onSongUpdated(const QString &song);
     void onLocationChanged(const QString &location);
+    void onRegionChanged(const QString &region);
     void onLocationNameChanged(const QString &locationName);
     void onWeatherChanged(const QString &weather);
     void onTypeChanged(const QString &type);

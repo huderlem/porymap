@@ -52,6 +52,11 @@ public:
     QStringList bgEventFacingDirections;
     QStringList trainerTypes;
     QStringList globalScriptLabels;
+    QStringList mapSectionIdNamesSaveOrder;
+    QStringList mapSectionIdNames;
+    QStringList regionIdNamesSaveOrder;
+    QStringList regionIdNames;
+    bool usingMultiRegion;
     QMap<uint32_t, QString> encounterTypeToName;
     QMap<uint32_t, QString> terrainTypeToName;
     QMap<QString, QMap<QString, uint16_t>> metatileLabelsMap;
@@ -187,6 +192,7 @@ public:
     bool readTilesetLabels();
     bool readTilesetMetatileLabels();
     bool readRegionMapSections();
+    bool readRegionEntries();
     bool readItemNames();
     bool readFlagNames();
     bool readVarNames();
@@ -273,6 +279,7 @@ public:
     static int getNumPalettesTotal() { return num_pals_total; }
     static int getNumPalettesSecondary() { return getNumPalettesTotal() - getNumPalettesPrimary(); }
     static QString getEmptyMapsecName();
+    static QString getEmptyRegionName();
     static QString getMapGroupPrefix();
 
 private:
@@ -289,8 +296,6 @@ private:
     QStringList orderedLayoutIdsMaster;
     QHash<QString, Layout*> mapLayouts;
     QHash<QString, Layout*> mapLayoutsMaster;
-    QStringList mapSectionIdNamesSaveOrder;
-    QStringList mapSectionIdNames;
 
     // Fields for preserving top-level JSON data that Porymap isn't expecting.
     QJsonObject customLayoutsData;
@@ -339,6 +344,14 @@ private:
     };
     QHash<QString, LocationData> locationData;
 
+    // The extra data that can be associated with each REGION name.
+    struct RegionData
+    {
+        QString displayName;
+        QString displayText;
+    };
+    QHash<QString, RegionData> regionData;
+
     QJsonDocument readMapJson(const QString &mapName, QString *error = nullptr);
 
     void setNewLayoutBlockdata(Layout *layout);
@@ -384,6 +397,7 @@ signals:
     void mapSectionAdded(const QString &idName);
     void mapSectionDisplayNameChanged(const QString &idName, const QString &displayName);
     void mapSectionIdNamesChanged(const QStringList &idNames);
+    void regionIdNamesChanged(const QStringList &idNames);
     void eventScriptLabelsRead();
 };
 

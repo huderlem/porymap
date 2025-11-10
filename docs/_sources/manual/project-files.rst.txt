@@ -47,6 +47,7 @@ The filepath that Porymap expects for each file can be overridden on the ``Files
    src/data/object_events/object_event_graphics.h, yes, no, ``data_obj_event_gfx``, "to locate object event sprites using data from ``data_obj_event_pic_tables``"
    src/data/graphics/pokemon.h, yes, no, ``data_pokemon_gfx``, "if ``symbol_pokemon_icon_table`` is read this file will be searched for filepaths to species icon"
    src/data/region_map/region_map_sections.json, yes, yes, ``json_region_map_entries``, "for populating the locations list and for region map data"
+   src/data/region_map/regions.json, yes, yes, ``json_region_entries``, "For populating the regions list and for region map data"
    src/data/region_map/porymap_config.json, yes, yes, ``json_region_porymap_cfg``, "Porymap's config file for the region map editor"
    include/constants/global.h, yes, no, ``constants_global``, "to evaluate ``define_obj_event_count``"
    include/constants/items.h, yes, no, ``constants_items``, "to find ``regex_items`` names"

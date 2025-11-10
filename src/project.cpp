@@ -218,7 +218,7 @@ bool Project::load() {
                 && readSongNames()
                 && readMapGroups()
                 && readHealLocations();
-
+    this->usingMultiRegion = readRegionEntries();
     if (success) {
         // No need to do this if something failed to load.
         // (and in fact we shouldn't, because they contain
@@ -445,6 +445,14 @@ bool Project::loadMapData(Map* map) {
     map->header()->setType(ParseUtil::jsonToQString(mapObj.take("map_type")));
     map->header()->setShowsLocationName(ParseUtil::jsonToBool(mapObj.take("show_map_name")));
     map->header()->setBattleScene(ParseUtil::jsonToQString(mapObj.take("battle_scene")));
+    
+    if (this->usingMultiRegion) {
+        if (mapObj.contains("region")) {
+            map->header()->setRegion(ParseUtil::jsonToQString(mapObj.take("region")));
+        } else {
+            map->header()->setRegion(getEmptyRegionName());
+        }
+    }
 
     if (projectConfig.mapAllowFlagsEnabled) {
         map->header()->setAllowsBiking(ParseUtil::jsonToBool(mapObj.take("allow_cycling")));
@@ -1369,6 +1377,11 @@ bool Project::saveMap(Map *map, bool skipLayout) {
     mapObj["layout"] = map->layoutId();
     mapObj["music"] = map->header()->song();
     mapObj["region_map_section"] = map->header()->location();
+    if (this->usingMultiRegion) {
+        if (map->header()->region() != getEmptyRegionName()) {
+            mapObj["region"] = map->header()->region();
+        }
+    }
     mapObj["requires_flash"] = map->header()->requiresFlash();
     mapObj["weather"] = map->header()->weather();
     mapObj["map_type"] = map->header()->type();
@@ -2169,6 +2182,8 @@ bool Project::isIdentifierUnique(const QString &identifier) const {
         return false;
     if (this->mapSectionIdNames.contains(identifier))
         return false;
+    if (this->regionIdNames.contains(identifier))
+        return false;
     if (this->tilesetLabelsOrdered.contains(identifier))
         return false;
     if (this->mapLayouts.contains(identifier))
@@ -2227,6 +2242,8 @@ void Project::initNewMapSettings() {
 
     this->newMapSettings.header.setSong(this->defaultSong);
     this->newMapSettings.header.setLocation(this->mapSectionIdNames.value(0, "0"));
+    this->newMapSettings.header.setRegion(this->regionIdNames.value(0, "0"));
+    this->newMapSettings.header.setUsesMultiRegion(this->usingMultiRegion);
     this->newMapSettings.header.setRequiresFlash(false);
     this->newMapSettings.header.setWeather(this->weatherNames.value(0, "0"));
     this->newMapSettings.header.setType(this->mapTypes.value(0, "0"));
@@ -2651,6 +2668,71 @@ bool Project::readRegionMapSections() {
     return true;
 }
 
+bool Project::readRegionEntries()
+{
+    this->regionData.clear();
+    this->regionIdNames.clear();
+    this->regionIdNamesSaveOrder.clear();
+
+    const QString defaultName = getEmptyRegionName();
+    const QString requiredPrefix = projectConfig.getIdentifier(ProjectIdentifier::define_region_prefix);
+
+    QJsonDocument doc;
+    const QString filepath = projectConfig.getFilePath(ProjectFilePath::json_region_entries);
+    QString error;
+    if (!parser.tryParseJsonFile(&doc, filepath, &error)) {
+        logWarn(QString("Failed to read region entries from '%1': %2").arg(filepath).arg(error));
+        return false;
+    }
+    watchFile(filepath);
+
+    // Make sure the default name is present in the list.
+    if (!this->regionIdNames.contains(defaultName)) {
+        this->regionIdNames.append(defaultName);
+    }
+
+    QJsonObject regionsGlobalObj = doc.object();
+    QJsonArray regions = regionsGlobalObj.take("regions").toArray();
+    logInfo(QString("[REGION] Loading %1 regions from %2").arg(regions.size()).arg(filepath));
+    for (int i = 0; i < regions.size(); i++) {
+        QJsonObject regionObj = regions.at(i).toObject();
+
+        // For each region, "id" is the only required field. This is the field we use to display the region names in various drop-downs.
+        QString idField = "id";
+        
+        const QString idName = ParseUtil::jsonToQString(regionObj.take(idField));
+        if (!idName.startsWith(requiredPrefix)) {
+            logWarn(QString("Ignoring data for region '%1' in '%2'. IDs must start with the prefix '%3'").arg(idName).arg(filepath).arg(requiredPrefix));
+            continue;
+        }
+        logInfo(QString("[REGION] Region ID: %1").arg(idName));
+        this->regionIdNames.append(idName);
+        this->regionIdNamesSaveOrder.append(idName);
+
+        // Regions in the json file have additional data for generating region name strings.
+        RegionData region;
+        if (regionObj.contains("name")) {
+            region.displayName = ParseUtil::jsonToQString(regionObj.take("name"));
+        } else {
+            QString suffix = idName.mid(requiredPrefix.length());
+            QString normalizedName = suffix.toLower();
+            if (!normalizedName.isEmpty()) {
+                normalizedName[0] = normalizedName[0].toUpper();
+            }
+            region.displayName = normalizedName;
+        }
+        if (regionObj.contains("text")) {
+            region.displayText = ParseUtil::jsonToQString(regionObj.take("text"));
+        } else {
+            region.displayText = idName.mid(requiredPrefix.length());
+        }
+        this->regionData.insert(idName, region);
+    }
+    Util::numericalModeSort(this->regionIdNames);
+
+    return true;
+}
+
 void Project::setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries) {
     for (auto it = this->locationData.keyBegin(); it != this->locationData.keyEnd(); it++) {
         this->locationData[*it].map = entries.value(*it);
@@ -2670,6 +2752,10 @@ QHash<QString, MapSectionEntry> Project::getRegionMapEntries() const {
 
 QString Project::getEmptyMapsecName() {
     return projectConfig.getIdentifier(ProjectIdentifier::define_map_section_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_map_section_empty);
+}
+
+QString Project::getEmptyRegionName() {
+    return projectConfig.getIdentifier(ProjectIdentifier::define_region_prefix) + projectConfig.getIdentifier(ProjectIdentifier::define_region_empty);
 }
 
 QString Project::getMapGroupPrefix() {

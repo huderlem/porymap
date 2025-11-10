@@ -16,6 +16,7 @@ MapHeaderForm::MapHeaderForm(QWidget *parent)
 
     connect(ui->comboBox_Song,        &QComboBox::currentTextChanged, this, &MapHeaderForm::onSongUpdated);
     connect(ui->comboBox_Location,    &QComboBox::currentTextChanged, this, &MapHeaderForm::onLocationChanged);
+    connect(ui->comboBox_Region,      &QComboBox::currentTextChanged, this, &MapHeaderForm::onRegionChanged);
     connect(ui->comboBox_Weather,     &QComboBox::currentTextChanged, this, &MapHeaderForm::onWeatherChanged);
     connect(ui->comboBox_Type,        &QComboBox::currentTextChanged, this, &MapHeaderForm::onTypeChanged);
     connect(ui->comboBox_BattleScene, &QComboBox::currentTextChanged, this, &MapHeaderForm::onBattleSceneChanged);
@@ -69,6 +70,10 @@ void MapHeaderForm::setProject(Project * project, bool allowChanges) {
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(m_project->locationNames());
 
+    const QSignalBlocker b_Regions(ui->comboBox_Region);
+    ui->comboBox_Region->clear();
+    ui->comboBox_Region->addItems(m_project->regionIdNames);
+
     // Hide config-specific settings
 
     bool hasFlags = projectConfig.mapAllowFlagsEnabled;
@@ -83,8 +88,13 @@ void MapHeaderForm::setProject(Project * project, bool allowChanges) {
     ui->spinBox_FloorNumber->setVisible(floorNumEnabled);
     ui->label_FloorNumber->setVisible(floorNumEnabled);
 
+    // Enable/disable region combo box
+    ui->label_Region->setVisible(m_project->usingMultiRegion);
+    ui->comboBox_Region->setVisible(m_project->usingMultiRegion);
+
     // If the project changes any of the displayed data, update it accordingly.
     connect(m_project, &Project::mapSectionIdNamesChanged, this, &MapHeaderForm::setLocations);
+    connect(m_project, &Project::regionIdNamesChanged, this, &MapHeaderForm::setRegions);
     connect(m_project, &Project::mapSectionDisplayNameChanged, this, &MapHeaderForm::updateLocationName);
 }
 
@@ -94,6 +104,14 @@ void MapHeaderForm::setLocations(const QStringList &locations) {
     ui->comboBox_Location->clear();
     ui->comboBox_Location->addItems(locations);
     ui->comboBox_Location->setTextItem(before);
+}
+
+void MapHeaderForm::setRegions(const QStringList &regions) {
+    const QSignalBlocker b(ui->comboBox_Region);
+    const QString before = ui->comboBox_Region->currentText();
+    ui->comboBox_Region->clear();
+    ui->comboBox_Region->addItems(regions);
+    ui->comboBox_Region->setTextItem(before);
 }
 
 // Assign a MapHeader that the form will keep in sync with the UI.
@@ -114,6 +132,7 @@ void MapHeaderForm::setHeader(MapHeader *header) {
     // If the MapHeader is changed externally (for example, with the scripting API) update the UI accordingly
     connect(m_header, &MapHeader::songChanged, this, &MapHeaderForm::setSong);
     connect(m_header, &MapHeader::locationChanged, this, &MapHeaderForm::setLocation);
+    connect(m_header, &MapHeader::regionChanged, this, &MapHeaderForm::setRegion);
     connect(m_header, &MapHeader::requiresFlashChanged, this, &MapHeaderForm::setRequiresFlash);
     connect(m_header, &MapHeader::weatherChanged, this, &MapHeaderForm::setWeather);
     connect(m_header, &MapHeader::typeChanged, this, &MapHeaderForm::setType);
@@ -136,6 +155,7 @@ void MapHeaderForm::clear() {
 void MapHeaderForm::setHeaderData(const MapHeader &header) {
     setSong(header.song());
     setLocation(header.location());
+    setRegion(header.region());
     setRequiresFlash(header.requiresFlash());
     setWeather(header.weather());
     setType(header.type());
@@ -156,6 +176,7 @@ MapHeader MapHeaderForm::headerData() const {
     MapHeader header;
     header.setSong(song());
     header.setLocation(location());
+    header.setRegion(region());
     header.setRequiresFlash(requiresFlash());
     header.setWeather(weather());
     header.setType(type());
@@ -175,6 +196,7 @@ void MapHeaderForm::updateLocationName() {
 // Set data in UI
 void MapHeaderForm::setSong(const QString &song) {                 setText(ui->comboBox_Song, song); }
 void MapHeaderForm::setLocation(const QString &location) {         setText(ui->comboBox_Location, location); }
+void MapHeaderForm::setRegion(const QString &region) {             setText(ui->comboBox_Region, region); }
 void MapHeaderForm::setLocationName(const QString &locationName) { setText(ui->lineEdit_LocationName, locationName); }
 void MapHeaderForm::setRequiresFlash(bool requiresFlash) {         ui->checkBox_RequiresFlash->setChecked(requiresFlash); }
 void MapHeaderForm::setWeather(const QString &weather) {           setText(ui->comboBox_Weather, weather); }
@@ -199,6 +221,7 @@ void MapHeaderForm::setText(QLineEdit *lineEdit, const QString &text) const {
 // Read data from UI
 QString MapHeaderForm::song() const {           return ui->comboBox_Song->currentText(); }
 QString MapHeaderForm::location() const {       return ui->comboBox_Location->currentText(); }
+QString MapHeaderForm::region() const {         return ui->comboBox_Region->currentText(); }
 QString MapHeaderForm::locationName() const {   return ui->lineEdit_LocationName->text(); }
 bool MapHeaderForm::requiresFlash() const {     return ui->checkBox_RequiresFlash->isChecked(); }
 QString MapHeaderForm::weather() const {        return ui->comboBox_Weather->currentText(); }
@@ -225,6 +248,7 @@ void MapHeaderForm::onLocationChanged(const QString &location) {
     if (m_header) m_header->setLocation(location);
     updateLocationName();
 }
+void MapHeaderForm::onRegionChanged(const QString &region) {           if (m_header) m_header->setRegion(region); }
 void MapHeaderForm::onLocationNameChanged(const QString &locationName) {
     if (m_project && m_allowProjectChanges) {
         // The location name is actually part of the project, not the map header.

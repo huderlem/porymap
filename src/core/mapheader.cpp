@@ -3,6 +3,7 @@
 MapHeader::MapHeader(const MapHeader& other) : MapHeader() {
     m_song = other.m_song;
     m_location = other.m_location;
+    m_region = other.m_region;
     m_requiresFlash = other.m_requiresFlash;
     m_weather = other.m_weather;
     m_type = other.m_type;
@@ -20,6 +21,7 @@ MapHeader &MapHeader::operator=(const MapHeader &other) {
     // repeatedly (but for now at least that's not a big issue).
     setSong(other.m_song);
     setLocation(other.m_location);
+    setRegion((other.m_region));
     setRequiresFlash(other.m_requiresFlash);
     setWeather(other.m_weather);
     setType(other.m_type);
@@ -45,6 +47,22 @@ void MapHeader::setLocation(const QString &location) {
         return;
     m_location = location;
     emit locationChanged(m_location);
+    emit modified();
+}
+
+void MapHeader::setRegion(const QString &region) {
+    if (m_region == region)
+        return;
+    m_region = region;
+    emit regionChanged(m_region);
+    emit modified();
+}
+
+void MapHeader::setUsesMultiRegion(bool usesMultiRegion) {
+    if (m_usesMultiRegion == usesMultiRegion)
+        return;
+    m_usesMultiRegion = usesMultiRegion;
+    emit usesMultiRegionChanged(m_usesMultiRegion);
     emit modified();
 }
 
