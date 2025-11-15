@@ -22,6 +22,20 @@ public:
     }
 
     bool eventFilter(QObject *obj, QEvent *event) {
+        auto createLeftButtonMouseEvent = [](const QMouseEvent *srcEvent) {
+// Some of QMouseEvent's position functions / constructors changed between Qt5 and Qt6.
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            return new QMouseEvent(srcEvent->type(), srcEvent->pos(),
+                                    Qt::MouseButton::LeftButton,
+                                    Qt::MouseButton::LeftButton,
+                                    Qt::KeyboardModifier::NoModifier);
+#else
+            return new QMouseEvent(srcEvent->type(), srcEvent->position(), srcEvent->globalPosition(),
+                                    Qt::MouseButton::LeftButton,
+                                    Qt::MouseButton::LeftButton,
+                                    Qt::KeyboardModifier::NoModifier);
+#endif
+        };
         // The goal here is to enable pressing the middle mouse button to pan around the graphics view.
         // In Qt, the normal way to do this is via setDragMode(). However, that dragging mechanism only
         // works via the LEFT mouse button. To support middle mouse button, we have to hijack the middle
@@ -33,26 +47,18 @@ public:
         if (obj == viewport()) {
             if (enableMiddleMouseButtonScroll) {
                 if (event->type() == QEvent::MouseButtonPress) {
-                    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+                    auto mouseEvent = static_cast<QMouseEvent*>(event);
                     if (mouseEvent->button() == Qt::MiddleButton) {
                         this->setDragMode(QGraphicsView::DragMode::ScrollHandDrag);
-                        QMouseEvent* pressEvent = new QMouseEvent(
-                            QEvent::GraphicsSceneMousePress,
-                            mouseEvent->pos(), Qt::MouseButton::LeftButton,
-                            Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier);
-
                         this->isMiddleButtonScrollInProgress = true;
+                        QMouseEvent* pressEvent = createLeftButtonMouseEvent(mouseEvent);
                         this->mousePressEvent(pressEvent);
                     }
-
                     return false;
                 }
                 else if (event->type() == QEvent::MouseButtonRelease) {
-                    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-                    QMouseEvent* releaseEvent = new QMouseEvent(
-                        QEvent::GraphicsSceneMouseRelease,
-                        mouseEvent->pos(), Qt::MouseButton::LeftButton,
-                        Qt::MouseButton::LeftButton, Qt::KeyboardModifier::NoModifier);
+                    auto mouseEvent = static_cast<QMouseEvent*>(event);
+                    QMouseEvent* releaseEvent = createLeftButtonMouseEvent(mouseEvent);
                     this->mouseReleaseEvent(releaseEvent);
                     this->setDragMode(desiredDragMode);
                     this->isMiddleButtonScrollInProgress = false;
@@ -73,11 +79,11 @@ public:
     }
 
 protected:
-    bool enableMiddleMouseButtonScroll;
+    bool enableMiddleMouseButtonScroll = false;
 
 private:
-    bool isMiddleButtonScrollInProgress;
-    DragMode desiredDragMode;
+    bool isMiddleButtonScrollInProgress = false;
+    DragMode desiredDragMode = DragMode::NoDrag;
 };
 
 class NoScrollGraphicsView : public GraphicsView
