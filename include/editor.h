@@ -259,6 +259,7 @@ private:
     void onMapStartPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void onMapEndPaint(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item);
     void setStatusFromMapPos(const QPoint &pos);
+    bool isMiddleButtonScrollInProgress() const;
 
 private slots:
     void setSmartPathCursorMode(QGraphicsSceneMouseEvent *event);

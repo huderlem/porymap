@@ -1432,9 +1432,15 @@ void Editor::adjustStraightPathPos(QGraphicsSceneMouseEvent *event, LayoutPixmap
     }
 }
 
+bool Editor::isMiddleButtonScrollInProgress() const {
+    if (this->editMode == EditMode::Connections)
+        return ui->graphicsView_Connections->getIsMiddleButtonScrollInProgress();
+    return ui->graphicsView_Map->getIsMiddleButtonScrollInProgress();
+}
+
 void Editor::mouseEvent_map(QGraphicsSceneMouseEvent *event, LayoutPixmapItem *item) {
     auto editAction = getEditAction();
-    if (editAction == EditAction::Move || ui->graphicsView_Map->getIsMiddleButtonScrollInProgress()) {
+    if (editAction == EditAction::Move || isMiddleButtonScrollInProgress()) {
         event->ignore();
         return;
     }

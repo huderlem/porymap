@@ -118,7 +118,9 @@ class ConnectionsView : public GraphicsView
 {
     Q_OBJECT
 public:
-    ConnectionsView(QWidget *parent = nullptr) : GraphicsView(parent) {}
+    ConnectionsView(QWidget *parent = nullptr) : GraphicsView(parent) {
+        this->enableMiddleMouseButtonScroll = true;
+    }
 
 signals:
     void pressedDelete();

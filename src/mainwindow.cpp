@@ -1302,9 +1302,9 @@ void MainWindow::refreshMapScene() {
     ui->graphicsView_currentMetatileSelection->setScene(editor->scene_current_metatile_selection);
     ui->graphicsView_currentMetatileSelection->setFixedSize(editor->current_metatile_selection_item->pixmap().width() + 2, editor->current_metatile_selection_item->pixmap().height() + 2);
 
-    ui->graphicsView_Collision->setScene(editor->scene_collision_metatiles);
-    //ui->graphicsView_Collision->setSceneRect(editor->scene_collision_metatiles->sceneRect());
-    ui->graphicsView_Collision->setFixedSize(editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
+    ui->graphicsView_CollisionSelector->setScene(editor->scene_collision_metatiles);
+    //ui->graphicsView_CollisionSelector->setSceneRect(editor->scene_collision_metatiles->sceneRect());
+    ui->graphicsView_CollisionSelector->setFixedSize(editor->movement_permissions_selector_item->pixmap().width() + 2, editor->movement_permissions_selector_item->pixmap().height() + 2);
 
     on_mainTabBar_tabBarClicked(ui->mainTabBar->currentIndex());
 }
@@ -3150,9 +3150,9 @@ void MainWindow::on_horizontalSlider_CollisionZoom_valueChanged(int value) {
                editor->movement_permissions_selector_item->pixmap().height());
     size *= scale;
 
-    ui->graphicsView_Collision->setResizeAnchor(QGraphicsView::NoAnchor);
-    ui->graphicsView_Collision->setTransform(transform);
-    ui->graphicsView_Collision->setFixedSize(size.width() + 2, size.height() + 2);
+    ui->graphicsView_CollisionSelector->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->graphicsView_CollisionSelector->setTransform(transform);
+    ui->graphicsView_CollisionSelector->setFixedSize(size.width() + 2, size.height() + 2);
     ui->scrollAreaWidgetContents_Collision->adjustSize();
 }
 
