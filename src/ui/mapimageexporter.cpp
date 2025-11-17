@@ -614,10 +614,10 @@ QMargins MapImageExporter::getMargins(const Map *map) {
             if (!targetMap) continue;
 
             QRect rect = targetMap->getConnectionRect(dir);
-            if (dir == "up") margins.setTop(rect.height());
-            else if (dir == "down") margins.setBottom(rect.height());
-            else if (dir == "left") margins.setLeft(rect.width());
-            else if (dir == "right") margins.setRight(rect.width());
+            if (dir == "up") margins.setTop(qMax(rect.height(), margins.top()));
+            else if (dir == "down") margins.setBottom(qMax(rect.height(), margins.bottom()));
+            else if (dir == "left") margins.setLeft(qMax(rect.width(), margins.left()));
+            else if (dir == "right") margins.setRight(qMax(rect.width(), margins.right()));
         }
     }
     if (m_settings.showGrid) {
