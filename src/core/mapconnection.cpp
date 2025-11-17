@@ -69,9 +69,7 @@ QPixmap MapConnection::render() const {
 }
 
 QImage MapConnection::renderImage() const {
-    render();
-    auto map = targetMap();
-    return (map && map->layout()) ? map->layout()->image : QImage();
+    return render().toImage();
 }
 
 // Get the position of the target map relative to its parent map.
