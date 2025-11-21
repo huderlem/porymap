@@ -95,8 +95,7 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
 
     // First we need to know which (if any) known history this project belongs to.
     // We'll get the root commit, then compare it to the known root commits for the base project repos.
-    static const QStringList args_getRootCommit = { "rev-list", "--max-parents=0", "HEAD" };
-    process.setArguments(args_getRootCommit);
+    process.setArguments({ "-c", QString("safe.directory=%1").arg(this->root), "rev-list", "--max-parents=0", "HEAD" });
     process.start();
     if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit || process.exitCode() != 0) {
         if (errorOut) {
@@ -158,7 +157,7 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
             // An empty commit hash means 'consider any point in the history a supported version'
             return versionNum;
         }
-        process.setArguments({ "merge-base", "--is-ancestor", commitHash, "HEAD" });
+        process.setArguments({ "-c", QString("safe.directory=%1").arg(this->root), "merge-base", "--is-ancestor", commitHash, "HEAD" });
         process.start();
         if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit) {
             if (errorOut) {
