@@ -16,6 +16,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
    - Previously, the middle mouse button could be used as a shortcut with the pencil tool to switch to bucket-fill mode. This is now achieved using the `Alt` key.
 
 ### Fixed
+- Fix potential crash when painting and the cursor leaves the map area.
 - Fix rare crash while quitting Porymap.
 - Fix `Edit > Clear Map Entries` in the Region Map Editor not saving the applied changes.
 - Fix `Edit > Undo/Redo` appearing enabled even when they don't do anything.

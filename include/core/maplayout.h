@@ -125,7 +125,9 @@ public:
     bool isWithinBorderBounds(int x, int y) const;
 
     bool getBlock(int x, int y, Block *out) const;
+    bool getBlock(const QPoint& pos, Block *out) const { return getBlock(pos.x(), pos.y(), out); }
     void setBlock(int x, int y, Block block, bool enableScriptCallback = false);
+    void setBlock(const QPoint& pos, Block block, bool enableScriptCallback = false) { setBlock(pos.x(), pos.y(), block, enableScriptCallback); }
     void setBlockdata(Blockdata blockdata, bool enableScriptCallback = false);
 
     uint16_t getMetatileId(int x, int y) const;

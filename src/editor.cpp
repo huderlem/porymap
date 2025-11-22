@@ -1244,28 +1244,27 @@ void Editor::onMapHoverCleared() {
 }
 
 void Editor::setStatusFromMapPos(const QPoint &pos) {
-    int x = pos.x();
-    int y = pos.y();
+    Block block;
+    if (!this->layout || !this->layout->getBlock(pos, &block)) {
+        ui->statusBar->clearMessage();
+        return;
+    }
+
     if (this->editMode == EditMode::Metatiles) {
-        int blockIndex = y * layout->getWidth() + x;
-        int metatileId = layout->blockdata.at(blockIndex).metatileId();
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3, Scale = %4x")
-                              .arg(x)
-                              .arg(y)
-                              .arg(getMetatileDisplayMessage(metatileId))
+                              .arg(pos.x())
+                              .arg(pos.y())
+                              .arg(getMetatileDisplayMessage(block.metatileId()))
                               .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     } else if (this->editMode == EditMode::Collision) {
-        int blockIndex = y * layout->getWidth() + x;
-        uint16_t collision = layout->blockdata.at(blockIndex).collision();
-        uint16_t elevation = layout->blockdata.at(blockIndex).elevation();
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, %3")
-                              .arg(x)
-                              .arg(y)
-                              .arg(this->getMovementPermissionText(collision, elevation)));
+                              .arg(pos.x())
+                              .arg(pos.y())
+                              .arg(this->getMovementPermissionText(block.collision(), block.elevation())));
     } else if (this->editMode == EditMode::Events) {
         this->ui->statusBar->showMessage(QString("X: %1, Y: %2, Scale = %3x")
-                              .arg(x)
-                              .arg(y)
+                              .arg(pos.x())
+                              .arg(pos.y())
                               .arg(QString::number(zoomLevels[this->scaleIndex], 'g', 2)));
     }
 }
