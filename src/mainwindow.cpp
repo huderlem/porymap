@@ -3246,7 +3246,7 @@ bool MainWindow::closeSupplementaryWindows() {
     // We have some QPointers to windows that may have been closed above.
     // Make sure we force them to update to nullptr now; they may be read
     // before the next event loop gets a chance to update them.
-    QApplication::sendPostedEvents();
+    QApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     return true;
 }
 
