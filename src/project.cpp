@@ -3175,15 +3175,19 @@ bool Project::readEventGraphics() {
 
 QPixmap Project::getEventPixmap(const QString &gfxName, const QString &movementName) {
     struct FrameData {
-        int index = 0;
-        bool hFlip = false;
+        int index;
+        bool hFlip;
+
+        // Default values + compatibility with older compilers
+        FrameData(int index_ = 0, bool hFlip_ = false)
+            : index(index_), hFlip(hFlip_) {}
     };
     // TODO: Expose as a setting to users
     static const QMap<QString, FrameData> directionToFrameData = {
-        {"DIR_SOUTH", { .index = 0, .hFlip = false }},
-        {"DIR_NORTH", { .index = 1, .hFlip = false }},
-        {"DIR_WEST",  { .index = 2, .hFlip = false }},
-        {"DIR_EAST",  { .index = 2, .hFlip = true }}, // East-facing sprite is just the West-facing sprite mirrored
+        {"DIR_SOUTH", { 0, false }},
+        {"DIR_NORTH", { 1, false }},
+        {"DIR_WEST",  { 2, false }},
+        {"DIR_EAST",  { 2,  true }}, // East-facing sprite is just the West-facing sprite mirrored
     };
     const QString direction = this->facingDirections.value(movementName, "DIR_SOUTH");
     auto frameData = directionToFrameData.value(direction);
