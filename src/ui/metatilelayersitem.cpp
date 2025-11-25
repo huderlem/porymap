@@ -3,9 +3,9 @@
 #include "imageproviders.h"
 #include <QPainter>
 
-MetatileLayersItem::MetatileLayersItem(Metatile *metatile, Tileset *primaryTileset, Tileset *secondaryTileset, Qt::Orientation orientation)
+MetatileLayersItem::MetatileLayersItem(uint16_t metatileId, Tileset *primaryTileset, Tileset *secondaryTileset, Qt::Orientation orientation)
     : SelectablePixmapItem(16, 16, Metatile::tileWidth(),  Metatile::tileHeight()),
-     metatile(metatile),
+     metatileId(metatileId),
      primaryTileset(primaryTileset),
      secondaryTileset(secondaryTileset)
 {
@@ -60,9 +60,10 @@ void MetatileLayersItem::draw() {
     QPainter painter(&pixmap);
 
     // Draw tile images
-    int numTiles = qMin(projectConfig.getNumTilesInMetatile(), this->metatile ? this->metatile->tiles.length() : 0);
+    const Metatile* metatile = getMetatile();
+    int numTiles = qMin(projectConfig.getNumTilesInMetatile(), metatile ? metatile->tiles.length() : 0);
     for (int i = 0; i < numTiles; i++) {
-        Tile tile = this->metatile->tiles.at(i);
+        Tile tile = metatile->tiles.at(i);
         QImage tileImage = getPalettedTileImage(tile.tileId,
                                                 this->primaryTileset,
                                                 this->secondaryTileset,
@@ -92,8 +93,8 @@ void MetatileLayersItem::draw() {
     this->setPixmap(pixmap);
 }
 
-void MetatileLayersItem::setMetatile(Metatile *metatile) {
-    this->metatile = metatile;
+void MetatileLayersItem::setMetatileId(uint16_t metatileId) {
+    this->metatileId = metatileId;
     draw();
 }
 
@@ -167,10 +168,8 @@ void MetatileLayersItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
 
 Tile MetatileLayersItem::tileUnderCursor() const {
     int tileIndex = posToTileIndex(this->cursorCellPos);
-    if (tileIndex < 0 || !this->metatile || tileIndex >= this->metatile->tiles.length()) {
-        return Tile();
-    }
-    return this->metatile->tiles.at(tileIndex);
+    const Metatile* metatile = getMetatile();
+    return metatile ? metatile->tiles.value(tileIndex) : Tile();
 }
 
 QPoint MetatileLayersItem::getBoundedPos(const QPointF &pos) {

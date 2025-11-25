@@ -309,8 +309,7 @@ void TilesetEditor::addWidgetToMetatileProperties(QWidget *w, int *row, int rowS
 }
 
 void TilesetEditor::initMetatileLayersItem() {
-    Metatile *metatile = Tileset::getMetatile(this->getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
-    this->metatileLayersItem = new MetatileLayersItem(metatile, this->primaryTileset, this->secondaryTileset);
+    this->metatileLayersItem = new MetatileLayersItem(getSelectedMetatileId(), this->primaryTileset, this->secondaryTileset);
     connect(this->metatileLayersItem, &MetatileLayersItem::tileChanged, [this](const QPoint &pos) { paintSelectedLayerTiles(pos); });
     connect(this->metatileLayersItem, &MetatileLayersItem::paletteChanged, [this](const QPoint &pos) { paintSelectedLayerTiles(pos, true); });
     connect(this->metatileLayersItem, &MetatileLayersItem::selectedTilesChanged, this, &TilesetEditor::onMetatileLayerSelectionChanged);
@@ -504,7 +503,7 @@ void TilesetEditor::onSelectedMetatileChanged(uint16_t metatileId) {
         if (updatedMetatile) *this->metatile = *updatedMetatile;
     }
 
-    this->metatileLayersItem->setMetatile(metatile);
+    this->metatileLayersItem->setMetatileId(metatileId);
 
     MetatileLabelPair labels = Tileset::getMetatileLabelPair(metatileId, this->primaryTileset, this->secondaryTileset);
     this->ui->lineEdit_MetatileLabel->setText(labels.owned);

@@ -9,14 +9,14 @@
 class MetatileLayersItem: public SelectablePixmapItem {
     Q_OBJECT
 public:
-    MetatileLayersItem(Metatile *metatile,
+    MetatileLayersItem(uint16_t metatileId,
                        Tileset *primaryTileset,
                        Tileset *secondaryTileset,
                        Qt::Orientation orientation = Qt::Vertical);
 
     void draw() override;
     void setTilesets(Tileset*, Tileset*);
-    void setMetatile(Metatile*);
+    void setMetatileId(uint16_t);
 
     bool hasCursor() const { return this->cursorCellPos != QPoint(-1,-1); }
     Tile tileUnderCursor() const;
@@ -29,7 +29,7 @@ public:
 
     bool showGrid;
 private:
-    Metatile* metatile;
+    uint16_t metatileId = 0;
     Tileset *primaryTileset;
     Tileset *secondaryTileset;
     Qt::Orientation orientation;
@@ -41,6 +41,7 @@ private:
     QPoint getBoundedPos(const QPointF &);
     void updateSelection();
     bool setCursorCellPos(const QPoint &pos);
+    Metatile* getMetatile() const { return Tileset::getMetatile(this->metatileId, this->primaryTileset, this->secondaryTileset); }
 signals:
     void tileChanged(const QPoint &pos);
     void paletteChanged(const QPoint &pos);
