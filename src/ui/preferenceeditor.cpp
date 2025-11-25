@@ -91,6 +91,7 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_OpenRecentProject->setChecked(porymapConfig.reopenOnLaunch);
     ui->checkBox_CheckForUpdates->setChecked(porymapConfig.checkForUpdates);
     ui->checkBox_DisableEventWarning->setChecked(porymapConfig.eventDeleteWarningDisabled);
+    ui->checkBox_ShowProjectLoadingScreen->setChecked(porymapConfig.showProjectLoadingScreen);
 
     if (porymapConfig.scriptAutocompleteMode == ScriptAutocompleteMode::MapOnly) {
         ui->radioButton_AutocompleteMapScripts->setChecked(true);
@@ -136,6 +137,7 @@ void PreferenceEditor::saveFields() {
     porymapConfig.reopenOnLaunch = ui->checkBox_OpenRecentProject->isChecked();
     porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
     porymapConfig.eventDeleteWarningDisabled = ui->checkBox_DisableEventWarning->isChecked();
+    porymapConfig.showProjectLoadingScreen = ui->checkBox_ShowProjectLoadingScreen->isChecked();
 
     porymapConfig.statusBarLogTypes.clear();
     if (ui->checkBox_StatusErrors->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_ERROR);

@@ -796,7 +796,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
     const QString openMessage = QString("Opening %1").arg(projectString);
     logInfo(openMessage);
 
-    porysplash->start();
+    if (porymapConfig.showProjectLoadingScreen) porysplash->start();
 
     porysplash->showLoadingMessage("config");
     if (!projectConfig.load(dir) || !userConfig.load(dir)) {

@@ -135,6 +135,7 @@ public:
     bool eventDeleteWarningDisabled;
     bool eventOverlayEnabled;
     bool checkForUpdates;
+    bool showProjectLoadingScreen;
     QDateTime lastUpdateCheckTime;
     QVersionNumber lastUpdateCheckVersion;
     QMap<QUrl, QDateTime> rateLimitTimes;

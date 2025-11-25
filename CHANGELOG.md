@@ -8,6 +8,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Added
 - Add option to sort Locations and Layouts lists by value, rather than alphabetically.
 - Add color space settings for exported images.
+- Add setting to disable the project loading screen.
 
 ### Changed
 - Separate `File > Duplicate Current Map/Layout` into two options to allow duplicating the current layout when a map is open.

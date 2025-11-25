@@ -364,6 +364,7 @@ void PorymapConfig::reset() {
     this->eventDeleteWarningDisabled = false;
     this->eventOverlayEnabled = false;
     this->checkForUpdates = true;
+    this->showProjectLoadingScreen = true;
     this->lastUpdateCheckTime = QDateTime();
     this->lastUpdateCheckVersion = porymapVersion;
     this->rateLimitTimes.clear();
@@ -528,6 +529,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
         this->eventOverlayEnabled = getConfigBool(key, value);
     } else if (key == "check_for_updates") {
         this->checkForUpdates = getConfigBool(key, value);
+    } else if (key == "show_project_loading_screen") {
+        this->showProjectLoadingScreen = getConfigBool(key, value);
     } else if (key == "last_update_check_time") {
         this->lastUpdateCheckTime = QDateTime::fromString(value).toLocalTime();
     } else if (key == "last_update_check_version") {
@@ -652,6 +655,7 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("event_delete_warning_disabled", QString::number(this->eventDeleteWarningDisabled));
     map.insert("event_overlay_enabled", QString::number(this->eventOverlayEnabled));
     map.insert("check_for_updates", QString::number(this->checkForUpdates));
+    map.insert("show_project_loading_screen", QString::number(this->showProjectLoadingScreen));
     map.insert("last_update_check_time", this->lastUpdateCheckTime.toUTC().toString());
     map.insert("last_update_check_version", this->lastUpdateCheckVersion.toString());
     for (auto i = this->rateLimitTimes.cbegin(), end = this->rateLimitTimes.cend(); i != end; i++){
