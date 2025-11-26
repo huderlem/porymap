@@ -766,6 +766,7 @@ bool Project::watchFile(const QString &filename) {
     if (!this->fileWatcher) {
         // Only create the file watcher when it's first needed (even an empty QFileSystemWatcher will consume system resources).
         this->fileWatcher = new QFileSystemWatcher(this);
+        if (!this->fileWatcher) return false;
         QObject::connect(this->fileWatcher, &QFileSystemWatcher::fileChanged, this, &Project::recordFileChange);
     }
 
