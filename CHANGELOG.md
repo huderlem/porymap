@@ -17,6 +17,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
    - Previously, the middle mouse button could be used as a shortcut with the pencil tool to switch to bucket-fill mode. This is now achieved using the `Alt` key.
 
 ### Fixed
+- Fix crash when a painted tile selection goes out of bounds of the metatile layer view in the Tileset Editor.
 - Fix crash on older versions of Qt when reopening a project with certain windows open.
 - Fix potential crash when painting and the cursor leaves the map area.
 - Fix potential crash when changing maps with the Tileset Editor open.

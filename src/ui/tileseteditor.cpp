@@ -547,30 +547,28 @@ void TilesetEditor::paintSelectedLayerTiles(const QPoint &pos, bool paletteOnly)
     QSize dimensions = this->tileSelector->getSelectionDimensions();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     int srcTileIndex = 0;
-    int maxTileIndex = projectConfig.getNumTilesInMetatile();
     for (int y = 0; y < dimensions.height(); y++) {
         for (int x = 0; x < dimensions.width(); x++) {
             int destTileIndex = this->metatileLayersItem->posToTileIndex(pos.x() + x, pos.y() + y);
-            if (destTileIndex < maxTileIndex) {
-                Tile &destTile = this->metatile->tiles[destTileIndex];
-                const Tile srcTile = tiles.value(srcTileIndex++);
-                if (paletteOnly) {
-                    if (srcTile.palette == destTile.palette)
-                        continue; // Ignore no-ops for edit history
-                    destTile.palette = srcTile.palette;
-                } else {
-                    if (srcTile == destTile)
-                        continue; // Ignore no-ops for edit history
+            if (destTileIndex < 0 || destTileIndex >= this->metatile->tiles.length()) continue;
+            Tile &destTile = this->metatile->tiles[destTileIndex];
+            const Tile srcTile = tiles.value(srcTileIndex++);
+            if (paletteOnly) {
+                if (srcTile.palette == destTile.palette)
+                    continue; // Ignore no-ops for edit history
+                destTile.palette = srcTile.palette;
+            } else {
+                if (srcTile == destTile)
+                    continue; // Ignore no-ops for edit history
 
-                    // Update tile usage count
-                    if (this->tileSelector->showUnused && destTile.tileId != srcTile.tileId) {
-                        this->tileSelector->usedTiles[srcTile.tileId] += 1;
-                        this->tileSelector->usedTiles[destTile.tileId] -= 1;
-                    }
-                    destTile = srcTile;
+                // Update tile usage count
+                if (this->tileSelector->showUnused && destTile.tileId != srcTile.tileId) {
+                    this->tileSelector->usedTiles[srcTile.tileId] += 1;
+                    this->tileSelector->usedTiles[destTile.tileId] -= 1;
                 }
-                changed = true;
+                destTile = srcTile;
             }
+            changed = true;
         }
     }
     if (!changed) {
