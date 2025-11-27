@@ -81,17 +81,9 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
 TilesetEditor::~TilesetEditor()
 {
     delete ui;
-    delete metatileSelector;
-    delete tileSelector;
-    delete metatileLayersItem;
     delete paletteEditor;
     delete primaryTileset;
     delete secondaryTileset;
-    delete metatilesScene;
-    delete tilesScene;
-    delete selectedTilePixmapItem;
-    delete selectedTileScene;
-    delete metatileLayersScene;
     delete copiedMetatile;
     delete metatileImageExportSettings;
     this->metatileHistory.clear();
@@ -224,11 +216,11 @@ void TilesetEditor::initMetatileSelector()
     this->metatileSelector->showGrid = showGrid;
     this->metatileSelector->showDivider = this->ui->actionShow_Tileset_Divider->isChecked();
 
-    this->metatilesScene = new QGraphicsScene;
-    this->metatilesScene->addItem(this->metatileSelector);
+    auto scene = new QGraphicsScene(this);
+    scene->addItem(this->metatileSelector);
     this->metatileSelector->draw();
 
-    this->ui->graphicsView_Metatiles->setScene(this->metatilesScene);
+    this->ui->graphicsView_Metatiles->setScene(scene);
     this->ui->graphicsView_Metatiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     this->ui->horizontalSlider_MetatilesZoom->setValue(porymapConfig.tilesetEditorMetatilesZoom);
 }
@@ -320,9 +312,9 @@ void TilesetEditor::initMetatileLayersItem() {
     this->ui->actionLayer_Grid->setChecked(showGrid);
     this->metatileLayersItem->showGrid = showGrid;
 
-    this->metatileLayersScene = new QGraphicsScene;
-    this->metatileLayersScene->addItem(this->metatileLayersItem);
-    this->ui->graphicsView_MetatileLayers->setScene(this->metatileLayersScene);
+    auto scene = new QGraphicsScene(this);
+    scene->addItem(this->metatileLayersItem);
+    this->ui->graphicsView_MetatileLayers->setScene(scene);
 }
 
 void TilesetEditor::initTileSelector() {
@@ -335,20 +327,19 @@ void TilesetEditor::initTileSelector() {
 
     this->tileSelector->showDivider = this->ui->actionShow_Tileset_Divider->isChecked();
 
-    this->tilesScene = new QGraphicsScene;
-    this->tilesScene->addItem(this->tileSelector);
+    auto scene = new QGraphicsScene(this);
+    scene->addItem(this->tileSelector);
     this->tileSelector->select(0);
     this->tileSelector->draw();
 
-    this->ui->graphicsView_Tiles->setScene(this->tilesScene);
+    this->ui->graphicsView_Tiles->setScene(scene);
     this->ui->graphicsView_Tiles->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     this->ui->horizontalSlider_TilesZoom->setValue(porymapConfig.tilesetEditorTilesZoom);
 }
 
 void TilesetEditor::initSelectedTileItem() {
-    this->selectedTileScene = new QGraphicsScene;
+    ui->graphicsView_selectedTile->setScene(new QGraphicsScene(this));
     this->drawSelectedTiles();
-    this->ui->graphicsView_selectedTile->setScene(this->selectedTileScene);
 }
 
 void TilesetEditor::initShortcuts() {
@@ -444,13 +435,14 @@ void TilesetEditor::refresh() {
 }
 
 void TilesetEditor::drawSelectedTiles() {
-    if (!this->selectedTileScene) {
+    QGraphicsScene *scene = ui->graphicsView_selectedTile->scene();
+    if (!scene) {
         return;
     }
 
     const int imgTileWidth = 16;
     const int imgTileHeight = 16;
-    this->selectedTileScene->clear();
+    scene->clear();
     QList<Tile> tiles = this->tileSelector->getSelectedTiles();
     QSize dimensions = this->tileSelector->getSelectionDimensions();
     QImage selectionImage(imgTileWidth * dimensions.width(), imgTileHeight * dimensions.height(), QImage::Format_RGBA8888);
@@ -465,10 +457,10 @@ void TilesetEditor::drawSelectedTiles() {
         }
     }
 
-    this->selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(selectionImage));
-    this->selectedTileScene->addItem(this->selectedTilePixmapItem);
+    auto selectedTilePixmapItem = new QGraphicsPixmapItem(QPixmap::fromImage(selectionImage));
+    scene->addItem(selectedTilePixmapItem);
 
-    QSize size(this->selectedTilePixmapItem->pixmap().width(), this->selectedTilePixmapItem->pixmap().height());
+    QSize size(selectedTilePixmapItem->pixmap().width(), selectedTilePixmapItem->pixmap().height());
     this->ui->graphicsView_selectedTile->setSceneRect(0, 0, size.width(), size.height());
 }
 

@@ -176,11 +176,6 @@ private:
     bool hasUnsavedChanges;
     Tileset *primaryTileset = nullptr;
     Tileset *secondaryTileset = nullptr;
-    QGraphicsScene *metatilesScene = nullptr;
-    QGraphicsScene *tilesScene = nullptr;
-    QGraphicsScene *selectedTileScene = nullptr;
-    QGraphicsPixmapItem *selectedTilePixmapItem = nullptr;
-    QGraphicsScene *metatileLayersScene = nullptr;
     bool lockSelection = false;
     QSet<uint16_t> metatileReloadQueue;
     MetatileImageExporter::Settings *metatileImageExportSettings = nullptr;
