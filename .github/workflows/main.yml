@@ -18,7 +18,7 @@ jobs:
   build-linux:
     strategy:
      matrix:
-       qtversion: [5.14.2, 6.8.2]
+       qtversion: [5.14.2, 6.8.*]
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -35,7 +35,7 @@ jobs:
         run: qmake porymap.pro
 
       - name: Compile
-        run: make
+        run: make -j8
 
   build-macos:
     strategy:
@@ -53,7 +53,8 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.8.2'
+          # 6.10 is the first Qt version (by release date) to support macOS 26
+          version: '6.10.*'
           modules: 'qtcharts'
           cache: 'true'
 
@@ -61,7 +62,7 @@ jobs:
         run: qmake -config release porymap.pro
 
       - name: Compile
-        run: make
+        run: make -j8
 
       - name: Create Disk Image
         if: startsWith(github.ref, 'refs/tags/')

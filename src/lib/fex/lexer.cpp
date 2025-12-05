@@ -164,7 +164,7 @@ namespace fex
         // Note: Using QFile instead of ifstream to handle encoding differences between platforms
         //       (specifically to handle accented characters on Windows)
         QFile file(path);
-        file.open(QIODevice::ReadOnly);
+        if (!file.open(QIODevice::ReadOnly)) return Lex();
 
         const QByteArray data = file.readAll();
 

@@ -751,9 +751,9 @@ void MainWindow::restoreWindowState() {
 }
 
 void MainWindow::setTheme(QString theme) {
-    QFile File(QString(":/themes/%1.qss").arg(theme));
-    File.open(QFile::ReadOnly);
-    QString stylesheet = QLatin1String(File.readAll());
+    QFile file(QString(":/themes/%1.qss").arg(theme));
+    if (!file.open(QFile::ReadOnly)) return;
+    QString stylesheet = QLatin1String(file.readAll());
 
     stylesheet.append(QString("QWidget { %1 } ").arg(Util::toStylesheetString(porymapConfig.applicationFont)));
     stylesheet.append(QString("MapTree { %1 } ").arg(Util::toStylesheetString(porymapConfig.mapListFont)));
