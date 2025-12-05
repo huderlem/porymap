@@ -189,7 +189,7 @@ void logInit() {
         dir.mkpath(settingsPath);
     Log::path = dir.absoluteFilePath(QStringLiteral("porymap.log"));
     Log::file.setFileName(Log::path);
-    Log::file.open(QIODevice::WriteOnly | QIODevice::Append);
+    if (!Log::file.open(QIODevice::WriteOnly | QIODevice::Append)) return;
     Log::textStream.setDevice(&Log::file);
 
     QObject::connect(&Log::displayClearTimer, &QTimer::timeout, [=] {
