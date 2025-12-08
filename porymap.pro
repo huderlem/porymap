@@ -148,6 +148,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/regionmappropertiesdialog.cpp \
     src/ui/colorpicker.cpp \
     src/ui/loadingscreen.cpp \
+    src/ui/unlockableicon.cpp \
     src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
@@ -268,6 +269,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/regionmappropertiesdialog.h \
     include/ui/colorpicker.h \
     include/ui/loadingscreen.h \
+    include/ui/unlockableicon.h \
     include/config.h \
     include/editor.h \
     include/mainwindow.h \

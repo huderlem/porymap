@@ -34,6 +34,7 @@
 #include "newlayoutdialog.h"
 #include "message.h"
 #include "resizelayoutpopup.h"
+#include "unlockableicon.h"
 
 #if __has_include(<QJSValue>)
 #include <QJSValue>
@@ -354,6 +355,8 @@ private:
     MapNavigation forwardNavigation;
     bool ignoreNavigationRecords = false;
 
+    UnlockableIcon unlockableMainTabIcon;
+
     QAction *copyAction = nullptr;
     QAction *pasteAction = nullptr;
 
@@ -460,7 +463,8 @@ private:
     MapListToolBar* getCurrentMapListToolBar();
     MapTree* getCurrentMapList();
     void setLocationComboBoxes(const QStringList &locations);
-
+    void overrideMainTabIcons(const QIcon& icon);
+    void tryUnlockMainTabIcon(const Map* map);
     QObjectList shortcutableObjects() const;
     void addCustomHeaderValue(QString key, QJsonValue value, bool isNew = false);
 

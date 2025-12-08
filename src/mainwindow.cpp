@@ -334,6 +334,8 @@ void MainWindow::initCustomUI() {
         ui->mainTabBar->setTabIcon(i, mainTabIcons.value(i));
     }
 
+    this->unlockableMainTabIcon.load(":/images/unlockable_tab_icon.dat");
+
     // Create map header data widget
     this->mapHeaderForm = new MapHeaderForm();
     ui->layout_HeaderData->addWidget(this->mapHeaderForm);
@@ -341,6 +343,12 @@ void MainWindow::initCustomUI() {
     // Center zooming on the mouse
     ui->graphicsView_Map->setTransformationAnchor(QGraphicsView::ViewportAnchor::AnchorUnderMouse);
     ui->graphicsView_Map->setResizeAnchor(QGraphicsView::ViewportAnchor::AnchorUnderMouse);
+}
+
+void MainWindow::overrideMainTabIcons(const QIcon& icon) {
+    for (int i = 1; i < ui->mainTabBar->count(); i++) {
+        ui->mainTabBar->setTabIcon(i, icon);
+    }
 }
 
 void MainWindow::initExtraSignals() {
@@ -2285,6 +2293,8 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         ui->stackedWidget_MapEvents->setCurrentIndex(1);
     } else if (index == MainTab::Connections) {
         ui->graphicsView_Connections->setFocus(); // Avoid opening tab with focus on something editable
+        connect(this, &MainWindow::mapOpened, this, &MainWindow::tryUnlockMainTabIcon, Qt::UniqueConnection);
+        connect(&this->unlockableMainTabIcon, &UnlockableIcon::unlocked, this, &MainWindow::overrideMainTabIcons, Qt::UniqueConnection);
     }
 
     if (!editor->map) return;
@@ -2292,6 +2302,18 @@ void MainWindow::on_mainTabBar_tabBarClicked(int index)
         if (editor->project && editor->project->wildEncountersLoaded)
             editor->saveEncounterTabData();
     }
+}
+
+void MainWindow::tryUnlockMainTabIcon(const Map* map) {
+    if (!map || this->unlockableMainTabIcon.isUnlocked()) return;
+    const Layout* layout = map->layout();
+    if (!layout) return;
+
+    QSet<QChar> chars;
+    if (!layout->name.isEmpty()) chars.insert(layout->name.at(0));
+    const QString tilesetName = Tileset::stripPrefix(layout->tileset_secondary_label);
+    if (!tilesetName.isEmpty()) chars.insert(tilesetName.at(0));
+    this->unlockableMainTabIcon.tryUnlock(chars);
 }
 
 void MainWindow::on_actionZoom_In_triggered() {
