@@ -59,7 +59,7 @@ void MapView::clearOverlayMap() {
 Overlay * MapView::getOverlay(int layer) {
     Overlay * overlay = this->overlayMap.value(layer, nullptr);
     if (!overlay) {
-        overlay = new Overlay();
+        overlay = new Overlay(this->sceneRect().toRect());
         this->overlayMap.insert(layer, overlay);
     }
     return overlay;
