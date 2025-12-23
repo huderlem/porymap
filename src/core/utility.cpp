@@ -110,8 +110,9 @@ QString Util::replaceExtension(const QString &path, const QString &newExtension)
 }
 
 void Util::setErrorStylesheet(QLineEdit *lineEdit, bool isError) {
-    static const QString stylesheet = QStringLiteral("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
-    lineEdit->setStyleSheet(isError ? stylesheet : "");
+    static const QString errorStylesheet = QStringLiteral("QLineEdit { background-color: rgba(255, 0, 0, 25%) }");
+    static const QString defaultStylesheet = QStringLiteral("QLineEdit {}");
+    lineEdit->setStyleSheet(isError ? errorStylesheet : defaultStylesheet);
 }
 
 void Util::show(QWidget *w) {

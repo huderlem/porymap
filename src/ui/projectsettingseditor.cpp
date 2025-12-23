@@ -259,12 +259,13 @@ void ProjectSettingsEditor::updateMaskOverlapWarning(QLabel * warning, QList<UIn
     // It'de nice if we could style this as a persistent red border around the line edit for any
     // overlapping masks. As it is editing the border undesirably modifies the arrow buttons.
     // This stylesheet will just highlight the currently selected line edit, which is fine enough.
-    static const QString styleSheet = "QAbstractSpinBox { selection-background-color: rgba(255, 0, 0, 25%) }";
+    static const QString errorStylesheet = QStringLiteral("QAbstractSpinBox { selection-background-color: rgba(255, 0, 0, 25%) }");
+    static const QString defaultStylesheet = QStringLiteral("QAbstractSpinBox {}");
 
     // Update warning display
     if (warning) warning->setHidden(overlapping.isEmpty());
     for (int i = 0; i < masks.length(); i++)
-        masks.at(i)->setStyleSheet(overlapping.contains(i) ? styleSheet : "");
+        masks.at(i)->setStyleSheet(overlapping.contains(i) ? errorStylesheet : defaultStylesheet);
 }
 
 void ProjectSettingsEditor::updateBlockMaskOverlapWarning() {

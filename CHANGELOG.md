@@ -31,6 +31,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix excessive logging if Porymap fails to monitor all map files.
 - Fix map connections getting cut off in exported map images if they're on the same side as another short map connection.
 - Fix the project version check failing for some versions of `git`.
+- Fix some error highlights persisting after the error is resolved.
 
 ## [6.2.0] - 2025-08-08
 ### Added

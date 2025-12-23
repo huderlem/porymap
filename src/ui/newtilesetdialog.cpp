@@ -3,6 +3,7 @@
 #include "project.h"
 #include "imageexport.h"
 #include "validator.h"
+#include "log.h"
 
 NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
     QDialog(parent),
@@ -20,8 +21,6 @@ NewTilesetDialog::NewTilesetDialog(Project* project, QWidget *parent) :
 
     connect(ui->lineEdit_Name, &QLineEdit::textChanged, this, &NewTilesetDialog::onNameChanged);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewTilesetDialog::dialogButtonClicked);
-
-    adjustSize();
 }
 
 NewTilesetDialog::~NewTilesetDialog()
@@ -67,7 +66,7 @@ void NewTilesetDialog::accept() {
     bool secondary = ui->comboBox_Type->currentIndex() == 1;
     Tileset *tileset = this->project->createNewTileset(ui->lineEdit_Name->text(), secondary, ui->checkBox_CheckerboardFill->isChecked());
     if (!tileset) {
-        ui->label_GenericError->setText(QString("Failed to create tileset. See %1 for details.").arg(getLogPath()));
+        ui->label_GenericError->setText(getMostRecentError());
         ui->label_GenericError->setVisible(true);
         return;
     }

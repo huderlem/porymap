@@ -17,6 +17,9 @@
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SizeConstraint::SetFixedSize</enum>
+   </property>
    <item>
     <widget class="QFrame" name="form">
      <layout class="QFormLayout" name="formLayout">
