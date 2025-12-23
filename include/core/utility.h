@@ -19,6 +19,7 @@ namespace Util {
     QString toStylesheetString(const QFont &font);
     void show(QWidget *w);
     QColorSpace toColorSpace(int colorSpaceInt);
+    QString mkpath(const QString& dirPath);
 }
 
 #endif // UTILITY_H

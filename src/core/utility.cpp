@@ -3,6 +3,7 @@
 #include <QCollator>
 #include <QRegularExpression>
 #include <QFileInfo>
+#include <QDir>
 
 // Sometimes we want to sort names alphabetically to make them easier to find in large combo box lists.
 // QStringList::sort (as of writing) can only sort numbers in lexical order, which has an undesirable
@@ -144,4 +145,18 @@ QColorSpace Util::toColorSpace(int colorSpaceInt) {
     } else {
         return QColorSpace();
     }
+}
+
+// Creates a directory named 'dirPath', including any non-existent parent directories. Returns an error message, if any.
+// If 'dirPath' already exists it's considered an error unless the directory has no files.
+QString Util::mkpath(const QString& dirPath) {
+    if (!QDir::root().mkpath(dirPath)) {
+        return QString("Failed to create directory '%1'").arg(dirPath);
+    }
+    QDir dir(dirPath);
+    QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    if (!files.isEmpty()) {
+        return QString("Directory '%1' already exists and is not empty").arg(dirPath);
+    }
+    return QString();
 }

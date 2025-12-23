@@ -1569,17 +1569,14 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
 
     // Create tileset directories
     const QString fullDirectoryPath = QString("%1/%2").arg(this->root).arg(tileset->getExpectedDir());
-    QDir directory;
-    if (!directory.mkpath(fullDirectoryPath)) {
-        logError(QString("Failed to create directory '%1' for new tileset '%2'").arg(fullDirectoryPath).arg(tileset->name));
-        delete tileset;
-        return nullptr;
-    }
     const QString palettesPath = fullDirectoryPath + "/palettes";
-    if (!directory.mkpath(palettesPath)) {
-        logError(QString("Failed to create palettes directory '%1' for new tileset '%2'").arg(palettesPath).arg(tileset->name));
-        delete tileset;
-        return nullptr;
+    for (const auto& dir : {fullDirectoryPath, palettesPath}) {
+        QString error = Util::mkpath(dir);
+        if (!error.isEmpty()) {
+            logError(QString("Failed to create tileset '%1': %2.").arg(tileset->name).arg(error));
+            delete tileset;
+            return nullptr;
+        }
     }
 
     tileset->tilesImagePath = fullDirectoryPath + "/tiles.png";
