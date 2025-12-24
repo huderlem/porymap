@@ -1114,6 +1114,9 @@
                           <property name="editable">
                            <bool>true</bool>
                           </property>
+                          <property name="minimumContentsLength">
+                           <number>0</number>
+                          </property>
                          </widget>
                         </item>
                         <item row="2" column="0">
@@ -1134,35 +1137,24 @@
                           <property name="editable">
                            <bool>true</bool>
                           </property>
-                         </widget>
-                        </item>
-                        <item row="0" column="0">
-                         <widget class="QFrame" name="frame_LayoutSelection">
-                          <property name="frameShape">
-                           <enum>QFrame::Shape::NoFrame</enum>
+                          <property name="minimumContentsLength">
+                           <number>0</number>
                           </property>
-                          <property name="frameShadow">
-                           <enum>QFrame::Shadow::Raised</enum>
-                          </property>
-                          <layout class="QFormLayout" name="formLayout_3">
-                           <property name="topMargin">
-                            <number>2</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>2</number>
-                           </property>
-                           <item row="0" column="0">
-                            <widget class="QLabel" name="label_Layout">
-                             <property name="text">
-                              <string>Layout</string>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
                          </widget>
                         </item>
                         <item row="0" column="1">
-                         <widget class="NoScrollComboBox" name="comboBox_LayoutSelector"/>
+                         <widget class="NoScrollComboBox" name="comboBox_LayoutSelector">
+                          <property name="minimumContentsLength">
+                           <number>0</number>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="label_Layout">
+                          <property name="text">
+                           <string>Layout</string>
+                          </property>
+                         </widget>
                         </item>
                        </layout>
                       </widget>
@@ -3243,11 +3235,11 @@
    </property>
   </action>
   <action name="actionDuplicate_Current_Map">
-   <property name="text">
-    <string>Duplicate Current Map...</string>
-   </property>
    <property name="enabled">
     <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Duplicate Current Map...</string>
    </property>
   </action>
   <action name="actionDuplicate_Current_Layout">
