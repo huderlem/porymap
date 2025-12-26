@@ -14,7 +14,7 @@ Windows and macOS users can download Porymap below to start using it immediately
 
  - [Download Porymap for Windows](https://github.com/huderlem/porymap/releases/latest/download/porymap-windows.zip).
  - [Download Porymap for macOS latest (arm)](https://github.com/huderlem/porymap/releases/latest/download/porymap-macos-latest.zip).
- - [Download Porymap for macOS 13 (intel)](https://github.com/huderlem/porymap/releases/latest/download/porymap-macos-13.zip).
+ - [Download Porymap for macOS 15 (intel)](https://github.com/huderlem/porymap/releases/latest/download/porymap-macos-15-intel.zip).
 
 Linux users must compile Porymap from source.
 

@@ -4,7 +4,7 @@
 
  - [Download Porymap for Windows](https://github.com/huderlem/porymap/releases/latest/download/porymap-windows.zip).
  - [Download Porymap for macOS latest (arm)](https://github.com/huderlem/porymap/releases/latest/download/porymap-macos-latest.zip).
- - [Download Porymap for macOS 13 (intel)](https://github.com/huderlem/porymap/releases/latest/download/porymap-macos-13.zip).
+ - [Download Porymap for macOS 15 (intel)](https://github.com/huderlem/porymap/releases/latest/download/porymap-macos-15-intel.zip).
 
 
 For installation, Porymap requires Qt 5.14.2 & C++11.
