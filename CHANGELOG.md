@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project somewhat adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).  The MAJOR version number is bumped when there are **"Breaking Changes"** in the pret projects. For more on this, see [the manual page on breaking changes](https://huderlem.github.io/porymap/manual/breaking-changes.html).
 
 ## [Unreleased]
+Nothing, yet.
+
+## [6.3.0] - 2025-12-26
 ### Added
 - Add option to sort Locations and Layouts lists by value, rather than alphabetically.
 - Add color space settings for exported images.
@@ -707,7 +710,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/6.2.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/6.3.0...HEAD
+[6.3.0]: https://github.com/huderlem/porymap/compare/6.2.0...6.3.0
 [6.2.0]: https://github.com/huderlem/porymap/compare/6.1.0...6.2.0
 [6.1.0]: https://github.com/huderlem/porymap/compare/6.0.0...6.1.0
 [6.0.0]: https://github.com/huderlem/porymap/compare/5.4.1...6.0.0

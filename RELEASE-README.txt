@@ -1,11 +1,41 @@
-Version: 6.2.0
-Date: August 8th, 2025
+Version: 6.3.0
+Date: December 26th, 2025
 
 Official Porymap documentation: https://huderlem.github.io/porymap/
 
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [6.3.0] - 2025-12-26
+### Added
+- Add option to sort Locations and Layouts lists by value, rather than alphabetically.
+- Add color space settings for exported images.
+- Add setting to disable the project loading screen.
+
+### Changed
+- Separate `File > Duplicate Current Map/Layout` into two options to allow duplicating the current layout when a map is open.
+- The name field now receives focus immediately for the new map/layout dialogs.
+- The middle mouse button can now be used to pan around the map views, rather than needing to select the Map Tool. This is a very convenient shortcut that matches popular image-editing programs.
+   - Previously, the middle mouse button could be used as a shortcut with the pencil tool to switch to bucket-fill mode. This is now achieved using the `Alt` key.
+
+### Fixed
+- Fix crash when a painted tile selection goes out of bounds of the metatile layer view in the Tileset Editor.
+- Fix crash on older versions of Qt when reopening a project with certain windows open.
+- Fix potential crash when painting and the cursor leaves the map area.
+- Fix potential crash when changing maps with the Tileset Editor open.
+- Fix rare crash while quitting Porymap.
+- Fix `Edit > Clear Map Entries` in the Region Map Editor not saving the applied changes.
+- Fix `Edit > Undo/Redo` appearing enabled even when they don't do anything.
+- Fix `Help > Open Manual` being disabled when no project is open.
+- Fix new tilesets potentially overwriting data in an existing directory.
+- Fix exported images on macOS using a different color space than in Porymap.
+- Fix some `INCBIN` statements not being parsed correctly.
+- Fix excessive logging if Porymap fails to monitor all map files.
+- Fix map connections getting cut off in exported map images if they're on the same side as another short map connection.
+- Fix the project version check failing for some versions of `git`.
+- Fix some error highlights persisting after the error is resolved.
+- Fix the Layout/Tileset labels on the `Metatiles` panel disappearing if the panel is too narrow.
 
 ## [6.2.0] - 2025-08-08
 ### Added
