@@ -70,7 +70,7 @@ private:
 class Overlay
 {
 public:
-    Overlay() {
+    Overlay(QRect fromRect) : image(fromRect.size(), QImage::Format_ARGB32) {
         this->x = 0;
         this->y = 0;
         this->angle = 0;
@@ -79,10 +79,14 @@ public:
         this->hidden = false;
         this->opacity = 1.0;
         this->clippingRect = nullptr;
+        this->image.setOffset(fromRect.topLeft());
+        this->image.fill(QColor(0, 0, 0, 0));
+        this->valid = false;
     }
     ~Overlay() {
         this->clearItems();
     }
+    void invalidate() { this->valid = false; }
     bool getHidden();
     void setHidden(bool hidden);
     int getOpacity();
@@ -123,6 +127,8 @@ private:
     bool hidden;
     qreal opacity;
     QRectF *clippingRect;
+    QImage image;
+    bool valid;
 };
 
 #else
