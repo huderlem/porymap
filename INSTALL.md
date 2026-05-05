@@ -65,3 +65,47 @@ qmake
 make
 ./porymap
 ```
+
+## NixOS
+
+You need to create an instructions file for compiling the package with Qt and wrapping it as a Qt app. This instructions file can then be used for nix-build or referenced within the shell.nix file for your project.
+
+Example `porymap.nix` instructions file:
+```nix
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.stdenv.mkDerivation rec {
+  pname = "porymap";
+  version = "6.3.1";
+
+  src = pkgs.fetchFromGitHub {
+    owner = "huderlem";
+    repo = "porymap";
+    rev = version;
+    sha256 = "sha256-EG09aOgJrIe5X+e/SKcZn+mxkZ2N4mBmRxlEV3LYvgo=";
+  };
+
+  nativeBuildInputs = with pkgs; [
+    git
+    qt6.qtdeclarative
+    qt6.qtcharts
+    qt6.wrapQtAppsHook
+  ];
+
+  buildInputs = with pkgs; [
+    qt6.qtdeclarative
+    qt6.qtcharts
+  ];
+
+  installPhase = ''
+    mkdir -p $out/bin
+    cp porymap $out/bin/
+    wrapQtApp $out/bin/porymap  # Wrap the binary to include Qt plugins
+  '';
+
+  buildPhase = ''
+    qmake
+    make -j$NIX_BUILD_CORES
+  '';
+}
+```
