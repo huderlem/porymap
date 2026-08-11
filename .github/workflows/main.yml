@@ -41,6 +41,79 @@ jobs:
       - name: Compile
         run: make -j8
 
+  build-linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    env:
+      BUILD_NAME: porymap-linux-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          modules: 'qtcharts'
+          cache: 'true'
+
+      - name: Configure
+        run: qmake -config release porymap.pro
+
+      - name: Compile
+        run: make -j8
+
+      - name: Install linuxdeploy
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-aarch64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-aarch64.AppImage
+          chmod +x linuxdeploy-aarch64.AppImage linuxdeploy-plugin-qt-aarch64.AppImage
+
+      - name: Prepare AppImage assets
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          sudo apt-get install -y imagemagick
+          convert resources/icons/porymap-icon-1.ico[0] porymap.png
+          cat > porymap.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Porymap
+          Exec=porymap
+          Icon=porymap
+          Type=Application
+          Categories=Development;
+          EOF
+
+      - name: Build AppImage
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: |
+          ./linuxdeploy-aarch64.AppImage \
+            --appdir AppDir \
+            --executable porymap \
+            --desktop-file porymap.desktop \
+            --icon-file porymap.png \
+            --plugin qt \
+            --output appimage
+
+      - name: Prep Release Directory
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir ${{ env.BUILD_NAME }}
+          cp porymap-aarch64.AppImage ${{ env.BUILD_NAME }}/porymap.AppImage
+          cp RELEASE-README.txt ${{ env.BUILD_NAME }}/README.txt
+
+      - name: Bundle Release Directory
+        if: startsWith(github.ref, 'refs/tags/')
+        run: zip -r ${{ env.BUILD_NAME }}.zip ${{ env.BUILD_NAME }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ env.BUILD_NAME }}.zip
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-macos:
     strategy:
      matrix:
