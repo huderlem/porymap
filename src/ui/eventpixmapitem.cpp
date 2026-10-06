@@ -4,6 +4,8 @@
 #include "mapruler.h"
 #include "metatile.h"
 
+#include <QApplication>
+
 EventPixmapItem::EventPixmapItem(Event *event)
   : QGraphicsPixmapItem(event->getPixmap()),
     m_basePixmap(pixmap()),
@@ -75,6 +77,11 @@ void EventPixmapItem::updatePixelPosition() {
 void EventPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     if (m_active)
         return;
+    if (QApplication::mouseButtons() & Qt::MiddleButton) {
+        // Let the view handle the event so that it can pan instead of dragging this item.
+        mouseEvent->ignore();
+        return;
+    }
     m_active = true;
     m_lastPos = Metatile::coordFromPixmapCoord(mouseEvent->scenePos());
 
